@@ -16,3 +16,12 @@ function tue-install
 {
     ~/.tue/installer/scripts/tue-install $@
 }
+
+_tue-install()
+{
+    local cur=${COMP_WORDS[COMP_CWORD]}
+    local prev=${COMP_WORDS[COMP_CWORD-1]}
+
+    COMPREPLY=( $(compgen -W "`ls ~/.tue/installer/targets`" -- $cur) )
+}
+complete -F _tue-install tue-install
