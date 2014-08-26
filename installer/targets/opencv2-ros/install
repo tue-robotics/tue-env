@@ -1,1 +1,3 @@
-tue-install-ros system opencv2
+if [ "$ROS_DISTRO" != "indigo" ]
+    tue-install-ros system opencv2
+fi

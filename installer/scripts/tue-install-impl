@@ -169,7 +169,7 @@ function tue-install-ros {
 # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # 
 
 # For now ...
-ROS_PACKAGE_INSTALL_DIR=~/ros/hydro/catkin_ws/src
+ROS_PACKAGE_INSTALL_DIR=~/ros/$ROS_DISTRO/catkin_ws/src
 mkdir -p $ROS_PACKAGE_INSTALL_DIR
 
 TUE_INSTALL_TARGET_DIR=~/.tue/installer/targets
