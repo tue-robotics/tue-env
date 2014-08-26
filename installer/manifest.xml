@@ -1,0 +1,14 @@
+<package>
+  <description brief="tue_installer">
+
+     tue_installer
+
+  </description>
+  <author>sdries</author>
+  <license>BSD</license>
+  <review status="unreviewed" notes=""/>
+  <url>http://ros.org/wiki/tue_installer</url>
+
+</package>
+
+

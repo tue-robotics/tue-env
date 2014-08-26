@@ -1,0 +1,7 @@
+#! /bin/bash
+
+# Update installer
+svn co https://roboticssrv.wtb.tue.nl/svn/ros/user/sjoerd/tue_installer ~/.tue/installer/
+
+# Run installer
+source ~/.tue/installer/scripts/tue-install-impl $1

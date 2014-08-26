@@ -1,0 +1,29 @@
+#! /usr/bin/python
+
+import sys
+
+def main():
+    if len(sys.argv) != 2:
+        print "Usage: parse-ros-package-deps PACKAGE.XML"
+        return 1
+
+    import xml.etree.ElementTree as ET
+
+    tree = ET.parse(sys.argv[1])
+    doc = tree.getroot()
+
+    dep_set = {}
+
+    deps = doc.findall('build_depend')
+    for dep in deps:
+        dep_set[dep.text] = ""
+
+    deps = doc.findall('run_depend')
+    for dep in deps:
+        dep_set[dep.text] = ""
+
+    for dep in dep_set.keys():
+        print dep
+
+if __name__ == "__main__":
+    sys.exit(main())

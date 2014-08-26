@@ -1,0 +1,197 @@
+#! /bin/bash
+
+# # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # 
+
+function randid {
+    </dev/urandom tr -dc '0123456789abcdef' | head -c16; echo ""
+}
+
+# # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # 
+
+function tue-install-error {
+    echo "
+Error while installing target '$TUE_INSTALL_CURRENT_TARGET':
+
+    $1
+"
+    exit 1
+}
+
+# # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # 
+
+function tue-install-target {
+    local target=$1
+
+    #echo $target
+
+    if [ ! -f $TUE_INSTALL_STATE_DIR/$target ]; then
+        target_file=$TUE_INSTALL_TARGET_DIR/$target/install
+
+        if [ ! -f $target_file ]; then
+            tue-install-error "target '$target' does not exist."
+        fi
+
+        local mem_target=$TUE_INSTALL_CURRENT_TARGET
+
+        TUE_INSTALL_CURRENT_TARGET_DIR=$TUE_INSTALL_TARGET_DIR/$target
+        TUE_INSTALL_CURRENT_TARGET=$target
+
+        source $target_file
+
+        TUE_INSTALL_CURRENT_TARGET=$mem_target
+
+        touch $TUE_INSTALL_STATE_DIR/$target
+    #else
+    #    echo "Already had $target"
+    fi
+}
+
+# # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # 
+
+function tue-install-sys {
+    source=$1
+    TUE_INSTALL_SYSTEMS="$source $TUE_INSTALL_SYSTEMS"
+}
+
+# # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # 
+
+function tue-install-svn {   
+    if [ -n "$TUE_INSTALL_DUMMY" ]; then
+        echo "svn co $1 $2"
+        cp -rf ~/fake-svn/$1 $2       
+        return
+    fi
+   
+    if [ ! -d $2 ]; then 
+        svn co $1 $2
+    else
+        echo "$2: "
+        svn up $2
+    fi
+}
+
+# # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # 
+
+function tue-install-git {
+    if [ -n "$TUE_INSTALL_DUMMY" ]; then
+        echo "git clone $1 $2 ($3)"
+        return
+    fi
+
+    local version=$3
+    if [ -n "$version" ]; then
+        if [ ! -d $2 ]; then 
+            git clone $1 $2
+            mem_pwd=$PWD
+            cd $2
+            git checkout $version
+            cd $mem_pwd                    
+        fi
+    else
+        if [ ! -d $2 ]; then 
+            git clone $1 $2
+        else
+            mem_pwd=$PWD
+            cd $2
+            git pull
+            cd $mem_pwd
+        fi
+    fi    
+}
+
+# # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # 
+
+function tue-install-ros-rosbuild
+{
+    tue-install-error "ROSBUILD packages are not supported."
+}
+
+# # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # 
+
+function tue-install-ros {
+    type=$1
+    source=$2
+
+    local ros_pkg_name=${TUE_INSTALL_CURRENT_TARGET%-ros}
+    local patch_file=$TUE_INSTALL_CURRENT_TARGET_DIR/patch
+
+    # First of all, make sure ROS itself is installed
+    tue-install-target ros    
+
+    if [ "$type" = "system" ]; then
+        if [ -z "$ROS_DISTRO" ]; then
+            tue-install-error "Environment variable ROS_DISTRO not set."
+        fi
+
+        TUE_INSTALL_SYSTEMS="ros-$ROS_DISTRO-$source $TUE_INSTALL_SYSTEMS"
+        return
+    fi
+
+    if [ -z $ROS_PACKAGE_INSTALL_DIR ]; then
+        tue-install-error "Environment variable ROS_PACKAGE_INSTALL_DIR not set."
+    fi
+
+    local ros_pkg_dir=$ROS_PACKAGE_INSTALL_DIR/$ros_pkg_name
+
+    if [ "$type" = "git" ]; then
+        tue-install-git $source $ros_pkg_dir $3
+    elif [ "$type" = "svn" ]; then
+        tue-install-svn $source $ros_pkg_dir $3
+    else
+        tue-install-error "Unknown ros install type: '${type}'"
+    fi
+
+    if [ -f $patch_file ]; then
+        patch -s -N -r - -p0 -d $ros_pkg_dir < $patch_file
+    fi
+
+    if [ -d $ros_pkg_dir ]; then
+      
+        if  [ -f $ros_pkg_dir/package.xml ]; then
+            # Catkin
+
+            deps=`$TUE_INSTALL_SCRIPTS_DIR/parse-ros-package-deps $ros_pkg_dir/package.xml`
+
+            for dep in $deps
+            do
+                tue-install-target $dep-ros            
+            done
+
+        else
+            echo "WARNING: '$source' does not contain a valid ROS package.xml."
+        fi        
+        
+    else
+        tue-install-error "Checking out $source was not successful."
+    fi
+}
+
+# # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # 
+
+# For now ...
+ROS_PACKAGE_INSTALL_DIR=~/ros/hydro/catkin_ws/src
+mkdir -p $ROS_PACKAGE_INSTALL_DIR
+
+TUE_INSTALL_TARGET_DIR=~/.tue/installer/targets
+TUE_INSTALL_SCRIPTS_DIR=~/.tue/installer/scripts
+
+TUE_INSTALL_STATE_DIR=/tmp/tue-installer/`randid`
+mkdir -p $TUE_INSTALL_STATE_DIR
+
+TUE_INSTALL_TEMP_DIR=/tmp/tue-installer/`randid`
+mkdir -p $TUE_INSTALL_TEMP_DIR
+
+if [ -z $1 ]; then
+    echo "Usage: tue-install TARGET"
+    exit 1
+fi
+
+TUE_INSTALL_SYSTEMS=
+tue-install-target $1
+
+if [ -z "$TUE_INSTALL_DUMMY" ]; then
+    if [ -n "$TUE_INSTALL_SYSTEMS" ]; then
+        sudo apt-get install -y $TUE_INSTALL_SYSTEMS
+    fi
+fi
+
