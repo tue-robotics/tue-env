@@ -1,20 +1,100 @@
+TUE_DEV_DIR=~/ros/hydro/dev
+TUE_SYSTEM_DIR=~/ros/hydro/system
+
 # ----------------------------------------------------------------------------------------------------
 #                                            TUE-MAKE
 # ----------------------------------------------------------------------------------------------------
 
 function tue-make
 {
-    cd ~/ros/$ROS_DISTRO/system
+    cd $TUE_SYSTEM_DIR
     catkin_make -DCMAKE_BUILD_TYPE=Release $@
     cd -
 }
 
-function tue-make-isolated
+function tue-make-system
 {
-    cd ~/ros/$ROS_DISTRO/system
+    cd $TUE_SYSTEM_DIR
     catkin_make_isolated -DCMAKE_BUILD_TYPE=Release $@
     cd -
 }
+
+function tue-make-dev
+{
+    cd $TUE_DEV_DIR
+    catkin_make -DCMAKE_BUILD_TYPE=Release $@
+    cd -
+}
+
+function tue-make-dev-isolated
+{
+    cd $TUE_DEV_DIR
+    catkin_make_isolated -DCMAKE_BUILD_TYPE=Release $@
+    cd -
+}
+
+# ----------------------------------------------------------------------------------------------------
+#                                              TUE-DEV
+# ----------------------------------------------------------------------------------------------------
+
+function _list_subdirs
+{
+    fs=`ls $1`
+    for f in $fs
+    do
+        if [ -d $1/$f ]
+        then
+            echo $f
+        fi
+    done
+}
+
+function tue-dev
+{
+    if [ -z "$1" ]
+    then
+        _list_subdirs $TUE_DEV_DIR/src
+        return 0
+    fi
+
+    for pkg in $@
+    do     
+        if [ ! -d $TUE_SYSTEM_DIR/src/$pkg ]
+        then
+            echo "[tue-dev] '$pkg' does not exist in the system workspace."
+        elif [ -d $TUE_DEV_DIR/src/$pkg ]
+        then
+            echo "[tue-dev] '$pkg' is already in the dev workspace."
+        else
+            ln -s $TUE_SYSTEM_DIR/src/$pkg $TUE_DEV_DIR/src/$pkg
+        fi
+    done
+
+    # Call rospack such that the linked directories are indexed
+    local tmp=`rospack profile`
+}
+
+function tue-dev-clean
+{
+    for f in `_list_subdirs $TUE_DEV_DIR/src`
+    do
+        # Test if f is a symbolic link
+        if [[ -L $TUE_DEV_DIR/src/$f ]]
+        then
+            echo "Cleaned '$f'"
+            rm $TUE_DEV_DIR/src/$f
+        fi
+    done
+}
+
+function _tue-dev
+{
+    local cur=${COMP_WORDS[COMP_CWORD]}
+    local prev=${COMP_WORDS[COMP_CWORD-1]}
+
+    COMPREPLY=( $(compgen -W "`_list_subdirs $TUE_SYSTEM_DIR/src`" -- $cur) )
+}
+complete -F _tue-dev tue-dev
 
 # ----------------------------------------------------------------------------------------------------
 #                                            TUE-INSTALL
