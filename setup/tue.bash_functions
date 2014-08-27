@@ -85,6 +85,9 @@ function tue-dev-clean
             rm $TUE_DEV_DIR/src/$f
         fi
     done
+
+    rm -rf $TUE_DEV_DIR/devel/share
+    rm -rf $TUE_DEV_DIR/build
 }
 
 function _tue-dev
