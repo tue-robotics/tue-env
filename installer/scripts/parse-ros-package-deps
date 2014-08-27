@@ -12,18 +12,15 @@ def main():
     tree = ET.parse(sys.argv[1])
     doc = tree.getroot()
 
-    dep_set = {}
+    dep_set = set()
 
     deps = doc.findall('build_depend')
-    for dep in deps:
-        dep_set[dep.text] = ""
+    dep_set |= set([dep.text for dep in deps])
 
     deps = doc.findall('run_depend')
-    for dep in deps:
-        dep_set[dep.text] = ""
+    dep_set |= set([dep.text for dep in deps])
 
-    for dep in dep_set.keys():
-        print dep
+    print '\n'.join(dep_set)
 
 if __name__ == "__main__":
     sys.exit(main())
