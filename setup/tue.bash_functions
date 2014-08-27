@@ -5,14 +5,14 @@
 
 function tue-make
 {
-    cd ~/ros/$ROS_DISTRO/catkin_ws
+    cd ~/ros/$ROS_DISTRO/system
     catkin_make -DCMAKE_BUILD_TYPE=Release $@
     cd -
 }
 
 function tue-make-isolated
 {
-    cd ~/ros/$ROS_DISTRO/catkin_ws
+    cd ~/ros/$ROS_DISTRO/system
     catkin_make_isolated -DCMAKE_BUILD_TYPE=Release $@
     cd -
 }
@@ -52,7 +52,7 @@ function tue-setup
 
     if [ -z "$1" ]
     then
-        if [ -d ~/.tue/installed ]
+        if [ ! -d ~/.tue/installed ]
         then
             return
         fi

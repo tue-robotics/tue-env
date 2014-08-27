@@ -1,1 +1,20 @@
-echo "[SETUP] ROS"
+if [ -z "$TUE_ROS_DISTRO" ]
+then
+    TUE_ROS_DISTRO=hydro
+fi
+
+source /opt/ros/$TUE_ROS_DISTRO/setup.bash
+
+TUE_SYSTEM_DIR=~/ros/$TUE_ROS_DISTRO/system
+
+if [ -f $TUE_SYSTEM_DIR/devel/setup.bash ]
+then
+    source $TUE_SYSTEM_DIR/devel/setup.bash
+else
+    mkdir -p $TUE_SYSTEM_DIR
+    sudo apt-get install g++
+    cd $TUE_SYSTEM_DIR
+    catkin_make
+    source $TUE_SYSTEM_DIR/devel/setup.bash
+fi
+

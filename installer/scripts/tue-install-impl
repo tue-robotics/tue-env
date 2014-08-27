@@ -1,5 +1,11 @@
 #! /bin/bash
 
+if [ -z "$TUE_ROS_DISTRO" ]
+then
+    TUE_ROS_DISTRO=hydro
+fi
+TUE_SYSTEM_DIR=~/ros/$TUE_ROS_DISTRO/system
+
 # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # 
 
 function randid {
@@ -117,13 +123,15 @@ function tue-install-ros {
 
     # First of all, make sure ROS itself is installed
     tue-install-target ros    
+    mkdir -p ~/.tue/installed
+    touch ~/.tue/installed/ros
 
     if [ "$type" = "system" ]; then
-        if [ -z "$ROS_DISTRO" ]; then
+        if [ -z "$TUE_ROS_DISTRO" ]; then
             tue-install-error "Environment variable ROS_DISTRO not set."
         fi
 
-        TUE_INSTALL_SYSTEMS="ros-$ROS_DISTRO-$source $TUE_INSTALL_SYSTEMS"
+        TUE_INSTALL_SYSTEMS="ros-$TUE_ROS_DISTRO-$source $TUE_INSTALL_SYSTEMS"
         return
     fi
 
@@ -169,7 +177,7 @@ function tue-install-ros {
 # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # 
 
 # For now ...
-ROS_PACKAGE_INSTALL_DIR=~/ros/$ROS_DISTRO/catkin_ws/src
+ROS_PACKAGE_INSTALL_DIR=$TUE_SYSTEM_DIR/src
 mkdir -p $ROS_PACKAGE_INSTALL_DIR
 
 TUE_INSTALL_TARGET_DIR=~/.tue/installer/targets
