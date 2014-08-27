@@ -1,0 +1,5 @@
+- type: ros
+  source:
+      type: svn
+      url: https://roboticssrv.wtb.tue.nl/svn/data/data-pkgs/fast_simulator_data
+

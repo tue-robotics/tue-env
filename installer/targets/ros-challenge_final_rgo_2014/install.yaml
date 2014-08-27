@@ -1,0 +1,5 @@
+- type: ros
+  source:
+      type: svn
+      url: https://roboticssrv.wtb.tue.nl/svn/ros/code/tue-ros-pkg/trunk/tue_robocup/challenge_final_rgo_2014
+

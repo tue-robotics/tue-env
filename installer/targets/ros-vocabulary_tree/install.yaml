@@ -1,0 +1,5 @@
+- type: ros
+  source:
+      type: svn
+      url: https://roboticssrv.wtb.tue.nl/svn/data/mirror/ros-pkg/catkin/vocabulary_tree
+
