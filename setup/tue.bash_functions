@@ -33,17 +33,42 @@ function randid
 
 function tue-setup
 {
-    if [ -n "$2" ]
-    then
-        local tue_setup_dir=$2
-    else
-        local tue_setup_dir=/tmp/tue-setup-`randid`
-        mkdir -p $tue_setup_dir
-    fi
+    local first_time=
 
-    if [ ! -f $tue_setup_dir/$1 ]
+    if [ -z "$1" ]
     then
-        source ~/.tue/setup/$1
-        touch $tue_setup_dir/$1
+        TUE_SETUP_TARGETS=" "
+        first_time=true
+
+        # No argument given
+        local installed_targets=`ls ~/.tue/installed`
+        for t in $installed_targets
+        do
+            tue-setup $t
+        done
+    else    
+        if [ -z "$TUE_SETUP_TARGETS" ]
+        then
+            TUE_SETUP_TARGETS=" "
+            first_time=true
+        fi
+
+       if [[ "$TUE_SETUP_TARGETS" != *" $1 "* ]];
+        then
+            local tue_setup_file=~/.tue/installer/targets/$1/setup
+            if [ -f $tue_setup_file ]
+            then
+                source $tue_setup_file
+                TUE_SETUP_TARGETS=" $1$TUE_SETUP_TARGETS"
+            else
+                echo "[tue-setup] WARNING: Target '$1' does not have a setup."
+            fi
+        fi
+
+    fi
+ 
+    if [ -n "$first_time" ]
+    then
+        TUE_SETUP_TARGETS=
     fi
 }
