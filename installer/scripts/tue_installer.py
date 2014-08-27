@@ -1,4 +1,4 @@
-#! /usr/bin/python
+#!/usr/bin/python
 
 """
 Usage: tue_installer.py YAML_FILE TARGET OUTPUT_FILE
