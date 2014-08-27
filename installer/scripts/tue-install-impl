@@ -112,7 +112,7 @@ function tue-install-ros {
     type=$1
     source=$2
 
-    local ros_pkg_name=${TUE_INSTALL_CURRENT_TARGET%-ros}
+    local ros_pkg_name=${TUE_INSTALL_CURRENT_TARGET#ros-}
     local patch_file=$TUE_INSTALL_CURRENT_TARGET_DIR/patch
 
     # First of all, make sure ROS itself is installed
@@ -154,7 +154,7 @@ function tue-install-ros {
 
             for dep in $deps
             do
-                tue-install-target $dep-ros            
+                tue-install-target ros-$dep
             done
 
         else
