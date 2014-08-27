@@ -52,6 +52,11 @@ function tue-setup
 
     if [ -z "$1" ]
     then
+        if [ -d ~/.tue/installed ]
+        then
+            return
+        fi
+
         TUE_SETUP_TARGETS=" "
         first_time=true
 
@@ -59,7 +64,10 @@ function tue-setup
         local installed_targets=`ls ~/.tue/installed`
         for t in $installed_targets
         do
-            tue-setup $t
+            if [ -f ~/.tue/installer/targets/$t/setup ]
+            then
+                tue-setup $t
+            fi
         done
     else    
         if [ -z "$TUE_SETUP_TARGETS" ]

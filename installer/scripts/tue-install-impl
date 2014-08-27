@@ -195,3 +195,6 @@ if [ -z "$TUE_INSTALL_DUMMY" ]; then
     fi
 fi
 
+mkdir -p ~/.tue/installed
+touch ~/.tue/installed/$1
+
