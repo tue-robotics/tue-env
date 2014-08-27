@@ -1,3 +1,8 @@
+# ----------------------------------------------------------------------------------------------------
+#                                            TUE-MAKE
+# ----------------------------------------------------------------------------------------------------
+
+
 function tue-make
 {
     cd ~/ros/$ROS_DISTRO/catkin_ws
@@ -12,12 +17,18 @@ function tue-make-isolated
     cd -
 }
 
+# ----------------------------------------------------------------------------------------------------
+#                                            TUE-INSTALL
+# ----------------------------------------------------------------------------------------------------
+
+
 function tue-install
 {
     ~/.tue/installer/scripts/tue-install $@
+    source ~/.bashrc
 }
 
-_tue-install()
+function _tue-install
 {
     local cur=${COMP_WORDS[COMP_CWORD]}
     local prev=${COMP_WORDS[COMP_CWORD-1]}
@@ -30,6 +41,10 @@ function randid
 {
     </dev/urandom tr -dc '0123456789abcdef' | head -c16; echo ""
 }
+
+# ----------------------------------------------------------------------------------------------------
+#                                            TUE-SETUP
+# ----------------------------------------------------------------------------------------------------
 
 function tue-setup
 {
@@ -72,3 +87,26 @@ function tue-setup
         TUE_SETUP_TARGETS=
     fi
 }
+
+
+function _tue-setup-complete
+{
+    local targets=`ls ~/.tue/installer/targets`
+    for t in $targets
+    do
+        if [ -f ~/.tue/installer/targets/$t/setup ]
+        then
+            echo $t
+        fi
+    done
+}
+
+
+function _tue-setup
+{
+    local cur=${COMP_WORDS[COMP_CWORD]}
+    local prev=${COMP_WORDS[COMP_CWORD-1]}
+
+    COMPREPLY=( $(compgen -W "`_tue-setup-complete`" -- $cur) )
+}
+complete -F _tue-setup tue-setup
