@@ -36,7 +36,7 @@ def main():
                     if "version" in install_item["source"]:
                        command += " {0}".format(install_item["source"]["version"])
                 elif source_type == "system":
-                    command = "tue-install-ros system ros-$TUE_ROS_DISTRO-{0}".format(install_item["source"]["name"])                
+                    command = "tue-install-ros system {0}".format(install_item["source"]["name"])                
             elif install_type == "target":
                 command = "tue-install-target {0}".format(install_item["name"])
             else:

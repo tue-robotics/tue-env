@@ -31,24 +31,31 @@ function tue-install-target {
     #echo $target
 
     if [ ! -f $TUE_INSTALL_STATE_DIR/$target ]; then
-        target_file=$TUE_INSTALL_TARGET_DIR/$target/install
-
-        if [ ! -f $target_file ]; then
-            tue-install-error "target '$target' does not exist."
-        fi
+        install_file=$TUE_INSTALL_TARGET_DIR/$target/install
 
         local mem_target=$TUE_INSTALL_CURRENT_TARGET
 
         TUE_INSTALL_CURRENT_TARGET_DIR=$TUE_INSTALL_TARGET_DIR/$target
         TUE_INSTALL_CURRENT_TARGET=$target
 
-        source $target_file
+        if [ -f $install_file.bash ]
+        then
+            source $install_file.bash
+        elif [ -f $install_file.yaml ]
+        then
+            local cmd=`~/.tue/installer/scripts/parse-install-yaml $install_file.yaml`
+            if [ $? -eq 0 ]; then
+                $cmd
+            else
+                tue-install-error "Invalid install.yaml: $cmd"
+            fi 
+        else
+            tue-install-error "No install file (bash or yaml) for target '$target'."
+        fi
 
         TUE_INSTALL_CURRENT_TARGET=$mem_target
 
         touch $TUE_INSTALL_STATE_DIR/$target
-    #else
-    #    echo "Already had $target"
     fi
 }
 
