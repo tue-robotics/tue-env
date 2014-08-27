@@ -6,6 +6,8 @@ fi
 source /opt/ros/$TUE_ROS_DISTRO/setup.bash
 
 TUE_SYSTEM_DIR=~/ros/$TUE_ROS_DISTRO/system
+TUE_DEV_DIR=~/ros/$TUE_ROS_DISTRO/dev
 
 source $TUE_SYSTEM_DIR/devel/setup.bash
+source $TUE_DEV_DIR/devel/setup.bash
 
