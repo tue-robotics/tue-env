@@ -1,0 +1,54 @@
+#!/usr/bin/python
+
+import sys
+import yaml
+
+def show_error(error):
+    print "ERROR: {0}".format(error)
+    return 1
+
+def main():
+    if len(sys.argv) != 2:
+        print "Usage: parse-install-yaml install.yaml"
+        return 1
+
+    f = open(sys.argv[1])
+
+    try:
+        install_items = yaml.safe_load(f)
+    except yaml.parser.ParserError:
+        return show_error("Invalid yaml file.")
+
+    f.close()
+
+    command = None
+
+    if not isinstance(install_items, list):
+        return show_error("install file should be a YAML sequence")
+
+    for install_item in install_items:
+        try:
+            install_type = install_item["type"]
+            if install_type == "ros":
+                source_type = install_item["source"]["type"]
+                if source_type == "svn" or source_type == "git":
+                    command = "tue-install-ros {0} {1}".format(source_type, install_item["source"]["url"])
+                    if "version" in install_item["source"]:
+                       command += " {0}".format(install_item["source"]["version"])
+                elif source_type == "system":
+                    command = "tue-install-ros system ros-$TUE_ROS_DISTRO-{0}".format(install_item["source"]["name"])                
+            elif install_type == "target":
+                command = "tue-install-target {0}".format(install_item["name"])
+            else:
+               return show_error("Unknown install type: '{0}'".format(install_type))
+
+        except KeyError as e:
+            return show_error("invalid install file: Key {0} could not be found.".format(e))
+
+        if not command:
+            return show_error("invalid install file")
+
+    print command
+
+if __name__ == "__main__":
+    sys.exit(main())
