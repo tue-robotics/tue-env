@@ -18,6 +18,43 @@ function _list_subdirs
 }
 
 # ----------------------------------------------------------------------------------------------------
+#                                           TUE-CREATE
+# ----------------------------------------------------------------------------------------------------
+
+function tue-create
+{
+    if [ -z "$1" ]
+    then
+        echo "Usage: tue-create TYPE [ ARG1 ARG2 ... ]"
+        return 1
+    fi
+
+    creation_type=$1
+
+    if [ -f ~/.tue/create/$creation_type/create.bash ]
+    then
+        # remove the first argument (which contained the creation type
+        shift
+
+        source ~/.tue/create/$creation_type/create.bash
+    else
+        echo "tue-create: invalid creation type: '$creation_type'."
+        return 1
+    fi
+}
+
+function _tue-create
+{
+    local cur=${COMP_WORDS[COMP_CWORD]}
+    local prev=${COMP_WORDS[COMP_CWORD-1]}
+
+    if [ $COMP_CWORD -eq 1 ]; then
+        COMPREPLY=( $(compgen -W "`_list_subdirs ~/.tue/create`" -- $cur) )
+    fi
+}
+complete -F _tue-create tue-create
+
+# ----------------------------------------------------------------------------------------------------
 #                                            TUE-ADD
 # ----------------------------------------------------------------------------------------------------
 
