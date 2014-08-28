@@ -105,15 +105,15 @@ catkin_package(
 #                                              BUILD
 # ------------------------------------------------------------------------------------------------
 
-add_libary(library_name
-    src/lib_source_file1.cpp
-    ...
-)
+# add_libary(library_name
+#     src/lib_source_file1.cpp
+#     ...
+# )
 
-add_executable(exec_name
-    src/source_file1.cpp
-    ...
-)
+# add_executable(exec_name
+#     src/source_file1.cpp
+#     ...
+# )
 
 ' >> $cmake_file
 
