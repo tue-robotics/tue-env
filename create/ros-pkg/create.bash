@@ -39,7 +39,6 @@ do
     echo "  <build_depend>$dep</build_depend>" >> $package_file
     echo "  <run_depend>$dep</run_depend>" >> $package_file
     echo "" >> $package_file
-    echo $dep
 done
 
 echo '</package>' >> $package_file
