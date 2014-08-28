@@ -2,6 +2,22 @@ TUE_DEV_DIR=~/ros/hydro/dev
 TUE_SYSTEM_DIR=~/ros/hydro/system
 
 # ----------------------------------------------------------------------------------------------------
+#                                        HELPER FUNCTIONS
+# ----------------------------------------------------------------------------------------------------
+
+function _list_subdirs
+{
+    fs=`ls $1`
+    for f in $fs
+    do
+        if [ -d $1/$f ]
+        then
+            echo $f
+        fi
+    done
+}
+
+# ----------------------------------------------------------------------------------------------------
 #                                            TUE-MAKE
 # ----------------------------------------------------------------------------------------------------
 
@@ -36,18 +52,6 @@ function tue-make-dev-isolated
 # ----------------------------------------------------------------------------------------------------
 #                                              TUE-DEV
 # ----------------------------------------------------------------------------------------------------
-
-function _list_subdirs
-{
-    fs=`ls $1`
-    for f in $fs
-    do
-        if [ -d $1/$f ]
-        then
-            echo $f
-        fi
-    done
-}
 
 function tue-dev
 {
@@ -98,6 +102,51 @@ function _tue-dev
     COMPREPLY=( $(compgen -W "`_list_subdirs $TUE_SYSTEM_DIR/src`" -- $cur) )
 }
 complete -F _tue-dev tue-dev
+
+# ----------------------------------------------------------------------------------------------------
+#                                             TUE-STATUS
+# ----------------------------------------------------------------------------------------------------
+
+function tue-status
+{
+    fs=`ls $TUE_SYSTEM_DIR/src`
+    for f in $fs
+    do
+        pkg_dir=$TUE_SYSTEM_DIR/src/$f
+
+        status=
+        vctype=
+
+        if [ -d $pkg_dir/.svn ]
+        then
+            status=`svn status -q $pkg_dir`
+            vctype=svn
+        elif [ -d $pkg_dir/.git ]
+        then
+            cd $pkg_dir
+            status=`git status --porcelain`
+            cd - &> /dev/null
+            vctype=git
+        else
+            show=false
+        fi
+
+        if [ -n "$vctype" ]
+        then
+            if [ -n "$status" ]; then
+                echo ""
+                #                echo -e "\033[1m$f (svn) \033[0m \033[38;5;1mMODIFIED\033[39m"
+                echo -e "\033[38;5;1mM  \033[0m($vctype) \033[1m$f\033[0m"
+                echo "--------------------------------------------------"
+                echo -e "$status"
+                echo "--------------------------------------------------"
+                echo ""
+            else
+                echo -e "\033[38;5;2mOK\033[39m \033[0m($vctype) \033[1m$f\033[0m"
+            fi 
+        fi
+   done
+}
 
 # ----------------------------------------------------------------------------------------------------
 #                                            TUE-INSTALL
