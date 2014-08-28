@@ -140,9 +140,9 @@ function tue-status
                 echo "--------------------------------------------------"
                 echo -e "$status"
                 echo "--------------------------------------------------"
-                echo ""
-            else
-                echo -e "\033[38;5;2mOK\033[39m \033[0m($vctype) \033[1m$f\033[0m"
+                #echo ""
+            #else
+                #echo -e "\033[38;5;2mOK\033[39m \033[0m($vctype) \033[1m$f\033[0m"
             fi 
         fi
    done
