@@ -19,6 +19,8 @@ then
     rosdep update
 fi
 
+source /opt/ros/$TUE_ROS_DISTRO/setup.bash
+
 TUE_SYSTEM_DIR=~/ros/$TUE_ROS_DISTRO/system
 
 if [ ! -f $TUE_SYSTEM_DIR/devel/setup.bash ]
