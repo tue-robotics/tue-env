@@ -12,6 +12,8 @@ then
     return 1
 fi
 
-mkdir $1
-cp ~/.tue/create/ros-pkg/package.xml $1
-cp ~/.tue/create/ros-pkg/CMakeLists.txt $1
+catkin_create_pkg $@
+
+#mkdir $1
+#cp ~/.tue/create/ros-pkg/package.xml $1
+#cp ~/.tue/create/ros-pkg/CMakeLists.txt $1
