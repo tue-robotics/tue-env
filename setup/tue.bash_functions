@@ -18,6 +18,56 @@ function _list_subdirs
 }
 
 # ----------------------------------------------------------------------------------------------------
+#                                            TUE-ADD
+# ----------------------------------------------------------------------------------------------------
+
+function tue-add
+{
+    if [ -z $1 ]
+    then
+        echo "Adds a given folder to the tue repository."
+        echo ""
+        echo "Usage: tue-add DIRECTORY"
+        return 1
+    fi
+
+    if [ ! -d $1 ]
+    then
+        echo "'$1' is not a directory."
+        return 1
+    fi
+
+    if [ -d $1/.svn ]
+    then
+        echo "'$1' is already under version control."
+        return 1
+    fi
+
+    base=$(basename $1)  
+
+    rm -rf /tmp/tue-svn
+    upres=`svn co https://roboticssrv.wtb.tue.nl/svn/ros/trunk /tmp/tue-svn --depth immediates`
+
+    if [ -d /tmp/tue-svn/$base ]
+    then
+        echo "'$base' already exists on the server."
+        return 1
+    fi
+
+    mkdir -p /tmp/tue-svn/$base
+    svn add /tmp/tue-svn/$base    
+
+    svn ci /tmp/tue-svn/$base -m 'tue-add: Added package $base'
+    if [ $? -eq 0 ]
+    then
+        mv /tmp/tue-svn/$base/.svn $1
+    else
+        echo "Could not add '$base' to the tue repository."
+        return 1
+    fi
+}
+
+# ----------------------------------------------------------------------------------------------------
 #                                            TUE-MAKE
 # ----------------------------------------------------------------------------------------------------
 
