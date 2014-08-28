@@ -206,7 +206,7 @@ function tue-status
 
         if [ -d $pkg_dir/.svn ]
         then
-            status=`svn status -q $pkg_dir`
+            status=`svn status $pkg_dir`
             vctype=svn
         elif [ -d $pkg_dir/.git ]
         then
