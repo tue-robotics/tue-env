@@ -196,13 +196,20 @@ mkdir -p $TUE_INSTALL_STATE_DIR
 TUE_INSTALL_TEMP_DIR=/tmp/tue-installer/`randid`
 mkdir -p $TUE_INSTALL_TEMP_DIR
 
-if [ -z $1 ]; then
-    echo "Usage: tue-install TARGET"
-    exit 1
+TUE_INSTALL_SYSTEMS=
+
+if [ -z $1 ]
+then
+    # If no targets are provided, update all installed targets
+    targets=`ls ~/.tue/installed`    
+else
+    targets=$@
 fi
 
-TUE_INSTALL_SYSTEMS=
-tue-install-target $1
+for target in $targets
+do
+    tue-install-target $target
+done
 
 if [ -z "$TUE_INSTALL_DUMMY" ]; then
     if [ -n "$TUE_INSTALL_SYSTEMS" ]; then
