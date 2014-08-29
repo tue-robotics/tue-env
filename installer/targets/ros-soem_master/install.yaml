@@ -1,3 +1,6 @@
-- type: target
-  name: ros-soem
+- type: ros
+  source:
+      type: git
+      url: https://github.com/orocos/rtt_soem
+
 
