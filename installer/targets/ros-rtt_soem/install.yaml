@@ -1,5 +1,5 @@
 - type: ros
   source:
       type: git
-      url: https://github.com/smits/soem.git
+      url: https://github.com/orocos/rtt_soem
 
