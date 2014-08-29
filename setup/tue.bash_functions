@@ -178,6 +178,9 @@ function tue-dev-clean
     done
 
     rm -rf $TUE_DEV_DIR/devel/share
+    rm -rf $TUE_DEV_DIR/devel/etc
+    rm -rf $TUE_DEV_DIR/devel/include
+    rm -rf $TUE_DEV_DIR/devel/lib
     rm -rf $TUE_DEV_DIR/build
 }
 
