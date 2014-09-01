@@ -33,10 +33,20 @@ function tue-install-target {
     if [ ! -f $TUE_INSTALL_STATE_DIR/$target ]; then
         install_file=$TUE_INSTALL_TARGET_DIR/$target/install
 
-        local mem_target=$TUE_INSTALL_CURRENT_TARGET
+        local parent_target=$TUE_INSTALL_CURRENT_TARGET
 
         TUE_INSTALL_CURRENT_TARGET_DIR=$TUE_INSTALL_TARGET_DIR/$target
         TUE_INSTALL_CURRENT_TARGET=$target
+
+        # If the target has a parent target, add target as a dependency to the parent target
+        if [ -n "$parent_target" ]
+        then
+            mkdir -p ~/.tue/dependencies
+            echo "$target" >> ~/.tue/dependencies/$parent_target
+        fi
+
+        # Empty the target's dependency file        
+        > ~/.tue/dependencies/$target
 
         if [ -f $install_file.bash ]
         then
@@ -53,7 +63,7 @@ function tue-install-target {
             tue-install-error "No install file (bash or yaml) for target '$target'."
         fi
 
-        TUE_INSTALL_CURRENT_TARGET=$mem_target
+        TUE_INSTALL_CURRENT_TARGET=$parent_target
 
         touch $TUE_INSTALL_STATE_DIR/$target
     fi
