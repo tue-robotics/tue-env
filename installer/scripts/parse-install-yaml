@@ -32,7 +32,12 @@ def main():
             if install_type == "ros":
                 source_type = install_item["source"]["type"]
                 if source_type == "svn" or source_type == "git":
-                    command = "tue-install-ros {0} {1}".format(source_type, install_item["source"]["url"])
+                    if "sub-dir" in install_item["source"]:
+                        sub_dir = install_item["source"]["sub_dir"]
+                    else:
+                        sub_dir = "."
+
+                    command = "tue-install-ros {0} {1} {2}".format(source_type, install_item["source"]["url"], sub_dir)
                     if "version" in install_item["source"]:
                        command += " {0}".format(install_item["source"]["version"])
                 elif source_type == "system":
