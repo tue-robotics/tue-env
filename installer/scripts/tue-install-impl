@@ -277,5 +277,5 @@ do
 done
 
 # Generate .rosinstall file (for Ramon)
-~/.tue/installer/scripts/generate-rosinstall > ~/ros/hydro/system/src/.rosinstall
+~/.tue/installer/scripts/generate-rosinstall ~/ros/hydro/system/src > ~/ros/hydro/system/src/.rosinstall
 
