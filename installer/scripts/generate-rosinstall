@@ -3,8 +3,12 @@
 import os
 import vcstools
 import yaml
+import sys
 
-rootDir = '.'
+if len(sys.argv) < 2:
+    rootDir = '.'
+else:
+    rootDir = sys.argv[1]    
 
 def find_source_control_dirs(directory, level=2):
     directory = directory.rstrip(os.path.sep)
