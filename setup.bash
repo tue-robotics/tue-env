@@ -1,4 +1,4 @@
-if [ -n "ROS_DISTRO_DEFAULT" ]
+if [ -n "$ROS_DISTRO_DEFAULT" ]
 then
     source ~/ros/groovy/catkin_ws/src/tue/trunk/amigo_admin_files/bash/amigo_user.bashrc
 else
