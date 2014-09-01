@@ -276,3 +276,6 @@ do
     generate_setup_file $t
 done
 
+# Generate .rosinstall file (for Ramon)
+~/.tue/installer/scripts/generate-rosinstall > ~/ros/hydro/system/src/.rosinstall
+
