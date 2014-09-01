@@ -1,1 +1,2 @@
 alias trunk='cd ~/ros/$ROS_DISTRO/system/src'
+alias dev='cd ~/ros/$ROS_DISTRO/dev/src'
