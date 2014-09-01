@@ -134,6 +134,8 @@ function tue-install-ros-rosbuild
 function tue-install-ros {
     type=$1
     source=$2
+    sub_dir=$3
+    version=$4
 
     local ros_pkg_name=${TUE_INSTALL_CURRENT_TARGET#ros-}
     local patch_file=$TUE_INSTALL_CURRENT_TARGET_DIR/patch
@@ -159,9 +161,9 @@ function tue-install-ros {
     local ros_pkg_dir=$ROS_PACKAGE_INSTALL_DIR/$ros_pkg_name
 
     if [ "$type" = "git" ]; then
-        tue-install-git $source $ros_pkg_dir $3
+        tue-install-git $source $ros_pkg_dir $version
     elif [ "$type" = "svn" ]; then
-        tue-install-svn $source $ros_pkg_dir $3
+        tue-install-svn $source $ros_pkg_dir $version
     else
         tue-install-error "Unknown ros install type: '${type}'"
     fi
