@@ -1,2 +1,7 @@
 source ~/.tue/setup/tue.bash_functions
-tue-setup
+if [ -f ~/.tue/setup/target_setup.bash ]
+then
+    source ~/.tue/setup/target_setup.bash
+else
+    tue-setup
+fi
