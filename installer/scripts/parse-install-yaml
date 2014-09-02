@@ -33,7 +33,7 @@ def main():
                 source_type = install_item["source"]["type"]
                 if source_type == "svn" or source_type == "git":
                     if "sub-dir" in install_item["source"]:
-                        sub_dir = install_item["source"]["sub_dir"]
+                        sub_dir = install_item["source"]["sub-dir"]
                     else:
                         sub_dir = "."
 

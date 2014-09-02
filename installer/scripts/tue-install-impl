@@ -5,6 +5,7 @@ then
     TUE_ROS_DISTRO=hydro
 fi
 TUE_SYSTEM_DIR=~/ros/$TUE_ROS_DISTRO/system
+TUE_REPOS_DIR=~/ros/$TUE_ROS_DISTRO/repos
 
 # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # 
 
@@ -159,20 +160,42 @@ function tue-install-ros {
     fi
 
     local ros_pkg_dir=$ROS_PACKAGE_INSTALL_DIR/$ros_pkg_name
+    local repos_dir=$TUE_REPOS_DIR/$source
+    #mkdir -p $repos_dir/..
+
+    # For backwards compatibility: if the ros_pkg_dir already exists and is NOT
+    # a symbolic link, then update this direcory instead of creating a symbolic
+    # link from the repos directory. In other words, the ros_pkg_dir becomes the
+    # repos_dir
+    if [[ -d $ros_pkg_dir && ! -L $ros_pkg_dir ]]
+    then
+        repos_dir=$ros_pkg_dir
+    fi
 
     if [ "$type" = "git" ]; then
-        tue-install-git $source $ros_pkg_dir $version
+        tue-install-git $source $repos_dir $version
     elif [ "$type" = "svn" ]; then
-        tue-install-svn $source $ros_pkg_dir $version
+        tue-install-svn $source $repos_dir $version
     else
         tue-install-error "Unknown ros install type: '${type}'"
     fi
 
     if [ -f $patch_file ]; then
-        patch -s -N -r - -p0 -d $ros_pkg_dir < $patch_file
+        patch -s -N -r - -p0 -d $repos_dir < $patch_file
     fi
 
-    if [ -d $ros_pkg_dir ]; then
+    if [ -d $repos_dir ]; then
+
+        if [ ! -d $repos_dir/$sub_dir ]
+        then
+            tue-install-error "Subdirectory '$sub_dir' does not exist for URL '$source'."
+        fi
+
+        if [ ! -d $ros_pkg_dir ]
+        then        
+            # Create a symbolic link to the system workspace
+            ln -s $repos_dir/$sub_dir $ros_pkg_dir
+        fi
       
         if  [ -f $ros_pkg_dir/package.xml ]; then
             # Catkin
