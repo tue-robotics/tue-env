@@ -54,9 +54,12 @@ function tue-install-target {
             source $install_file.bash
         elif [ -f $install_file.yaml ]
         then
-            local cmd=`~/.tue/installer/scripts/parse-install-yaml $install_file.yaml`
+            local cmds=`~/.tue/installer/scripts/parse-install-yaml $install_file.yaml`
             if [ $? -eq 0 ]; then
-                $cmd
+                for cmd in $cmds
+                do
+                    ${cmd//^/ }
+                done
             else
                 tue-install-error "Invalid install.yaml: $cmd"
             fi 
