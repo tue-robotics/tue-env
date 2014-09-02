@@ -1,3 +1,5 @@
-- type: target
-  name: ros-rtt_soem
-
+- type: ros
+  source:
+      type: git
+      url: https://github.com/orocos/rtt_soem
+      sub-dir: soem_beckhoff_drivers
