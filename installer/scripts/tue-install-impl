@@ -132,7 +132,60 @@ function tue-install-git {
 
 function tue-install-ros-rosbuild
 {
-    tue-install-error "ROSBUILD packages are not supported."
+    type=$1
+    source=$2
+    sub_dir=$3
+    version=$4
+
+    local ros_pkg_name=${TUE_INSTALL_CURRENT_TARGET#ros-}
+    local patch_file=$TUE_INSTALL_CURRENT_TARGET_DIR/patch
+
+    # First of all, make sure ROS itself is installed
+    tue-install-target ros    
+
+    local ros_pkg_dir=$ROSBUILD_PACKAGE_INSTALL_DIR/$ros_pkg_name
+    local repos_dir=$TUE_REPOS_DIR/$source
+
+    if [ "$type" = "git" ]; then
+        tue-install-git $source $repos_dir $version
+    elif [ "$type" = "svn" ]; then
+        tue-install-svn $source $repos_dir $version
+    else
+        tue-install-error "Unknown ros install type: '${type}'"
+    fi
+
+    if [ -f $patch_file ]; then
+        patch -s -N -r - -p0 -d $repos_dir < $patch_file
+    fi
+
+    if [ -d $repos_dir ]; then
+
+        if [ ! -d $repos_dir/$sub_dir ]
+        then
+            tue-install-error "Subdirectory '$sub_dir' does not exist for URL '$source'."
+        fi
+
+        if [ ! -d $ros_pkg_dir ]
+        then        
+            # Create a symbolic link to the system workspace
+            ln -s $repos_dir/$sub_dir $ros_pkg_dir
+        fi
+      
+        if  [ -f $ros_pkg_dir/manifest.xml ]; then
+            deps=`$TUE_INSTALL_SCRIPTS_DIR/parse-rosbuild-package-deps $ros_pkg_dir/manifest.xml`
+
+            for dep in $deps
+            do
+                tue-install-target ros-$dep
+            done
+
+        else
+            echo "WARNING: '$source' does not contain a valid ROS manifest.xml."
+        fi        
+        
+    else
+        tue-install-error "Checking out $source was not successful."
+    fi
 }
 
 # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # 
@@ -258,9 +311,13 @@ function generate_setup_file
 
 # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # 
 
-# For now ...
+# CATKIN PACKAGES
 ROS_PACKAGE_INSTALL_DIR=$TUE_SYSTEM_DIR/src
 mkdir -p $ROS_PACKAGE_INSTALL_DIR
+
+# ROSBUILD PACKAGES
+ROSBUILD_PACKAGE_INSTALL_DIR=~/ros/$TUE_ROS_DISTRO/rosbuild/trunk
+mkdir -p $ROSBUILD_PACKAGE_INSTALL_DIR
 
 TUE_INSTALL_TARGET_DIR=~/.tue/installer/targets
 TUE_INSTALL_SCRIPTS_DIR=~/.tue/installer/scripts

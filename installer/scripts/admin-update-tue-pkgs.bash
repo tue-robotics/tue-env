@@ -28,15 +28,15 @@ do
         echo $url
 
         echo """- type: ros
-      source:
-          type: svn
-          url: $url
+  source:
+      type: svn
+      url: $url
     """ > $install_file.yaml
     fi
 done
 
 # Update ROSBUILD packages
-a=`find ~/ros/groovy/rosbuild_ws/tue/trunk -name manifest.xml`
+a=`find ~/svn/tue/trunk-rosbuild -name manifest.xml`
 for path in $a
 do
     # Get rid of /manifest.xml
@@ -55,9 +55,9 @@ do
         echo $url
 
         echo """- type: ros-rosbuild
-      source:
-          type: svn
-          url: $url
+  source:
+      type: svn
+      url: $url
     """ > ${install_file}.yaml
     fi
 done
