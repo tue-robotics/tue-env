@@ -1,0 +1,11 @@
+--- manifest.xml (revision 311)
++++ manifest.xml (working copy)
+@@ -11,6 +11,10 @@
+   <depend package="soem_core"/>
+   <depend package="rtt"/>
+ 
++  <export>
++    <cpp lflags="-L${prefix}/lib -lsoem_driver_factory-gnulinux"/>
++  </export>
++
+ </package>
