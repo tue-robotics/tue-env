@@ -1,0 +1,5 @@
+- type: ros-rosbuild
+  source:
+      type: svn
+      url: https://roboticssrv.wtb.tue.nl/svn/ros/code/tue-ros-pkg/trunk/amigo_gui/amigo_demo_panel
+    
