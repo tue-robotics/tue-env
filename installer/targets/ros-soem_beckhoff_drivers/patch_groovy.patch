@@ -1,0 +1,12 @@
+--- manifest.xml (revision 311)
++++ manifest.xml (working copy)
+@@ -13,6 +13,10 @@
+   <depend package="rtt"/>
+   <depend package="rtt_rosnode"/>
+ 
++  <export>
++    <cpp cflags="-I${prefix}/src"/>
++  </export>
++
+ 
+ </package>

@@ -149,12 +149,8 @@ function tue-install-apply-patch
     then
         tue-install-error "Invalid tue-install-apply-patch call: patch file '$1' does not exist."  
     fi
-
-    echo PATCH $patch_file
     
-    if [ -f $patch_file ]; then
-        patch -s -N -r - -p0 -d $TUE_INSTALL_PKG_DIR < $patch_file
-    fi
+    patch -s -N -r - -p0 -d $TUE_INSTALL_PKG_DIR < $patch_file
 }
 
 
