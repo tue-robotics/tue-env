@@ -47,11 +47,11 @@ then
 
     TUE_ROSBUILD_DIR=~/ros/$TUE_ROS_DISTRO/rosbuild
 
-    # install rosws (part of rosinstall)
-    sudo apt-get install python-rosinstall -y
-
     # create rosbuild workspace
     if [ ! -f $TUE_ROSBUILD_DIR/.rosinstall ]; then
+        # install rosws (part of rosinstall)
+        sudo apt-get install python-rosinstall -y
+
         mkdir -p $TUE_ROSBUILD_DIR/trunk
         rosws init $TUE_ROSBUILD_DIR $TUE_SYSTEM_DIR/devel
         cd $TUE_ROSBUILD_DIR && rosws set trunk -y
