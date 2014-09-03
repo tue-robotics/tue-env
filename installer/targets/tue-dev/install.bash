@@ -8,5 +8,4 @@ then
     tue-install-target ros-tue_move_base_3d
     tue-install-target ros-pein_ar_pose
     tue-install-target ros-scan_to_cloud_converter
-    tue-install-target ros-pein_template_matching
 fi
