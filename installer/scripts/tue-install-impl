@@ -132,6 +132,11 @@ function tue-install-git {
 
 function tue-install-ros-rosbuild
 {
+    if [[ $TUE_ROS_DISTRO != "groovy" ]]
+    then
+        tue-install-error "Trying to install a rosbuild package, but TUE_ROS_DISTRO is set to '$TUE_ROS_DISTRO'."
+    fi
+
     type=$1
     source=$2
     sub_dir=$3
