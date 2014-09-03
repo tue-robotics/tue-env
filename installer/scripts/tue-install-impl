@@ -153,6 +153,24 @@ function tue-install-apply-patch
     patch -s -N -r - -p0 -d $TUE_INSTALL_PKG_DIR < $patch_file
 }
 
+# # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # 
+
+function tue-install-cp
+{
+    if [ -z "$2" ]
+    then
+        tue-install-error "Invalid tue-install-cp call: needs two arguments (source and target)."
+    fi
+
+    file=$TUE_INSTALL_CURRENT_TARGET_DIR/$1
+
+    if [ ! -f $file ]
+    then
+        tue-install-error "Invalid tue-install-cp call: file '$1' does not exist."  
+    fi
+
+    cp $file $2
+}
 
 # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # 
 

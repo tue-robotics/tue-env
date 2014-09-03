@@ -1,0 +1,10 @@
+- type: target
+  name: tue-common
+- type: target
+  name: ros-amigo_launch_files
+
+# TODO: sort out
+- type: target
+  name: ros-tf_server
+- type: target
+  name: ros-node_alive
