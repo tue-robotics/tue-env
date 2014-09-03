@@ -70,6 +70,7 @@ function tue-install-target {
         fi
 
         TUE_INSTALL_CURRENT_TARGET=$parent_target
+        TUE_INSTALL_CURRENT_TARGET_DIR=$TUE_INSTALL_TARGET_DIR/$parent_target
 
         touch $TUE_INSTALL_STATE_DIR/$target
     fi
@@ -130,6 +131,35 @@ function tue-install-git {
 
 # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # 
 
+function tue-install-apply-patch
+{
+    if [ -z "$1" ]
+    then
+        tue-install-error "Invalid tue-install-apply-patch call: needs patch file as argument."
+    fi
+
+    if [ -z "$TUE_INSTALL_PKG_DIR" ]
+    then
+        tue-install-error "Invalid tue-install-apply-patch call: package directory is unknown."        
+    fi
+
+    patch_file=$TUE_INSTALL_CURRENT_TARGET_DIR/$1
+
+    if [ ! -f $patch_file ]
+    then
+        tue-install-error "Invalid tue-install-apply-patch call: patch file '$1' does not exist."  
+    fi
+
+    echo PATCH $patch_file
+    
+    if [ -f $patch_file ]; then
+        patch -s -N -r - -p0 -d $TUE_INSTALL_PKG_DIR < $patch_file
+    fi
+}
+
+
+# # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # 
+
 function tue-install-ros-rosbuild
 {
     if [[ $TUE_ROS_DISTRO != "groovy" ]]
@@ -143,7 +173,6 @@ function tue-install-ros-rosbuild
     version=$4
 
     local ros_pkg_name=${TUE_INSTALL_CURRENT_TARGET#ros-}
-    local patch_file=$TUE_INSTALL_CURRENT_TARGET_DIR/patch
 
     # First of all, make sure ROS itself is installed
     tue-install-target ros    
@@ -157,10 +186,6 @@ function tue-install-ros-rosbuild
         tue-install-svn $source $repos_dir $version
     else
         tue-install-error "Unknown ros install type: '${type}'"
-    fi
-
-    if [ -f $patch_file ]; then
-        patch -s -N -r - -p0 -d $repos_dir < $patch_file
     fi
 
     if [ -d $repos_dir ]; then
@@ -191,6 +216,8 @@ function tue-install-ros-rosbuild
     else
         tue-install-error "Checking out $source was not successful."
     fi
+
+    TUE_INSTALL_PKG_DIR=$ros_pkg_dir
 }
 
 # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # 
@@ -202,7 +229,6 @@ function tue-install-ros {
     version=$4
 
     local ros_pkg_name=${TUE_INSTALL_CURRENT_TARGET#ros-}
-    local patch_file=$TUE_INSTALL_CURRENT_TARGET_DIR/patch
 
     # First of all, make sure ROS itself is installed
     tue-install-target ros    
@@ -243,10 +269,6 @@ function tue-install-ros {
         tue-install-error "Unknown ros install type: '${type}'"
     fi
 
-    if [ -f $patch_file ]; then
-        patch -s -N -r - -p0 -d $repos_dir < $patch_file
-    fi
-
     if [ -d $repos_dir ]; then
 
         if [ ! -d $repos_dir/$sub_dir ]
@@ -277,6 +299,8 @@ function tue-install-ros {
     else
         tue-install-error "Checking out $source was not successful."
     fi
+
+    TUE_INSTALL_PKG_DIR=$ros_pkg_dir
 }
 
 # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # 
