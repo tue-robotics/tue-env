@@ -8,3 +8,11 @@
   name: ros-tf_server
 - type: target
   name: ros-node_alive
+- type: target
+  name: ros-amigo_maps
+- type: target
+  name: ros-amigo_head_ref
+- type: target
+  name: ros-amigo_gripper_server
+- type: target
+  name: ros-amigo_spindle_server

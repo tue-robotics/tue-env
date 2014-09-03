@@ -34,7 +34,13 @@ function tue-install-target {
     #echo $target
 
     if [ ! -f $TUE_INSTALL_STATE_DIR/$target ]; then
-        install_file=$TUE_INSTALL_TARGET_DIR/$target/install
+
+        if [ ! -d $TUE_INSTALL_TARGET_DIR/$target ]
+        then
+            tue-install-error "Target '$target' does not exist."
+        fi
+
+        local install_file=$TUE_INSTALL_TARGET_DIR/$target/install
 
         local parent_target=$TUE_INSTALL_CURRENT_TARGET
 
@@ -54,7 +60,9 @@ function tue-install-target {
         if [ -f $install_file.bash ]
         then
             source $install_file.bash
-        elif [ -f $install_file.yaml ]
+        fi
+
+        if [ -f $install_file.yaml ]
         then
             local cmds=`~/.tue/installer/scripts/parse-install-yaml $install_file.yaml`
             if [ $? -eq 0 ]; then
@@ -65,8 +73,6 @@ function tue-install-target {
             else
                 tue-install-error "Invalid install.yaml: $cmd"
             fi 
-        else
-            tue-install-error "No install file (bash or yaml) for target '$target'."
         fi
 
         TUE_INSTALL_CURRENT_TARGET=$parent_target
