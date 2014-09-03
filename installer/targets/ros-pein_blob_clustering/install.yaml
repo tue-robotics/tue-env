@@ -1,0 +1,5 @@
+- type: ros-rosbuild
+  source:
+      type: svn
+      url: https://roboticssrv.wtb.tue.nl/svn/ros/code/tue-ros-pkg/trunk/tue_pein/pein_blob_clustering
+    
