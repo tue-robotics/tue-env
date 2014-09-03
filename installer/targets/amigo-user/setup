@@ -1,0 +1,92 @@
+alias amigo-core='export ROS_MASTER_URI=http://amigo1:11311'
+
+####################
+#
+# SSH
+#
+####################
+alias sshamigo1='until ssh -qo ConnectTimeout=1 -X amigo@amigo1; do echo waiting for amigo1 to come online...; sleep 2; done'
+alias sshamigo2='until ssh -qo ConnectTimeout=1 -X amigo@amigo2; do echo waiting for amigo2 to come online...; sleep 2; done'
+alias sshamigo3='until ssh -qo ConnectTimeout=1 -X amigo@amigo3; do echo waiting for amigo3 to come online...; sleep 2; done'
+alias sshamigo4='until ssh -qo ConnectTimeout=1 -X amigo@amigo4; do echo waiting for amigo4 to come online...; sleep 2; done'
+alias sshamigo5='until ssh -qo ConnectTimeout=1 -X amigo@amigo5; do echo waiting for amigo5 to come online...; sleep 2; done'
+
+####################
+#
+# AMIGO STARTUP
+#
+####################
+alias astart='roslaunch amigo_launch_files start.launch'
+alias aloc='roslaunch amigo_launch_files localization.launch'
+alias amiddle='roslaunch amigo_launch_files middleware.launch'
+alias amiddle-screen='screen -x -L -R -S amiddle roslaunch amigo_launch_files middleware.launch'
+alias ahardware='screen -x -L -R -S ahardware roslaunch amigo_launch_files all_etherCAT_hardware.launch'
+alias aexecutive='screen -x -L -R -S aexecutive'
+
+####################
+#
+# AMIGO ACTIONS
+#
+####################
+alias say='rostopic pub --once /text_to_speech/input std_msgs/String'
+alias zeg='rosrun common_admin_files say.sh en'
+alias zegen='rosrun amigo_admin_files say_philips_tts.sh us carlos'
+alias zegnl='rosrun amigo_admin_files say_philips_tts.sh nl david'
+alias praat='rosservice call /text_to_speech/speak david nl default neutral true'
+alias hear='function __hear() { nohup rostopic pub --once /pocketsphinx/output std_msgs/String "!!str $*" 2>/dev/null & disown; unset -f __hear; }; __hear'
+
+alias amigo-high='rostopic pub /amigo/torso/references sensor_msgs/JointState "{header: {seq: 0, stamp: {secs: 0, nsecs: 0}, frame_id: ""}, name: ["torso_joint"], position: [0.35], velocity: [0], effort: [0]}"  --once'
+
+alias amigo-medium='rostopic pub /amigo/torso/references sensor_msgs/JointState "{header: {seq: 0, stamp: {secs: 0, nsecs: 0}, frame_id: ""}, name: ["torso_joint"], position: [0.2], velocity: [0], effort: [0]}"  --once'
+alias amigo-low='rostopic pub /amigo/torso/references sensor_msgs/JointState "{header: {seq: 0, stamp: {secs: 0, nsecs: 0}, frame_id: ""}, name: ["torso_joint"], position: [0.085], velocity: [0], effort: [0]}"  --once'
+alias amigo-case='rostopic pub /amigo/torso/references sensor_msgs/JointState "{header: {seq: 0, stamp: {secs: 0, nsecs: 0}, frame_id: ""}, name: ["torso_joint"], position: [0.12], velocity: [0], effort: [0]}"  --once'
+
+alias amigo-head-straight='amigo-head-move 0.0 0.0'
+alias move-straight="rostopic pub -r 10 /cmd_vel geometry_msgs/Twist  '{linear:  {x: 0.1, y: 0.0, z: 0.0}, angular: {x: 0.0,y: 0.0,z: 0.0}}'"
+alias openleftgripper='rostopic pub --once /amigo/left_gripper/references amigo_msgs/AmigoGripperCommand -- -1 100'
+alias openrightgripper='rostopic pub --once /amigo/right_gripper/references amigo_msgs/AmigoGripperCommand -- -1 100'
+alias closeleftgripper='rostopic pub --once /amigo/left_gripper/references amigo_msgs/AmigoGripperCommand -- 1 100'
+alias closerightgripper='rostopic pub --once /amigo/right_gripper/references amigo_msgs/AmigoGripperCommand -- 1 100'
+alias amigo-teleop='rosrun tue_teleop_keyboard teleop_twist_keyboard.py /cmd_vel:=/amigo/base/references'
+alias amigostopall='rosrun tue_execution_pack stopamigo.py'
+
+alias amigo-base-reset-odom='rostopic pub --once /amigo/base/reset_odometry std_msgs/Bool 1'
+alias amigo-top-kinect-show='rosrun image_view image_view image:=/amigo/top_kinect/rgb/image_rect_color'
+alias reset-audio="amixer -- sset 'Master' -5dB && amixer -- sset 'Mic Boost' 10dB && amixer -- sset 'Capture' 16.50dB && amixer -- sset 'Digital' 3.5dB && amixer -- sset 'Mic' mute
+"
+alias navc="rostopic pub --once /nav_test_control std_msgs/String 'continue'"
+alias navp="rostopic pub --once /nav_test_control std_msgs/String 'pause'"
+alias navs="rostopic pub --once /nav_test_control std_msgs/String 'stop'"
+
+#####################
+#
+# DIAGNOSTICS
+#
+#####################
+alias diag='rosrun robot_monitor robot_monitor'
+alias dashboard='echo this is old dashboard command. please use adashboard for the AMIGO dashboard and sdashboard for the SERGIO dashboard'
+alias adashboard='(export ROS_MASTER_URI=http://amigo1:11311; roslaunch tue_dashboard amigo_dashboard.launch &> /dev/null &)'
+alias sdashboard='(export ROS_MASTER_URI=http://sergio1:11311; roslaunch tue_dashboard sergio_dashboard.launch &> /dev/null &)'
+alias dashboard-permanent='export ROS_MASTER_URI=http://amigo1:11311; while true; do rosrun amigo_dashboard amigo_dashboard; sleep 0.5; done &'
+alias dashboard-new='rosrun rqt_gui rqt_gui & sleep 1; rosrun rqt_gui rqt_gui --command-start-plugin rqt_amigo_dashboard; rosrun rqt_gui rqt_gui --command-start-plugin rqt_rviz'
+
+alias rviz-amigo-fuerte='source /opt/ros/fuerte/setup.bash; ROS_PACKAGE_PATH=$TUE_TRUNK/amigo_common/amigo_description:$ROS_PACKAGE_PATH; rosrun rviz rviz -d $TUE_TRUNK/amigo_admin_files/configs/rviz/rviz_amigo.vcg; export ROS_DISTRO=groovy; source ~/.bashrc'
+alias rviz-amigo-groovy='rosrun rviz rviz -d $TUE_TRUNK/amigo_admin_files/configs/rviz/amigo_groovy.rviz'
+alias rviz-amigo="rviz-amigo-${ROS_DISTRO}"
+alias rviz-amigo-new='rosrun rviz rviz -d $TUE_TRUNK/amigo_admin_files/configs/rviz/rviz_amigo_new.vcg'
+alias rviz-3dnav='rosrun rviz rviz -d $TUE_TRUNK/amigo_admin_files/configs/rviz/rviz_3dnav.vcg'
+alias rviz-amigo2-groovy='rosrun rviz rviz -d $TUE_TRUNK/amigo_admin_files/configs/rviz/amigo2_groovy.rviz'
+alias rviz-amigo2='rosrun rviz rviz -d $TUE_TRUNK/amigo_admin_files/configs/rviz/amigo2_fuerte.vcg'
+alias rviz-technical-challenge='rosrun rviz rviz -d $TUE_TRUNK/amigo_admin_files/configs/rviz/rviz_technical_challenge.vcg'
+
+# Rviz configs per challenge
+alias rviz-rips='rosrun rviz rviz -d $TUE_TRUNK/amigo_admin_files/configs/rviz/rviz_rips.vcg'
+alias rviz-follow-me='rosrun rviz rviz -d $TUE_TRUNK/amigo_admin_files/configs/rviz/rviz_follow_me.vcg'
+alias rviz-cocktail='rosrun rviz rviz -d $TUE_TRUNK/amigo_admin_files/configs/rviz/rviz_cocktail.vcg'
+alias rviz-cleanup='rosrun rviz rviz -d $TUE_TRUNK/amigo_admin_files/configs/rviz/rviz_cleanup.vcg'
+alias rviz-emergency='rosrun rviz rviz -d $TUE_TRUNK/amigo_admin_files/configs/rviz/rviz_emergency.vcg'
+alias rviz-open-challenge='rosrun rviz rviz -d $TUE_TRUNK/tue_robocup/challenge_open/config.rviz'
+alias rviz-final-challenge='rosrun rviz rviz -d $TUE_TRUNK/tue_robocup/challenge_final/config.rviz'
+alias rviz-final-challenge-fuerte='rosrun rviz rviz -d $TUE_TRUNK/tue_robocup/challenge_final/rviz-fuerte.vcg'
+alias rviz-egpsr='rosrun rviz rviz -d $TUE_TRUNK/amigo_admin_files/configs/rviz/rviz_egpsr.vcg'
+alias rviz-restaurant='rosrun rviz rviz -d $TUE_TRUNK/amigo_admin_files/configs/rviz/amigo_groovy_restaurant.rviz'

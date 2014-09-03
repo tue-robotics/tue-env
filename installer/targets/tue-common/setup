@@ -1,2 +1,101 @@
 alias trunk='cd ~/ros/$ROS_DISTRO/system/src'
 alias dev='cd ~/ros/$ROS_DISTRO/dev/src'
+
+##############################################################################################
+#   TOOL FOR SETTING ROS_PACKAGE_PATH
+##############################################################################################
+
+function rsettings
+{
+    rsettings_file=~/.tue/.rsettings
+
+    if [ ! -f $rsettings_file ]
+    then
+        echo "[rsettings] Settings file cannot be found: '$rsettings_file'"
+        return
+    fi
+
+    if [ "$1" == "-s" ]
+    then
+        # only source the file
+        source $rsettings_file
+
+        export SIM_GAZEBO=false
+        export SIM_FAST=false
+
+        if [ "$SIMULATOR" == "gazebo" ]; then
+            export SIM_GAZEBO=true
+        fi
+
+        if [ "$SIMULATOR" == "fast_simulator" ]; then
+            export SIM_FAST=true
+        fi
+
+        if [ "$SIMULATOR" == "gazebo_new" ]; then
+            export SIM_FAST=true
+        fi
+
+        return
+    fi
+
+    if [ -z "$EDITOR" ]
+    then
+        RSETTINGS_EDITOR=vim
+    else
+        RSETTINGS_EDITOR=$EDITOR
+    fi
+
+    $RSETTINGS_EDITOR $rsettings_file
+    source ~/.bashrc
+}
+
+function rosenv {
+    echo -e "\e[00;34m# Environment\e[00m
+\e[00;32mROBOT_ENV\e[00m=$ROBOT_ENV
+
+\e[00;32mROBOT_INIT_X\033[0m=$ROBOT_INIT_X
+\e[00;32mROBOT_INIT_Y\033[0m=$ROBOT_INIT_Y
+\e[00;32mROBOT_INIT_PHI\033[0m=$ROBOT_INIT_PHI
+
+\e[00;32mGAZEBO_ROBOT_INIT_X\033[0m=$GAZEBO_ROBOT_INIT_X
+\e[00;32mGAZEBO_ROBOT_INIT_Y\033[0m=$GAZEBO_ROBOT_INIT_Y
+\e[00;32mGAZEBO_ROBOT_INIT_PHI\033[0m=$GAZEBO_ROBOT_INIT_PHI
+
+\e[00;34m# ROS package path\e[00m
+\e[00;32mROS_PACKAGE_PATH\033[0m=$ROS_PACKAGE_PATH
+\e[00;32mROS_TEST_PATH\033[0m=$ROS_TEST_PATH
+
+\e[00;34m# Other\e[00m
+\e[00;32mROS_DISTRO\033[0m=$ROS_DISTRO
+\e[00;32mROS_MASTER_URI\033[0m=$ROS_MASTER_URI
+\e[00;32mROS_ROOT\033[0m=$ROS_ROOT
+\e[00;32mROSLISP_PACKAGE_DIRECTORY\033[0m=$ROSLISP_PACKAGE_DIRECTORY
+\e[00;32mROS_PACKAGES_FILE\033[0m=$ROS_PACKAGES_FILE
+\e[00;32mROS_WORKSPACE\033[0m=$ROS_WORKSPACE
+\e[00;32mROS_PARALLEL_JOBS\033[0m=$ROS_PARALLEL_JOBS
+\e[00;32mROS_ETC_DIR\033[0m=$ROS_ETC_DIR"
+}
+
+##############################################################################################
+#   TOOL OPENING QT-CREATOR FROM TERMINAL
+##############################################################################################
+
+function openproject {
+
+  if ! alias qtcreator > /dev/null; then
+    echo "Create a qtcreator alias with the path to the executable like 'alias qtcreator=~/QtSdk/QtCreator/qtcreator. The alias should be set _before_ this function is loaded.'";
+    return
+  fi
+
+ if [ -f CMakeLists.txt ]; then
+  ( qtcreator CMakeLists.txt $1 &> /dev/null & )
+  else
+   echo "Cannot open project: no CMakeLists.txt found"
+  fi
+}
+
+##############################################################################################
+#   SET-UP
+##############################################################################################
+
+rsettings -s

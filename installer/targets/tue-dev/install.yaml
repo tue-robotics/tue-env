@@ -16,3 +16,8 @@
 - type: target
   name: ros-ed
 
+# -------------------- ROBOTS --------------------
+
+# AMIGO
+- type: target
+  name: amigo-user
