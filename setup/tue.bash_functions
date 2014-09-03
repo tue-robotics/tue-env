@@ -1,5 +1,5 @@
-TUE_DEV_DIR=~/ros/hydro/dev
-TUE_SYSTEM_DIR=~/ros/hydro/system
+TUE_DEV_DIR=~/ros/$TUE_ROS_DISTRO/dev
+TUE_SYSTEM_DIR=~/ros/$TUE_ROS_DISTRO/system
 
 # ----------------------------------------------------------------------------------------------------
 #                                        HELPER FUNCTIONS
@@ -245,8 +245,8 @@ function tue-status
 
 function tue-install
 {
-    ~/.tue/installer/scripts/tue-install $@
-    source ~/.bashrc
+    echo "Please use 'tue-get install TARGET' or 'tue-get update' instead."
+    return 1
 }
 
 function _tue-install
@@ -262,6 +262,68 @@ function randid
 {
     </dev/urandom tr -dc '0123456789abcdef' | head -c16; echo ""
 }
+
+function tue-get
+{
+    if [ -z "$1" ]
+    then
+        echo """tue-get is a tool for installing and removing packages that are under version control.
+
+    Usage: tue-get COMMAND [ARG1 ARG2 ...]
+
+    Possible commands:
+
+        install        - Installs a package
+        update         - Updates currently installed packages
+        list-installed - Lists all installed packages
+"""
+        return 1
+    fi
+
+    cmd=$1
+
+    if [[ $cmd == "install" ]]
+    then
+        shift
+        if [ -z "$1" ]
+        then
+            echo "Usage: tue-get install TARGET"
+            return 1
+        fi
+
+        ~/.tue/installer/scripts/tue-install $@
+        source ~/.bashrc
+    elif [[ $cmd == "update" ]]
+    then
+        ~/.tue/installer/scripts/tue-install
+        source ~/.bashrc        
+    elif [[ $cmd == "list-installed" ]]
+    then
+        ls ~/.tue/dependencies 
+    else
+        echo "[tue-get] Unknown command: '$cmd'"
+        return 1
+    fi
+}
+
+function _tue-get
+{
+    local cur=${COMP_WORDS[COMP_CWORD]}
+    local prev=${COMP_WORDS[COMP_CWORD-1]}
+
+    if [ $COMP_CWORD -eq 1 ]; then
+        COMPREPLY=( $(compgen -W "install update list-installed" -- $cur) )
+    else
+        cmd=${COMP_WORDS[1]}
+        if [[ $cmd == "install" ]]
+        then
+            COMPREPLY=( $(compgen -W "`ls ~/.tue/installer/targets`" -- $cur) )        
+        else
+            COMREPLY=""
+        fi
+    fi
+}
+complete -F _tue-get tue-get
 
 # ----------------------------------------------------------------------------------------------------
 #                                            TUE-SETUP

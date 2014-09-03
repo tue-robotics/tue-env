@@ -1,6 +1,7 @@
 if [ -z "$TUE_ROS_DISTRO" ]
 then
-    TUE_ROS_DISTRO=hydro
+    echo "[tue ros setup] TUE_ROS_DISTRO was not set"
+    return
 fi
 
 source /opt/ros/$TUE_ROS_DISTRO/setup.bash
@@ -8,6 +9,19 @@ source /opt/ros/$TUE_ROS_DISTRO/setup.bash
 TUE_SYSTEM_DIR=~/ros/$TUE_ROS_DISTRO/system
 TUE_DEV_DIR=~/ros/$TUE_ROS_DISTRO/dev
 
-source $TUE_SYSTEM_DIR/devel/setup.bash
-source $TUE_DEV_DIR/devel/setup.bash
+if [[ $TUE_ROS_DISTRO == "groovy" ]]
+then
+    TUE_ROSBUILD_DIR=~/ros/$TUE_ROS_DISTRO/rosbuild
+    source $TUE_ROSBUILD_DIR/setup.bash
+
+    alias rospkgs="vim $TUE_ROSBUILD_DIR/.rosinstall"
+    
+elif [[ $TUE_ROS_DISTRO == "hydro" ]]
+then
+    source $TUE_SYSTEM_DIR/devel/setup.bash
+    source $TUE_DEV_DIR/devel/setup.bash
+fi
+
+
+
 

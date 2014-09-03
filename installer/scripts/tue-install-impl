@@ -2,8 +2,10 @@
 
 if [ -z "$TUE_ROS_DISTRO" ]
 then
-    TUE_ROS_DISTRO=hydro
+    echo "[tue-install] TUE_ROS_DISTRO was not set."
+    return
 fi
+
 TUE_SYSTEM_DIR=~/ros/$TUE_ROS_DISTRO/system
 TUE_REPOS_DIR=~/ros/$TUE_ROS_DISTRO/repos
 
@@ -305,5 +307,5 @@ do
 done
 
 # Generate .rosinstall file (for Ramon)
-~/.tue/installer/scripts/generate-rosinstall ~/ros/hydro/system/src > ~/ros/hydro/system/src/.rosinstall
+~/.tue/installer/scripts/generate-rosinstall ~/ros/$TUE_ROS_DISTRO/system/src > ~/ros/$TUE_ROS_DISTRO/system/src/.rosinstall
 
