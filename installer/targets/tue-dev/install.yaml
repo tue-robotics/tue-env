@@ -1,0 +1,18 @@
+# Common
+- type: target
+  name: tue-common
+
+# Simulation
+- type: target
+  name: ros-fast_simulator
+
+# Navigation
+
+# Manipulation
+
+# Speech
+
+# World model
+- type: target
+  name: ros-ed
+

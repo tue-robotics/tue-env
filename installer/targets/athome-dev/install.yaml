@@ -1,6 +1,0 @@
-- type: target
-  name: amigo-dev
-- type: target
-  name: ros-fast_simulator
-- type: target
-  name: ros-amigo_gazebo
