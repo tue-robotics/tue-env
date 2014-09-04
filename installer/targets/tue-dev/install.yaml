@@ -13,6 +13,8 @@
   name: ros-depth_map_self_filter
 - type: target
   name: ros-depth_map_to_point_cloud
+- type: target
+  name: ros-scan_to_cloud_converter
 
 # Manipulation
 
