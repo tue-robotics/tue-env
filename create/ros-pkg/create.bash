@@ -22,9 +22,9 @@ mkdir $1
 package_file=$1/package.xml
 
 echo '<?xml version="1.0"?>
-<package>
-  <name>ed_examples</name>
-  <version>0.0.0</version>
+<package>' > $package_file
+echo "  <name>$1</name>" >> $package_file
+echo '  <version>0.0.0</version>
   <description>No description available</description>
 
   <maintainer email="todo@tue.nl">todo</maintainer>
@@ -32,7 +32,7 @@ echo '<?xml version="1.0"?>
   <license>TODO</license>
 
   <buildtool_depend>catkin</buildtool_depend>
-' > $package_file
+' >> $package_file
 
 for dep in $deps
 do
@@ -66,17 +66,6 @@ echo ')
 # find_package(OpenCV REQUIRED)
 
 # ------------------------------------------------------------------------------------------------
-#                                          CATKIN EXPORT
-# ------------------------------------------------------------------------------------------------
-
-catkin_package(
-#  INCLUDE_DIRS include
-#  LIBRARIES bla
-#  CATKIN_DEPENDS other_catkin_pkg
-#  DEPENDS system_lib
-)
-
-# ------------------------------------------------------------------------------------------------
 #                                     ROS MESSAGES AND SERVICES
 # ------------------------------------------------------------------------------------------------
 
@@ -102,6 +91,17 @@ catkin_package(
 # )
 
 # ------------------------------------------------------------------------------------------------
+#                                          CATKIN EXPORT
+# ------------------------------------------------------------------------------------------------
+
+catkin_package(
+#  INCLUDE_DIRS include
+#  LIBRARIES bla
+#  CATKIN_DEPENDS other_catkin_pkg
+#  DEPENDS system_lib
+)
+
+# ------------------------------------------------------------------------------------------------
 #                                              BUILD
 # ------------------------------------------------------------------------------------------------
 
@@ -110,7 +110,7 @@ include_directories(
     ${catkin_INCLUDE_DIRS}
 )
 
-# add_libary(library_name
+# add_library(library_name
 #     src/lib_source_file1.cpp
 #     ...
 # )
