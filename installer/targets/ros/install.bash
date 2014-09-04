@@ -57,8 +57,8 @@ then
         cd $TUE_ROSBUILD_DIR && rosws set trunk -y
 
         # make sure system and dev catkin workspaces are favored over the rosbuild_ws
-        cd $TUE_ROSBUILD_DIR && rosws set $TUE_DEV_DIR/src -y
         cd $TUE_ROSBUILD_DIR && rosws set $TUE_SYSTEM_DIR/src -y
+        cd $TUE_ROSBUILD_DIR && rosws set $TUE_DEV_DIR/src -y
     fi
 
     # Check-out user folder
