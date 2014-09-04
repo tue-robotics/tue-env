@@ -64,7 +64,7 @@ then
     # Check-out user folder
     if [ ! -d $TUE_ROSBUILD_DIR/user ]
     then
-        svn co https://roboticssrv.wtb.tue.nl/svn/ros/user $TUE_ROSBUILD_DIR/user --depth immediates
+        svn co https://roboticssrv.wtb.tue.nl/svn/ros/user $TUE_ROSBUILD_DIR/user --depth immediates --trust-server-cert --non-interactive
     else
         svn up $TUE_ROSBUILD_DIR/user
     fi
