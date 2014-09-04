@@ -1,9 +1,17 @@
 #!/bin/bash
 
+# # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # 
+
 if [ -z "$TUE_ROS_DISTRO" ]
 then
     echo "[tue-install] TUE_ROS_DISTRO was not set."
     return
+fi
+
+# Make sure python-yaml is installed
+if ! dpkg -l | grep -E '^ii' | grep -q python-yaml
+then
+    sudo apt-get install -y python-yaml
 fi
 
 TUE_SYSTEM_DIR=~/ros/$TUE_ROS_DISTRO/system
