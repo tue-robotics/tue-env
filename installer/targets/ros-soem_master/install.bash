@@ -6,3 +6,6 @@ elif [[ $TUE_ROS_DISTRO == "hydro" ]]
 then
     tue-install-ros git https://github.com/orocos/rtt_soem soem_master
 fi
+
+# Install orocos
+tue-install-target orocos
