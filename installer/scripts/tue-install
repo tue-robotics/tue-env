@@ -1,7 +1,7 @@
 #!/bin/bash
 
 # Update installer
-svn co https://roboticssrv.wtb.tue.nl/svn/ros/tue_env ~/.tue/
+svn co https://roboticssrv.wtb.tue.nl/svn/ros/tue_env ~/.tue/ --trust-server-cert
 
 # Run installer
 source ~/.tue/installer/scripts/tue-install-impl $@
