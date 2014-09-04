@@ -107,7 +107,7 @@ function tue-install-svn {
     fi
    
     if [ ! -d $2 ]; then 
-        svn co $1 $2
+        svn co $1 $2 --trust-server-cert --non-interactive
     else
         echo "$2: "
         svn up $2
