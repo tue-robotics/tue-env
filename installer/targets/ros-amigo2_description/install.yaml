@@ -1,5 +1,0 @@
-- type: ros
-  source:
-      type: svn
-      url: https://roboticssrv.wtb.tue.nl/svn/ros/code/tue-ros-pkg/trunk/amigo2_common/amigo2_description
-
