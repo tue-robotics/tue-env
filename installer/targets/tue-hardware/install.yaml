@@ -6,4 +6,5 @@
   name: ros-soem_core
 - type: target
   name: ros-rtt_control_components
-
+- type: target
+  name: ros-tue_ethercat_drivers
