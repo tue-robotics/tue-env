@@ -1,0 +1,7 @@
+#!/bin/bash
+
+# Update installer
+svn co https://roboticssrv.wtb.tue.nl/svn/ros/tue_env ~/.tue/ --trust-server-cert --non-interactive
+
+# Source the installer commands
+source ~/.tue/setup.bash
