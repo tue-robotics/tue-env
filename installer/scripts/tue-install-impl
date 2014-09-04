@@ -137,7 +137,7 @@ function tue-install-git {
         else
             mem_pwd=$PWD
             cd $2
-            git pull
+            git pull --ff-only
             cd $mem_pwd
         fi
     fi    
