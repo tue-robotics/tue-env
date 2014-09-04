@@ -411,7 +411,3 @@ for t in $installed_targets
 do
     generate_setup_file $t
 done
-
-# Generate .rosinstall file (for Ramon)
-~/.tue/installer/scripts/generate-rosinstall ~/ros/$TUE_ROS_DISTRO/system/src > ~/ros/$TUE_ROS_DISTRO/system/src/.rosinstall
-
