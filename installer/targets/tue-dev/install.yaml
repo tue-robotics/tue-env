@@ -8,6 +8,10 @@
 - type: target
   name: tue-middleware
 
+# Visualization
+- type: target
+  name: ros-rviz
+
 # -------------------- ROBOTS --------------------
 
 # AMIGO
