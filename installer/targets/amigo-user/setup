@@ -80,6 +80,8 @@ alias sdashboard='(export ROS_MASTER_URI=http://sergio1:11311; roslaunch tue_das
 alias dashboard-permanent='export ROS_MASTER_URI=http://amigo1:11311; while true; do rosrun amigo_dashboard amigo_dashboard; sleep 0.5; done &'
 alias dashboard-new='rosrun rqt_gui rqt_gui & sleep 1; rosrun rqt_gui rqt_gui --command-start-plugin rqt_amigo_dashboard; rosrun rqt_gui rqt_gui --command-start-plugin rqt_rviz'
 
+alias rviz-amigo='rosrun rviz rviz -d ~/.tue/installer/targets/amigo-user/rviz_config.rviz'
+
 # alias rviz-amigo-fuerte='source /opt/ros/fuerte/setup.bash; ROS_PACKAGE_PATH=$TUE_TRUNK/amigo_common/amigo_description:$ROS_PACKAGE_PATH; rosrun rviz rviz -d $TUE_TRUNK/amigo_admin_files/configs/rviz/rviz_amigo.vcg; export ROS_DISTRO=groovy; source ~/.bashrc'
 # alias rviz-amigo-groovy='rosrun rviz rviz -d $TUE_TRUNK/amigo_admin_files/configs/rviz/amigo_groovy.rviz'
 # alias rviz-amigo="rviz-amigo-${TUEROS_DISTRO}"
