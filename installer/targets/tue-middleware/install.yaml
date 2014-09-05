@@ -2,6 +2,11 @@
 - type: target
   name: tue-common
 
+- type: target
+  name: ros-robot_state_publisher
+- type: target
+  name: ros-diagnostic_aggregator
+
 # Executive
 
 # Navigation
