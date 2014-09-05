@@ -14,6 +14,18 @@ then
     sudo apt-get install -y python-yaml
 fi
 
+# Make sure git is installed
+if ! dpkg -l | grep -E '^ii' | grep -q git
+then
+    sudo apt-get install -y git
+fi
+
+# Make sure subversion is installed
+if ! dpkg -l | grep -E '^ii' | grep -q subversion
+then
+    sudo apt-get install -y subversion
+fi
+
 TUE_SYSTEM_DIR=~/ros/$TUE_ROS_DISTRO/system
 TUE_REPOS_DIR=~/ros/$TUE_ROS_DISTRO/repos
 
