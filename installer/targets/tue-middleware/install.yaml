@@ -4,8 +4,12 @@
 
 - type: target
   name: ros-robot_state_publisher
+
+# Diagnostics (TODO: Is this needed? Causes HDDtemp question on install)
 - type: target
   name: ros-diagnostic_aggregator
+- type: target
+  name: sysstat
 
 # Executive
 
