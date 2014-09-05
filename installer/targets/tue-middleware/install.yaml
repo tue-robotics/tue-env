@@ -1,0 +1,61 @@
+# Common
+- type: target
+  name: tue-common
+
+# Executive
+
+# Navigation
+- type: target
+  name: ros-depth_map_self_filter
+- type: target
+  name: ros-depth_map_to_point_cloud
+- type: target
+  name: ros-scan_to_cloud_converter
+
+# Manipulation
+
+# Speech
+- type: target
+  name: ros-text_to_speech
+- type: target
+  name: ros-tue_pocketsphinx
+- type: target
+  name: ros-speech_interpreter
+
+# Perception
+- type: target
+  name: ros-laser_ppl_detection
+- type: target
+  name: ros-pein_supervisor
+- type: target
+  name: ros-human_tracking
+- type: target
+  name: ros-pein_tabletop_segmentation
+- type: target
+  name: ros-pein_pcl_matcher
+- type: target
+  name: ros-pein_color_matcher
+- type: target
+  name: ros-pein_wire_interface
+
+# World model
+- type: target
+  name: ros-ed
+- type: target
+  name: ros-tue_reasoner_core
+- type: target
+  name: ros-tue_knowledge
+- type: target
+  name: ros-wire_core
+- type: target
+  name: ros-wire_state_estimators
+- type: target
+  name: ros-wire_viz
+- type: target
+  name: ros-obj_in_gripper
+
+# -------------------- ROBOTS --------------------
+
+# AMIGO
+- type: target
+  name: amigo-user
