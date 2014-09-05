@@ -284,24 +284,25 @@ function tue-status
 }
 
 # ----------------------------------------------------------------------------------------------------
-#                                            TUE-INSTALL
+#                                              TUE-GET
 # ----------------------------------------------------------------------------------------------------
 
-
-function tue-install
+function _tue_depends1
 {
-    echo "Please use 'tue-get install TARGET' or 'tue-get update' instead."
-    return 1
-}
+    if [ -z "$1" ]
+    then
+        echo "Usage: tue-depends PACKAGE"
+        return 1
+    fi
 
-function _tue-install
-{
-    local cur=${COMP_WORDS[COMP_CWORD]}
-    local prev=${COMP_WORDS[COMP_CWORD-1]}
+    if [ ! -f ~/.tue/dependencies/$1 ]
+    then
+        echo "Package '$1' not installed"
+        return 1
+    fi
 
-    COMPREPLY=( $(compgen -W "`ls ~/.tue/installer/targets`" -- $cur) )
+    cat ~/.tue/dependencies/$1
 }
-complete -F _tue-install tue-install
 
 function randid
 {
@@ -320,19 +321,20 @@ function tue-get
 
         install        - Installs a package
         update         - Updates currently installed packages
+        remove         - Removes installed package
         list-installed - Lists all installed packages
 """
         return 1
     fi
 
     cmd=$1
+    shift
 
     if [[ $cmd == "install" ]]
-    then
-        shift
+    then        
         if [ -z "$1" ]
         then
-            echo "Usage: tue-get install TARGET"
+            echo "Usage: tue-get install TARGET [TARGET2 ...]"
             return 1
         fi
 
@@ -342,6 +344,41 @@ function tue-get
     then
         ~/.tue/installer/scripts/tue-install
         source ~/.bashrc        
+    elif [[ $cmd == "remove" ]]
+    then
+        if [ -z "$1" ]
+        then
+            echo "Usage: tue-get remove TARGET [TARGET2 ...]"
+            return 1
+        fi
+
+        error=0
+        for target in $@
+        do
+            if [ ! -f ~/.tue/installed/$target ]
+            then
+                echo "[tue-get] Package '$target' is not installed"
+                error=1
+            fi
+        done        
+
+        if [ $error -gt 0 ];
+        then
+            echo ""
+            echo "[tue-get] No packages where removed."
+            return $error; fi
+
+        for target in $@
+        do
+            rm ~/.tue/installed/$target 
+        done
+
+        echo ""
+        if [ -n "$2" ]; then
+            echo "The packages were removed from the 'installed list' but still need to be deleted from your workspace."
+        else
+            echo "The package was removed from the 'installed list' but still needs to be deleted from your workspace."
+        fi
     elif [[ $cmd == "list-installed" ]]
     then
         ls ~/.tue/dependencies 
@@ -357,12 +394,15 @@ function _tue-get
     local prev=${COMP_WORDS[COMP_CWORD-1]}
 
     if [ $COMP_CWORD -eq 1 ]; then
-        COMPREPLY=( $(compgen -W "install update list-installed" -- $cur) )
+        COMPREPLY=( $(compgen -W "install update remove list-installed" -- $cur) )
     else
         cmd=${COMP_WORDS[1]}
         if [[ $cmd == "install" ]]
         then
             COMPREPLY=( $(compgen -W "`ls ~/.tue/installer/targets`" -- $cur) )        
+        elif [[ $cmd == "remove" ]]
+        then
+            COMPREPLY=( $(compgen -W "`ls ~/.tue/installed`" -- $cur) )  
         else
             COMREPLY=""
         fi
