@@ -5,6 +5,8 @@
 # Sensors
 - type: target
   name: ros-hokuyo_node
+- type: target
+  name: ros-openni_launch
 
 # AMIGO aliases
 - type: target
