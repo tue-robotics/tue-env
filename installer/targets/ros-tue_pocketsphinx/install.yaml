@@ -2,4 +2,7 @@
   source:
       type: svn
       url: https://roboticssrv.wtb.tue.nl/svn/ros/trunk/tue_pocketsphinx
-
+- type: system
+  name: libsphinxbase-dev
+- type: system
+  name: libpocketsphinx-dev
