@@ -53,9 +53,3 @@
   name: ros-wire_viz
 - type: target
   name: ros-obj_in_gripper
-
-# -------------------- ROBOTS --------------------
-
-# AMIGO
-- type: target
-  name: amigo-user
