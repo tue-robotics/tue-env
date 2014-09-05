@@ -8,7 +8,7 @@
 # Diagnostics (TODO: Is this needed? Causes HDDtemp question on install)
 - type: target
   name: ros-diagnostic_aggregator
-- type: target
+- type: system
   name: sysstat
 
 # Executive
