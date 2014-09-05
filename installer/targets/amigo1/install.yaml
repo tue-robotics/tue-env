@@ -1,4 +1,12 @@
+# Middleware
 - type: target
-  name: tue-dev
+  name: tue-middleware
+
+# Sensors
 - type: target
   name: ros-hokuyo_node
+
+# AMIGO aliases
+- type: target
+  name: amigo-user
+
