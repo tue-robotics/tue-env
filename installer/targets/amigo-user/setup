@@ -18,8 +18,18 @@ alias sshamigo5='until ssh -qo ConnectTimeout=1 -X amigo@amigo5; do echo waiting
 ####################
 alias astart='roslaunch amigo_launch_files start.launch'
 alias aloc='roslaunch amigo_launch_files localization.launch'
-alias amiddle='roslaunch amigo_launch_files middleware.launch'
-alias amiddle-screen='screen -x -L -R -S amiddle roslaunch amigo_launch_files middleware.launch'
+#alias amiddle='roslaunch amigo_launch_files middleware.launch'
+#alias amiddle-screen='screen -x -L -R -S amiddle roslaunch amigo_launch_files middleware.launch'
+function amiddle
+{
+    if [[ $ROS_DISTRO == "groovy" ]]
+    then
+        roslaunch amigo_launch_files middleware.launch
+    else
+        roslaunch amigo_launch_files middleware_hydro.launch
+    fi
+}
+
 alias ahardware='screen -x -L -R -S ahardware roslaunch amigo_launch_files all_etherCAT_hardware.launch'
 alias aexecutive='screen -x -L -R -S aexecutive'
 
