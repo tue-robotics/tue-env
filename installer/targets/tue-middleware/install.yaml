@@ -22,6 +22,8 @@
   name: ros-scan_to_cloud_converter
 
 # Manipulation
+- type: target
+  name: ros-tue_manipulation
 
 # Speech
 - type: target
