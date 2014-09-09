@@ -339,7 +339,9 @@ function tue-get
         fi
 
         ~/.tue/installer/scripts/tue-install $@
+        error_code=$?
         source ~/.bashrc
+        return $error_code
     elif [[ $cmd == "update" ]]
     then
         ~/.tue/installer/scripts/tue-install
