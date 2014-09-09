@@ -5,3 +5,4 @@ svn co https://roboticssrv.wtb.tue.nl/svn/ros/tue_env ~/.tue/ --trust-server-cer
 
 # Run installer
 source ~/.tue/installer/scripts/tue-install-impl $@
+exit $?
