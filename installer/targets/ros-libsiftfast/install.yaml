@@ -1,5 +1,5 @@
-- type: ros
+- type: ros-rosbuild
   source:
       type: svn
-      url: https://roboticssrv.wtb.tue.nl/svn/data/mirror/jsk-ros-pkg/catkin/libsiftfast
+      url: https://roboticssrv.wtb.tue.nl/svn/data/mirror/jsk-ros-pkg/libsiftfast
 
