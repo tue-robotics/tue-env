@@ -2,29 +2,33 @@
 
 # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # 
 
+function _make_sure_installed
+{
+    local pkgs_to_install=
+    for pkg in $@
+    do
+        if ! dpkg -s $pkg &> /dev/null
+        then
+            pkgs_to_install="$pkgs_to_install $pkg"
+        fi
+    done
+
+    if [ -n "$pkgs_to_install" ]
+    then
+        echo "Going to install: $pkgs_to_install"
+        sudo apt-get install -y $pkgs_to_install
+    fi
+}
+
+# # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # 
+
 if [ -z "$TUE_ROS_DISTRO" ]
 then
     echo "[tue-install] TUE_ROS_DISTRO was not set."
     return
 fi
 
-# Make sure python-yaml is installed
-if ! dpkg -l | grep -E '^ii' | grep -q python-yaml
-then
-    sudo apt-get install -y python-yaml
-fi
-
-# Make sure git is installed
-if ! dpkg -l | grep -E '^ii' | grep -q git
-then
-    sudo apt-get install -y git
-fi
-
-# Make sure subversion is installed
-if ! dpkg -l | grep -E '^ii' | grep -q subversion
-then
-    sudo apt-get install -y subversion
-fi
+_make_sure_installed python-yaml git subversion
 
 TUE_SYSTEM_DIR=~/ros/$TUE_ROS_DISTRO/system
 TUE_REPOS_DIR=~/ros/$TUE_ROS_DISTRO/repos
