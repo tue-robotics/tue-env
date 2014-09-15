@@ -289,19 +289,21 @@ function tue-status
 
 function _tue_depends1
 {
+    local tue_dep_dir=~/.tue/dependencies
+
     if [ -z "$1" ]
     then
         echo "Usage: tue-depends PACKAGE"
         return 1
     fi
 
-    if [ ! -f ~/.tue/dependencies/$1 ]
+    if [ ! -f $tue_dep_dir/$1 ]
     then
         echo "Package '$1' not installed"
         return 1
     fi
 
-    cat ~/.tue/dependencies/$1
+    cat $tue_dep_dir/$1
 }
 
 function randid
@@ -326,6 +328,9 @@ function tue-get
 """
         return 1
     fi
+
+    local tue_dep_dir=~/.tue/dependencies
+    local tue_installed_dir=~/.tue/installed
 
     cmd=$1
     shift
@@ -357,7 +362,7 @@ function tue-get
         error=0
         for target in $@
         do
-            if [ ! -f ~/.tue/installed/$target ]
+            if [ ! -f $tue_installed_dir/$target ]
             then
                 echo "[tue-get] Package '$target' is not installed"
                 error=1
@@ -372,7 +377,7 @@ function tue-get
 
         for target in $@
         do
-            rm ~/.tue/installed/$target 
+            rm $tue_installed_dir/$target 
         done
 
         echo ""
@@ -383,7 +388,7 @@ function tue-get
         fi
     elif [[ $cmd == "list-installed" ]]
     then
-        ls ~/.tue/dependencies 
+        ls $tue_dep_dir
     else
         echo "[tue-get] Unknown command: '$cmd'"
         return 1
@@ -412,79 +417,3 @@ function _tue-get
 }
 complete -F _tue-get tue-get
 
-# ----------------------------------------------------------------------------------------------------
-#                                            TUE-SETUP
-# ----------------------------------------------------------------------------------------------------
-
-function tue-setup
-{
-    local first_time=
-
-    if [ -z "$1" ]
-    then
-        if [ ! -d ~/.tue/installed ]
-        then
-            return
-        fi
-
-        TUE_SETUP_TARGETS=" "
-        first_time=true
-
-        # No argument given
-        local installed_targets=`ls ~/.tue/installed`
-        for t in $installed_targets
-        do
-            if [ -f ~/.tue/installer/targets/$t/setup ]
-            then
-                tue-setup $t
-            fi
-        done
-    else    
-        if [ -z "$TUE_SETUP_TARGETS" ]
-        then
-            TUE_SETUP_TARGETS=" "
-            first_time=true
-        fi
-
-       if [[ "$TUE_SETUP_TARGETS" != *" $1 "* ]];
-        then
-            local tue_setup_file=~/.tue/installer/targets/$1/setup
-            if [ -f $tue_setup_file ]
-            then
-                source $tue_setup_file
-                TUE_SETUP_TARGETS=" $1$TUE_SETUP_TARGETS"
-            else
-                echo "[tue-setup] WARNING: Target '$1' does not have a setup."
-            fi
-        fi
-
-    fi
- 
-    if [ -n "$first_time" ]
-    then
-        TUE_SETUP_TARGETS=
-    fi
-}
-
-
-function _tue-setup-complete
-{
-    local targets=`ls ~/.tue/installer/targets`
-    for t in $targets
-    do
-        if [ -f ~/.tue/installer/targets/$t/setup ]
-        then
-            echo $t
-        fi
-    done
-}
-
-
-function _tue-setup
-{
-    local cur=${COMP_WORDS[COMP_CWORD]}
-    local prev=${COMP_WORDS[COMP_CWORD-1]}
-
-    COMPREPLY=( $(compgen -W "`_tue-setup-complete`" -- $cur) )
-}
-complete -F _tue-setup tue-setup

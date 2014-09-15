@@ -1,6 +1,8 @@
 - type: target
   name: tue-common
 - type: target
+  name: robot-user
+- type: target
   name: ros-amigo_launch_files
 
 # TODO: sort out
