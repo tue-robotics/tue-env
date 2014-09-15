@@ -417,3 +417,77 @@ function _tue-get
 }
 complete -F _tue-get tue-get
 
+# ----------------------------------------------------------------------------------------------------
+#                                              TUE-ENV
+# ----------------------------------------------------------------------------------------------------
+
+function tue-env
+{
+    if [ -z "$1" ]
+    then
+        echo """tue-env is a tool for switching between different installation environments.
+
+    Usage: tue-env COMMAND [ARG1 ARG2 ...]
+
+    Possible commands:
+
+        switch         - Switch to a different environment
+        list           - List all possible environments
+"""
+        return 1
+    fi
+
+    cmd=$1
+    shift
+
+    if [[ $cmd == "switch" ]]
+    then
+        if [ -z "$1" ]
+        then
+            echo "Usage: tue-env switch ENVIRONMENT"
+            return 1
+        fi
+
+        if [ ! -d ~/.tue/envs/$1 ]
+        then
+            echo "No such environment: '$1'."
+            return 1
+        fi
+
+        rm -rf ~/.tue/env
+        ln -s ~/.tue/envs/$1 ~/.tue/env        
+    elif [[ $cmd == "list" ]]
+    then
+        for env in `ls ~/.tue/envs`
+        do
+            echo $env
+        done
+    elif [[ $cmd == "current" ]]
+    then
+        echo $(basename `readlink ~/.tue/env`)
+    else
+        echo "[tue-env] Unknown command: '$cmd'"
+        return 1
+    fi
+}
+
+function _tue-env
+{
+    local cur=${COMP_WORDS[COMP_CWORD]}
+    local prev=${COMP_WORDS[COMP_CWORD-1]}
+
+    if [ $COMP_CWORD -eq 1 ]; then
+        COMPREPLY=( $(compgen -W "list switch current" -- $cur) )
+    else
+        cmd=${COMP_WORDS[1]}
+        if [[ $cmd == "switch" ]]
+        then
+            if [ $COMP_CWORD -eq 2 ]
+                then
+                COMPREPLY=( $(compgen -W "`ls ~/.tue/envs`" -- $cur) )        
+            fi
+        fi
+    fi
+}
+complete -F _tue-env tue-env
+
