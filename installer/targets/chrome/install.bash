@@ -5,5 +5,4 @@ then
     sudo apt-get update
 fi
 
-# install Gazebo
 tue-install-system google-chrome-stable
