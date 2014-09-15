@@ -20,11 +20,13 @@ then
     # Now you can install any plugin into a .vim/bundle/plugin-name/ folder
 fi
 
-if [ ! -d ~/vim/bundle/editorconfig-vim ]
+if [ ! -d ~/.vim/bundle/editorconfig-vim ]
 then
     echo "installing editorconfig..."
-    git clone https://github.com/editorconfig/editorconfig-vim.git ~/vim/bundle/editorconfig-vim
+    git clone https://github.com/editorconfig/editorconfig-vim.git ~/.vim/bundle/editorconfig-vim
 fi
 
 tue-install-system vim
+
+# TODO: when should we run this (vim needs to be installed)
 # sudo update-alternatives --set editor /usr/bin/vim.basic
