@@ -1,3 +1,5 @@
+#!/bin/bash
+
 if [ ! -f /etc/apt/sources.list.d/dropbox.list ]
 then
     sudo apt-key adv --keyserver pgp.mit.edu --recv-keys 5044912E

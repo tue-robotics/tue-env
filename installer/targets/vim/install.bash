@@ -1,7 +1,6 @@
-#/bin/bash
+#!/bin/bash
 
-# a basic vimrc
-
+# .vimrc
 if [ ! -f ~/.vimrc ]
 then
 	echo "installing a basic vimrc..."
@@ -20,6 +19,7 @@ then
     # Now you can install any plugin into a .vim/bundle/plugin-name/ folder
 fi
 
+# editorconfig
 if [ ! -d ~/.vim/bundle/editorconfig-vim ]
 then
     echo "installing editorconfig..."

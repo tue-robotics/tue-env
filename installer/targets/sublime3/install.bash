@@ -1,3 +1,5 @@
+#!/bin/bash
+
 if [ ! -f /etc/apt/sources.list.d/webupd8team-sublime-text-3-precise.list ]
 then
     sudo add-apt-repository ppa:webupd8team/sublime-text-3
