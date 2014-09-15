@@ -1,3 +1,5 @@
+#!/bin/bash
+
 if [ ! -f /etc/apt/sources.list.d/google-chrome.list ]
 then
     wget -q -O - https://dl-ssl.google.com/linux/linux_signing_key.pub | sudo apt-key add -

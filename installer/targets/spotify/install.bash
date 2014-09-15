@@ -1,3 +1,5 @@
+#!/bin/bash
+
 if [ ! -f /etc/apt/sources.list.d/spotify.list ]
 then
     sudo apt-key adv --keyserver keyserver.ubuntu.com --recv-keys 94558F59
