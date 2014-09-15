@@ -12,8 +12,8 @@ else
     fi
 
     source ~/.tue/setup/tue.bash_functions
-    if [ -f ~/.tue/setup/target_setup.bash ]
+    if [ -f $TUE_ENV_DIR/env/setup/target_setup.bash ]
     then
-        source ~/.tue/setup/target_setup.bash
+        source $TUE_ENV_DIR/env/setup/target_setup.bash
     fi
 fi
