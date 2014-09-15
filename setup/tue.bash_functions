@@ -214,7 +214,7 @@ function tue-status
         elif [ -d $pkg_dir/.git ]
         then
             cd $pkg_dir
-            status=`git status --porcelain`
+            status=`git status --short`
             cd - &> /dev/null
             vctype=git
         else
@@ -259,7 +259,7 @@ function tue-status
         elif [ -d $pkg_dir/.git ]
         then
             cd $pkg_dir
-            status=`git status --porcelain`
+            status=`git status --short`
             cd - &> /dev/null
             vctype=git
         else
