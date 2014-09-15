@@ -16,7 +16,7 @@ fi
 
 TUE_INSTALL_DEPENDENCIES_DIR=~/.tue/env/dependencies
 TUE_INSTALL_INSTALLED_DIR=~/.tue/env/installed
-TUE_INSTALL_TARGETS_DIR=~/.tue/env/installer/targets
+TUE_INSTALL_TARGETS_DIR=~/.tue/installer/targets
 
 # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # 
 
