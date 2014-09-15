@@ -289,7 +289,7 @@ function tue-status
 
 function _tue_depends1
 {
-    local tue_dep_dir=~/.tue/dependencies
+    local tue_dep_dir=~/.tue/env/dependencies
 
     if [ -z "$1" ]
     then
@@ -329,8 +329,8 @@ function tue-get
         return 1
     fi
 
-    local tue_dep_dir=~/.tue/dependencies
-    local tue_installed_dir=~/.tue/installed
+    local tue_dep_dir=~/.tue/env/dependencies
+    local tue_installed_dir=~/.tue/env/installed
 
     cmd=$1
     shift
@@ -409,7 +409,7 @@ function _tue-get
             COMPREPLY=( $(compgen -W "`ls ~/.tue/installer/targets`" -- $cur) )        
         elif [[ $cmd == "remove" ]]
         then
-            COMPREPLY=( $(compgen -W "`ls ~/.tue/installed`" -- $cur) )  
+            COMPREPLY=( $(compgen -W "`ls ~/.tue/env/installed`" -- $cur) )  
         else
             COMREPLY=""
         fi
