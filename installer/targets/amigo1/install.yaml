@@ -1,3 +1,7 @@
+# astart
+- type: target
+  name: battery_manager
+
 # Middleware
 - type: target
   name: tue-middleware
