@@ -1,3 +1,5 @@
+#!/bin/bash
+
 TUE_DEV_DIR=~/ros/$TUE_ROS_DISTRO/dev
 TUE_SYSTEM_DIR=~/ros/$TUE_ROS_DISTRO/system
 
