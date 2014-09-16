@@ -1,6 +1,6 @@
 # astart
 - type: target
-  name: battery_manager
+  name: ros-battery_manager
 
 # Middleware
 - type: target
