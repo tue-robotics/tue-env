@@ -206,8 +206,8 @@ function tue-status
     do
         pkg_dir=$TUE_SYSTEM_DIR/src/$f
 
-        status=
-        vctype=
+        local status=
+        local vctype=
 
         if [ -d $pkg_dir/.svn ]
         then
@@ -216,7 +216,14 @@ function tue-status
         elif [ -d $pkg_dir/.git ]
         then
             cd $pkg_dir
-            status=`git status --short`
+
+            if git status --short --branch | grep -q '\['
+            then
+                status=`git status --short --branch`
+            else
+                status=`git status --short`
+            fi            
+
             cd - &> /dev/null
             vctype=git
         else
