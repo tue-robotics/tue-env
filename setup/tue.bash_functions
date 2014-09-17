@@ -96,7 +96,7 @@ function tue-add
     mkdir -p /tmp/tue-svn/$base
     svn add /tmp/tue-svn/$base    
 
-    svn ci /tmp/tue-svn/$base -m 'tue-add: Added package $base'
+    svn ci /tmp/tue-svn/$base -m "tue-add: Added package '$base'"
     if [ $? -eq 0 ]
     then
         mv /tmp/tue-svn/$base/.svn $1
