@@ -10,5 +10,5 @@
   name: ros-tue_ethercat_drivers
 - type: target
   name: ros-amigo_hardware
-#- type: target
-#  name: ros-sergio_hardware
+- type: target
+  name: ros-sergio_hardware
