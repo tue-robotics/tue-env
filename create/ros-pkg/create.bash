@@ -6,24 +6,40 @@ then
     return 1
 fi
 
-if [ -d $1 ]
+pkg_name=$1
+pkg_dir=~/ros/$TUE_ROS_DISTRO/sources/local/$pkg_name
+
+if [ -d $pkg_dir ]
 then
-    echo "Package '$1' already exists"
+    echo "Package '$pkg_name' already exists"
+    return 1
+fi
+
+if [ -f ./$pkg_name ]
+then
+    echo "File '$pkg_name' already exists"
+    return 1
+fi
+
+if [ -d ./$pkg_name ]
+then
+    echo "Directory '$pkg_name' already exists"
     return 1
 fi
 
 deps=${@:2}
 
-mkdir $1
+mkdir -p $pkg_dir
+ln -s $pkg_dir ./$pkg_name
 
 # - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - 
 # package.xml
 
-package_file=$1/package.xml
+package_file=$pkg_dir/package.xml
 
 echo '<?xml version="1.0"?>
 <package>' > $package_file
-echo "  <name>$1</name>" >> $package_file
+echo "  <name>$pkg_name</name>" >> $package_file
 echo '  <version>0.0.0</version>
   <description>No description available</description>
 
@@ -47,10 +63,10 @@ echo '</package>' >> $package_file
 # - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - 
 # CMakeLists.txt
 
-cmake_file=$1/CMakeLists.txt
+cmake_file=$pkg_dir/CMakeLists.txt
 
 echo "cmake_minimum_required(VERSION 2.8.3)
-project($1)
+project($pkg_name)
 " > $cmake_file
 
 echo 'find_package(catkin REQUIRED COMPONENTS' >> $cmake_file
