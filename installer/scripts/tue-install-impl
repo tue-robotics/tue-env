@@ -157,9 +157,9 @@ function tue-install-svn {
     fi
    
     if [ ! -d $2 ]; then 
-        res=`svn co $1 $2 --trust-server-cert --non-interactive`
+        res=$(svn co $1 $2 --trust-server-cert --non-interactive 2>&1)
     else
-        res=`svn up $2`
+        res=$(svn up $2 2>&1)
         if [[ $res == "At"* ]];
         then
             res=
