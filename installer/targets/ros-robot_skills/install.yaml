@@ -1,5 +1,5 @@
-- type: ros-rosbuild
+- type: ros
   source:
       type: svn
-      url: https://roboticssrv.wtb.tue.nl/svn/ros/code/tue-ros-pkg/trunk/tue_executioner/robot_skills
+      url: https://roboticssrv.wtb.tue.nl/svn/ros/trunk/robot_skills
     
