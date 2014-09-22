@@ -133,6 +133,22 @@ function tue-install-sys {
 
 # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # 
 
+function _show_update_message
+{
+    if [ -n "$2" ]
+    then
+        echo -e "\n    \033[1m$1\033[0m"
+        echo "--------------------------------------------------"
+        echo -e "$2"
+        echo "--------------------------------------------------"
+        echo ""
+    else
+        echo -e "\033[1m$1\033[0m: up-to-date"
+    fi
+}
+
+# # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # 
+
 function tue-install-svn {   
     if [ -n "$TUE_INSTALL_DUMMY" ]; then
         echo "svn co $1 $2"
@@ -141,11 +157,16 @@ function tue-install-svn {
     fi
    
     if [ ! -d $2 ]; then 
-        svn co $1 $2 --trust-server-cert --non-interactive
+        res=`svn co $1 $2 --trust-server-cert --non-interactive`
     else
-        echo "$2: "
-        svn up $2
+        res=`svn up $2`
+        if [[ $res == "At"* ]];
+        then
+            res=
+        fi
     fi
+
+    _show_update_message $TUE_INSTALL_CURRENT_TARGET "$res"     
 }
 
 # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # 
@@ -156,25 +177,37 @@ function tue-install-git {
         return
     fi
 
-    local version=$3
-    if [ -n "$version" ]; then
-        if [ ! -d $2 ]; then 
-            git clone $1 $2
-            mem_pwd=$PWD
-            cd $2
-            git checkout $version
-            cd $mem_pwd                    
-        fi
+    if [ ! -d $2 ]; then 
+        res=$(git clone $1 $2 2>&1)
     else
-        if [ ! -d $2 ]; then 
-            git clone $1 $2
-        else
-            mem_pwd=$PWD
-            cd $2
-            git pull --ff-only
-            cd $mem_pwd
+        local mem_pwd=$PWD
+        cd $2
+
+        res=$(git pull --ff-only 2>&1)
+        cd $mem_pwd
+
+        if [[ $res == "Already up-to-date"* ]]
+        then
+            res=
         fi
+    fi
+
+    local version=$3
+    if [ -n "$version" ];
+    then
+        mem_pwd=$PWD
+        cd $2
+        cres=$(git checkout $version 2>&1)
+        if [[ $cres == "Already on "* ]]
+        then
+            cres=
+        fi
+
+        res=$res$cres
+        cd $mem_pwd 
     fi    
+
+    _show_update_message $TUE_INSTALL_CURRENT_TARGET "$res"     
 }
 
 # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # 
