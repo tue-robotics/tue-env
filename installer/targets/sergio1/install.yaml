@@ -1,8 +1,7 @@
 - type: target
   name: tue-hardware
 
+  # SERGIO
 - type: target
-  name: tue-common
-- type: target
-  name: robot-user
+  name: sergio-user
 
