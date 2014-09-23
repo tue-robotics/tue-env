@@ -2,5 +2,5 @@
   source:
       type: git
       url: https://github.com/LoyVanBeek/pi_trees
-      sub-dir: pi_trees
+      sub-dir: pi_trees_ros
 
