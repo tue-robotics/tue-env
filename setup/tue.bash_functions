@@ -113,28 +113,28 @@ function tue-add
 function tue-make
 {
     cd $TUE_SYSTEM_DIR
-    catkin_make -DCMAKE_BUILD_TYPE=Release $@
+    catkin_make -DCMAKE_BUILD_TYPE=RelWithDebInfo $@
     cd -
 }
 
 function tue-make-system
 {
     cd $TUE_SYSTEM_DIR
-    catkin_make_isolated -DCMAKE_BUILD_TYPE=Release $@
+    catkin_make_isolated -DCMAKE_BUILD_TYPE=RelWithDebInfo $@
     cd -
 }
 
 function tue-make-dev
 {
     cd $TUE_DEV_DIR
-    catkin_make -DCMAKE_BUILD_TYPE=Release $@
+    catkin_make -DCMAKE_BUILD_TYPE=RelWithDebInfo $@
     cd -
 }
 
 function tue-make-dev-isolated
 {
     cd $TUE_DEV_DIR
-    catkin_make_isolated -DCMAKE_BUILD_TYPE=Release $@
+    catkin_make_isolated -DCMAKE_BUILD_TYPE=RelWithDebInfo $@
     cd -
 }
 
