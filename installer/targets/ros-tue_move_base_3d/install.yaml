@@ -1,5 +1,5 @@
-- type: ros-rosbuild
+- type: ros
   source:
       type: svn
-      url: https://roboticssrv.wtb.tue.nl/svn/ros/code/tue-ros-pkg/trunk/tue_navigation/tue_move_base_3d
+      url: https://roboticssrv.wtb.tue.nl/svn/ros/trunk/tue_move_base_3d
     

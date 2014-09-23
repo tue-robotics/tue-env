@@ -20,6 +20,8 @@
   name: ros-depth_map_to_point_cloud
 - type: target
   name: ros-scan_to_cloud_converter
+- type: target
+  name: ros-tue_move_base_3d
 
 # Manipulation
 - type: target
