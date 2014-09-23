@@ -11,8 +11,15 @@ else
         export TUE_ROS_DISTRO=$TUE_ROS_DISTRO
     fi
 
+	export TUE_ENV=$TUE_ROS_DISTRO
+	export TUE_ENV_DIR=~/ros/$TUE_ENV
+
     source ~/.tue/setup/tue.bash_functions
-    if [ -f ~/.tue/env/setup/target_setup.bash ]
+
+    if [ -f $TUE_ENV_DIR/.env/setup/target_setup.bash ]
+	then
+		source $TUE_ENV_DIR/.env/setup/target_setup.bash
+	elif [ -f ~/.tue/env/setup/target_setup.bash ]
     then
         source ~/.tue/env/setup/target_setup.bash
     fi
