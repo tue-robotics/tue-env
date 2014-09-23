@@ -2,3 +2,5 @@
   source:
       type: svn
       url: https://roboticssrv.wtb.tue.nl/svn/data/mirror/ccny_vision/catkin/artoolkit
+- type: target
+  name: glut
