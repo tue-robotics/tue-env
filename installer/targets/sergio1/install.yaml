@@ -1,0 +1,8 @@
+- type: target
+  name: tue-hardware
+
+- type: target
+  name: tue-common
+- type: target
+  name: robot-user
+
