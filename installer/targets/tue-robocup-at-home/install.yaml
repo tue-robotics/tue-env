@@ -1,0 +1,5 @@
+# Challenges
+- type: target
+  name: ros-challenge_rips
+- type: target
+  name: ros-challenge_cocktail_party

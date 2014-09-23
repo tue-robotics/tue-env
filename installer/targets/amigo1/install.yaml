@@ -16,3 +16,7 @@
 - type: target
   name: amigo-user
 
+# RoboCup
+- type: target
+  name: tue-robocup-at-home
+
