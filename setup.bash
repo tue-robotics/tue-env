@@ -5,13 +5,19 @@ else
 
     if [ -z "$TUE_ROS_DISTRO" ]
     then
-        echo "[tue] Please set TUE_ROS_DISTRO"
-        return
-    else
-        export TUE_ROS_DISTRO=$TUE_ROS_DISTRO
-    fi
+		if [ -z "$TUE_ENV" ]
+		then
+        	echo "[tue] Please set TUE_ROS_DISTRO or TUE_ENV"
+	        return
+		else
+			TUE_ROS_DISTRO=$TUE_ENV
+		fi
+	else
+		TUE_ENV=$TUE_ROS_DISTRO
+	fi
 
-	export TUE_ENV=$TUE_ROS_DISTRO
+    export TUE_ROS_DISTRO=$TUE_ROS_DISTRO
+	export TUE_ENV=$TUE_ENV
 	export TUE_ENV_DIR=~/ros/$TUE_ENV
 
     source ~/.tue/setup/tue.bash_functions
