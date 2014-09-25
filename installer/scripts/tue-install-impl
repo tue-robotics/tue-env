@@ -74,13 +74,28 @@ function randid {
 # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # 
 
 function tue-install-error {
-    echo "
+    echo -e "\033[38;5;1m
 Error while installing target '$TUE_INSTALL_CURRENT_TARGET':
 
     $1
-"
+\033[0m"
     exit 1
 }
+
+# # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # 
+
+function tue-install-warning {
+    echo -e "\033[33;5;1m[$TUE_INSTALL_CURRENT_TARGET] WARNING: $1\033[0m"
+    TUE_INSTALL_WARNINGS="    [$TUE_INSTALL_CURRENT_TARGET] $1\n${TUE_INSTALL_WARNINGS}"
+}
+
+# # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # 
+
+function tue-install-info {
+    echo -e "\e[0;36m[$TUE_INSTALL_CURRENT_TARGET] INFO: $1\033[0m"
+    TUE_INSTALL_INFOS="    [$TUE_INSTALL_CURRENT_TARGET] $1\n${TUE_INSTALL_INFOS}"
+}
+
 
 # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # 
 
@@ -331,7 +346,7 @@ function tue-install-ros-rosbuild
             done
 
         else
-            echo "WARNING: '$source' does not contain a valid ROS manifest.xml."
+            tue-install-warning "'$source' does not contain a valid ROS manifest.xml."
         fi        
         
     else
@@ -397,7 +412,17 @@ function tue-install-ros {
             tue-install-error "Subdirectory '$sub_dir' does not exist for URL '$source'."
         fi
 
-        if [ ! -d $ros_pkg_dir ]
+        if [ -L $ros_pkg_dir ]
+        then
+            # Test if the current symbolic link points to the same repository dir. If not, give a warning
+            # because it means the source URL has changed
+            if [ ! $ros_pkg_dir -ef $repos_dir/$sub_dir ]
+            then
+                tue-install-info "URL has changed to $source/$subdir"
+                rm $ros_pkg_dir
+                ln -s $repos_dir/$sub_dir $ros_pkg_dir
+            fi
+        elif [ ! -d $ros_pkg_dir ]
         then        
             # Create a symbolic link to the system workspace
             ln -s $repos_dir/$sub_dir $ros_pkg_dir
@@ -414,7 +439,7 @@ function tue-install-ros {
             done
 
         else
-            echo "WARNING: '$source' does not contain a valid ROS package.xml."
+            tue-install-warning "'$source' does not contain a valid ROS manifest.xml."
         fi        
         
     else
@@ -480,6 +505,9 @@ mkdir -p $TUE_INSTALL_TEMP_DIR
 
 TUE_INSTALL_SYSTEMS=
 
+TUE_INSTALL_WARNINGS=
+TUE_INSTALL_INFOS=
+
 if [ -z $1 ]
 then
     # If no targets are provided, update all installed targets
@@ -492,12 +520,6 @@ for target in $targets
 do
     tue-install-target $target
 done
-
-if [ -z "$TUE_INSTALL_DUMMY" ]; then
-    if [ -n "$TUE_INSTALL_SYSTEMS" ]; then
-        sudo apt-get install -y $TUE_INSTALL_SYSTEMS
-    fi
-fi
 
 mkdir -p $TUE_INSTALL_INSTALLED_DIR
 touch $TUE_INSTALL_INSTALLED_DIR/$1
@@ -513,3 +535,19 @@ for t in $installed_targets
 do
     generate_setup_file $t
 done
+
+# Display infos
+if [ -n "$TUE_INSTALL_INFOS" ]; then
+    echo -e "\e[0;36m\nSome information you may have missed:\n\n$TUE_INSTALL_INFOS\033[0m"
+fi
+
+# Display warnings
+if [ -n "$TUE_INSTALL_WARNINGS" ]; then
+    echo -e "\033[33;5;1m\nOverview of warnings:\n\n$TUE_INSTALL_WARNINGS\033[0m"
+fi
+
+if [ -z "$TUE_INSTALL_DUMMY" ]; then
+    if [ -n "$TUE_INSTALL_SYSTEMS" ]; then
+        sudo apt-get install -y $TUE_INSTALL_SYSTEMS
+    fi
+fi
