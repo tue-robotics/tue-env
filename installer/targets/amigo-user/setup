@@ -77,7 +77,7 @@ alias navs="rostopic pub --once /nav_test_control std_msgs/String 'stop'"
 alias diag='rosrun robot_monitor robot_monitor'
 alias dashboard='echo this is old dashboard command. please use adashboard for the AMIGO dashboard and sdashboard for the SERGIO dashboard'
 alias adashboard='(export ROS_MASTER_URI=http://amigo1:11311; export ROS_DISTRO=; export ROS_PACKAGE_PATH=; source /opt/ros/groovy/setup.bash; export ROS_PACKAGE_PATH=~/ros/groovy/rosbuild_ws/tue/trunk/amigo_gui/tue_dashboard:$ROS_PACKAGE_PATH; roslaunch tue_dashboard amigo_dashboard.launch &> /dev/null &)'
-alias sdashboard='(export ROS_MASTER_URI=http://sergio1:11311; roslaunch tue_dashboard sergio_dashboard.launch &> /dev/null &)'
+alias sdashboard='(export ROS_MASTER_URI=http://sergio1:11311; export ROS_DISTRO=; export ROS_PACKAGE_PATH=; source /opt/ros/groovy/setup.bash; export ROS_PACKAGE_PATH=~/ros/groovy/rosbuild_ws/tue/trunk/amigo_gui/tue_dashboard:$ROS_PACKAGE_PATH; roslaunch tue_dashboard sergio_dashboard.launch &> /dev/null &)'
 alias dashboard-permanent='export ROS_MASTER_URI=http://amigo1:11311; while true; do rosrun amigo_dashboard amigo_dashboard; sleep 0.5; done &'
 alias dashboard-new='rosrun rqt_gui rqt_gui & sleep 1; rosrun rqt_gui rqt_gui --command-start-plugin rqt_amigo_dashboard; rosrun rqt_gui rqt_gui --command-start-plugin rqt_rviz'
 
