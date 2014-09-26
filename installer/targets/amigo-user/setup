@@ -18,6 +18,7 @@ alias sshamigo5='until ssh -qo ConnectTimeout=1 -X amigo@amigo5; do echo waiting
 ####################
 alias astart='roslaunch amigo_launch_files start.launch'
 alias aloc='roslaunch amigo_launch_files localization.launch'
+alias asensors='roslaunch amigo_launch_files sensors.launch'
 #alias amiddle='roslaunch amigo_launch_files middleware.launch'
 #alias amiddle-screen='screen -x -L -R -S amiddle roslaunch amigo_launch_files middleware.launch'
 function amiddle
