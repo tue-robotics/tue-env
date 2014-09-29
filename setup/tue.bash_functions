@@ -33,12 +33,15 @@ function tue-create
 
     creation_type=$1
 
+    # remove the first argument (which contained the creation type)
+    shift
+
     if [ -f ~/.tue/create/$creation_type/create.bash ]
     then
-        # remove the first argument (which contained the creation type
-        shift
-
         source ~/.tue/create/$creation_type/create.bash
+    elif [ ~/.tue/create/$creation_type/create ]
+    then
+        ~/.tue/create/$creation_type/create $@
     else
         echo "tue-create: invalid creation type: '$creation_type'."
         return 1
