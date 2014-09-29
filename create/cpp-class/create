@@ -11,8 +11,16 @@ def camel_case_to_underscore(name):
 
 # - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - 
 
+# Like capitalize, but ONLY changes first character
+def first_upper_character(s):
+    if not s:
+        return ""
+    return s[0].upper() + s[1:]    
+
+# - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - 
+
 def underscore_to_camel_case(word):
-    return ''.join(x.capitalize() or '_' for x in word.split('_'))
+    return ''.join(first_upper_character(x) or '_' for x in word.split('_'))
 
 # - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - 
 
