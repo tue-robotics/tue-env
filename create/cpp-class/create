@@ -52,9 +52,9 @@ project_name = raw_input('Project name: ')
 if not class_name_ns:
     ns_str = raw_input('Namespace(s): ')
     if ns_str:
-        namespaces = ns_str.split(" ")
+        class_name_ns = ns_str.split(" ")
     else:
-        namespaces = []    
+        class_name_ns = []    
 
 super_class =  raw_input('Super class:  ')
 if super_class:
