@@ -115,30 +115,22 @@ function tue-add
 
 function tue-make
 {
-    cd $TUE_SYSTEM_DIR
-    catkin_make -DCMAKE_BUILD_TYPE=RelWithDebInfo $@
-    cd -
+    catkin_make --directory $TUE_SYSTEM_DIR -DCMAKE_BUILD_TYPE=RelWithDebInfo $@
 }
 
 function tue-make-system
 {
-    cd $TUE_SYSTEM_DIR
-    catkin_make_isolated -DCMAKE_BUILD_TYPE=RelWithDebInfo $@
-    cd -
+    catkin_make_isolated --directory $TUE_SYSTEM_DIR -DCMAKE_BUILD_TYPE=RelWithDebInfo $@	
 }
 
 function tue-make-dev
 {
-    cd $TUE_DEV_DIR
-    catkin_make -DCMAKE_BUILD_TYPE=RelWithDebInfo $@
-    cd -
+    catkin_make --directory $TUE_DEV_DIR -DCMAKE_BUILD_TYPE=RelWithDebInfo $@
 }
 
 function tue-make-dev-isolated
 {
-    cd $TUE_DEV_DIR
-    catkin_make_isolated -DCMAKE_BUILD_TYPE=RelWithDebInfo $@
-    cd -
+    catkin_make_isolated --directory $TUE_DEV_DIR -DCMAKE_BUILD_TYPE=RelWithDebInfo $@
 }
 
 # ----------------------------------------------------------------------------------------------------
