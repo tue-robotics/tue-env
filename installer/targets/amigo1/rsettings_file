@@ -49,3 +49,32 @@ elif [ $ROBOT_ENV == rgo2013 ]; then
 
 fi
 
+# # # # # # # # # # # # # # # # # # # #
+#                OTHER
+# # # # # # # # # # # # # # # # # # # #
+
+# Set TTS
+export TTS_MODULE=festival
+
+# # # # # # # # # # # # # # # # # # # #
+#              MACHINES
+# # # # # # # # # # # # # # # # # # # #
+
+#export MACHINE_TOP_KINECT=amigo1
+#export MACHINE_BASE_KINECT=amigo3
+#export MACHINE_TOP_LRF=amigo1
+#export MACHINE_BASE_LRF=amigo1
+
+export MACHINE_ARM_NAVIGATION=amigo3
+export MACHINE_GRIPPER_SERVER=amigo3
+export MACHINE_GRIPPER_DETECTION=amigo1
+export MACHINE_BASE_NAVIGATION=amigo4
+export MACHINE_BASE_NAVIGATION_3D=amigo1
+export MACHINE_LOCALIZATION=amigo3
+export MACHINE_PERCEPTION=amigo1
+export MACHINE_REASONER=amigo1
+export MACHINE_WORLD_MODEL=amigo1
+export MACHINE_SPEECH_TO_TEXT=amigo3
+export MACHINE_TEXT_TO_SPEECH=amigo3
+export MACHINE_PEOPLE_DETECTION=amigo2
+
