@@ -2,13 +2,13 @@
 
 # Check argument
 if [ -z "$1" ]
-  then
+then
     echo "No pid supplied"
 elif [ -z "$2" ]
-  then
+then
     echo "No package supplied"
 elif [ -z "$3" ]
-  then
+then
     echo "No launchfile supplied"
 fi
 
