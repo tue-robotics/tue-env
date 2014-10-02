@@ -38,7 +38,7 @@ do_start()
 	echo "-------------------------" >>$LOGFILE
 
 	if [ "$(hostname)" = "amigo1" ]; then
-		su $RUN_USER -s /bin/bash -c "screen -d -m -S roscore ~/ros/groovy/catkin_ws/src/tue/trunk/amigo_admin_files/scripts/autoroscore.sh $PIDFILE 2>&1 >>/dev/null" &
+		su $RUN_USER -s /bin/bash -c "screen -d -m -S roscore ~/.tue/installer/targets/amigo1/autoroscore.sh $PIDFILE 2>&1 >>/dev/null" &
 	else
 		echo "Don't know what to do"
 		exit 4
@@ -58,8 +58,7 @@ do_stop()
 	
 	if [ "$(hostname)" = "amigo1" ]; then #amigo1 manages the roscore
 		ssh amigo@amigo2 sudo service autoroslaunch restart #So restart service on amigo2 (that waits for new roscore)
-	fi
-	
+	fi	
 }
 
 case "$1" in
