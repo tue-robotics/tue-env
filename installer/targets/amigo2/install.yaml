@@ -2,3 +2,10 @@
   name: tue-dev
 - type: target
   name: tue-hardware
+
+# Sensors
+- type: target
+  name: ros-hokuyo_node
+- type: target
+  name: ros-openni_launch
+
