@@ -14,10 +14,11 @@ fi
 
 
 # Create dummy graphic environment
-PS1=rommel
+#PS1=rommel
 
 # Source ros stuff as user is accustomed to
-source /home/amigo/.bashrc
+#source /home/amigo/.bashrc
+source /home/amigo/.tue/setup.bash
 
 # Launch the file
 roslaunch --pid $1 --wait $2 $3
