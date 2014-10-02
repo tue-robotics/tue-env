@@ -12,12 +12,10 @@ elif [ -z "$3" ]
     echo "No launchfile supplied"
 fi
 
-
-# Create dummy graphic environment
-PS1=rommel
-
 # Source ros stuff as user is accustomed to
-source /home/amigo/.bashrc
+TUE_ROS_DISTRO=hydro
+export ROSLAUNCH_SSH_UNKNOWN=1
+source ~/.tue/setup.bash
 
 # Launch the file
 roslaunch --pid $1 --wait $2 $3
