@@ -1,11 +1,7 @@
 - type: target
-  name: tue-dev
+  name: amigo
+
+# Hardware support
 - type: target
   name: tue-hardware
-
-# Sensors
-- type: target
-  name: ros-hokuyo_node
-- type: target
-  name: ros-openni_launch
 
