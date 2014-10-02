@@ -1,0 +1,24 @@
+# Will be installed on all pcs
+
+# astart
+- type: target
+  name: ros-battery_manager
+
+# Middleware
+- type: target
+  name: tue-middleware
+
+# Sensors
+- type: target
+  name: ros-hokuyo_node
+- type: target
+  name: ros-openni_launch
+
+# AMIGO aliases
+- type: target
+  name: amigo-user
+
+# RoboCup
+- type: target
+  name: tue-robocup-at-home
+
