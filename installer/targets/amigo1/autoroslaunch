@@ -38,21 +38,15 @@ do_start()
 	echo "-------------------------" >>$LOGFILE
 
 	if [ "$(hostname)" = "amigo1" ]; then
-        # AMIGO 1
-        cmd="screen -d -m -S astart ~/.tue/installer/targets/amigo1/autolaunch.sh $PIDFILE amigo_launch_files start.launch 2>&1 >>/dev/null"
+		log_daemon_msg 'su $RUN_USER -s /bin/bash -c "screen -d -m -S astart rosenv && ~/ros/groovy/catkin_ws/src/tue/trunk/amigo_admin_files/scripts/autolaunch.sh $PIDFILE amigo_launch_files start.launch 2>&1 >>/dev/null" &'
+		su $RUN_USER -s /bin/bash -c "screen -d -m -S astart ~/ros/groovy/catkin_ws/src/tue/trunk/amigo_admin_files/scripts/autolaunch.sh $PIDFILE amigo_launch_files start.launch 2>&1 >>/dev/null" &
 	elif [ "$(hostname)" = "amigo2" ]; then
-        # AMIGO 2
-        cmd="screen -d -m -S hstart ~/.tue/installer/targets/amigo1/autolaunch.sh $PIDFILE amigo_launch_files all_hardware.launch 2>&1 >>/dev/null"
+		log_daemon_msg 'su $RUN_USER -s /bin/bash -c "screen -d -m -S hstart rosenv && ~/ros/groovy/catkin_ws/src/tue/trunk/amigo_admin_files/scripts/autolaunch.sh $PIDFILE amigo_launch_files all_hardware.launch 2>&1 >>/dev/null" &'
+		su $RUN_USER -s /bin/bash -c "screen -d -m -S hstart ~/ros/groovy/catkin_ws/src/tue/trunk/amigo_admin_files/scripts/autolaunch.sh $PIDFILE amigo_launch_files all_hardware.launch 2>&1 >>/dev/null" &
 	else
 		log_daemon_msg "Don't know what to do"
 		exit 4
 	fi
-
-    # Log command
-    log_daemon_msg 'su $RUN_USER -s /bin/bash -c "'$cmd'" &'
-
-    # Run command
-    su $RUN_USER -s /bin/bash -c $cmd &
 	
 	echo "autoroslaunch started" >>$LOGFILE
 }
