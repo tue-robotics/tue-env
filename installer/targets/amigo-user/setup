@@ -31,7 +31,7 @@ function amiddle
     fi
 }
 
-alias ahardware='screen -x -L -R -S ahardware roslaunch amigo_launch_files all_etherCAT_hardware.launch'
+alias ahardware='screen -x -L -R -S ahardware roslaunch amigo_hardware amigohardware.launch'
 alias aexecutive='screen -x -L -R -S aexecutive'
 
 ####################
