@@ -150,3 +150,109 @@ alias rviz-amigo='rosrun rviz rviz -d ~/.tue/installer/targets/amigo-user/rviz_c
 alias rviz-final-challenge-fuerte='rosrun rviz rviz -d $TUE_TRUNK/tue_robocup/challenge_final/rviz-fuerte.vcg'
 alias rviz-egpsr='rosrun rviz rviz -d $TUE_TRUNK/amigo_admin_files/configs/rviz/rviz_egpsr.vcg'
 alias rviz-restaurant='rosrun rviz rviz -d $TUE_TRUNK/amigo_admin_files/configs/rviz/amigo_groovy_restaurant.rviz'
+
+# --------------------------------------------------------------------------------
+
+function amigo-head-move {
+    if [ -z "$2" ]; then
+        echo "Usage: amigo-head-move PAN TILT"
+        return
+    fi
+
+    rostopic pub /amigo/neck/references sensor_msgs/JointState "{header: {seq: 0, stamp: {secs: 0, nsecs: 0}, frame_id: ''}, name: ['neck_pan_joint', 'neck_tilt_joint'], position: [$1, $2], velocity: [0], effort: [0]}"  --once
+}
+
+# --------------------------------------------------------------------------------
+
+function amigo-torso-move-joints {
+    if [ -z "$1" ]; then
+        echo "Usage: amigo-torso-move-joints position"
+        return
+    fi
+
+    ( rostopic pub /amigo/torso/references sensor_msgs/JointState "{header: {seq: 0, stamp: {secs: 0, nsecs: 0}, frame_id: ''}, name: ['torso_joint'], position: [$1], velocity: [0], effort: [0]}"  --once  &> /dev/null & )
+}
+
+# --------------------------------------------------------------------------------
+
+function amigo-right-arm-move-joints {
+    if [ -z "$7" ]; then
+        echo "Usage: amigo-right-arm-move-joints q1 q2 q3 q4 q5 q6 q7"
+        return
+    fi
+
+    ( rostopic pub /amigo/right_arm/references sensor_msgs/JointState "{header: {seq: 0, stamp: {secs: 0, nsecs: 0}, frame_id: ''}, name: ['shoulder_yaw_joint_right', 'shoulder_pitch_joint_right', 'shoulder_roll_joint_right', 'elbow_pitch_joint_right', 'elbow_roll_joint_right', 'wrist_pitch_joint_right', 'wrist_yaw_joint_right'], position: [$1, $2, $3, $4, $5, $6, $7], velocity: [0], effort: [0]}"  --once  &> /dev/null & )
+}
+
+# --------------------------------------------------------------------------------
+
+function amigo-right-arm-move-idle {
+    amigo-right-arm-move-joints -0.1 -0.35 0.2 1.2 0 0 0
+}
+
+# --------------------------------------------------------------------------------
+
+function amigo-left-arm-move-joints {
+    if [ -z "$7" ]; then
+        echo "Usage: amigo-left-arm-move-joints q1 q2 q3 q4 q5 q6 q7"
+        return
+    fi
+
+    ( rostopic pub /amigo/left_arm/references sensor_msgs/JointState "{header: {seq: 0, stamp: {secs: 0, nsecs: 0}, frame_id: ''}, name: ['shoulder_yaw_joint_left', 'shoulder_pitch_joint_left', 'shoulder_roll_joint_left', 'elbow_pitch_joint_left', 'elbow_roll_joint_left', 'wrist_pitch_joint_left', 'wrist_yaw_joint_left'], position: [$1, $2, $3, $4, $5, $6, $7], velocity: [0], effort: [0]}"  --once  &> /dev/null & )
+}
+
+# --------------------------------------------------------------------------------
+
+function amigo-left-arm-move-idle {
+    amigo-left-arm-move-joints -0.1 -0.35 0.2 1.2 0 0 0
+}
+
+# --------------------------------------------------------------------------------
+
+function amigo-arms-move-idle {
+    amigo-right-arm-move-idle
+    amigo-left-arm-move-idle
+}
+
+# --------------------------------------------------------------------------------
+
+function amigo-left-gripper-open {
+    ( rostopic pub /amigo/left_gripper/references amigo_msgs/AmigoGripperCommand "{direction: -1, max_torque: 10.0}" --once  &> /dev/null & )
+}
+
+# --------------------------------------------------------------------------------
+
+function amigo-left-gripper-close {
+    ( rostopic pub /amigo/left_gripper/references amigo_msgs/AmigoGripperCommand "{direction: 1, max_torque: 10.0}" --once  &> /dev/null & )
+}
+
+# --------------------------------------------------------------------------------
+
+function amigo-right-gripper-open {
+    ( rostopic pub /amigo/right_gripper/references amigo_msgs/AmigoGripperCommand "{direction: -1, max_torque: 10.0}" --once  &> /dev/null & )
+}
+
+# --------------------------------------------------------------------------------
+
+function amigo-right-gripper-close {
+    ( rostopic pub /amigo/right_gripper/references amigo_msgs/AmigoGripperCommand "{direction: 1, max_torque: 10.0}" --once  &> /dev/null & )
+}
+
+# --------------------------------------------------------------------------------
+
+function amigo-hear {
+    if [ -z "$1" ] || [ -n "$2" ]; then
+        echo "Usage: amigo-hear 'TEXT'"
+        return
+    fi    
+
+    if [ "$1" == "yes" ]; then
+        msg='!!str yes'    
+    elif [ "$1" == "no" ]; then
+        msg='!!str no'    
+    else
+        msg="$1"
+    fi
+
+    rostopic pub --once /pocketsphinx/output std_msgs/String "$msg"
+}
