@@ -201,43 +201,51 @@ function tue-status
     do
         pkg_dir=$TUE_SYSTEM_DIR/src/$f
 
-        local status=
-        local vctype=
-
-        if [ -d $pkg_dir/.svn ]
+        if [ -d $pkg_dir ]
         then
-            status=`svn status $pkg_dir`
-            vctype=svn
-        elif [ -d $pkg_dir/.git ]
-        then
-            cd $pkg_dir
+            local status=
+            local vctype=
 
-            if git status --short --branch | grep -q '\['
+            if [ -d $pkg_dir/.svn ]
             then
-                status=`git status --short --branch`
+                status=`svn status $pkg_dir`
+                vctype=svn
             else
-                status=`git status --short`
-            fi            
+                # Try git
 
-            cd - &> /dev/null
-            vctype=git
-        else
-            show=false
-        fi
+                cd $pkg_dir
+                res=$(git status . --short --branch 2>&1)
+                if [ $? -eq 0 ]
+                then
+                    # Is git
+                    if echo "$res" | grep -q '\['   # Check if ahead of branch
+                    then
+                        status=$res
+                    else
+                        status=`git status . --short`
+                    fi
+                fi  
 
-        if [ -n "$vctype" ]
-        then
-            if [ -n "$status" ]; then
-                echo ""
-                #                echo -e "\033[1m$f (svn) \033[0m \033[38;5;1mMODIFIED\033[39m"
-                echo -e "\033[38;5;1mM  \033[0m($vctype) \033[1m$f\033[0m"
-                echo "--------------------------------------------------"
-                echo -e "$status"
-                echo "--------------------------------------------------"
-                #echo ""
+                cd - &> /dev/null
+                vctype=git
             #else
-                #echo -e "\033[38;5;2mOK\033[39m \033[0m($vctype) \033[1m$f\033[0m"
-            fi 
+            #    show=false
+            fi
+
+            if [ -n "$vctype" ]
+            then
+                if [ -n "$status" ]; then
+                    echo ""
+                    #                echo -e "\033[1m$f (svn) \033[0m \033[38;5;1mMODIFIED\033[39m"
+                    echo -e "\033[38;5;1mM  \033[0m($vctype) \033[1m$f\033[0m"
+                    echo "--------------------------------------------------"
+                    echo -e "$status"
+                    echo "--------------------------------------------------"
+                    #echo ""
+                #else
+                    #echo -e "\033[38;5;2mOK\033[39m \033[0m($vctype) \033[1m$f\033[0m"
+                fi 
+            fi
         fi
     done
 
