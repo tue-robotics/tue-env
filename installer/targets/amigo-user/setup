@@ -1,5 +1,9 @@
 alias amigo-core='export ROS_MASTER_URI=http://amigo1:11311'
 
+# ----------------------------------------------------------------------------
+# - Add scripts directory to PATH
+export PATH=~/.tue/installer/targets/amigo-user/scripts:$PATH
+
 ####################
 #
 # SSH
