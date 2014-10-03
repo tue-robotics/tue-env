@@ -69,6 +69,49 @@ alias navc="rostopic pub --once /nav_test_control std_msgs/String 'continue'"
 alias navp="rostopic pub --once /nav_test_control std_msgs/String 'pause'"
 alias navs="rostopic pub --once /nav_test_control std_msgs/String 'stop'"
 
+####################
+#
+# AMIGO CONSOLE
+#
+####################
+
+function depcheck
+{
+  type -P $1 &>/dev/null && return
+  echo "Installing $2"
+  sudo apt-get -y install $2 && return
+  echo "Error installing $2"
+  exit 1
+}
+
+function amigo-console
+{
+    depcheck ipython
+
+    ROBOT_PARTS_DIR=`rospack find robot_skills`/src/robot_skills
+    echo ${ROBOT_PARTS_DIR}
+    if [[ -n "$1" ]]; then
+        ipython -i ${ROBOT_PARTS_DIR}/$1'.py'
+    else
+        ipython -i --autocall 2 ${ROBOT_PARTS_DIR}/'amigo.py'
+    fi
+}
+
+_amigo-console()
+{
+    local cur=${COMP_WORDS[COMP_CWORD]}
+    COMPREPLY=( $(compgen -W "arms head ears base perception speech spindle" -- $cur) )
+}
+complete -F _amigo-console amigo-console
+
+function amigo-console2
+{
+    depcheck ipython
+
+    CONSOLE_DIR=`rospack find robot_skill_server`/src
+    ipython -i ${CONSOLE_DIR}/'console.py' amigo
+}
+
 #####################
 #
 # DIAGNOSTICS
