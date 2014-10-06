@@ -1,5 +1,5 @@
 - type: ros-rosbuild
   source:
       type: svn
-      url: https://roboticssrv.wtb.tue.nl/svn/ros/code/tue-ros-pkg/trunk/tue_actuation/whole_body_planner
+      url: https://github.com/Rayman/whole_body_planner.git
     
