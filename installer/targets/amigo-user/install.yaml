@@ -4,6 +4,8 @@
   name: robot-user
 - type: target
   name: ros-amigo_launch_files
+- type: target
+  name: ros-amigo_demo
 
 # TODO: sort out
 - type: target
