@@ -1,5 +1,4 @@
-- type: ros-rosbuild
+- type: ros
   source:
       type: svn
-      url: https://roboticssrv.wtb.tue.nl/svn/ros/code/tue-ros-pkg/trunk/tue_robocup/challenge_egpsr
-    
+      url: https://roboticssrv.wtb.tue.nl/svn/ros/trunk/challenge_egpsr   
