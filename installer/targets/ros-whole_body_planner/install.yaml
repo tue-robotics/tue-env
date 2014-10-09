@@ -1,5 +1,5 @@
-- type: ros-rosbuild
+- type: ros
   source:
-      type: svn
+      type: git
       url: https://github.com/Rayman/whole_body_planner.git
     
