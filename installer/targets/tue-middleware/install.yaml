@@ -74,3 +74,7 @@
   name: ros-wire_viz
 - type: target
   name: ros-obj_in_gripper
+
+# Execution
+- type: target
+  name: ros-action_server
