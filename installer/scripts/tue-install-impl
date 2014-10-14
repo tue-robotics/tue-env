@@ -367,9 +367,7 @@ function tue-install-ros {
     local ros_pkg_name=${TUE_INSTALL_CURRENT_TARGET#ros-}
 
     # First of all, make sure ROS itself is installed
-    tue-install-target ros    
-    mkdir -p $TUE_INSTALL_INSTALLED_DIR
-    touch $TUE_INSTALL_INSTALLED_DIR/ros
+    tue-install-target ros
 
     if [ "$type" = "system" ]; then
         if [ -z "$TUE_ROS_DISTRO" ]; then
@@ -520,9 +518,6 @@ for target in $targets
 do
     tue-install-target $target
 done
-
-mkdir -p $TUE_INSTALL_INSTALLED_DIR
-touch $TUE_INSTALL_INSTALLED_DIR/$1
 
 # (Re-)generate setup file
 mkdir -p $TUE_ENV_DIR/.env/setup

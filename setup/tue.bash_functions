@@ -357,12 +357,41 @@ function tue-get
 
         ~/.tue/installer/scripts/tue-install $@
         error_code=$?
+
+        if [ $error_code -eq 0 ]
+        then
+            # Mark targets as installed
+            TUE_INSTALL_INSTALLED_DIR=$TUE_ENV_DIR/.env/installed
+            mkdir -p $TUE_INSTALL_INSTALLED_DIR
+
+            for target in $@
+            do            
+                touch $TUE_INSTALL_INSTALLED_DIR/$1
+            done
+        fi
+
         source ~/.bashrc
         return $error_code
     elif [[ $cmd == "update" ]]
     then
-        ~/.tue/installer/scripts/tue-install
-        source ~/.bashrc        
+        error_code=0
+        for target in $@
+        do
+            if [ ! -f $TUE_ENV_DIR/.env/dependencies/$target ]
+            then
+                echo "[tue-get] Package '$target' is not installed."
+                error_code=1
+            fi
+        done
+
+        if [ $error_code -eq 0 ]
+        then
+            ~/.tue/installer/scripts/tue-install $@
+            error_code=$?
+            source ~/.bashrc 
+        fi
+    
+        return $error_code       
     elif [[ $cmd == "remove" ]]
     then
         if [ -z "$1" ]
@@ -376,7 +405,7 @@ function tue-get
         do
             if [ ! -f $tue_installed_dir/$target ]
             then
-                echo "[tue-get] Package '$target' is not installed"
+                echo "[tue-get] Package '$target' is not installed."
                 error=1
             fi
         done        
@@ -385,7 +414,8 @@ function tue-get
         then
             echo ""
             echo "[tue-get] No packages where removed."
-            return $error; fi
+            return $error;
+        fi
 
         for target in $@
         do
@@ -419,6 +449,9 @@ function _tue-get
         if [[ $cmd == "install" ]]
         then
             COMPREPLY=( $(compgen -W "`ls ~/.tue/installer/targets`" -- $cur) )        
+        elif [[ $cmd == "update" ]]
+        then
+            COMPREPLY=( $(compgen -W "`ls $TUE_ENV_DIR/.env/dependencies`" -- $cur) ) 
         elif [[ $cmd == "remove" ]]
         then
             COMPREPLY=( $(compgen -W "`ls $TUE_ENV_DIR/.env/installed`" -- $cur) )  
