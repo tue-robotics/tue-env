@@ -1,3 +1,5 @@
+export TUE_DIR="$( cd "$( dirname "${BASH_SOURCE[0]}" )" && pwd )"
+
 if [ "$ROS_DISTRO_DEFAULT" == "groovy" ]
 then
     source ~/ros/groovy/catkin_ws/src/tue/trunk/amigo_admin_files/bash/amigo_user.bashrc
