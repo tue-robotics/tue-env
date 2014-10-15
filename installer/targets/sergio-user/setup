@@ -46,3 +46,5 @@ alias sergio-teleop='rosrun tue_teleop_keyboard teleop_twist_keyboard.py /cmd_ve
 #
 #####################
 alias diag='rosrun robot_monitor robot_monitor'
+
+alias rviz-sergio='rosrun rviz rviz -d ~/.tue/installer/targets/sergio-user/rviz_config.rviz'
