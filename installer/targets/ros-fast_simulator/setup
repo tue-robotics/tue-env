@@ -1,0 +1,17 @@
+function depcheck
+{
+  type -P $1 &>/dev/null && return
+  echo "Installing $2"
+  sudo apt-get -y install $2 && return
+  echo "Error installing $2"
+  exit 1
+}
+
+function sim-console
+{
+    depcheck ipython
+
+    SIM_CONSOLE_DIR=`rospack find fast_simulator`/src/fast_simulator
+    ipython -i ${SIM_CONSOLE_DIR}/'console.py'
+}
+
