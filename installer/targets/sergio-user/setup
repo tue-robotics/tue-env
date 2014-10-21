@@ -17,8 +17,8 @@ alias sshsergio3='until ssh -qo ConnectTimeout=1 -X amigo@sergio3; do echo waiti
 ####################
 alias sstart='roslaunch sergio_launch_files start.launch'
 alias sloc='roslaunch sergio_launch_files localization.launch'
-#alias smiddle='roslaunch sergio_launch_files middleware.launch'
-#alias smiddle-screen='screen -x -L -R -S smiddle roslaunch sergio_launch_files middleware.launch'
+alias smiddle='roslaunch sergio_launch_files middleware.launch'
+alias smiddle-screen='screen -x -L -R -S smiddle roslaunch sergio_launch_files middleware.launch'
 function smiddle
 {
     if [[ $ROS_DISTRO == "groovy" ]]
@@ -39,6 +39,35 @@ alias sexecutive='screen -x -L -R -S aexecutive'
 ####################
 alias sergio-teleop='rosrun tue_teleop_keyboard teleop_twist_keyboard.py /cmd_vel:=/sergio/base/references'
 # alias rviz-sergio=''
+
+####################
+#
+# SERGIO CONSOLE
+#
+####################
+
+function depcheck
+{
+  type -P $1 &>/dev/null && return
+  echo "Installing $2"
+  sudo apt-get -y install $2 && return
+  echo "Error installing $2"
+  echo "depcheck function defined in both amigo setup and sergio setup, please make nice"
+  exit 1
+}
+
+function sergio-console
+{
+    depcheck ipython
+
+    ROBOT_PARTS_DIR=`rospack find robot_skills`/src/robot_skills
+    echo ${ROBOT_PARTS_DIR}
+    if [[ -n "$1" ]]; then
+        ipython -i ${ROBOT_PARTS_DIR}/$1'.py'
+    else
+        ipython -i --autocall 2 ${ROBOT_PARTS_DIR}/'sergio.py'
+    fi
+}
 
 #####################
 #
