@@ -6,6 +6,7 @@ import subprocess
 from optparse import OptionParser
 from rospkg import RosPack
 from os import path
+from os.path import expanduser
 
 usage = "usage: %prog [options] svn-url"
 parser = OptionParser(usage=usage)
@@ -17,7 +18,7 @@ if (len(args) != 1):
 else:
 	url = args[0]
 	rp = RosPack()
-	authors_file = path.join('/home/sdries', 'authors.txt')
+	authors_file = expanduser("~/.tue/installer/scripts/git-authors.txt")
 
 	url = urlparse.urlparse(url)
 
@@ -38,7 +39,7 @@ else:
 	trunk = path_parts[2]
 
 	bashCommand = 'git svn clone %s --trunk %s --authors-file=%s' % (svn, trunk, authors_file)
-	print 'executing the following command:', bashCommand
+	print 'Please execute the following command:\n\n', bashCommand
 
 
 	#process = subprocess.Popen(bashCommand.split(), stdout=subprocess.PIPE)
