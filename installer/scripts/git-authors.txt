@@ -1,0 +1,18 @@
+jlunenburg  = Janno Lunenburg       <j.j.m.lunenburg@tue.nl>
+jlunnenb    = Janno Lunenburg       <j.j.m.lunenburg@tue.nl>
+lferreira   = Luis Ferreira         <luisfferreira@outlook.com>
+lvbeek      = Loy van Beek          <loy.vanbeek@gmail.com>
+mbaeten     = Max baeten            <m.j.j.baeten@student.tue.nl>
+rappeldoorn = Rein Appeldoorn       <reinzor@gmail.com>
+rwijnands   = Ramon Wijnands        <rayman747@hotmail.com>
+svddries    = Sjoerd van den Dries  <s.v.d.dries@tue.nl>
+tclephas    = Tim Clephas           <t.t.g.clephas@alumnus.tue.nl>
+
+bcoenen      = bcoenen 
+egeerts      = Erik Geerts <egeerts>
+jelfring     = Jos Elfring <jelfring>
+pmetsemakers = Paul Metsemakers <pmetsemakers>
+sjansen      = sjansen 
+tdejager     = Tim de Jager <tdejager>
+tderksen     = Teun Derksen <tderksen>
+tpeters      = tpeter

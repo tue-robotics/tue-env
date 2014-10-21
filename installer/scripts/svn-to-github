@@ -17,7 +17,7 @@ if (len(args) != 1):
 else:
 	url = args[0]
 	rp = RosPack()
-	authors_file = path.join(rp.get_path('common_admin_files'), 'authors.txt')
+	authors_file = path.join('/home/sdries', 'authors.txt')
 
 	url = urlparse.urlparse(url)
 
@@ -41,5 +41,5 @@ else:
 	print 'executing the following command:', bashCommand
 
 
-	process = subprocess.Popen(bashCommand.split(), stdout=subprocess.PIPE)
-	print process.communicate()[0]
+	#process = subprocess.Popen(bashCommand.split(), stdout=subprocess.PIPE)
+	#print process.communicate()[0]
