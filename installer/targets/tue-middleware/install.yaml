@@ -13,7 +13,7 @@
 
 # Executive
 
-# Navigation
+# Navigation (old)
 - type: target
   name: ros-depth_map_self_filter
 - type: target
@@ -22,6 +22,10 @@
   name: ros-scan_to_cloud_converter
 - type: target
   name: ros-tue_move_base_3d
+
+# Navigation
+- type: target
+  name: ros-cb_base_navigation
 
 # Manipulation
 - type: target
