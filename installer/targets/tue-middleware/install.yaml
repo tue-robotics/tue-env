@@ -26,6 +26,8 @@
 # Navigation
 - type: target
   name: ros-cb_base_navigation
+- type: target
+  name: ros-dwa_local_planner
 
 # Manipulation
 - type: target
