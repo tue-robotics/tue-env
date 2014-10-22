@@ -248,51 +248,27 @@ function tue-status
             fi
         fi
     done
+}
 
-    if [ ! -d ~/ros/groovy/rosbuild/trunk ]
-    then
-        return
-    fi
+function tue-git-status
+{
+    local output=""
 
-
-    # TEMPORARILY FOR GROOVY
-    fs=`ls ~/ros/groovy/rosbuild/trunk`
-    for f in $fs
+    fs=`ls $TUE_SYSTEM_DIR/src`
+    for pkg in $fs
     do
-        pkg_dir=~/ros/groovy/rosbuild/trunk/$f
+        pkg_dir=$TUE_SYSTEM_DIR/src/$pkg
 
-        status=
-        vctype=
-
-        if [ -d $pkg_dir/.svn ]
-        then
-            status=`svn status -q $pkg_dir`
-            vctype=svn
-        elif [ -d $pkg_dir/.git ]
+        if [ -d $pkg_dir ]
         then
             cd $pkg_dir
-            status=`git status --short`
-            cd - &> /dev/null
-            vctype=git
-        else
-            show=false
+            res=$(git rev-parse --abbrev-ref HEAD 2>&1)
+            if [ $? -eq 0 ]
+            then
+                printf "\e[0;36m%-20s\033[0m %s\n" "$res" "$pkg"
+            fi
         fi
-
-        if [ -n "$vctype" ]
-        then
-            if [ -n "$status" ]; then
-                echo ""
-                #                echo -e "\033[1m$f (svn) \033[0m \033[38;5;1mMODIFIED\033[39m"
-                echo -e "\033[38;5;1mM  \033[0m($vctype) \033[1m$f\033[0m"
-                echo "--------------------------------------------------"
-                echo -e "$status"
-                echo "--------------------------------------------------"
-                #echo ""
-            #else
-                #echo -e "\033[38;5;2mOK\033[39m \033[0m($vctype) \033[1m$f\033[0m"
-            fi 
-        fi
-   done
+    done
 }
 
 # ----------------------------------------------------------------------------------------------------
