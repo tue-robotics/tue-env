@@ -4,8 +4,4 @@
   name: robot-user
 - type: target
   name: ros-sergio_launch_files
-- type: target
-  name: ros-sergio_description
-- type: target
-  name: ros-sergio_machine_files
   
