@@ -1,0 +1,27 @@
+export ED_PLUGIN_PATH=~/ros/$TUE_ROS_DISTRO/dev/devel/lib:~/ros/$TUE_ROS_DISTRO/system/devel/lib
+
+function ed
+{
+	if [ -z "$1" ]
+	then
+		echo """Usage: ed COMMAND [ARG1 ARG2 ... ]
+
+Possible commands:
+
+    run         Starts the ED server
+    reset       Resets ED
+"""
+		return
+	fi
+
+	if [ "$1" == "run" ]
+	then
+        shift
+		rosrun ed ed_server $@
+	elif [ "$1" == "reset" ]
+	then
+		rosservice call /ed/reset
+	else
+		echo "ED: Unknown command: '$1'"
+	fi
+}
