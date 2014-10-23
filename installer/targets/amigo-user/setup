@@ -95,9 +95,9 @@ function amigo-console
     ROBOT_PARTS_DIR=`rospack find robot_skills`/src/robot_skills
     echo ${ROBOT_PARTS_DIR}
     if [[ -n "$1" ]]; then
-        ipython -i ${ROBOT_PARTS_DIR}/$1'.py'
+        ipython -i --no-banner ${ROBOT_PARTS_DIR}/$1'.py'
     else
-        ipython -i --autocall 2 ${ROBOT_PARTS_DIR}/'amigo.py'
+        ipython -i --no-banner --autocall 2 ${ROBOT_PARTS_DIR}/'amigo.py'
     fi
 }
 
