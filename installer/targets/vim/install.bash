@@ -26,6 +26,18 @@ then
     git clone https://github.com/editorconfig/editorconfig-vim.git ~/.vim/bundle/editorconfig-vim
 fi
 
+# set the default editor to vim
+vimdir="/usr/bin/vim.basic"
+if [ -f $vimdir ] # only if vim is installed
+then
+    current=`update-alternatives --query editor | grep Value | awk '{print $2}'`
+    if [ "$current" = "/bin/nano" ]
+    then
+        echo -e "\nYou are using nano, let's setup vim\n"
+        sudo update-alternatives --set editor $vimdir
+    fi
+fi
+
 tue-install-system vim
 
 # TODO: when should we run this (vim needs to be installed)
