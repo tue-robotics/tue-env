@@ -1,0 +1,16 @@
+#!/bin/bash
+
+name=`git config --global --get user.name`
+email=`git config --global --get user.email`
+
+if [ -z "$name" ]; then
+	echo -e "\ngit configuration\n"
+	read -p "Enter full name: " name
+	git config --global user.name "$name"
+fi
+
+if [ -z "$email" ]; then
+	echo -e "\ngit configuration\n"
+	read -p "Enter GitHub email: " email
+	git config --global user.email "$email"
+fi
