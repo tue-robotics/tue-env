@@ -25,3 +25,5 @@ Possible commands:
 		echo "ED: Unknown command: '$1'"
 	fi
 }
+
+alias ed-reset='rosservice call /ed/reset "{}"'
