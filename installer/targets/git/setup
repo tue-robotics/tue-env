@@ -3,6 +3,7 @@
 name=`git config --global --get user.name`
 email=`git config --global --get user.email`
 
+# ask for user + email if not set
 if [ -z "$name" ]; then
 	echo -e "\ngit configuration\n"
 	read -p "Enter full name: " name
@@ -14,3 +15,5 @@ if [ -z "$email" ]; then
 	read -p "Enter GitHub email: " email
 	git config --global user.email "$email"
 fi
+
+git config --global alias.lg "log --color --graph --pretty=format:'%Cred%h%Creset -%C(yellow)%d%Creset %s %Cgreen(%cr) %C(bold blue)<%an>%Creset' --abbrev-commit"
