@@ -56,10 +56,10 @@ set undolevels=700
 
 " Real programmers don't use TABs but spaces
 set tabstop=4
-"" set softtabstop=4
+set softtabstop=4
 set shiftwidth=4
-"" set shiftround
-"" set expandtab
+set shiftround
+set expandtab
 
 
 " Make search case insensitive
