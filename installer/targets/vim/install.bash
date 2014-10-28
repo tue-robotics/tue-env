@@ -14,7 +14,7 @@ then
     # install pathogen.vim
     # https://github.com/tpope/vim-pathogen
     mkdir -p ~/.vim/autoload ~/.vim/bundle
-    curl -LSso ~/.vim/autoload/pathogen.vim https://tpo.pe/pathogen.vim
+    wget https://tpo.pe/pathogen.vim -O ~/.vim/autoload/pathogen.vim
 
     # Now you can install any plugin into a .vim/bundle/plugin-name/ folder
 fi
