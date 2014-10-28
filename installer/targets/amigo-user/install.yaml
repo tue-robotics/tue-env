@@ -19,4 +19,4 @@
 - type: target
   name: ros-amigo_gripper_server
 - type: target
-  name: ros-amigo_spindle_server
+  name: ros-torso_server
