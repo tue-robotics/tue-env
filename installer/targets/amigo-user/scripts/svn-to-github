@@ -18,7 +18,7 @@ if (len(args) != 1):
 else:
 	url = args[0]
 	rp = RosPack()
-	authors_file = expanduser("~/.tue/installer/scripts/git-authors.txt")
+	authors_file = expanduser("~/.tue/installer/targets/amigo-user/scripts/git-authors.txt")
 
 	url = urlparse.urlparse(url)
 
