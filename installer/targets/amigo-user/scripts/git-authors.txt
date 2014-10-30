@@ -1,4 +1,4 @@
-tpeters      = Ton Peters <peterstmc@gmail.com
+tpeters      = Ton Peters <peterstmc@gmail.com>
 rwijnands   = Ramon Wijnands        <rayman747@hotmail.com>
 rappeldoorn = Rein Appeldoorn       <reinzor@gmail.com>
 lferreira   = Luis Ferreira         <luisfferreira@outlook.com>
