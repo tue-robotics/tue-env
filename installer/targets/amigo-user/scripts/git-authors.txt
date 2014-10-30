@@ -38,3 +38,5 @@ tderksen = Teun Derksen <t.j.j.derksen@student.tue.nl>
 tdjager = Tim de Jager <tdejager89@gmail.com>
 wgeelen = Wouter Geelen <w.geelen@student.tue.nl>
 zli = Ziyang Li <ziyang.d.lee@gmail.com>
+mmeijs = Mark Meijs <m.j.meijs@student.tue.nl>
+
