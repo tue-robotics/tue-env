@@ -1,5 +1,5 @@
 - type: ros
   source:
-      type: svn
-      url: https://roboticssrv.wtb.tue.nl/svn/ros/trunk/rtt_control_components
+      type: git
+      url: https://github.com/tue-robotics/rtt_control_components.git
 
