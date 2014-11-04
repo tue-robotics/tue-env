@@ -16,9 +16,7 @@ then
 
     alias rospkgs="vim $TUE_ROSBUILD_DIR/.rosinstall"
     
-elif [[ $TUE_ROS_DISTRO == "hydro" ]]
-then
-    source $TUE_SYSTEM_DIR/devel/setup.bash
+else
     source $TUE_DEV_DIR/devel/setup.bash
 fi
 
