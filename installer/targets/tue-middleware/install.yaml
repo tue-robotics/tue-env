@@ -69,6 +69,8 @@
 - type: target
   name: ros-ed
 - type: target
+  name: ros-ed_gui_server
+- type: target
   name: ros-tue_reasoner_core
 - type: target
   name: ros-tue_knowledge
