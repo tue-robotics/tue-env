@@ -3,3 +3,5 @@
       type: git
       url: https://github.com/tue-robotics/ed.git
 
+- type: target
+  name: ros-ed_gui_server
