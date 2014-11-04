@@ -71,8 +71,7 @@ then
 
     source $TUE_ROSBUILD_DIR/setup.bash
 
-elif [[ $TUE_ROS_DISTRO == "hydro" ]]
-then
+else
     if [ ! -f $TUE_SYSTEM_DIR/devel/setup.bash ]
     then
         mkdir -p $TUE_SYSTEM_DIR/src
