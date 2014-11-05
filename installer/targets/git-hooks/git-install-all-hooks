@@ -1,0 +1,15 @@
+#!/bin/bash
+
+cd ~/ros/$TUE_ENV/system/src
+echo installing hooks in `pwd`
+
+for D in `find . -mindepth 1 -maxdepth 1 -type d -follow`
+do
+    pushd $D
+    if git rev-parse --git-dir > /dev/null 2>&1;
+    then
+        echo "installing git hooks into \"$D\""
+        git hooks --install
+    fi
+    popd
+done
