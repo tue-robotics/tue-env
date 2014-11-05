@@ -5,5 +5,6 @@ hash git-su 2> /dev/null || sudo gem install gitsu
 # install the authors file
 if [ ! -f ~/.gitsu ]
 then
-    ln -s ~/.tue/installer/targets/gitsu/gitsu.txt .gitsu
+    echo "linking ~/.gitsu"
+    ln -s ~/.tue/installer/targets/gitsu/gitsu.txt ~/.gitsu
 fi
