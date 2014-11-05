@@ -9,4 +9,6 @@ if [ ! -f /usr/local/bin/git-extras ]; then
 	git config --global color.ui true
 fi
 
-tue-install-system git gitk git-gui
+tue-install-system git
+tue-install-system gitk
+tue-install-system git-gui
