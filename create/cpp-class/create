@@ -86,7 +86,7 @@ with open(class_name_ + ".h", "w") as f:
 
     f.write("public:\n\n")
     f.write("    " + class_name_camel + "();\n\n")
-    f.write("    " + "virtual ~" + class_name_camel + "();\n\n")
+    f.write("    " + "~" + class_name_camel + "();\n\n")
     f.write("private:\n\n")
     f.write("};\n\n")
 
