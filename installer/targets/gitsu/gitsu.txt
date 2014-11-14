@@ -31,7 +31,7 @@ r.j.m.janssen@tue.nl : Rob Janssen
 s.a.m.coenen@student.tue.nl : Bas Coenen
 sepsimon@gmail.com : Simon Jansen
 s.marinkov@tue.nl : Sava Marinkov
-den : Sjoerd van
+s.v.d.dries@tue.nl : Sjoerd van den Dries
 t.t.g.clephas@alumnus.tue.nl : Tim Clephas
 Jager : Tim de
 t.j.j.derksen@student.tue.nl : Teun Derksen
