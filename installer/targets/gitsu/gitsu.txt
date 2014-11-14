@@ -6,21 +6,21 @@ luisfferreira@outlook.com : Luis Ferreira
 s.a.m.coenen@student.tue.nl : Bas Coenen
 b.mrkajic@student.tue.nl : Boris Mrkajic
 b.willems@student.tue.nl : Bas Willems
-Marco : Daniel Di
+marcodl@ipvs.uni-stuttgart.de : Daniel Di Marco
 e.g.geerts@live.nl : Erik Geerts
-Meijl : Erik van
+erik.meijl@gmail.com : Erik van Meijl
 h.vos@student.tue.nl : Harm Vos
 j.w.c.j.denissen@student.tue.nl : Jean-Pierre Denissen
 j.elfring@tue.nl : Jos Elfring
-den : Jimmy van
+j.v.d.heuvel@student.tue.nl : Jimmy van den Heuvel
 j.j.m.lunenburg@tue.nl : Janno Lunenburg
 j.j.m.lunenburg@tue.nl : Janno Lunenburg
-den : Jimmy van
+j.v.d.heuvel@student.tue.nl : Jimmy van den Heuvel
 buys.koen@gmail.com : Koen Buys
-Tienhoven : Kris van
-Beek : Loy van
-Beek : Loy van
-Marco : Daniel Di
+k.v.tienhoven@student.tue.nl : Kris van Tienhoven
+loy.vanbeek@gmail.com : Loy van Beek
+loy.vanbeek@gmail.com : Loy van Beek
+marcodl@ipvs.uni-stuttgart.de : Daniel Di Marco
 m.j.j.baeten@student.tue.nl : Max Baeten
 geelenmark17@gmail.com : Mark Geelen
 n.e.bilterijst@student.tue.nl : Niek Bilterijst
@@ -33,9 +33,9 @@ sepsimon@gmail.com : Simon Jansen
 s.marinkov@tue.nl : Sava Marinkov
 s.v.d.dries@tue.nl : Sjoerd van den Dries
 t.t.g.clephas@alumnus.tue.nl : Tim Clephas
-Jager : Tim de
+tdejager89@gmail.com : Tim de Jager
 t.j.j.derksen@student.tue.nl : Teun Derksen
-Jager : Tim de
+tdejager89@gmail.com : Tim de Jager
 w.geelen@student.tue.nl : Wouter Geelen
 ziyang.d.lee@gmail.com : Ziyang Li
 m.j.meijs@student.tue.nl : Mark Meijs
