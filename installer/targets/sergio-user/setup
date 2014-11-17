@@ -77,3 +77,17 @@ function sergio-console
 alias diag='rosrun robot_monitor robot_monitor'
 
 alias rviz-sergio='rosrun rviz rviz -d ~/.tue/installer/targets/sergio-user/rviz_config.rviz'
+
+#####################
+#
+# SERGIO FUNCTIONS
+#
+#####################
+function sergio-torso-move-joints {
+    if [ -z "$2" ]; then
+        echo "Usage: sergio-torso-move-joints lower_spindle upper_splindl"
+        return
+    fi
+
+    ( rostopic pub /sergio/torso/references sensor_msgs/JointState "{header: {seq: 0, stamp: {secs: 0, nsecs: 0}, frame_id: ''}, name: ['torso_lower_spindle', 'torso_upper_spindle'], position: [$1, $2], velocity: [0], effort: [0]}"  --once  &> /dev/null & )
+}
