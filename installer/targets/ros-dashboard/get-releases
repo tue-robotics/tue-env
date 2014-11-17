@@ -1,0 +1,15 @@
+#!/usr/bin/env python
+
+import sys, urllib2, json, re
+
+v =  sys.argv[1] if len(sys.argv) == 2 else exit('no version specified')
+
+url = 'https://api.github.com/repos/tue-robotics/dashboard/releases'
+rs = json.loads(urllib2.urlopen(url).read())
+
+asset_re = re.compile(r'^dashboard(-.+)?-%s.tar.gz$' % v)
+for r in rs:
+  assets = (asset for asset in r['assets'] if asset_re.match(asset['name']))
+  new = max(assets, key=lambda a: a['created_at'])
+  url = new['browser_download_url']
+  print r['tag_name'], url
