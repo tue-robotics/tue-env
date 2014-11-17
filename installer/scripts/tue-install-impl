@@ -1,5 +1,13 @@
 #!/bin/bash
 
+if [ -z $TUE_BIN ]
+then
+	echo "[tue-get] Variable TUE_BIN not specified."
+	exit
+fi
+
+mkdir -p $TUE_BIN
+
 # Temporarily
 if [ ! -d ~/.tue/env ]
 then
@@ -543,6 +551,8 @@ fi
 
 if [ -z "$TUE_INSTALL_DUMMY" ]; then
     if [ -n "$TUE_INSTALL_SYSTEMS" ]; then
+		echo -e "Going to run the following command:\n"
+		echo "sudo apt-get install -y $TUE_INSTALL_SYSTEMS"
         sudo apt-get install -y $TUE_INSTALL_SYSTEMS
     fi
 fi

@@ -32,3 +32,6 @@ else
         source ~/.tue/env/setup/target_setup.bash
     fi
 fi
+
+export TUE_BIN=~/.tue/bin
+export PATH=$TUE_BIN:$PATH
