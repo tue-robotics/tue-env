@@ -309,10 +309,12 @@ function tue-get
 
     Possible commands:
 
-        install        - Installs a package
+        dep            - Shows target dependencies
+	    install        - Installs a package
         update         - Updates currently installed packages
         remove         - Removes installed package
         list-installed - Lists all installed packages
+
 """
         return 1
     fi
@@ -407,6 +409,9 @@ function tue-get
     elif [[ $cmd == "list-installed" ]]
     then
         ls $tue_dep_dir
+    elif [[ $cmd == "dep" ]]
+    then
+        ~/.tue/installer/scripts/tue-get-dep $@
     else
         echo "[tue-get] Unknown command: '$cmd'"
         return 1
@@ -419,12 +424,15 @@ function _tue-get
     local prev=${COMP_WORDS[COMP_CWORD-1]}
 
     if [ $COMP_CWORD -eq 1 ]; then
-        COMPREPLY=( $(compgen -W "install update remove list-installed" -- $cur) )
+        COMPREPLY=( $(compgen -W "dep install update remove list-installed" -- $cur) )
     else
         cmd=${COMP_WORDS[1]}
         if [[ $cmd == "install" ]]
         then
             COMPREPLY=( $(compgen -W "`ls ~/.tue/installer/targets`" -- $cur) )        
+        elif [[ $cmd == "dep" ]]
+        then
+            COMPREPLY=( $(compgen -W "`ls $TUE_ENV_DIR/.env/dependencies`" -- $cur) ) 
         elif [[ $cmd == "update" ]]
         then
             COMPREPLY=( $(compgen -W "`ls $TUE_ENV_DIR/.env/dependencies`" -- $cur) ) 

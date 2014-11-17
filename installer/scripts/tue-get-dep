@@ -1,0 +1,44 @@
+#! /bin/bash
+
+#  - TUE-GET: tool voor het weergeven van dependencies (a la rospack depends*)
+#     - Extra handig: aangeven via welke weg A en B van elkaar afhangen
+#     - Bijv: tue-get dep A B --level 1       (Waarbij A en B ook ? of * mogen zijn)
+
+function _show_dep
+{
+    local indent="$3"
+    local tmp=$4
+
+    if [ -n "$2" ]
+    then
+        tmp="$tmp${indent}$1\n"
+        if [[ "$1" == "$2" ]]
+        then
+            echo -e "$tmp"
+            return
+        fi
+    else
+    	echo ${indent}$1
+    fi
+
+    for t in `cat $TUE_ENV_DIR/.env/dependencies/$1`
+	do
+		_show_dep $t "$2" "--$indent" "$tmp"
+	done
+}
+
+if [ -z $1 ]
+then
+    echo "[tue-get dep] Usage: tue-get dep TARGET_FROM [ TARGET_TO ]"
+    exit 1
+fi
+
+if [[ "$1" == '.' ]]
+then
+    for t in `ls $TUE_ENV_DIR/.env/dependencies`
+	do
+		_show_dep $t $2
+	done
+else
+    _show_dep $1 $2
+fi
