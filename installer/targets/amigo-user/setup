@@ -276,3 +276,17 @@ function amigo-hear {
 
     rostopic pub --once /pocketsphinx/output std_msgs/String "$msg"
 }
+
+# --------------------------------------------------------------------------------
+
+function amigo-top-kinect-record-avi {
+    filename=$1
+
+    if [ -z $filename ]
+    then
+        filename=amigo_top_kinect-`date +"%Y-%m-%d-%H-%M-%S"`.avi
+    fi
+
+    # Lossless codec: FFV1
+    rosrun rgbd record_to_video rgb:=/amigo/top_kinect/rgb/image_color depth:=/amigo/top_kinect/depth_registered/image _fps:=30 _format:=DIVX _filename:=$filename _size:=1
+}
