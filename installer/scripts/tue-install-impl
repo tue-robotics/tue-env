@@ -33,9 +33,11 @@ then
 fi
 	
 TUE_INSTALL_DEPENDENCIES_DIR=$TUE_ENV_DIR/.env/dependencies
+TUE_INSTALL_DEPENDENCIES_ON_DIR=$TUE_ENV_DIR/.env/dependencies-on
 TUE_INSTALL_INSTALLED_DIR=$TUE_ENV_DIR/.env/installed
 
 mkdir -p $TUE_INSTALL_DEPENDENCIES_DIR
+mkdir -p $TUE_INSTALL_DEPENDENCIES_ON_DIR
 mkdir -p $TUE_INSTALL_INSTALLED_DIR
 
 TUE_INSTALL_TARGETS_DIR=~/.tue/installer/targets
@@ -117,8 +119,9 @@ function tue-install-target {
     # If the target has a parent target, add target as a dependency to the parent target
     if [ -n "$parent_target" ]
     then
-        mkdir -p $TUE_INSTALL_DEPENDENCIES_DIR
         echo "$target" >> $TUE_INSTALL_DEPENDENCIES_DIR/$parent_target
+        echo "$parent_target" >> $TUE_INSTALL_DEPENDENCIES_ON_DIR/$target
+        sort $TUE_INSTALL_DEPENDENCIES_ON_DIR/$target -u -o $TUE_INSTALL_DEPENDENCIES_ON_DIR/$target
     fi
 
     if [ ! -f $TUE_INSTALL_STATE_DIR/$target ]; then
