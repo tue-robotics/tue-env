@@ -6,6 +6,11 @@
 
 function _show_dep
 {
+    if [[ "$1" == "ros" ]]
+    then
+        return
+    fi
+
     local indent="$3"
     local tmp=$4
 
