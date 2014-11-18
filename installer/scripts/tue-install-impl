@@ -112,6 +112,15 @@ function tue-install-target {
 
     #echo $target
 
+    local parent_target=$TUE_INSTALL_CURRENT_TARGET
+
+    # If the target has a parent target, add target as a dependency to the parent target
+    if [ -n "$parent_target" ]
+    then
+        mkdir -p $TUE_INSTALL_DEPENDENCIES_DIR
+        echo "$target" >> $TUE_INSTALL_DEPENDENCIES_DIR/$parent_target
+    fi
+
     if [ ! -f $TUE_INSTALL_STATE_DIR/$target ]; then
 
         if [ ! -d $TUE_INSTALL_TARGET_DIR/$target ]
@@ -121,17 +130,8 @@ function tue-install-target {
 
         local install_file=$TUE_INSTALL_TARGET_DIR/$target/install
 
-        local parent_target=$TUE_INSTALL_CURRENT_TARGET
-
         TUE_INSTALL_CURRENT_TARGET_DIR=$TUE_INSTALL_TARGET_DIR/$target
         TUE_INSTALL_CURRENT_TARGET=$target
-
-        # If the target has a parent target, add target as a dependency to the parent target
-        if [ -n "$parent_target" ]
-        then
-            mkdir -p $TUE_INSTALL_DEPENDENCIES_DIR
-            echo "$target" >> $TUE_INSTALL_DEPENDENCIES_DIR/$parent_target
-        fi
 
         # Empty the target's dependency file        
         > $TUE_INSTALL_DEPENDENCIES_DIR/$target
@@ -154,11 +154,11 @@ function tue-install-target {
             fi 
         fi
 
-        TUE_INSTALL_CURRENT_TARGET=$parent_target
-        TUE_INSTALL_CURRENT_TARGET_DIR=$TUE_INSTALL_TARGET_DIR/$parent_target
-
         touch $TUE_INSTALL_STATE_DIR/$target
     fi
+
+    TUE_INSTALL_CURRENT_TARGET=$parent_target
+    TUE_INSTALL_CURRENT_TARGET_DIR=$TUE_INSTALL_TARGET_DIR/$parent_target
 }
 
 # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # 
