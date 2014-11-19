@@ -18,10 +18,6 @@
 - type: target
   name: amigo-user
 
-# git commit hooks
-- type: target
-  name: git-hooks
-
 # RoboCup
 - type: target
   name: tue-robocup-at-home
