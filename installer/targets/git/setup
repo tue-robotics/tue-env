@@ -16,5 +16,13 @@ if [ -z "$email" ]; then
 	git config --global user.email "$email"
 fi
 
-git config --global alias.lg "log --color --graph --pretty=format:'%Cred%h%Creset -%C(yellow)%d%Creset %s %Cgreen(%cr) %C(bold blue)<%an>%Creset' --abbrev-commit"
-git config --global push.default "current"
+lg=`git config --global --get alias.lg`
+pd=`git config --global --get push.default`
+
+if [ -z "$lg" ]; then
+	git config --global alias.lg "log --color --graph --pretty=format:'%Cred%h%Creset -%C(yellow)%d%Creset %s %Cgreen(%cr) %C(bold blue)<%an>%Creset' --abbrev-commit"
+fi
+if [ -z "$pd" ]; then
+	git config --global push.default "current"
+fi
+
