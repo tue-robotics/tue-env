@@ -1,0 +1,80 @@
+# # # # # # # # # # # # # # # # # # # #
+#               GENERAL
+# # # # # # # # # # # # # # # # # # # #
+
+# Robot environment
+export ROBOT_ENV=robotics_testlab_B
+
+# Which simulator to use (gazebo, fast_simulator)
+export SIMULATOR=fast_simulator
+
+# # # # # # # # # # # # # # # # # # # #
+#                AMIGO
+# # # # # # # # # # # # # # # # # # # #
+
+# Navigation type: 2d, 3d
+export AMIGO_NAV=3d
+
+# Localization type: amcl, gmapping, odom
+export AMIGO_LOC=amcl
+
+# # # # # # # # # # # # # # # # # # # #
+
+
+# Set Robot initial pose based on environment
+
+if [ $ROBOT_ENV == robotics_testlab_B ]; then
+ 
+    # Robot initial pose
+    export ROBOT_INIT_X=0.8 
+    export ROBOT_INIT_Y=0.0
+    export ROBOT_INIT_PHI=1.57
+
+    # Robot initial Gazebo pose
+    export GAZEBO_ROBOT_INIT_X=0.8 
+    export GAZEBO_ROBOT_INIT_Y=0.0
+    export GAZEBO_ROBOT_INIT_PHI=1.57
+
+elif [ $ROBOT_ENV == rgo2013 ]; then
+
+    # Robot initial pose
+    export ROBOT_INIT_X=-0.6
+    export ROBOT_INIT_Y=0
+    export ROBOT_INIT_PHI=0
+
+    # Robot initial Gazebo pose
+    export GAZEBO_ROBOT_INIT_X=-0.6
+    export GAZEBO_ROBOT_INIT_Y=0
+    export GAZEBO_ROBOT_INIT_PHI=0
+
+fi
+
+# # # # # # # # # # # # # # # # # # # #
+#                OTHER
+# # # # # # # # # # # # # # # # # # # #
+
+# Set TTS
+export TTS_MODULE=festival
+
+# # # # # # # # # # # # # # # # # # # #
+#              MACHINES
+# # # # # # # # # # # # # # # # # # # #
+
+#export MACHINE_TOP_KINECT=amigo1
+#export MACHINE_BASE_KINECT=amigo3
+#export MACHINE_TOP_LRF=amigo1
+#export MACHINE_BASE_LRF=amigo1
+
+export MACHINE_ARM_NAVIGATION=amigo3
+export MACHINE_GRIPPER_SERVER=amigo3
+export MACHINE_GRIPPER_DETECTION=amigo1
+export MACHINE_BASE_NAVIGATION=amigo4
+export MACHINE_BASE_NAVIGATION_3D=amigo1
+export MACHINE_LOCALIZATION=amigo3
+export MACHINE_PERCEPTION=amigo1
+export MACHINE_REASONER=amigo1
+export MACHINE_WORLD_MODEL=amigo1
+export MACHINE_SPEECH_TO_TEXT=amigo3
+export MACHINE_TEXT_TO_SPEECH=amigo3
+export MACHINE_PEOPLE_DETECTION=amigo2
+
