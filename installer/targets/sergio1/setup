@@ -1,1 +1,15 @@
+# # # # # # # # # # # # # # # # # # # #
+#                OTHER
+# # # # # # # # # # # # # # # # # # # #
+
+# Set TTS
+export TTS_MODULE=festival
+
+# ROS master URI
+export ROS_MASTER_URI=http://sergio1:11311
+
+# # # # # # # # # # # # # # # # # # # #
+#              MACHINES
+# # # # # # # # # # # # # # # # # # # #
+
 export ROBOT_REAL=true
