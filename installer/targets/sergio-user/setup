@@ -75,6 +75,7 @@ function sergio-console
 #
 #####################
 alias diag='rosrun robot_monitor robot_monitor'
+alias sdashboard='tue-dashboard dashboard sergio1'
 
 alias rviz-sergio='rosrun rviz rviz -d ~/.tue/installer/targets/sergio-user/rviz_config.rviz'
 
