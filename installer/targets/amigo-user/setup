@@ -143,7 +143,7 @@ function amigo-console2
 #####################
 alias diag='rosrun robot_monitor robot_monitor'
 alias dashboard='echo this is old dashboard command. please use adashboard for the AMIGO dashboard and sdashboard for the SERGIO dashboard'
-alias adashboard='tue-dashboard dashboard amigo1'
+alias adashboard='tue-dashboard amigo1'
 
 alias rviz-amigo='rosrun rviz rviz -d ~/.tue/installer/targets/amigo-user/rviz_config.rviz'
 
