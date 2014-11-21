@@ -3,6 +3,9 @@
 # astart
 - type: target
   name: ros-battery_manager
+  
+- type: target
+  name: ros-emergency_speakup
 
 # Middleware
 - type: target
