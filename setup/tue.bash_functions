@@ -262,10 +262,11 @@ function tue-git-status
         if [ -d $pkg_dir ]
         then
             cd $pkg_dir
-            res=$(git rev-parse --abbrev-ref HEAD 2>&1)
+            branch=$(git rev-parse --abbrev-ref HEAD 2>&1)
             if [ $? -eq 0 ]
             then
-                printf "\e[0;36m%-20s\033[0m %s\n" "$res" "$pkg"
+                hash=$(git rev-parse --short HEAD)
+                printf "\e[0;36m%-20s\033[0m %-15s %s\n" "$branch" "$hash" "$pkg"
             fi
         fi
     done
