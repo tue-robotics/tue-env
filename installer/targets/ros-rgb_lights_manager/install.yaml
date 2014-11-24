@@ -1,5 +1,5 @@
-- type: ros-rosbuild
+- type: ros
   source:
-      type: svn
-      url: https://roboticssrv.wtb.tue.nl/svn/ros/code/tue-ros-pkg/trunk/tue_actuation/rgb_lights_manager
+      type: git
+      url: https://github.com/tue-robotics/rgb_lights_manager.git
     
