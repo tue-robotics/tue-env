@@ -95,7 +95,7 @@ function sergio-torso-move-joints {
 
 function sergio-torso-laser-move {
     if [ -z "$1" ]; then
-        echo "Usage: sergio-torso-laser-move LASER_TILT"
+        echo "Usage: sergio-torso-laser-move LASER_TILT (range -0.02~0.29)"
         return
     fi
 
@@ -108,5 +108,5 @@ function sergio-head-move {
         return
     fi
 
-    rostopic pub /sergio/neck/references sensor_msgs/JointState "{header: {seq: 0, stamp: {secs: 0, nsecs: 0}, frame_id: ''}, name: ['neck_pan_joint', 'neck_tilt_joint'], position: [$1, $2], velocity: [0], effort: [0]}"  --once
+    rostopic pub /sergio/dynamixel/references sensor_msgs/JointState "{header: {seq: 0, stamp: {secs: 0, nsecs: 0}, frame_id: ''}, name: ['neck_pan_joint', 'neck_tilt_joint'], position: [$1, $2], velocity: [0], effort: [0]}"  --once
 }
