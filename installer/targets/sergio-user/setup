@@ -92,3 +92,21 @@ function sergio-torso-move-joints {
 
     ( rostopic pub /sergio/torso/references sensor_msgs/JointState "{header: {seq: 0, stamp: {secs: 0, nsecs: 0}, frame_id: ''}, name: ['torso_lower_spindle', 'torso_upper_spindle'], position: [$1, $2], velocity: [0], effort: [0]}"  --once  &> /dev/null & )
 }
+
+function sergio-torso-laser-move {
+    if [ -z "$1" ]; then
+        echo "Usage: sergio-torso-laser-move LASER_TILT"
+        return
+    fi
+
+    rostopic pub /sergio/dynamixel/references sensor_msgs/JointState "{header: {seq: 0, stamp: {secs: 0, nsecs: 0}, frame_id: ''}, name: ['laser_tilt_joint'], position: [$1], velocity: [0], effort: [0]}"  --once
+}
+
+function sergio-head-move {
+    if [ -z "$2" ]; then
+        echo "Usage: sergio-head-move PAN TILT"
+        return
+    fi
+
+    rostopic pub /sergio/neck/references sensor_msgs/JointState "{header: {seq: 0, stamp: {secs: 0, nsecs: 0}, frame_id: ''}, name: ['neck_pan_joint', 'neck_tilt_joint'], position: [$1, $2], velocity: [0], effort: [0]}"  --once
+}
