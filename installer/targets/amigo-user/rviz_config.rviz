@@ -6,10 +6,13 @@ Panels:
       Expanded:
         - /Global Options1
         - /TF1/Frames1
-        - /LRF - Back1
-        - /Nav - Current Global Path1
+        - /Nav3D - Octomap1/Namespaces1
+        - /Nav3D - Local Probability Costmap1/Namespaces1
+        - /Marker1
+        - /Marker2
+        - /MarkerArray2
       Splitter Ratio: 0.678571
-    Tree Height: 565
+    Tree Height: 697
   - Class: rviz/Selection
     Name: Selection
   - Class: rviz/Tool Properties
@@ -22,13 +25,15 @@ Panels:
   - Class: rviz/Views
     Expanded:
       - /Current View1
+      - /TopDownOrtho1
+      - /MaxObsVel21
     Name: Views
     Splitter Ratio: 0.5
   - Class: rviz/Time
     Experimental: false
     Name: Time
     SyncMode: 0
-    SyncSource: LRF - Base
+    SyncSource: ""
 Visualization Manager:
   Class: ""
   Displays:
@@ -453,31 +458,32 @@ Visualization Manager:
         Y: 0
         Z: 0
       Plane: XY
-      Plane Cell Count: 10
+      Plane Cell Count: 100
       Reference Frame: <Fixed Frame>
       Value: true
     - Class: rviz/Camera
       Enabled: false
       Image Rendering: background and overlay
-      Image Topic: /amigo/top_kinect/rgb/image_rect_color
+      Image Topic: /amigo/top_kinect/rgb/image_color
       Name: Cam - Head RGB
-      Overlay Alpha: 0.9
+      Overlay Alpha: 0.5
       Queue Size: 2
       Transport Hint: raw
       Value: false
       Visibility:
+        "": true
         Cam - Head Depth: true
         Cam - Head Point Cloud: true
-        Cam - Head Target: true
-        Grasp - Inverse Reachability: true
-        Grasp - Tabletop Clusters: true
-        Grasp - Tabletop Plane: true
-        Grid: true
+        Cam - Head Target: false
+        Grasp - Inverse Reachability: false
+        Grasp - Tabletop Clusters: false
+        Grasp - Tabletop Plane: false
+        Grid: false
         LRF - Back: true
         LRF - Base: true
         LRF - Torso: true
-        Loc - Map: true
-        MarkerArray: true
+        Loc - Map: false
+        MarkerArray: false
         Nav - Base Goal: true
         Nav - Current Global Path: true
         Nav - Global Costmap: true
@@ -486,35 +492,38 @@ Visualization Manager:
         Nav - Static Costmap: true
         Nav3D - Current Path: true
         Nav3D - Distance Costmap: true
+        Nav3D - Fused Pointcloud: true
         Nav3D - Goal Pose: true
+        Nav3D - Local Probability Costmap: false
         Nav3D - Obstacle Marker: true
         Nav3D - Octomap: true
         Nav3D - Probability Costmap: true
         Nav3D - Replanned Path: true
-        Path: true
-        Reasoner: true
+        Path: false
+        Reasoner: false
         RobotModel: true
-        Sim - Objects: true
+        Sim - Objects: false
         TF: true
         Value: true
-        WBC - Repulsive Forces: true
-        Wire - Evidence: true
-        Wire - State: true
-        Wire2 - Colored Laser: true
+        WBC - Repulsive Forces: false
+        Wire - Evidence: false
+        Wire - State: false
+        Wire2 - Colored Laser: false
         Wire2 - Kinect Unknown: true
-        Wire2 - Model Laser: true
-        Wire2 - State: true
+        Wire2 - Model Laser: false
+        Wire2 - State: false
       Zoom Factor: 1
     - Class: rviz/Camera
       Enabled: false
       Image Rendering: background and overlay
-      Image Topic: /amigo/top_kinect/depth_registered/image
+      Image Topic: /amigo/top_kinect/depth_registered/image_self_filtered
       Name: Cam - Head Depth
       Overlay Alpha: 0.5
       Queue Size: 2
       Transport Hint: raw
       Value: false
       Visibility:
+        "": true
         Cam - Head Point Cloud: true
         Cam - Head RGB: true
         Cam - Head Target: true
@@ -535,7 +544,9 @@ Visualization Manager:
         Nav - Static Costmap: true
         Nav3D - Current Path: true
         Nav3D - Distance Costmap: true
+        Nav3D - Fused Pointcloud: true
         Nav3D - Goal Pose: true
+        Nav3D - Local Probability Costmap: true
         Nav3D - Obstacle Marker: true
         Nav3D - Octomap: true
         Nav3D - Probability Costmap: true
@@ -603,7 +614,7 @@ Visualization Manager:
       Color: 255; 255; 255
       Color Transformer: FlatColor
       Decay Time: 0
-      Enabled: true
+      Enabled: false
       Invert Rainbow: false
       Max Color: 255; 255; 255
       Max Intensity: 101
@@ -619,7 +630,7 @@ Visualization Manager:
       Topic: /amigo/base_front_laser
       Use Fixed Frame: true
       Use rainbow: true
-      Value: true
+      Value: false
     - Alpha: 1
       Autocompute Intensity Bounds: true
       Autocompute Value Bounds:
@@ -690,10 +701,10 @@ Visualization Manager:
       Class: rviz/Map
       Color Scheme: map
       Draw Behind: false
-      Enabled: true
+      Enabled: false
       Name: Nav - Map
       Topic: /nav_map
-      Value: true
+      Value: false
     - Class: rviz/Marker
       Enabled: false
       Marker Topic: /move_base/global_costmap
@@ -711,27 +722,27 @@ Visualization Manager:
       Queue Size: 100
       Value: false
     - Class: rviz/Marker
-      Enabled: true
+      Enabled: false
       Marker Topic: /local_world_model
       Name: Nav - Current Global Path
       Namespaces:
         {}
       Queue Size: 100
-      Value: true
+      Value: false
     - Class: rviz/Marker
-      Enabled: true
+      Enabled: false
       Marker Topic: visualization_marker
       Name: Nav - Replanned Global Path
       Namespaces:
         {}
       Queue Size: 100
-      Value: true
+      Value: false
     - Alpha: 1
       Axes Length: 1
       Axes Radius: 0.1
       Class: rviz/Pose
       Color: 255; 25; 0
-      Enabled: true
+      Enabled: false
       Head Length: 0.3
       Head Radius: 0.1
       Name: Nav - Base Goal
@@ -739,23 +750,23 @@ Visualization Manager:
       Shaft Radius: 0.05
       Shape: Arrow
       Topic: /move_base_simple/goal
-      Value: true
+      Value: false
     - Class: rviz/Marker
-      Enabled: true
+      Enabled: false
       Marker Topic: /move_base_3d/current_path
       Name: Nav3D - Current Path
       Namespaces:
         {}
       Queue Size: 100
-      Value: true
+      Value: false
     - Class: rviz/Marker
-      Enabled: true
+      Enabled: false
       Marker Topic: /move_base_3d/replanned_path
       Name: Nav3D - Replanned Path
       Namespaces:
         {}
       Queue Size: 100
-      Value: true
+      Value: false
     - Class: rviz/Marker
       Enabled: false
       Marker Topic: /move_base_3d/goal_pose
@@ -764,46 +775,83 @@ Visualization Manager:
         {}
       Queue Size: 100
       Value: false
+    - Alpha: 1
+      Autocompute Intensity Bounds: true
+      Autocompute Value Bounds:
+        Max Value: 10
+        Min Value: -10
+        Value: true
+      Axis: Z
+      Channel Name: intensity
+      Class: rviz/PointCloud2
+      Color: 255; 255; 255
+      Color Transformer: Intensity
+      Decay Time: 0
+      Enabled: false
+      Invert Rainbow: false
+      Max Color: 255; 255; 255
+      Max Intensity: 4096
+      Min Color: 0; 0; 0
+      Min Intensity: 0
+      Name: Nav3D - Fused Pointcloud
+      Position Transformer: XYZ
+      Queue Size: 10
+      Selectable: true
+      Size (Pixels): 3
+      Size (m): 0.01
+      Style: Flat Squares
+      Topic: /fused_pointclouds
+      Use Fixed Frame: true
+      Use rainbow: true
+      Value: false
     - Class: rviz/MarkerArray
-      Enabled: true
+      Enabled: false
       Marker Topic: /occupied_cells_vis_array
       Name: Nav3D - Octomap
       Namespaces:
         {}
       Queue Size: 100
-      Value: true
+      Value: false
     - Class: rviz/Marker
-      Enabled: true
+      Enabled: false
       Marker Topic: /distance_costmap
       Name: Nav3D - Distance Costmap
       Namespaces:
         {}
       Queue Size: 100
-      Value: true
+      Value: false
     - Class: rviz/Marker
-      Enabled: true
+      Enabled: false
       Marker Topic: /probability_costmap
       Name: Nav3D - Probability Costmap
       Namespaces:
         {}
       Queue Size: 100
-      Value: true
+      Value: false
     - Class: rviz/Marker
-      Enabled: true
+      Enabled: false
+      Marker Topic: /move_base_3d/AmigoLocalPlanner/local_probability_costmap
+      Name: Nav3D - Local Probability Costmap
+      Namespaces:
+        {}
+      Queue Size: 100
+      Value: false
+    - Class: rviz/Marker
+      Enabled: false
       Marker Topic: /move_base_3d/AmigoLocalPlanner/obs_marker
       Name: Nav3D - Obstacle Marker
       Namespaces:
         {}
       Queue Size: 100
-      Value: true
+      Value: false
     - Class: rviz/MarkerArray
-      Enabled: true
+      Enabled: false
       Marker Topic: visualization_marker_array
       Name: Grasp - Inverse Reachability
       Namespaces:
         {}
       Queue Size: 100
-      Value: true
+      Value: false
     - Alpha: 1
       Autocompute Intensity Bounds: true
       Autocompute Value Bounds:
@@ -816,7 +864,7 @@ Visualization Manager:
       Color: 255; 255; 255
       Color Transformer: ""
       Decay Time: 0
-      Enabled: true
+      Enabled: false
       Invert Rainbow: false
       Max Color: 255; 255; 255
       Max Intensity: 4096
@@ -832,7 +880,7 @@ Visualization Manager:
       Topic: ""
       Use Fixed Frame: true
       Use rainbow: true
-      Value: true
+      Value: false
     - Alpha: 1
       Autocompute Intensity Bounds: true
       Autocompute Value Bounds:
@@ -845,7 +893,7 @@ Visualization Manager:
       Color: 255; 255; 255
       Color Transformer: ""
       Decay Time: 0
-      Enabled: true
+      Enabled: false
       Invert Rainbow: false
       Max Color: 255; 255; 255
       Max Intensity: 4096
@@ -861,55 +909,55 @@ Visualization Manager:
       Topic: ""
       Use Fixed Frame: true
       Use rainbow: true
-      Value: true
+      Value: false
     - Class: rviz/MarkerArray
-      Enabled: true
+      Enabled: false
       Marker Topic: /fast_simulator/visualization
       Name: Sim - Objects
       Namespaces:
-        "": true
+        {}
       Queue Size: 100
-      Value: true
+      Value: false
     - Class: rviz/MarkerArray
-      Enabled: true
+      Enabled: false
       Marker Topic: /visualization_markers/world_state
       Name: Wire - State
       Namespaces:
         {}
       Queue Size: 100
-      Value: true
+      Value: false
     - Class: rviz/MarkerArray
-      Enabled: true
+      Enabled: false
       Marker Topic: /visualization_markers/world_evidence
       Name: Wire - Evidence
       Namespaces:
         {}
       Queue Size: 100
-      Value: true
+      Value: false
     - Class: rviz/MarkerArray
-      Enabled: true
+      Enabled: false
       Marker Topic: /wire_volume_viz/markers
       Name: Wire2 - State
       Namespaces:
         {}
       Queue Size: 100
-      Value: true
+      Value: false
     - Class: rviz/MarkerArray
-      Enabled: true
+      Enabled: false
       Marker Topic: visualization_marker_array
       Name: Wire2 - Colored Laser
       Namespaces:
         {}
       Queue Size: 100
-      Value: true
+      Value: false
     - Class: rviz/MarkerArray
-      Enabled: true
+      Enabled: false
       Marker Topic: /wire_volume/laser_projection
       Name: Wire2 - Model Laser
       Namespaces:
         {}
       Queue Size: 100
-      Value: true
+      Value: false
     - Class: rviz/Image
       Enabled: false
       Image Topic: /wire_volume/kinect_projection
@@ -922,35 +970,61 @@ Visualization Manager:
       Transport Hint: raw
       Value: false
     - Class: rviz/MarkerArray
-      Enabled: true
+      Enabled: false
       Marker Topic: visualization_marker_array
       Name: Reasoner
       Namespaces:
         {}
       Queue Size: 100
-      Value: true
+      Value: false
     - Alpha: 1
       Buffer Length: 1
       Class: rviz/Path
       Color: 25; 255; 0
-      Enabled: true
+      Enabled: false
       Name: Path
       Topic: /path
-      Value: true
+      Value: false
     - Class: rviz/MarkerArray
-      Enabled: true
+      Enabled: false
       Marker Topic: /snapmap_fast/visualization
       Name: MarkerArray
+      Namespaces:
+        {}
+      Queue Size: 100
+      Value: false
+    - Class: rviz/MarkerArray
+      Enabled: false
+      Marker Topic: /whole_body_controller/repulsive_forces_markers
+      Name: WBC - Repulsive Forces
+      Namespaces:
+        {}
+      Queue Size: 100
+      Value: false
+    - Class: rviz/Marker
+      Enabled: true
+      Marker Topic: /cb_base_navigation/global_planner_interface/visualization/markers/global_plan
+      Name: Marker
+      Namespaces:
+        {}
+      Queue Size: 100
+      Value: true
+    - Class: rviz/Marker
+      Enabled: true
+      Marker Topic: /cb_base_navigation/global_planner_interface/visualization/markers/goal_positions
+      Name: Marker
       Namespaces:
         {}
       Queue Size: 100
       Value: true
     - Class: rviz/MarkerArray
       Enabled: true
-      Marker Topic: /whole_body_controller/repulsive_forces_markers
-      Name: WBC - Repulsive Forces
+      Marker Topic: /world_model
+      Name: MarkerArray
       Namespaces:
-        {}
+        "": true
+        name_and_type: true
+        ns: true
       Queue Size: 100
       Value: true
   Enabled: true
@@ -977,23 +1051,65 @@ Visualization Manager:
   Views:
     Current:
       Class: rviz/Orbit
-      Distance: 5.48464
+      Distance: 12.3091
       Enable Stereo Rendering:
         Stereo Eye Separation: 0.06
         Stereo Focal Distance: 1
         Swap Stereo Eyes: false
         Value: false
       Focal Point:
-        X: 0.0116943
-        Y: 0.143671
-        Z: 0.703183
+        X: 2.80926
+        Y: -1.00451
+        Z: -0.268899
       Name: Current View
       Near Clip Distance: 0.01
-      Pitch: 1.3198
+      Pitch: 0.974761
       Target Frame: <Fixed Frame>
       Value: Orbit (rviz)
-      Yaw: 3.27777
-    Saved: ~
+      Yaw: 3.13319
+    Saved:
+      - Angle: 0
+        Class: rviz/TopDownOrtho
+        Enable Stereo Rendering:
+          Stereo Eye Separation: 0.06
+          Stereo Focal Distance: 1
+          Swap Stereo Eyes: false
+          Value: false
+        Name: TopDownOrtho
+        Near Clip Distance: 0.01
+        Scale: 164.283
+        Target Frame: <Fixed Frame>
+        Value: TopDownOrtho (rviz)
+        X: 14.3441
+        Y: 6.43784
+      - Angle: 0
+        Class: rviz/TopDownOrtho
+        Enable Stereo Rendering:
+          Stereo Eye Separation: 0.06
+          Stereo Focal Distance: 1
+          Swap Stereo Eyes: false
+          Value: false
+        Name: MaxObsVel
+        Near Clip Distance: 0.01
+        Scale: 259.092
+        Target Frame: <Fixed Frame>
+        Value: TopDownOrtho (rviz)
+        X: -9.53399
+        Y: -6.18402
+      - Angle: 0
+        Class: rviz/TopDownOrtho
+        Enable Stereo Rendering:
+          Stereo Eye Separation: 0.06
+          Stereo Focal Distance: 1
+          Swap Stereo Eyes: false
+          Value: false
+        Name: MaxObsVel2
+        Near Clip Distance: 0.01
+        Scale: 259.092
+        Target Frame: <Fixed Frame>
+        Value: TopDownOrtho (rviz)
+        X: -9.50697
+        Y: -5.95244
 Window Geometry:
   Cam - Head Depth:
     collapsed: false
@@ -1001,10 +1117,10 @@ Window Geometry:
     collapsed: false
   Displays:
     collapsed: false
-  Height: 871
+  Height: 1003
   Hide Left Dock: false
   Hide Right Dock: false
-  QMainWindow State: 000000ff00000000fd00000004000000000000019a000002c4fc020000000bfb0000001200530065006c0065006300740069006f006e00000001e10000009b0000006400fffffffb0000001e0054006f006f006c002000500072006f007000650072007400690065007302000001ed000001df00000185000000a3fb000000120056006900650077007300200054006f006f02000001df000002110000018500000122fb000000200054006f006f006c002000500072006f0070006500720074006900650073003203000002880000011d000002210000017afb000000100044006900730070006c0061007900730100000041000002c4000000dd00fffffffb0000002000730065006c0065006300740069006f006e00200062007500660066006500720200000138000000aa0000023a00000294fb00000014005700690064006500530074006500720065006f02000000e6000000d2000003ee0000030bfb0000000c004b0069006e0065006300740200000186000001060000030c00000261fb0000001c00430061006d0020002d002000480065006100640020005200470042000000026f0000011a0000001600fffffffb0000002000430061006d0020002d00200048006500610064002000440065007000740068000000018e000000c80000001600fffffffb0000002c005700690072006500320020002d0020004b0069006e00650063007400200055006e006b006e006f0077006e0000000255000000800000001600ffffff000000010000010f000002b1fc0200000003fb0000001e0054006f006f006c002000500072006f00700065007200740069006500730100000041000000780000000000000000fb0000000a005600690065007700730000000041000002b1000000b000fffffffb0000001200530065006c0065006300740069006f006e010000025a000000b200000000000000000000000200000490000000a9fc0100000001fb0000000a00560069006500770073030000004e00000080000002e100000197000000030000063e0000003efc0100000002fb0000000800540069006d006501000000000000063e000002f600fffffffb0000000800540069006d006501000000000000045000000000000000000000049e000002c400000004000000040000000800000008fc0000000100000002000000010000000a0054006f006f006c00730100000000ffffffff0000000000000000
+  QMainWindow State: 000000ff00000000fd00000004000000000000019d00000348fc020000000bfb0000001200530065006c0065006300740069006f006e00000001e10000009b0000006400fffffffb0000001e0054006f006f006c002000500072006f007000650072007400690065007302000001ed000001df00000185000000a3fb000000120056006900650077007300200054006f006f02000001df000002110000018500000122fb000000200054006f006f006c002000500072006f0070006500720074006900650073003203000002880000011d000002210000017afb000000100044006900730070006c006100790073010000004100000348000000dd00fffffffb0000002000730065006c0065006300740069006f006e00200062007500660066006500720200000138000000aa0000023a00000294fb00000014005700690064006500530074006500720065006f02000000e6000000d2000003ee0000030bfb0000000c004b0069006e0065006300740200000186000001060000030c00000261fb0000001c00430061006d0020002d002000480065006100640020005200470042020000028200000111000002e900000273fb0000002000430061006d0020002d0020004800650061006400200044006500700074006802000001cc000000ce0000032900000276fb0000002c005700690072006500320020002d0020004b0069006e00650063007400200055006e006b006e006f0077006e0000000255000000800000001600ffffff000000010000010f00000348fc0200000003fb0000001e0054006f006f006c002000500072006f00700065007200740069006500730100000041000000780000000000000000fb0000000a00560069006500770073010000004100000348000000b000fffffffb0000001200530065006c0065006300740069006f006e010000025a000000b200000000000000000000000200000490000000a9fc0100000001fb0000000a00560069006500770073030000004e00000080000002e100000197000000030000077e0000003efc0100000002fb0000000800540069006d006501000000000000077e000002f600fffffffb0000000800540069006d00650100000000000004500000000000000000000004c60000034800000004000000040000000800000008fc0000000100000002000000010000000a0054006f006f006c00730100000000ffffffff0000000000000000
   Selection:
     collapsed: false
   Time:
@@ -1013,8 +1129,8 @@ Window Geometry:
     collapsed: false
   Views:
     collapsed: false
-  Width: 1598
+  Width: 1918
   Wire2 - Kinect Unknown:
     collapsed: false
-  X: 1920
-  Y: 0
+  X: 0
+  Y: 24
