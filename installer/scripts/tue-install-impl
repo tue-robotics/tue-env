@@ -494,7 +494,7 @@ function tue-install-ros {
             done
 
         else
-            tue-install-warning "'$source' does not contain a valid ROS manifest.xml."
+            tue-install-warning "Does not contain a valid ROS package.xml."
         fi        
         
     else
