@@ -2,4 +2,4 @@
   source:
       type: git
       url: git@github.com:tue-robotics/tue_robocup.git
-    
+      sub-dir: tue_robocup
