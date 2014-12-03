@@ -224,7 +224,13 @@ function tue-install-git {
         cd $2
 
         res=$(git pull --ff-only --prune 2>&1)
-        cd $mem_pwd
+
+		if [ ! $? -eq 0 ]
+		then
+			tue-install-warning "$res"
+		fi
+
+		cd $mem_pwd
 
         if [[ $res == "Already up-to-date"* ]]
         then
