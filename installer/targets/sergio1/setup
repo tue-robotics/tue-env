@@ -13,3 +13,5 @@ export ROS_MASTER_URI=http://sergio1:11311
 # # # # # # # # # # # # # # # # # # # #
 
 export ROBOT_REAL=true
+
+export ROSLAUNCH_SSH_UNKNOWN=1
