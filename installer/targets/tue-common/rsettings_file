@@ -49,3 +49,8 @@ elif [ $ROBOT_ENV == rgo2013 ]; then
 
 fi
 
+# # # # # # # # # # # # # # # # # # # #
+#              MACHINES
+# # # # # # # # # # # # # # # # # # # #
+
+export ROBOT_MACHINE_DIR=`rospack find amigo_machine_files`
