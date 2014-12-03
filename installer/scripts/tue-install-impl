@@ -139,11 +139,6 @@ function tue-install-target {
         # Empty the target's dependency file        
         > $TUE_INSTALL_DEPENDENCIES_DIR/$target
 
-        if [ -f $install_file.bash ]
-        then
-            source $install_file.bash
-        fi
-
         if [ -f $install_file.yaml ]
         then
             local cmds=`~/.tue/installer/scripts/parse-install-yaml $install_file.yaml`
@@ -155,6 +150,11 @@ function tue-install-target {
             else
                 tue-install-error "Invalid install.yaml: $cmd"
             fi 
+        fi
+
+        if [ -f $install_file.bash ]
+        then
+            source $install_file.bash
         fi
 
         touch $TUE_INSTALL_STATE_DIR/$target
@@ -297,6 +297,7 @@ function tue-install-cp
     fi
 
     cp $file $2
+    echo "cp $file $2"
 }
 
 # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # 
