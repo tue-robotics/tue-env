@@ -60,6 +60,8 @@ export TTS_MODULE=festival
 #              MACHINES
 # # # # # # # # # # # # # # # # # # # #
 
+export ROBOT_MACHINE_DIR=`rospack find amigo_machine_files`
+
 #export MACHINE_TOP_KINECT=amigo1
 #export MACHINE_BASE_KINECT=amigo3
 #export MACHINE_TOP_LRF=amigo1
