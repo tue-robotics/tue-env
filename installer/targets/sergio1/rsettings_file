@@ -57,24 +57,30 @@ fi
 export TTS_MODULE=festival
 
 # # # # # # # # # # # # # # # # # # # #
+#     ROBOT SPECIFIC DIRECTORIES
+# # # # # # # # # # # # # # # # # # # #
+
+export ROBOT_MACHINE_DIR=`rospack find sergio_machine_files`
+
+# # # # # # # # # # # # # # # # # # # #
 #              MACHINES
 # # # # # # # # # # # # # # # # # # # #
 
-#export MACHINE_TOP_KINECT=amigo1
-#export MACHINE_BASE_KINECT=amigo3
-#export MACHINE_TOP_LRF=amigo1
-#export MACHINE_BASE_LRF=amigo1
+#export MACHINE_TOP_KINECT=sergio1
+#export MACHINE_BASE_KINECT=sergio1
+#export MACHINE_TOP_LRF=sergio1
+#export MACHINE_BASE_LRF=sergio1
 
-export MACHINE_ARM_NAVIGATION=amigo3
-export MACHINE_GRIPPER_SERVER=amigo3
-export MACHINE_GRIPPER_DETECTION=amigo1
-export MACHINE_BASE_NAVIGATION=amigo4
-export MACHINE_BASE_NAVIGATION_3D=amigo1
-export MACHINE_LOCALIZATION=amigo3
-export MACHINE_PERCEPTION=amigo1
-export MACHINE_REASONER=amigo1
-export MACHINE_WORLD_MODEL=amigo1
-export MACHINE_SPEECH_TO_TEXT=amigo3
-export MACHINE_TEXT_TO_SPEECH=amigo3
-export MACHINE_PEOPLE_DETECTION=amigo2
+export MACHINE_ARM_NAVIGATION=sergio1
+export MACHINE_GRIPPER_SERVER=sergio1
+export MACHINE_GRIPPER_DETECTION=sergio1
+export MACHINE_BASE_NAVIGATION=sergio1
+export MACHINE_BASE_NAVIGATION_3D=sergio1
+export MACHINE_LOCALIZATION=sergio1
+export MACHINE_PERCEPTION=sergio1
+export MACHINE_REASONER=sergio1
+export MACHINE_WORLD_MODEL=sergio1
+export MACHINE_SPEECH_TO_TEXT=sergio1
+export MACHINE_TEXT_TO_SPEECH=sergio1
+export MACHINE_PEOPLE_DETECTION=sergio1
 
