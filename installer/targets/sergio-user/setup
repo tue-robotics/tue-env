@@ -29,7 +29,7 @@ function smiddle
     fi
 }
 
-alias shardware='screen -x -L -R -S shardware roslaunch sergio_launch_files all_etherCAT_hardware.launch'
+alias shardware='screen -x -L -R -S shardware roslaunch sergio_hardware all.launch'
 alias sexecutive='screen -x -L -R -S aexecutive'
 
 ####################
