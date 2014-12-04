@@ -8,20 +8,6 @@ fi
 
 mkdir -p $TUE_BIN
 
-# Temporarily
-if [ ! -d ~/.tue/env ]
-then
-    mkdir -p ~/.tue/envs/default/dependencies
-    mkdir -p ~/.tue/envs/default/installed
-    mkdir -p ~/.tue/envs/default/setup
-
-    cp ~/.tue/dependencies/* ~/.tue/envs/default/dependencies
-    cp ~/.tue/installed/* ~/.tue/envs/default/installed
-    cp ~/.tue/setup/target_setup.bash ~/.tue/envs/default/setup/target_setup.bash
-
-    ln -s ~/.tue/envs/default ~/.tue/env
-fi
-
 if [ -z "$TUE_ENV_DIR" ]
 then
 	export TUE_ENV_DIR=~/ros/hydro
