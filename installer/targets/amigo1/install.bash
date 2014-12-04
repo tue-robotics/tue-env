@@ -10,9 +10,3 @@ if [[ `diff ~/.tue/installer/targets/amigo1/autoroslaunch /etc/init.d/autoroslau
 then
     sudo cp ~/.tue/installer/targets/amigo1/autoroslaunch /etc/init.d/autoroslaunch
 fi
-
-# --------------------------------------------------------------------------------
-# - Set rsettings file
-
-tue-install-cp rsettings_file ~/.tue/.rsettings
-
