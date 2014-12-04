@@ -3,7 +3,7 @@
 # # # # # # # # # # # # # # # # # # # #
 
 # Robot environment
-export ROBOT_ENV=robotics_testlab_B
+export ROBOT_ENV=robotics_testlabs
 
 # Which simulator to use (gazebo, fast_simulator)
 export SIMULATOR=fast_simulator
@@ -32,6 +32,18 @@ if [ $ROBOT_ENV == robotics_testlab_B ]; then
 
     # Robot initial Gazebo pose
     export GAZEBO_ROBOT_INIT_X=0.8 
+    export GAZEBO_ROBOT_INIT_Y=0.0
+    export GAZEBO_ROBOT_INIT_PHI=1.57
+
+elif [ $ROBOT_ENV == robotics_testlabs ]; then
+
+    # Robot initial pose
+    export ROBOT_INIT_X=0.586
+    export ROBOT_INIT_Y=4.259
+    export ROBOT_INIT_PHI=0
+    
+    # Robot initial Gazebo pose
+    export GAZEBO_ROBOT_INIT_X=0.8
     export GAZEBO_ROBOT_INIT_Y=0.0
     export GAZEBO_ROBOT_INIT_PHI=1.57
 
