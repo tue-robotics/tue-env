@@ -1,7 +1,16 @@
 #!/bin/bash
 
 # Update installer
-svn co https://roboticssrv.wtb.tue.nl/svn/ros/tue_env ~/.tue/ --trust-server-cert --non-interactive
+if [ ! -d ~/.tue ]
+then 
+    git clone https://github.com/tue-robotics/tue-env.git ~/.tue
+else
+    mem_pwd=$PWD
+    cd ~/.tue
+    echo -en "Updating tue-get... "    
+    git pull --ff-only --prune
+	cd $mem_pwd
+fi
 
 # Run installer
 source ~/.tue/installer/scripts/tue-install-impl $@
