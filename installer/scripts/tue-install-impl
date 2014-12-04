@@ -8,20 +8,6 @@ fi
 
 mkdir -p $TUE_BIN
 
-# Temporarily
-if [ ! -d ~/.tue/env ]
-then
-    mkdir -p ~/.tue/envs/default/dependencies
-    mkdir -p ~/.tue/envs/default/installed
-    mkdir -p ~/.tue/envs/default/setup
-
-    cp ~/.tue/dependencies/* ~/.tue/envs/default/dependencies
-    cp ~/.tue/installed/* ~/.tue/envs/default/installed
-    cp ~/.tue/setup/target_setup.bash ~/.tue/envs/default/setup/target_setup.bash
-
-    ln -s ~/.tue/envs/default ~/.tue/env
-fi
-
 if [ -z "$TUE_ENV_DIR" ]
 then
 	export TUE_ENV_DIR=~/ros/hydro
@@ -607,8 +593,20 @@ fi
 
 if [ -z "$TUE_INSTALL_DUMMY" ]; then
     if [ -n "$TUE_INSTALL_SYSTEMS" ]; then
-		echo -e "Going to run the following command:\n"
-		echo "sudo apt-get install -y $TUE_INSTALL_SYSTEMS"
-        sudo apt-get install -y $TUE_INSTALL_SYSTEMS
+        pkgs_to_install=
+        for pkg in $TUE_INSTALL_SYSTEMS
+        do
+            if ! dpkg -s $pkg &> /dev/null
+            then
+                pkgs_to_install="$pkgs_to_install $pkg"
+            fi
+        done
+
+        if [ -n "$pkgs_to_install" ]
+        then    
+    		echo -e "Going to run the following command:\n"
+    		echo "sudo apt-get install -y$pkgs_to_install"
+            sudo apt-get install -y $pkgs_to_install
+        fi
     fi
 fi
