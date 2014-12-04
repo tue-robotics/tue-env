@@ -3,7 +3,7 @@
 # # # # # # # # # # # # # # # # # # # #
 
 # Robot environment
-export ROBOT_ENV=robotics_testlab_B
+export ROBOT_ENV=robotics_testlabs
 
 # Which simulator to use (gazebo, fast_simulator)
 export SIMULATOR=fast_simulator
@@ -81,6 +81,6 @@ export MACHINE_PERCEPTION=sergio1
 export MACHINE_REASONER=sergio1
 export MACHINE_WORLD_MODEL=sergio1
 export MACHINE_SPEECH_TO_TEXT=sergio1
-export MACHINE_TEXT_TO_SPEECH=sergio1
+export MACHINE_TEXT_TO_SPEECH=sergio3
 export MACHINE_PEOPLE_DETECTION=sergio1
 
