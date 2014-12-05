@@ -1,0 +1,8 @@
+- type: system
+  name: alsa-tools
+- type: system
+  name: alsa-utils
+- type: system
+  name: mpg123 
+- type: system
+  name: pulseaudio 
