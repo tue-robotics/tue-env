@@ -6,3 +6,6 @@
 
 - type: target
   name: thespeechmachine
+
+- type: target
+  name: audio
