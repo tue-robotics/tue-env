@@ -225,6 +225,13 @@ function _tue-repo-status
             else
                 status=`git status . --short`
             fi
+
+            local current_branch=`git rev-parse --abbrev-ref HEAD`
+            if [ $current_branch != "master" ] && [ $current_branch != "hydro-devel" ]
+            then
+                echo -e "\033[1m$name\033[0m is on branch '$current_branch'"
+            fi
+
         fi  
 
         cd - &> /dev/null
