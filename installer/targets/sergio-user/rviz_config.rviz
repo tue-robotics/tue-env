@@ -5,9 +5,8 @@ Panels:
     Property Tree Widget:
       Expanded:
         - /Global Options1
+        - /RobotModel1
         - /TF1/Frames1
-        - /Nav - Map1
-        - /Path1
       Splitter Ratio: 0.678571
     Tree Height: 818
   - Class: rviz/Selection
@@ -32,7 +31,7 @@ Panels:
 Visualization Manager:
   Class: ""
   Displays:
-    - Alpha: 1
+    - Alpha: 0.1
       Class: rviz/RobotModel
       Collision Enabled: false
       Enabled: true
@@ -366,6 +365,10 @@ Visualization Manager:
       Value: false
       Visibility:
         "": true
+        CBNav - Desired Orientation: true
+        CBNav - Global Plan: true
+        CBNav - Goal Area: true
+        CBNav - Local Trajectory: true
         Cam - Head Depth: true
         Cam - Head Point Cloud: true
         Cam - Head Target: true
@@ -396,6 +399,10 @@ Visualization Manager:
       Value: false
       Visibility:
         "": true
+        CBNav - Desired Orientation: true
+        CBNav - Global Plan: true
+        CBNav - Goal Area: true
+        CBNav - Local Trajectory: true
         Cam - Head Point Cloud: true
         Cam - Head RGB: true
         Cam - Head Target: true
@@ -551,10 +558,10 @@ Visualization Manager:
       Class: rviz/Map
       Color Scheme: map
       Draw Behind: false
-      Enabled: true
+      Enabled: false
       Name: Nav - Map
       Topic: /cb_base_navigation/global_planner_interface/global_costmap/costmap
-      Value: true
+      Value: false
     - Class: rviz/MarkerArray
       Enabled: false
       Marker Topic: /fast_simulator/visualization
@@ -629,12 +636,48 @@ Visualization Manager:
       Topic: /cb_base_navigation/local_planner_interface/DWAPlannerROS/local_traj
       Value: true
     - Class: rviz/Marker
-      Enabled: true
+      Enabled: false
       Marker Topic: /cb_base_navigation/local_planner_interface/visualization/markers/desired_orientation_marker
       Name: CBNav - Desired Orientation
       Namespaces:
-        "": true
+        {}
       Queue Size: 100
+      Value: false
+    - Alpha: 1
+      Autocompute Intensity Bounds: true
+      Autocompute Value Bounds:
+        Max Value: 0
+        Min Value: 0
+        Value: true
+      Axis: Z
+      Channel Name: occ_cost
+      Class: rviz/PointCloud2
+      Color: 255; 255; 255
+      Color Transformer: Intensity
+      Decay Time: 0
+      Enabled: true
+      Invert Rainbow: false
+      Max Color: 255; 255; 255
+      Max Intensity: 255
+      Min Color: 0; 0; 0
+      Min Intensity: 14
+      Name: CBNav - Cost cloud
+      Position Transformer: XYZ
+      Queue Size: 10
+      Selectable: true
+      Size (Pixels): 3
+      Size (m): 0.01
+      Style: Flat Squares
+      Topic: /cb_base_navigation/local_planner_interface/dwa_planner/cost_cloud
+      Use Fixed Frame: true
+      Use rainbow: true
+      Value: true
+    - Alpha: 1
+      Class: rviz/Polygon
+      Color: 25; 255; 0
+      Enabled: true
+      Name: CBNav - Footprint
+      Topic: /cb_base_navigation/local_planner_interface/local_costmap/robot_footprint/footprint_stamped
       Value: true
   Enabled: true
   Global Options:
@@ -660,22 +703,22 @@ Visualization Manager:
   Views:
     Current:
       Class: rviz/Orbit
-      Distance: 7.74665
+      Distance: 7.25445
       Enable Stereo Rendering:
         Stereo Eye Separation: 0.06
         Stereo Focal Distance: 1
         Swap Stereo Eyes: false
         Value: false
       Focal Point:
-        X: 0.71686
-        Y: 1.28768
-        Z: -1.46025
+        X: -1.22994
+        Y: 3.21298
+        Z: -1.51434
       Name: Current View
       Near Clip Distance: 0.01
-      Pitch: 1.5698
+      Pitch: 1.4198
       Target Frame: <Fixed Frame>
       Value: Orbit (rviz)
-      Yaw: 1.57277
+      Yaw: 1.55277
     Saved: ~
 Window Geometry:
   Cam - Head Depth:
@@ -697,5 +740,5 @@ Window Geometry:
   Views:
     collapsed: false
   Width: 1920
-  X: 0
+  X: -7
   Y: 24
