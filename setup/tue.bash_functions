@@ -197,10 +197,16 @@ complete -F _tue-dev tue-dev
 function tue-status
 {
     fs=`ls $TUE_SYSTEM_DIR/src`
+    fs+=' ~/.tue'
     for f in $fs
     do
         pkg_dir=$TUE_SYSTEM_DIR/src/$f
 
+		if [ "$f" == "~/.tue" ]
+		then
+			pkg_dir=~/.tue
+		fi
+    
         if [ -d $pkg_dir ]
         then
             local status=
@@ -211,9 +217,12 @@ function tue-status
                 status=`svn status $pkg_dir`
                 vctype=svn
             else
-                # Try git
-
+                # Try git				
                 cd $pkg_dir
+                if [ "$f" == "~/.tue" ]
+				then
+					cd ~/.tue
+				fi
                 res=$(git status . --short --branch 2>&1)
                 if [ $? -eq 0 ]
                 then
