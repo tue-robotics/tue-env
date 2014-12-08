@@ -194,61 +194,72 @@ complete -F _tue-dev tue-dev
 #                                             TUE-STATUS
 # ----------------------------------------------------------------------------------------------------
 
+function _tue-repo-status
+{
+    local name=$1
+    local pkg_dir=$2
+
+    if [ ! -d $pkg_dir ]
+    then
+        return
+    fi
+
+    local status=
+    local vctype=
+
+    if [ -d $pkg_dir/.svn ]
+    then
+        status=`svn status $pkg_dir`
+        vctype=svn
+    else
+        # Try git
+
+        cd $pkg_dir
+        res=$(git status . --short --branch 2>&1)
+        if [ $? -eq 0 ]
+        then
+            # Is git
+            if echo "$res" | grep -q '\['   # Check if ahead of branch
+            then
+                status=$res
+            else
+                status=`git status . --short`
+            fi
+        fi  
+
+        cd - &> /dev/null
+        vctype=git
+    #else
+    #    show=false
+    fi
+
+    if [ -n "$vctype" ]
+    then
+        if [ -n "$status" ]; then
+            echo ""
+            echo -e "\033[38;5;1mM  \033[0m($vctype) \033[1m$name\033[0m"
+            echo "--------------------------------------------------"
+            echo -e "$status"
+            echo "--------------------------------------------------"
+        fi 
+    fi    
+}
+
+# ----------------------------------------------------------------------------------------------------
+
 function tue-status
 {
     fs=`ls $TUE_SYSTEM_DIR/src`
     for f in $fs
     do
         pkg_dir=$TUE_SYSTEM_DIR/src/$f
-
-        if [ -d $pkg_dir ]
-        then
-            local status=
-            local vctype=
-
-            if [ -d $pkg_dir/.svn ]
-            then
-                status=`svn status $pkg_dir`
-                vctype=svn
-            else
-                # Try git
-
-                cd $pkg_dir
-                res=$(git status . --short --branch 2>&1)
-                if [ $? -eq 0 ]
-                then
-                    # Is git
-                    if echo "$res" | grep -q '\['   # Check if ahead of branch
-                    then
-                        status=$res
-                    else
-                        status=`git status . --short`
-                    fi
-                fi  
-
-                cd - &> /dev/null
-                vctype=git
-            #else
-            #    show=false
-            fi
-
-            if [ -n "$vctype" ]
-            then
-                if [ -n "$status" ]; then
-                    echo ""
-                    #                echo -e "\033[1m$f (svn) \033[0m \033[38;5;1mMODIFIED\033[39m"
-                    echo -e "\033[38;5;1mM  \033[0m($vctype) \033[1m$f\033[0m"
-                    echo "--------------------------------------------------"
-                    echo -e "$status"
-                    echo "--------------------------------------------------"
-                    #echo ""
-                #else
-                    #echo -e "\033[38;5;2mOK\033[39m \033[0m($vctype) \033[1m$f\033[0m"
-                fi 
-            fi
-        fi
+        _tue-repo-status $f $pkg_dir        
     done
+
+    _tue-repo-status $TUE_DIR $TUE_DIR
 }
+
+# ----------------------------------------------------------------------------------------------------
 
 function tue-git-status
 {
