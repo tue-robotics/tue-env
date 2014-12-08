@@ -9,6 +9,13 @@ export ROBOT_ENV=robotics_testlabs
 export SIMULATOR=fast_simulator
 
 # # # # # # # # # # # # # # # # # # # #
+#                  ED
+# # # # # # # # # # # # # # # # # # # #
+
+# ED configuration (amigo, simple)
+export ED_CONFIG=amigo
+
+# # # # # # # # # # # # # # # # # # # #
 #                AMIGO
 # # # # # # # # # # # # # # # # # # # #
 
