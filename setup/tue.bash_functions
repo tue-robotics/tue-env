@@ -217,7 +217,8 @@ function tue-status
                 status=`svn status $pkg_dir`
                 vctype=svn
             else
-                # Try git				
+                # Try git
+
                 cd $pkg_dir
                 if [ "$f" == "~/.tue" ]
 				then
