@@ -466,6 +466,59 @@ function _tue-get
 complete -F _tue-get tue-get
 
 # ----------------------------------------------------------------------------------------------------
+#                                             TUE-BRANCH
+# ----------------------------------------------------------------------------------------------------
+
+function tue-branch
+{
+    if [ -z "$1" ]
+    then
+        echo """Switches all packages to the given branch, if such a branch exists in that package. Usage:
+
+    tue-branch BRANCH-NAME
+
+"""
+        return 1
+    fi
+
+    local branch=$1
+
+    fs=`ls $TUE_SYSTEM_DIR/src`
+    for pkg in $fs
+    do
+        pkg_dir=$TUE_SYSTEM_DIR/src/$pkg
+
+        if [ -d $pkg_dir ]
+        then
+            local memd=$PWD
+            cd $pkg_dir
+            test_branch=$(git branch --list $branch 2>&1)
+            if [ $? -eq 0 ] && [ "$test_branch" ]
+            then
+                local current_branch=`git rev-parse --abbrev-ref HEAD`
+                if [[ "$current_branch" == "$branch" ]]
+                then
+                    echo -e "\033[1m$pkg\033[0m: Already on branch $branch"
+                elsebash fu
+                    res=$(git checkout $branch 2>&1)
+                    if [ $? -eq 0 ]                
+                    then
+                        echo -e "\033[1m$pkg\033[0m: checked-out $branch"
+                    else
+                        echo ""
+                        echo -e "    \033[1m$pkg\033[0m"
+                        echo "--------------------------------------------------"
+                        echo -e "\033[38;5;1m$res\033[0m"
+                        echo "--------------------------------------------------"
+                    fi
+                fi
+            fi
+            cd $memd
+        fi
+    done
+}
+
+# ----------------------------------------------------------------------------------------------------
 #                                              TUE-ENV
 # ----------------------------------------------------------------------------------------------------
 
