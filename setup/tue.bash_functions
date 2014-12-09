@@ -499,7 +499,7 @@ function tue-branch
                 if [[ "$current_branch" == "$branch" ]]
                 then
                     echo -e "\033[1m$pkg\033[0m: Already on branch $branch"
-                elsebash fu
+                else
                     res=$(git checkout $branch 2>&1)
                     if [ $? -eq 0 ]                
                     then
