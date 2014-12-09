@@ -6,3 +6,5 @@
   name: mpg123 
 - type: system
   name: pulseaudio 
+- type: system
+  name: sox
