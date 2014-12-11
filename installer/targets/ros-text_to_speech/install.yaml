@@ -1,5 +1,9 @@
 - type: ros
   source:
-      type: svn
-      url: https://roboticssrv.wtb.tue.nl/svn/ros/trunk/text_to_speech
+      type: git
+      url: https://github.com/tue-robotics/text_to_speech
+- type: system
+  name: festival
+- type: system
+  name: sox
 
