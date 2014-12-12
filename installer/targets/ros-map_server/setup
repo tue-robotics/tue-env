@@ -12,8 +12,8 @@ The map will be stored in the package amigo_maps, in folder map/MAP_NAME/loc, ma
     # store the map in /tmp
     rosrun map_server map_saver -f /tmp/temp_map map:=/nav_map
 
-    # create the map directory structure (nav, loc, raw) in amigo_maps/maps
-    MAP_DIR=`rospack find amigo_maps`/maps
+    # create the map directory structure (nav, loc, raw) in tue_maps/maps
+    MAP_DIR=`rospack find tue_maps`/maps
     mkdir -p $MAP_DIR/$1/loc
     mkdir -p $MAP_DIR/$1/nav
     mkdir -p $MAP_DIR/$1/raw
