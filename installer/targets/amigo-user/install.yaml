@@ -13,7 +13,7 @@
 - type: target
   name: ros-node_alive
 - type: target
-  name: ros-amigo_maps
+  name: ros-tue_maps
 - type: target
   name: ros-amigo_head_ref
 - type: target
