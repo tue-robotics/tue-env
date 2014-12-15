@@ -1,5 +1,6 @@
-- type: ros-rosbuild
+- type: ros
   source:
-      type: svn
-      url: https://roboticssrv.wtb.tue.nl/svn/ros/code/tue-ros-pkg/trunk/tue_robocup/challenge_robo_zoo
+      type: git
+      url: https://github.com/tue-robotics/tue_robocup.git
+      sub-dir: challenge_robo_zoo
     
