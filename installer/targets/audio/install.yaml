@@ -8,3 +8,5 @@
   name: pulseaudio 
 - type: system
   name: sox
+- type: system
+  name: x11-apps
