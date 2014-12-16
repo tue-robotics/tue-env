@@ -7,3 +7,6 @@
 - type: target
   name: ros-sergio_machine_files
 
+# git aliases, commit hooks and git-su
+- type: target
+  name: git-hooks
