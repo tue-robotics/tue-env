@@ -11,3 +11,6 @@
 - type: target
   name: ros-tue_manipulation
 
+# git aliases, commit hooks and git-su
+- type: target
+  name: git-hooks
