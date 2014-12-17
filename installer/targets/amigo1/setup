@@ -3,7 +3,7 @@
 # # # # # # # # # # # # # # # # # # # #
 
 # Set TTS
-export TTS_MODULE=festival
+export TTS_MODULE=philips
 
 # ROS master URI
 export ROS_MASTER_URI=http://amigo1:11311
