@@ -84,13 +84,23 @@ alias rviz-sergio='rosrun rviz rviz -d ~/.tue/installer/targets/sergio-user/rviz
 # SERGIO FUNCTIONS
 #
 #####################
-function sergio-torso-move-joints {
+function sergio-torso-move-spindle {
     if [ -z "$2" ]; then
-        echo "Usage: sergio-torso-move-joints lower_spindle upper_splindl"
+        echo "Used for testing. Usage: sergio-torso-move-spindle lower_spindle upper_splindl"
         return
     fi
 
     ( rostopic pub /sergio/torso/references sensor_msgs/JointState "{header: {seq: 0, stamp: {secs: 0, nsecs: 0}, frame_id: ''}, name: ['torso_lower_spindle', 'torso_upper_spindle'], position: [$1, $2], velocity: [0], effort: [0]}"  --once  &> /dev/null & )
+}
+
+function sergio-torso-move-joints {
+    if [ -z "$2" ]; then
+        echo "Usage: sergio-torso-move-joints ankle_joint hip_joint"
+        echo "Note: knee-joint set to 0.0, because it isn't used by the controller"
+        return
+    fi
+
+    ( rostopic pub /sergio/torso/references sensor_msgs/JointState "{header: {seq: 0, stamp: {secs: 0, nsecs: 0}, frame_id: ''}, name: ['ankle_joint', 'knee_joint', 'hip_joint'], position: [$1, 0.0, $2], velocity: [0], effort: [0]}"  --once  &> /dev/null & )
 }
 
 function sergio-torso-laser-move {
