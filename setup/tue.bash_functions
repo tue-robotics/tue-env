@@ -592,3 +592,7 @@ function _tue-env
 }
 complete -F _tue-env tue-env
 
+# ----------------------------------------------------------------------------------------------------
+
+source $TUE_DIR/setup/tue-data.bash
+
