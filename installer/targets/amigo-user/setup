@@ -54,7 +54,7 @@ alias aexecutive='screen -x -L -R -S aexecutive'
 # AMIGO ACTIONS
 #
 ####################
-alias say='rostopic pub --once /text_to_speech/input std_msgs/String'
+alias say='rostopic pub --once /amigo/text_to_speech/input std_msgs/String'
 alias zeg='rosrun common_admin_files say.sh en'
 alias zegen='rosrun amigo_admin_files say_philips_tts.sh us carlos'
 alias zegnl='rosrun amigo_admin_files say_philips_tts.sh nl david'
