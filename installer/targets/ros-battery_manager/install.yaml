@@ -1,5 +1,4 @@
 - type: ros
   source:
-      type: svn
-      url: https://roboticssrv.wtb.tue.nl/svn/ros/trunk/battery_manager
-
+      type: git
+      url: https://github.com/tue-robotics/battery_manager.git
