@@ -16,5 +16,4 @@
   name: ros-tue_maps
 - type: target
   name: ros-amigo_head_ref
-- type: target
-  name: ros-torso_server
+
