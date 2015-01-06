@@ -1,4 +1,4 @@
 - type: ros
   source:
       type: git
-      url: git@github.com:tue-robotics/emergency_speakup.git
+      url: https://github.com/tue-robotics/emergency_speakup.git
