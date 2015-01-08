@@ -541,7 +541,7 @@ function generate_setup_file
 
 # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # 
 
-INSTALL_DETAILS_FILE=/tmp/tue-get-details
+INSTALL_DETAILS_FILE=/tmp/tue-get-details-`randid`
 > $INSTALL_DETAILS_FILE
 
 # CATKIN PACKAGES
@@ -606,6 +606,9 @@ fi
 if [ -n "$TUE_INSTALL_WARNINGS" ]; then
     echo -e "\033[33;5;1m\nOverview of warnings:\n\n$TUE_INSTALL_WARNINGS\033[0m"
 fi
+
+# Remove temp directories
+rm /tmp/tue-installer -rf
 
 if [ -z "$TUE_INSTALL_DUMMY" ]; then
     if [ -n "$TUE_INSTALL_SYSTEMS" ]; then
