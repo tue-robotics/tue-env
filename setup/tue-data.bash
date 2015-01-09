@@ -1,9 +1,20 @@
 LOCAL_DATA_DIR=~/ros/data
 ROBOTICSSRV_LOGIN=data@roboticssrv.wtb.tue.nl
-REMOTE_DATA_DIR=/home/data/data/private
+REMOTE_DATA_DIR=/home/data/data
 
 function tue-data
 {
+    # Temporary check
+    if [ -d ~/ros/data ] && [ ! -d ~/ros/data/private ]
+    then
+        mv ~/ros/data ~/ros/data-tmp-dir
+        mkdir -p ~/ros/data
+        mv ~/ros/data-tmp-dir ~/ros/data/private
+
+        echo -e "\e[0;33m[IMPORTANT] I moved the data folder. '~/ros/data' has now become '~/ros/data/private'\033[0m"
+        echo ""
+    fi
+
     if [ -z "$1" ]
     then
         echo """tue-data is a tool for uploading data to and downloading data from the TU/e robotics server.
@@ -38,7 +49,7 @@ function tue-data
         # Determine current directory relative to local data dir root
         local rel_dir=${PWD#$LOCAL_DATA_DIR}
 
-        ssh $ROBOTICSSRV_LOGIN "ls $REMOTE_DATA_DIR/$rel_dir"
+        ssh $ROBOTICSSRV_LOGIN "ls $REMOTE_DATA_DIR/$rel_dir -alh"
     elif [[ $cmd == "update" ]]
     then
         # Check if user is in the data directory
