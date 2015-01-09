@@ -1,6 +1,6 @@
 LOCAL_DATA_DIR=~/ros/data
 ROBOTICSSRV_LOGIN=data@roboticssrv.wtb.tue.nl
-REMOTE_DATA_DIR=/home/data/data/public
+REMOTE_DATA_DIR=/home/data/data/private
 
 function tue-data
 {
