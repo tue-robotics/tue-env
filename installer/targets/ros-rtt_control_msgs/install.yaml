@@ -1,5 +1,5 @@
-- type: ros-rosbuild
+- type: ros
   source:
-      type: svn
-      url: https://roboticssrv.wtb.tue.nl/svn/ros/code/tue-ros-pkg/trunk/rtt_generic_components/rtt_control_msgs
-    
+      type: git
+      url: https://github.com/Timple/rtt_ros_control.git
+      sub-dir: typekits/rtt_control_msgs
