@@ -3,6 +3,11 @@
 # make sure git is installed
 hash git 2> /dev/null || sudo apt-get install -y git
 
+if [ -e ~/.tue ]
+then
+	mv ~/.tue ~/.tue.old
+fi
+
 # Update installer
 git clone https://github.com/tue-robotics/tue-env.git ~/.tue
 
