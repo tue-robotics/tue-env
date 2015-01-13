@@ -5,7 +5,7 @@ hash git 2> /dev/null || sudo apt-get install -y git
 
 if [ -e ~/.tue ]
 then
-	mv ~/.tue ~/.tue.old
+	mv -f ~/.tue ~/.tue.$(date +%F_%R)
 fi
 
 # Update installer
