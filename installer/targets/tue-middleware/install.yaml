@@ -41,30 +41,6 @@
 - type: target
   name: ros-speech_interpreter
 
-# Perception
-- type: target
-  name: ros-laser_ppl_detection
-- type: target
-  name: ros-pein_supervisor
-- type: target
-  name: ros-human_tracking
-- type: target
-  name: ros-pein_tabletop_segmentation
-- type: target
-  name: ros-pein_pcl_matcher
-- type: target
-  name: ros-pein_color_matcher
-- type: target
-  name: ros-pein_wire_interface
-- type: target
-  name: ros-pein_face_segmentation
-- type: target
-  name: ros-pein_odufinder
-- type: target
-  name: ros-pein_ar_pose
-- type: target
-  name: ros-pein_face_recognition
-
 # World model
 - type: target
   name: ros-ed
