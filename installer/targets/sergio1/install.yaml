@@ -9,7 +9,7 @@
   
   # temporary placed in sergio1, when all PC's are in use check what should be installd on which PC?
 - type: target
-  name: ros-tue_manipulation
+  name: tue-middleware
 
 # git aliases, commit hooks and git-su
 - type: target
