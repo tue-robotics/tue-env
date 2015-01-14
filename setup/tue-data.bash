@@ -65,17 +65,34 @@ function tue-data
         rsync $ROBOTICSSRV_LOGIN:$REMOTE_DATA_DIR/$rel_dir/ . -av --progress --exclude=".svn"   
     elif [[ $cmd == "store" ]]
     then
+        if [ -z "$1" ]
+        then
+            echo """Usage: tue-data store <FILE-OR-FOLDER>
+
+For example, to store everything in the current folder, use:
+
+    tue-data store .
+"""
+            return 1
+        fi
+
+        local target="$1"
+        if [[ $target != "/"* ]]
+        then
+            target="$PWD/$target"
+        fi
+
         # Check if user is in the data directory
-        if [[ $PWD != "$LOCAL_DATA_DIR"* ]]
+        if [[ $target != "$LOCAL_DATA_DIR"* ]]
         then
             echo "You are not in the data folder ('$LOCAL_DATA_DIR')"
             return 1
         fi
 
         # Determine current directory relative to local data dir root
-        local rel_dir=${PWD#$LOCAL_DATA_DIR}
+        local rel_dir=${target#$LOCAL_DATA_DIR}
 
-        rsync . $ROBOTICSSRV_LOGIN:$REMOTE_DATA_DIR/$rel_dir -av --progress --exclude=".svn"
+        rsync $LOCAL_DATA_DIR/./$rel_dir $ROBOTICSSRV_LOGIN:$REMOTE_DATA_DIR/ -av --relative --progress --exclude=".svn"
     fi
 }
 
