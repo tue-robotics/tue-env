@@ -1,0 +1,36 @@
+- type: target
+  name: tue-dev
+
+# ED
+- type: target
+  name: ros-ed_sensor_integration
+- type: target
+  name: ros-amigo_ed_tutorials
+
+# Editing
+- type: target
+  name: sublime3
+
+# Version control
+- type: target
+  name: gitsu
+
+# Web development
+- type: target
+  name: grunt
+- type: target
+  name: bower
+
+# Docker
+- type: target
+  name: docker
+
+# Misc
+- type: target
+  name: ros-stem_tracker
+- type: target
+  name: ros-tf_checker
+
+
+
+
