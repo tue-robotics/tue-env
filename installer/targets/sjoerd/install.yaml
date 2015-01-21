@@ -6,10 +6,12 @@
   name: ros-fast_simulator2
 
 # ED
-- type: target
-  name: ros-ed_sensor_integration
+#- type: target
+#  name: ros-ed_sensor_integration
 - type: target
   name: ros-amigo_ed_tutorials
+- type: target
+  name: ros-ed_localization 
 
 # Editing
 - type: target
