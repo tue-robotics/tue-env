@@ -12,6 +12,8 @@
   name: ros-amigo_ed_tutorials
 - type: target
   name: ros-ed_localization 
+- type: target
+  name: ros-ed_wbc
 
 # Editing
 - type: target
