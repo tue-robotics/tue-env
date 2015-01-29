@@ -1,0 +1,50 @@
+# Simulation
+- type: target
+  name: ros-fast_simulator
+- type: target
+  name: ros-fast_simulator_data
+
+# ------------------------------------
+
+# Middleware
+#- type: target
+#  name: tue-middleware
+
+- type: target
+  name: tue-common
+- type: target
+  name: ros-robot_state_publisher
+- type: target
+  name: ros-ed
+- type: target
+  name: ros-ed_localization
+- type: target
+  name: ros-ed_gui_server
+- type: target
+  name: ros-tf_server
+- type: target
+  name: ros-diagnostic_aggregator
+- type: target
+  name: ros-amigo_launch_files
+
+# -----------------------------------
+
+- type: target
+  name: ros-tue_mobile_ui
+
+# Visualization
+- type: target
+  name: ros-rviz
+
+# Diagnostics
+- type: ros
+  source:
+      type: system
+      name: viz
+
+- type: target
+  name: spot
+# git aliases, commit hooks and git-su
+- type: target
+  name: git-hooks
+
