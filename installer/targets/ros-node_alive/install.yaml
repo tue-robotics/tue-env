@@ -1,5 +1,5 @@
 - type: ros
   source:
-      type: svn
-      url: https://roboticssrv.wtb.tue.nl/svn/ros/trunk/node_alive
+      type: git
+      url: https://github.com/tue-robotics/node_alive.git
 
