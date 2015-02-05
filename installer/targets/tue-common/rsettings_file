@@ -4,7 +4,7 @@
 
 # Robot environment
 export ROBOT_ENV=robotics_testlabs
-export ROBOT_ENV=tue.library
+#export ROBOT_ENV=tue.library
 
 # Which simulator to use (gazebo, fast_simulator)
 export SIMULATOR=fast_simulator
