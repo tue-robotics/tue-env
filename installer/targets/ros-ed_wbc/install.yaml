@@ -1,5 +1,5 @@
 - type: ros
   source:
       type: git
-      url: https://github.com/Rayman/ed_wbc.git
+      url: https://github.com/tue-robotics/ed_wbc.git
 
