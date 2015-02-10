@@ -4,6 +4,7 @@
 
 # Robot environment
 export ROBOT_ENV=robotics_testlabs
+#export ROBOT_ENV=tue.library
 
 # Which simulator to use (gazebo, fast_simulator)
 export SIMULATOR=fast_simulator
@@ -30,12 +31,12 @@ export AMIGO_LOC=odom
 
 # Set Robot initial pose based on environment
 
-if [ $ROBOT_ENV == robotics_testlab_B ]; then
+if [ $ROBOT_ENV == tue.library ]; then
  
     # Robot initial pose
-    export ROBOT_INIT_X=0.8 
+    export ROBOT_INIT_X=-3.0
     export ROBOT_INIT_Y=0.0
-    export ROBOT_INIT_PHI=1.57
+    export ROBOT_INIT_PHI=-1.57
 
     # Robot initial Gazebo pose
     export GAZEBO_ROBOT_INIT_X=0.8 

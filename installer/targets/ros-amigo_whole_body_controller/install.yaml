@@ -1,4 +1,4 @@
 - type: ros
   source:
       type: git
-      url: https://github.com/Rayman/amigo_whole_body_controller.git
+      url: https://github.com/tue-robotics/amigo_whole_body_controller.git
