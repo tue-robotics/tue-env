@@ -39,8 +39,8 @@ else:
 	trunk = path_parts[2]
 
 	bashCommand = 'git svn clone %s --trunk %s --authors-file=%s' % (svn, trunk, authors_file)
-	print 'Please execute the following command:\n\n', bashCommand
+	print 'Executing the following command:\n\n', bashCommand
 
 
-	#process = subprocess.Popen(bashCommand.split(), stdout=subprocess.PIPE)
-	#print process.communicate()[0]
+	process = subprocess.Popen(bashCommand.split(), stdout=subprocess.PIPE)
+	print process.communicate()[0]
