@@ -33,7 +33,7 @@ PS1='[\[\033[01;34m\]\w\[\033[00m\]]$(__git_ps1)\n'\
 ####################
 alias sshamigo1='until ssh -qo ConnectTimeout=1 -X amigo@amigo1; do echo waiting for amigo1 to come online...; sleep 2; done'
 alias sshamigo2='until ssh -qo ConnectTimeout=1 -X amigo@amigo2; do echo waiting for amigo2 to come online...; sleep 2; done'
-alias sshamigo3='until ssh -qo ConnectTimeout=1 -X amigo@amigo3; do echo waiting for amigo3 to come online...; sleep 2; done'
+alias sshamigo3='until ssh -qo ConnectTimeout=1 amigo@amigo3; do echo waiting for amigo3 to come online...; sleep 2; done'
 alias sshamigo4='until ssh -qo ConnectTimeout=1 -X amigo@amigo4; do echo waiting for amigo4 to come online...; sleep 2; done'
 alias sshamigo5='until ssh -qo ConnectTimeout=1 -X amigo@amigo5; do echo waiting for amigo5 to come online...; sleep 2; done'
 
