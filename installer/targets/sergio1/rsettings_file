@@ -35,7 +35,7 @@ if [ $ROBOT_ENV == robotics_testlab_B ]; then
     export GAZEBO_ROBOT_INIT_Y=0.0
     export GAZEBO_ROBOT_INIT_PHI=1.57
 
-elif [ $ROBOT_ENV == robotics_testlabs]; then
+elif [ $ROBOT_ENV == robotics_testlabs ]; then
 
     # Robot initial pose
     export ROBOT_INIT_X=0.586
