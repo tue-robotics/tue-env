@@ -26,10 +26,6 @@
 # Speech
 - type: target
   name: ros-text_to_speech
-- type: target
-  name: ros-tue_pocketsphinx
-- type: target
-  name: ros-speech_interpreter
 
 # World model
 - type: target
