@@ -1,5 +1,7 @@
 #!/bin/bash
 
+export ROBOT_BRINGUP_PATH=/home/amigo/ros/hydro/system/src/amigo_bringup
+
 alias amigo-core='export ROS_MASTER_URI=http://amigo1:11311'
 
 # ----------------------------------------------------------------------------
@@ -42,14 +44,10 @@ alias sshamigo5='until ssh -qo ConnectTimeout=1 -X amigo@amigo5; do echo waiting
 # AMIGO STARTUP
 #
 ####################
-alias astart='roslaunch amigo_launch_files start.launch'
-alias aloc='roslaunch amigo_launch_files localization.launch'
-alias asensors='roslaunch amigo_launch_files sensors.launch'
-alias amiddle='roslaunch amigo_launch_files middleware.launch'
-alias amiddle-screen='screen -x -L -R -S amiddle roslaunch amigo_launch_files middleware.launch'
+alias astart='roslaunch amigo_bringup start.launch'
+alias amiddle='roslaunch amigo_bringup middleware.launch'
 
-alias ahardware='screen -x -L -R -S ahardware roslaunch amigo_hardware all.launch'
-alias aexecutive='screen -x -L -R -S aexecutive'
+alias ahardware='screen -x -L -R -S ahardware roslaunch amigo_bringup hardware.launch'
 
 ####################
 #

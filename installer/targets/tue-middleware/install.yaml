@@ -13,16 +13,6 @@
 
 # Executive
 
-# Navigation (old)
-- type: target
-  name: ros-depth_map_self_filter
-- type: target
-  name: ros-depth_map_to_point_cloud
-- type: target
-  name: ros-scan_to_cloud_converter
-- type: target
-  name: ros-tue_move_base_3d
-
 # Navigation
 - type: target
   name: ros-cb_base_navigation
@@ -36,10 +26,6 @@
 # Speech
 - type: target
   name: ros-text_to_speech
-- type: target
-  name: ros-tue_pocketsphinx
-- type: target
-  name: ros-speech_interpreter
 
 # World model
 - type: target
