@@ -1,0 +1,1466 @@
+Panels:
+  - Class: rviz/Displays
+    Help Height: 78
+    Name: Displays
+    Property Tree Widget:
+      Expanded:
+        - /Global Options1
+        - /TF1/Frames1
+        - /ED1
+      Splitter Ratio: 0.678571
+    Tree Height: 517
+  - Class: rviz/Selection
+    Name: Selection
+  - Class: rviz/Tool Properties
+    Expanded:
+      - /2D Pose Estimate1
+      - /2D Nav Goal1
+      - /Publish Point1
+    Name: Tool Properties
+    Splitter Ratio: 0.588679
+  - Class: rviz/Views
+    Expanded:
+      - /Current View1
+      - /TopDownOrtho1
+      - /MaxObsVel21
+    Name: Views
+    Splitter Ratio: 0.5
+  - Class: rviz/Time
+    Experimental: false
+    Name: Time
+    SyncMode: 0
+    SyncSource: LRF - Base
+Visualization Manager:
+  Class: ""
+  Displays:
+    - Alpha: 1
+      Class: rviz/RobotModel
+      Collision Enabled: false
+      Enabled: true
+      Links:
+        All Links Enabled: true
+        Expand Joint Details: false
+        Expand Link Details: false
+        Expand Tree: false
+        Link Tree Style: Links in Alphabetic Order
+        back_laser:
+          Alpha: 1
+          Show Axes: false
+          Show Trail: false
+          Value: true
+        back_lasertop:
+          Alpha: 1
+          Show Axes: false
+          Show Trail: false
+          Value: true
+        base:
+          Alpha: 1
+          Show Axes: false
+          Show Trail: false
+          Value: true
+        base_kinect/openni_camera:
+          Alpha: 1
+          Show Axes: false
+          Show Trail: false
+          Value: true
+        base_kinect/openni_depth_frame:
+          Alpha: 1
+          Show Axes: false
+          Show Trail: false
+        base_kinect/openni_depth_optical_frame:
+          Alpha: 1
+          Show Axes: false
+          Show Trail: false
+        base_kinect/openni_rgb_frame:
+          Alpha: 1
+          Show Axes: false
+          Show Trail: false
+        base_kinect/openni_rgb_optical_frame:
+          Alpha: 1
+          Show Axes: false
+          Show Trail: false
+        base_laser:
+          Alpha: 1
+          Show Axes: false
+          Show Trail: false
+          Value: true
+        base_link:
+          Alpha: 1
+          Show Axes: false
+          Show Trail: false
+          Value: true
+        base_plate:
+          Alpha: 1
+          Show Axes: false
+          Show Trail: false
+          Value: true
+        clavicles:
+          Alpha: 1
+          Show Axes: false
+          Show Trail: false
+          Value: true
+        elbow_extra_block2_left:
+          Alpha: 1
+          Show Axes: false
+          Show Trail: false
+          Value: true
+        elbow_extra_block2_right:
+          Alpha: 1
+          Show Axes: false
+          Show Trail: false
+          Value: true
+        elbow_extra_block_left:
+          Alpha: 1
+          Show Axes: false
+          Show Trail: false
+          Value: true
+        elbow_extra_block_right:
+          Alpha: 1
+          Show Axes: false
+          Show Trail: false
+          Value: true
+        elbow_link4_left:
+          Alpha: 1
+          Show Axes: false
+          Show Trail: false
+          Value: true
+        elbow_link4_right:
+          Alpha: 1
+          Show Axes: false
+          Show Trail: false
+          Value: true
+        finger1_left:
+          Alpha: 1
+          Show Axes: false
+          Show Trail: false
+          Value: true
+        finger1_phalanx_left:
+          Alpha: 1
+          Show Axes: false
+          Show Trail: false
+          Value: true
+        finger1_phalanx_right:
+          Alpha: 1
+          Show Axes: false
+          Show Trail: false
+          Value: true
+        finger1_right:
+          Alpha: 1
+          Show Axes: false
+          Show Trail: false
+          Value: true
+        finger1_tip_left:
+          Alpha: 1
+          Show Axes: false
+          Show Trail: false
+          Value: true
+        finger1_tip_phalanx_left:
+          Alpha: 1
+          Show Axes: false
+          Show Trail: false
+          Value: true
+        finger1_tip_phalanx_right:
+          Alpha: 1
+          Show Axes: false
+          Show Trail: false
+          Value: true
+        finger1_tip_right:
+          Alpha: 1
+          Show Axes: false
+          Show Trail: false
+          Value: true
+        finger2_left:
+          Alpha: 1
+          Show Axes: false
+          Show Trail: false
+          Value: true
+        finger2_phalanx_left:
+          Alpha: 1
+          Show Axes: false
+          Show Trail: false
+          Value: true
+        finger2_phalanx_right:
+          Alpha: 1
+          Show Axes: false
+          Show Trail: false
+          Value: true
+        finger2_right:
+          Alpha: 1
+          Show Axes: false
+          Show Trail: false
+          Value: true
+        finger2_tip_left:
+          Alpha: 1
+          Show Axes: false
+          Show Trail: false
+          Value: true
+        finger2_tip_phalanx_left:
+          Alpha: 1
+          Show Axes: false
+          Show Trail: false
+          Value: true
+        finger2_tip_phalanx_right:
+          Alpha: 1
+          Show Axes: false
+          Show Trail: false
+          Value: true
+        finger2_tip_right:
+          Alpha: 1
+          Show Axes: false
+          Show Trail: false
+          Value: true
+        fore_arm_left:
+          Alpha: 1
+          Show Axes: false
+          Show Trail: false
+          Value: true
+        fore_arm_right:
+          Alpha: 1
+          Show Axes: false
+          Show Trail: false
+          Value: true
+        fore_arm_top_left:
+          Alpha: 1
+          Show Axes: false
+          Show Trail: false
+          Value: true
+        fore_arm_top_right:
+          Alpha: 1
+          Show Axes: false
+          Show Trail: false
+          Value: true
+        grippoint_left:
+          Alpha: 1
+          Show Axes: false
+          Show Trail: false
+          Value: true
+        grippoint_right:
+          Alpha: 1
+          Show Axes: false
+          Show Trail: false
+          Value: true
+        hand_left:
+          Alpha: 1
+          Show Axes: false
+          Show Trail: false
+          Value: true
+        hand_right:
+          Alpha: 1
+          Show Axes: false
+          Show Trail: false
+          Value: true
+        head:
+          Alpha: 1
+          Show Axes: false
+          Show Trail: false
+          Value: true
+        head_mount:
+          Alpha: 1
+          Show Axes: false
+          Show Trail: false
+        lasertop:
+          Alpha: 1
+          Show Axes: false
+          Show Trail: false
+          Value: true
+        logo:
+          Alpha: 1
+          Show Axes: false
+          Show Trail: false
+          Value: true
+        neck_pan:
+          Alpha: 1
+          Show Axes: false
+          Show Trail: false
+          Value: true
+        neck_tilt:
+          Alpha: 1
+          Show Axes: false
+          Show Trail: false
+          Value: true
+        shoulder_link1_left:
+          Alpha: 1
+          Show Axes: false
+          Show Trail: false
+          Value: true
+        shoulder_link1_right:
+          Alpha: 1
+          Show Axes: false
+          Show Trail: false
+          Value: true
+        shoulder_link2_left:
+          Alpha: 1
+          Show Axes: false
+          Show Trail: false
+          Value: true
+        shoulder_link2_right:
+          Alpha: 1
+          Show Axes: false
+          Show Trail: false
+          Value: true
+        shoulder_mount_left:
+          Alpha: 1
+          Show Axes: false
+          Show Trail: false
+          Value: true
+        shoulder_mount_right:
+          Alpha: 1
+          Show Axes: false
+          Show Trail: false
+          Value: true
+        top_kinect/openni_camera:
+          Alpha: 1
+          Show Axes: false
+          Show Trail: false
+          Value: true
+        top_kinect/openni_depth_frame:
+          Alpha: 1
+          Show Axes: false
+          Show Trail: false
+        top_kinect/openni_depth_optical_frame:
+          Alpha: 1
+          Show Axes: false
+          Show Trail: false
+        top_kinect/openni_rgb_frame:
+          Alpha: 1
+          Show Axes: false
+          Show Trail: false
+        top_kinect/openni_rgb_optical_frame:
+          Alpha: 1
+          Show Axes: false
+          Show Trail: false
+        torso:
+          Alpha: 1
+          Show Axes: false
+          Show Trail: false
+          Value: true
+        torso_assist_slider_back:
+          Alpha: 1
+          Show Axes: false
+          Show Trail: false
+          Value: true
+        torso_assist_slider_left:
+          Alpha: 1
+          Show Axes: false
+          Show Trail: false
+          Value: true
+        torso_assist_slider_right:
+          Alpha: 1
+          Show Axes: false
+          Show Trail: false
+          Value: true
+        torso_dummy:
+          Alpha: 1
+          Show Axes: false
+          Show Trail: false
+          Value: true
+        torso_laser:
+          Alpha: 1
+          Show Axes: false
+          Show Trail: false
+          Value: true
+        torso_lasertop:
+          Alpha: 1
+          Show Axes: false
+          Show Trail: false
+          Value: true
+        torso_slider:
+          Alpha: 1
+          Show Axes: false
+          Show Trail: false
+          Value: true
+        upper_arm_left:
+          Alpha: 1
+          Show Axes: false
+          Show Trail: false
+          Value: true
+        upper_arm_right:
+          Alpha: 1
+          Show Axes: false
+          Show Trail: false
+          Value: true
+        upper_arm_top_left:
+          Alpha: 1
+          Show Axes: false
+          Show Trail: false
+          Value: true
+        upper_arm_top_right:
+          Alpha: 1
+          Show Axes: false
+          Show Trail: false
+          Value: true
+        wrist_link6_left:
+          Alpha: 1
+          Show Axes: false
+          Show Trail: false
+          Value: true
+        wrist_link6_right:
+          Alpha: 1
+          Show Axes: false
+          Show Trail: false
+          Value: true
+        wrist_to_hand_block_left:
+          Alpha: 1
+          Show Axes: false
+          Show Trail: false
+          Value: true
+        wrist_to_hand_block_right:
+          Alpha: 1
+          Show Axes: false
+          Show Trail: false
+          Value: true
+        wrist_visual_left:
+          Alpha: 1
+          Show Axes: false
+          Show Trail: false
+          Value: true
+        wrist_visual_right:
+          Alpha: 1
+          Show Axes: false
+          Show Trail: false
+          Value: true
+      Name: RobotModel
+      Robot Description: amigo/robot_description
+      TF Prefix: amigo
+      Update Interval: 0
+      Value: true
+      Visual Enabled: true
+    - Class: rviz/TF
+      Enabled: true
+      Frame Timeout: 15
+      Frames:
+        All Enabled: true
+        amigo/back_laser:
+          Value: true
+        amigo/back_lasertop:
+          Value: true
+        amigo/base:
+          Value: true
+        amigo/base_kinect/openni_camera:
+          Value: true
+        amigo/base_kinect/openni_depth_frame:
+          Value: true
+        amigo/base_kinect/openni_depth_optical_frame:
+          Value: true
+        amigo/base_kinect/openni_rgb_frame:
+          Value: true
+        amigo/base_kinect/openni_rgb_optical_frame:
+          Value: true
+        amigo/base_laser:
+          Value: true
+        amigo/base_link:
+          Value: true
+        amigo/base_plate:
+          Value: true
+        amigo/clavicles:
+          Value: true
+        amigo/elbow_extra_block2_left:
+          Value: true
+        amigo/elbow_extra_block2_right:
+          Value: true
+        amigo/elbow_extra_block_left:
+          Value: true
+        amigo/elbow_extra_block_right:
+          Value: true
+        amigo/elbow_link4_left:
+          Value: true
+        amigo/elbow_link4_right:
+          Value: true
+        amigo/finger1_left:
+          Value: true
+        amigo/finger1_phalanx_left:
+          Value: true
+        amigo/finger1_phalanx_right:
+          Value: true
+        amigo/finger1_right:
+          Value: true
+        amigo/finger1_tip_left:
+          Value: true
+        amigo/finger1_tip_phalanx_left:
+          Value: true
+        amigo/finger1_tip_phalanx_right:
+          Value: true
+        amigo/finger1_tip_right:
+          Value: true
+        amigo/finger2_left:
+          Value: true
+        amigo/finger2_phalanx_left:
+          Value: true
+        amigo/finger2_phalanx_right:
+          Value: true
+        amigo/finger2_right:
+          Value: true
+        amigo/finger2_tip_left:
+          Value: true
+        amigo/finger2_tip_phalanx_left:
+          Value: true
+        amigo/finger2_tip_phalanx_right:
+          Value: true
+        amigo/finger2_tip_right:
+          Value: true
+        amigo/fore_arm_left:
+          Value: true
+        amigo/fore_arm_right:
+          Value: true
+        amigo/fore_arm_top_left:
+          Value: true
+        amigo/fore_arm_top_right:
+          Value: true
+        amigo/grippoint_left:
+          Value: true
+        amigo/grippoint_right:
+          Value: true
+        amigo/hand_left:
+          Value: true
+        amigo/hand_right:
+          Value: true
+        amigo/head:
+          Value: true
+        amigo/head_mount:
+          Value: true
+        amigo/lasertop:
+          Value: true
+        amigo/logo:
+          Value: true
+        amigo/neck_pan:
+          Value: true
+        amigo/neck_tilt:
+          Value: true
+        amigo/odom:
+          Value: true
+        amigo/shoulder_link1_left:
+          Value: true
+        amigo/shoulder_link1_right:
+          Value: true
+        amigo/shoulder_link2_left:
+          Value: true
+        amigo/shoulder_link2_right:
+          Value: true
+        amigo/shoulder_mount_left:
+          Value: true
+        amigo/shoulder_mount_right:
+          Value: true
+        amigo/top_kinect/openni_camera:
+          Value: true
+        amigo/top_kinect/openni_depth_frame:
+          Value: true
+        amigo/top_kinect/openni_depth_optical_frame:
+          Value: true
+        amigo/top_kinect/openni_rgb_frame:
+          Value: true
+        amigo/top_kinect/openni_rgb_optical_frame:
+          Value: true
+        amigo/torso:
+          Value: true
+        amigo/torso_assist_slider_back:
+          Value: true
+        amigo/torso_assist_slider_left:
+          Value: true
+        amigo/torso_assist_slider_right:
+          Value: true
+        amigo/torso_dummy:
+          Value: true
+        amigo/torso_laser:
+          Value: true
+        amigo/torso_lasertop:
+          Value: true
+        amigo/torso_slider:
+          Value: true
+        amigo/upper_arm_left:
+          Value: true
+        amigo/upper_arm_right:
+          Value: true
+        amigo/upper_arm_top_left:
+          Value: true
+        amigo/upper_arm_top_right:
+          Value: true
+        amigo/wrist_link6_left:
+          Value: true
+        amigo/wrist_link6_right:
+          Value: true
+        amigo/wrist_to_hand_block_left:
+          Value: true
+        amigo/wrist_to_hand_block_right:
+          Value: true
+        amigo/wrist_visual_left:
+          Value: true
+        amigo/wrist_visual_right:
+          Value: true
+        avoid_that_start:
+          Value: true
+        avoid_that_wp1:
+          Value: true
+        avoid_that_wp2:
+          Value: true
+        avoid_that_wp3:
+          Value: true
+        battery_point:
+          Value: true
+        bed:
+          Value: true
+        bed_cabinet:
+          Value: true
+        bedroom:
+          Value: true
+        black_cabinet1:
+          Value: true
+        black_cabinet2:
+          Value: true
+        black_cabinet3:
+          Value: true
+        black_cabinet4:
+          Value: true
+        black_cabinet5:
+          Value: true
+        corridor:
+          Value: true
+        corridor_cabinet:
+          Value: true
+        corridor_chair:
+          Value: true
+        corridor_table:
+          Value: true
+        couchtable:
+          Value: true
+        dinner_table:
+          Value: true
+        entry_point:
+          Value: true
+        exit:
+          Value: true
+        exit_1_rips:
+          Value: true
+        exit_2_rips:
+          Value: true
+        exit_3_rips:
+          Value: true
+        exit_4_rips:
+          Value: true
+        floor:
+          Value: true
+        hallway:
+          Value: true
+        hallway_couch:
+          Value: true
+        initial_pose:
+          Value: true
+        living_room:
+          Value: true
+        map:
+          Value: true
+        operator_table1:
+          Value: true
+        operator_table2:
+          Value: true
+        person_rec_learning:
+          Value: true
+        person_rec_living_room_1:
+          Value: true
+        person_rec_living_room_2:
+          Value: true
+        person_rec_living_room_3:
+          Value: true
+        pico_case:
+          Value: true
+        plastic_cabinet:
+          Value: true
+        registration_table1:
+          Value: true
+        registration_table2:
+          Value: true
+        registration_table3:
+          Value: true
+        robotics_testlabs:
+          Value: true
+        walls:
+          Value: true
+        what_did_you_say_start:
+          Value: true
+        workbench:
+          Value: true
+      Marker Scale: 1
+      Name: TF
+      Show Arrows: true
+      Show Axes: true
+      Show Names: true
+      Tree:
+        map:
+          amigo/odom:
+            amigo/base_link:
+              amigo/base:
+                amigo/back_laser:
+                  amigo/back_lasertop:
+                    {}
+                amigo/base_kinect/openni_camera:
+                  amigo/base_kinect/openni_depth_frame:
+                    amigo/base_kinect/openni_depth_optical_frame:
+                      {}
+                  amigo/base_kinect/openni_rgb_frame:
+                    amigo/base_kinect/openni_rgb_optical_frame:
+                      {}
+                amigo/base_laser:
+                  amigo/lasertop:
+                    {}
+                  amigo/logo:
+                    {}
+                amigo/torso_slider:
+                  amigo/torso:
+                    amigo/clavicles:
+                      {}
+                    amigo/head_mount:
+                      amigo/neck_pan:
+                        amigo/neck_tilt:
+                          amigo/head:
+                            amigo/top_kinect/openni_camera:
+                              amigo/top_kinect/openni_depth_frame:
+                                amigo/top_kinect/openni_depth_optical_frame:
+                                  {}
+                              amigo/top_kinect/openni_rgb_frame:
+                                amigo/top_kinect/openni_rgb_optical_frame:
+                                  {}
+                    amigo/shoulder_mount_left:
+                      amigo/shoulder_link1_left:
+                        amigo/shoulder_link2_left:
+                          amigo/upper_arm_left:
+                            amigo/elbow_extra_block2_left:
+                              {}
+                            amigo/elbow_extra_block_left:
+                              {}
+                            amigo/elbow_link4_left:
+                              amigo/fore_arm_left:
+                                amigo/fore_arm_top_left:
+                                  {}
+                                amigo/wrist_link6_left:
+                                  amigo/hand_left:
+                                    amigo/finger1_left:
+                                      amigo/finger1_phalanx_left:
+                                        {}
+                                      amigo/finger1_tip_left:
+                                        amigo/finger1_tip_phalanx_left:
+                                          {}
+                                    amigo/finger2_left:
+                                      amigo/finger2_phalanx_left:
+                                        {}
+                                      amigo/finger2_tip_left:
+                                        amigo/finger2_tip_phalanx_left:
+                                          {}
+                                    amigo/grippoint_left:
+                                      {}
+                                  amigo/wrist_to_hand_block_left:
+                                    {}
+                                  amigo/wrist_visual_left:
+                                    {}
+                            amigo/upper_arm_top_left:
+                              {}
+                    amigo/shoulder_mount_right:
+                      amigo/shoulder_link1_right:
+                        amigo/shoulder_link2_right:
+                          amigo/upper_arm_right:
+                            amigo/elbow_extra_block2_right:
+                              {}
+                            amigo/elbow_extra_block_right:
+                              {}
+                            amigo/elbow_link4_right:
+                              amigo/fore_arm_right:
+                                amigo/fore_arm_top_right:
+                                  {}
+                                amigo/wrist_link6_right:
+                                  amigo/hand_right:
+                                    amigo/finger1_right:
+                                      amigo/finger1_phalanx_right:
+                                        {}
+                                      amigo/finger1_tip_right:
+                                        amigo/finger1_tip_phalanx_right:
+                                          {}
+                                    amigo/finger2_right:
+                                      amigo/finger2_phalanx_right:
+                                        {}
+                                      amigo/finger2_tip_right:
+                                        amigo/finger2_tip_phalanx_right:
+                                          {}
+                                    amigo/grippoint_right:
+                                      {}
+                                  amigo/wrist_to_hand_block_right:
+                                    {}
+                                  amigo/wrist_visual_right:
+                                    {}
+                            amigo/upper_arm_top_right:
+                              {}
+                    amigo/torso_assist_slider_back:
+                      {}
+                    amigo/torso_assist_slider_left:
+                      {}
+                    amigo/torso_assist_slider_right:
+                      {}
+                    amigo/torso_dummy:
+                      amigo/torso_laser:
+                        amigo/torso_lasertop:
+                          {}
+              amigo/base_plate:
+                {}
+          avoid_that_start:
+            {}
+          avoid_that_wp1:
+            {}
+          avoid_that_wp2:
+            {}
+          avoid_that_wp3:
+            {}
+          battery_point:
+            {}
+          bed:
+            {}
+          bed_cabinet:
+            {}
+          bedroom:
+            {}
+          black_cabinet1:
+            {}
+          black_cabinet2:
+            {}
+          black_cabinet3:
+            {}
+          black_cabinet4:
+            {}
+          black_cabinet5:
+            {}
+          corridor:
+            {}
+          corridor_cabinet:
+            {}
+          corridor_chair:
+            {}
+          corridor_table:
+            {}
+          couchtable:
+            {}
+          dinner_table:
+            {}
+          entry_point:
+            {}
+          exit:
+            {}
+          exit_1_rips:
+            {}
+          exit_2_rips:
+            {}
+          exit_3_rips:
+            {}
+          exit_4_rips:
+            {}
+          floor:
+            {}
+          hallway:
+            {}
+          hallway_couch:
+            {}
+          initial_pose:
+            {}
+          living_room:
+            {}
+          operator_table1:
+            {}
+          operator_table2:
+            {}
+          person_rec_learning:
+            {}
+          person_rec_living_room_1:
+            {}
+          person_rec_living_room_2:
+            {}
+          person_rec_living_room_3:
+            {}
+          pico_case:
+            {}
+          plastic_cabinet:
+            {}
+          registration_table1:
+            {}
+          registration_table2:
+            {}
+          registration_table3:
+            {}
+          robotics_testlabs:
+            {}
+          walls:
+            {}
+          what_did_you_say_start:
+            {}
+          workbench:
+            {}
+      Update Interval: 0
+      Value: true
+    - Alpha: 0.5
+      Cell Size: 1
+      Class: rviz/Grid
+      Color: 160; 160; 164
+      Enabled: true
+      Line Style:
+        Line Width: 0.03
+        Value: Lines
+      Name: Grid
+      Normal Cell Count: 0
+      Offset:
+        X: 0
+        Y: 0
+        Z: 0
+      Plane: XY
+      Plane Cell Count: 100
+      Reference Frame: <Fixed Frame>
+      Value: true
+    - Class: rviz/Camera
+      Enabled: false
+      Image Rendering: background and overlay
+      Image Topic: /amigo/top_kinect/rgb/image_color
+      Name: Cam - Head RGB
+      Overlay Alpha: 0.5
+      Queue Size: 2
+      Transport Hint: raw
+      Value: false
+      Visibility:
+        CBNav - Cost cloud: true
+        CBNav - Desired Orientation: true
+        CBNav - Footprint: true
+        CBNav - Global Plan: true
+        CBNav - Global costmap: true
+        CBNav - Goal Area: true
+        CBNav - Local Costmap: true
+        CBNav - Local Trajectory: true
+        CBNav - Trajectories: true
+        Cam - Head Depth: true
+        Cam - Head Point Cloud: true
+        Cam - Head Target: false
+        ED: true
+        Grasp - Inverse Reachability: false
+        Grasp - Tabletop Clusters: false
+        Grasp - Tabletop Plane: false
+        Grid: false
+        LRF - Back: true
+        LRF - Base: true
+        LRF - Torso: true
+        Loc - Map: false
+        Marker: true
+        Nav - Map: true
+        PoseArray: true
+        Reasoner: false
+        RobotModel: true
+        Sim - Objects: false
+        TF: true
+        Value: true
+        WBC - Repulsive Forces: true
+      Zoom Factor: 1
+    - Class: rviz/Camera
+      Enabled: false
+      Image Rendering: background and overlay
+      Image Topic: /amigo/top_kinect/depth_registered/image_self_filtered
+      Name: Cam - Head Depth
+      Overlay Alpha: 0.5
+      Queue Size: 2
+      Transport Hint: raw
+      Value: false
+      Visibility:
+        CBNav - Cost cloud: true
+        CBNav - Desired Orientation: true
+        CBNav - Footprint: true
+        CBNav - Global Plan: true
+        CBNav - Global costmap: true
+        CBNav - Goal Area: true
+        CBNav - Local Costmap: true
+        CBNav - Local Trajectory: true
+        CBNav - Trajectories: true
+        Cam - Head Point Cloud: true
+        Cam - Head RGB: true
+        Cam - Head Target: true
+        ED: true
+        Grasp - Inverse Reachability: true
+        Grasp - Tabletop Clusters: true
+        Grasp - Tabletop Plane: true
+        Grid: true
+        LRF - Back: true
+        LRF - Base: true
+        LRF - Torso: true
+        Loc - Map: true
+        Marker: true
+        Nav - Map: true
+        PoseArray: true
+        Reasoner: true
+        RobotModel: true
+        Sim - Objects: true
+        TF: true
+        Value: true
+        WBC - Repulsive Forces: true
+      Zoom Factor: 1
+    - Alpha: 1
+      Autocompute Intensity Bounds: true
+      Autocompute Value Bounds:
+        Max Value: 2.00611
+        Min Value: 0.15331
+        Value: true
+      Axis: Z
+      Channel Name: intensity
+      Class: rviz/PointCloud2
+      Color: 255; 255; 255
+      Color Transformer: AxisColor
+      Decay Time: 0
+      Enabled: false
+      Invert Rainbow: false
+      Max Color: 255; 255; 255
+      Max Intensity: 4096
+      Min Color: 0; 0; 0
+      Min Intensity: 0
+      Name: Cam - Head Point Cloud
+      Position Transformer: XYZ
+      Queue Size: 10
+      Selectable: true
+      Size (Pixels): 3
+      Size (m): 0.01
+      Style: Flat Squares
+      Topic: /amigo/top_kinect/depth_registered/points
+      Use Fixed Frame: true
+      Use rainbow: true
+      Value: false
+    - Class: rviz/Marker
+      Enabled: false
+      Marker Topic: visualization_marker
+      Name: Cam - Head Target
+      Namespaces:
+        {}
+      Queue Size: 100
+      Value: false
+    - Alpha: 1
+      Autocompute Intensity Bounds: true
+      Autocompute Value Bounds:
+        Max Value: 10
+        Min Value: -10
+        Value: true
+      Axis: Z
+      Channel Name: intensity
+      Class: rviz/LaserScan
+      Color: 255; 255; 255
+      Color Transformer: FlatColor
+      Decay Time: 0
+      Enabled: true
+      Invert Rainbow: false
+      Max Color: 255; 255; 255
+      Max Intensity: 101
+      Min Color: 0; 0; 0
+      Min Intensity: 101
+      Name: LRF - Base
+      Position Transformer: XYZ
+      Queue Size: 10
+      Selectable: true
+      Size (Pixels): 3
+      Size (m): 0.025
+      Style: Flat Squares
+      Topic: /amigo/base_front_laser
+      Use Fixed Frame: true
+      Use rainbow: true
+      Value: true
+    - Alpha: 1
+      Autocompute Intensity Bounds: true
+      Autocompute Value Bounds:
+        Max Value: 10
+        Min Value: -10
+        Value: true
+      Axis: Z
+      Channel Name: intensity
+      Class: rviz/LaserScan
+      Color: 255; 0; 0
+      Color Transformer: FlatColor
+      Decay Time: 0
+      Enabled: false
+      Invert Rainbow: false
+      Max Color: 255; 255; 255
+      Max Intensity: 101
+      Min Color: 0; 0; 0
+      Min Intensity: 101
+      Name: LRF - Torso
+      Position Transformer: XYZ
+      Queue Size: 10
+      Selectable: true
+      Size (Pixels): 3
+      Size (m): 0.01
+      Style: Flat Squares
+      Topic: /amigo/torso_laser
+      Use Fixed Frame: true
+      Use rainbow: true
+      Value: false
+    - Alpha: 1
+      Autocompute Intensity Bounds: true
+      Autocompute Value Bounds:
+        Max Value: 10
+        Min Value: -10
+        Value: true
+      Axis: Z
+      Channel Name: intensity
+      Class: rviz/LaserScan
+      Color: 255; 170; 0
+      Color Transformer: FlatColor
+      Decay Time: 0
+      Enabled: false
+      Invert Rainbow: false
+      Max Color: 255; 255; 255
+      Max Intensity: 4096
+      Min Color: 0; 0; 0
+      Min Intensity: 0
+      Name: LRF - Back
+      Position Transformer: XYZ
+      Queue Size: 10
+      Selectable: true
+      Size (Pixels): 3
+      Size (m): 0.01
+      Style: Flat Squares
+      Topic: /amigo/base_back_laser
+      Use Fixed Frame: true
+      Use rainbow: true
+      Value: false
+    - Alpha: 0.7
+      Class: rviz/Map
+      Color Scheme: map
+      Draw Behind: false
+      Enabled: false
+      Name: Loc - Map
+      Topic: /loc_map
+      Value: false
+    - Alpha: 0.7
+      Class: rviz/Map
+      Color Scheme: map
+      Draw Behind: false
+      Enabled: false
+      Name: Nav - Map
+      Topic: /nav_map
+      Value: false
+    - Class: rviz/MarkerArray
+      Enabled: false
+      Marker Topic: visualization_marker_array
+      Name: Grasp - Inverse Reachability
+      Namespaces:
+        {}
+      Queue Size: 100
+      Value: false
+    - Alpha: 1
+      Autocompute Intensity Bounds: true
+      Autocompute Value Bounds:
+        Max Value: 10
+        Min Value: -10
+        Value: true
+      Axis: Z
+      Channel Name: intensity
+      Class: rviz/PointCloud2
+      Color: 255; 255; 255
+      Color Transformer: ""
+      Decay Time: 0
+      Enabled: false
+      Invert Rainbow: false
+      Max Color: 255; 255; 255
+      Max Intensity: 4096
+      Min Color: 0; 0; 0
+      Min Intensity: 0
+      Name: Grasp - Tabletop Clusters
+      Position Transformer: ""
+      Queue Size: 10
+      Selectable: true
+      Size (Pixels): 3
+      Size (m): 0.01
+      Style: Flat Squares
+      Topic: ""
+      Use Fixed Frame: true
+      Use rainbow: true
+      Value: false
+    - Alpha: 1
+      Autocompute Intensity Bounds: true
+      Autocompute Value Bounds:
+        Max Value: 10
+        Min Value: -10
+        Value: true
+      Axis: Z
+      Channel Name: intensity
+      Class: rviz/PointCloud2
+      Color: 255; 255; 255
+      Color Transformer: ""
+      Decay Time: 0
+      Enabled: false
+      Invert Rainbow: false
+      Max Color: 255; 255; 255
+      Max Intensity: 4096
+      Min Color: 0; 0; 0
+      Min Intensity: 0
+      Name: Grasp - Tabletop Plane
+      Position Transformer: ""
+      Queue Size: 10
+      Selectable: true
+      Size (Pixels): 3
+      Size (m): 0.01
+      Style: Flat Squares
+      Topic: ""
+      Use Fixed Frame: true
+      Use rainbow: true
+      Value: false
+    - Class: rviz/MarkerArray
+      Enabled: false
+      Marker Topic: /fast_simulator/visualization
+      Name: Sim - Objects
+      Namespaces:
+        {}
+      Queue Size: 100
+      Value: false
+    - Class: rviz/MarkerArray
+      Enabled: false
+      Marker Topic: visualization_marker_array
+      Name: Reasoner
+      Namespaces:
+        {}
+      Queue Size: 100
+      Value: false
+    - Class: rviz/MarkerArray
+      Enabled: true
+      Marker Topic: /world_model
+      Name: ED
+      Namespaces:
+        "": true
+        center_point: true
+        name_and_type: true
+        ns: true
+      Queue Size: 100
+      Value: true
+    - Class: rviz/MarkerArray
+      Enabled: false
+      Marker Topic: /whole_body_controller/repulsive_forces_markers
+      Name: WBC - Repulsive Forces
+      Namespaces:
+        {}
+      Queue Size: 100
+      Value: false
+    - Class: rviz/Marker
+      Enabled: true
+      Marker Topic: /cb_base_navigation/local_planner_interface/visualization/markers/goal_pose_marker
+      Name: CBNav - Goal Area
+      Namespaces:
+        {}
+      Queue Size: 100
+      Value: true
+    - Class: rviz/Marker
+      Enabled: true
+      Marker Topic: /cb_base_navigation/global_planner_interface/visualization/markers/global_plan
+      Name: CBNav - Global Plan
+      Namespaces:
+        {}
+      Queue Size: 100
+      Value: true
+    - Alpha: 1
+      Buffer Length: 1
+      Class: rviz/Path
+      Color: 25; 255; 0
+      Enabled: false
+      Name: CBNav - Local Trajectory
+      Topic: /cb_base_navigation/local_planner_interface/DWAPlannerROS/local_traj
+      Value: false
+    - Class: rviz/Marker
+      Enabled: false
+      Marker Topic: /cb_base_navigation/local_planner_interface/visualization/markers/desired_orientation_marker
+      Name: CBNav - Desired Orientation
+      Namespaces:
+        {}
+      Queue Size: 100
+      Value: false
+    - Alpha: 1
+      Autocompute Intensity Bounds: true
+      Autocompute Value Bounds:
+        Max Value: 10
+        Min Value: -10
+        Value: true
+      Axis: Z
+      Channel Name: occ_cost
+      Class: rviz/PointCloud2
+      Color: 255; 255; 255
+      Color Transformer: Intensity
+      Decay Time: 0
+      Enabled: false
+      Invert Rainbow: false
+      Max Color: 255; 255; 255
+      Max Intensity: 255
+      Min Color: 0; 0; 0
+      Min Intensity: 0
+      Name: CBNav - Cost cloud
+      Position Transformer: XYZ
+      Queue Size: 10
+      Selectable: true
+      Size (Pixels): 3
+      Size (m): 0.01
+      Style: Flat Squares
+      Topic: /cb_base_navigation/local_planner_interface/dwa_planner/cost_cloud
+      Use Fixed Frame: true
+      Use rainbow: true
+      Value: false
+    - Alpha: 1
+      Class: rviz/Polygon
+      Color: 25; 255; 0
+      Enabled: false
+      Name: CBNav - Footprint
+      Topic: /cb_base_navigation/local_planner_interface/local_costmap/robot_footprint/footprint_stamped
+      Value: false
+    - Alpha: 1
+      Autocompute Intensity Bounds: true
+      Autocompute Value Bounds:
+        Max Value: 10
+        Min Value: -10
+        Value: true
+      Axis: Z
+      Channel Name: intensity
+      Class: rviz/PointCloud2
+      Color: 255; 255; 255
+      Color Transformer: ""
+      Decay Time: 0
+      Enabled: false
+      Invert Rainbow: false
+      Max Color: 255; 255; 255
+      Max Intensity: 4096
+      Min Color: 0; 0; 0
+      Min Intensity: 0
+      Name: CBNav - Trajectories
+      Position Transformer: ""
+      Queue Size: 10
+      Selectable: true
+      Size (Pixels): 3
+      Size (m): 0.01
+      Style: Flat Squares
+      Topic: /cb_base_navigation/local_planner_interface/visualization/trajectory_cloud
+      Use Fixed Frame: true
+      Use rainbow: true
+      Value: false
+    - Alpha: 0.7
+      Class: rviz/Map
+      Color Scheme: map
+      Draw Behind: false
+      Enabled: false
+      Name: CBNav - Global costmap
+      Topic: /cb_base_navigation/global_planner_interface/global_costmap/costmap
+      Value: false
+    - Alpha: 0.7
+      Class: rviz/Map
+      Color Scheme: map
+      Draw Behind: false
+      Enabled: false
+      Name: CBNav - Local Costmap
+      Topic: /cb_base_navigation/local_planner_interface/local_costmap/costmap
+      Value: false
+    - Class: rviz/Marker
+      Enabled: false
+      Marker Topic: /ed/kinect/vis_markers
+      Name: Marker
+      Namespaces:
+        {}
+      Queue Size: 100
+      Value: false
+    - Arrow Length: 0.3
+      Class: rviz/PoseArray
+      Color: 255; 25; 0
+      Enabled: false
+      Name: PoseArray
+      Topic: /ed/localization/particles
+      Value: false
+  Enabled: true
+  Global Options:
+    Background Color: 0; 0; 0
+    Fixed Frame: map
+    Frame Rate: 30
+  Name: root
+  Tools:
+    - Class: rviz/Interact
+      Hide Inactive Objects: true
+    - Class: rviz/MoveCamera
+    - Class: rviz/Select
+    - Class: rviz/FocusCamera
+    - Class: rviz/Measure
+    - Class: rviz/SetInitialPose
+      Topic: /amigo/initialpose
+    - Class: rviz/SetGoal
+      Topic: /move_base_simple/goal
+    - Class: rviz/PublishPoint
+      Single click: true
+      Topic: /clicked_point
+  Value: true
+  Views:
+    Current:
+      Class: rviz/Orbit
+      Distance: 7.99343
+      Enable Stereo Rendering:
+        Stereo Eye Separation: 0.06
+        Stereo Focal Distance: 1
+        Swap Stereo Eyes: false
+        Value: false
+      Focal Point:
+        X: -1.96921
+        Y: 3.18915
+        Z: 2.57677
+      Name: Current View
+      Near Clip Distance: 0.01
+      Pitch: 0.9698
+      Target Frame: <Fixed Frame>
+      Value: Orbit (rviz)
+      Yaw: 3.30501
+    Saved:
+      - Angle: 0
+        Class: rviz/TopDownOrtho
+        Enable Stereo Rendering:
+          Stereo Eye Separation: 0.06
+          Stereo Focal Distance: 1
+          Swap Stereo Eyes: false
+          Value: false
+        Name: TopDownOrtho
+        Near Clip Distance: 0.01
+        Scale: 164.283
+        Target Frame: <Fixed Frame>
+        Value: TopDownOrtho (rviz)
+        X: 14.3441
+        Y: 6.43784
+      - Angle: 0
+        Class: rviz/TopDownOrtho
+        Enable Stereo Rendering:
+          Stereo Eye Separation: 0.06
+          Stereo Focal Distance: 1
+          Swap Stereo Eyes: false
+          Value: false
+        Name: MaxObsVel
+        Near Clip Distance: 0.01
+        Scale: 259.092
+        Target Frame: <Fixed Frame>
+        Value: TopDownOrtho (rviz)
+        X: -9.53399
+        Y: -6.18402
+      - Angle: 0
+        Class: rviz/TopDownOrtho
+        Enable Stereo Rendering:
+          Stereo Eye Separation: 0.06
+          Stereo Focal Distance: 1
+          Swap Stereo Eyes: false
+          Value: false
+        Name: MaxObsVel2
+        Near Clip Distance: 0.01
+        Scale: 259.092
+        Target Frame: <Fixed Frame>
+        Value: TopDownOrtho (rviz)
+        X: -9.50697
+        Y: -5.95244
+Window Geometry:
+  Cam - Head Depth:
+    collapsed: false
+  Cam - Head RGB:
+    collapsed: false
+  Displays:
+    collapsed: false
+  Height: 823
+  Hide Left Dock: false
+  Hide Right Dock: false
+  QMainWindow State: 000000ff00000000fd00000004000000000000019d00000294fc020000000bfb0000001200530065006c0065006300740069006f006e00000001e10000009b0000006400fffffffb0000001e0054006f006f006c002000500072006f007000650072007400690065007302000001ed000001df00000185000000a3fb000000120056006900650077007300200054006f006f02000001df000002110000018500000122fb000000200054006f006f006c002000500072006f0070006500720074006900650073003203000002880000011d000002210000017afb000000100044006900730070006c006100790073010000004100000294000000dd00fffffffb0000002000730065006c0065006300740069006f006e00200062007500660066006500720200000138000000aa0000023a00000294fb00000014005700690064006500530074006500720065006f02000000e6000000d2000003ee0000030bfb0000000c004b0069006e0065006300740200000186000001060000030c00000261fb0000001c00430061006d0020002d002000480065006100640020005200470042020000028200000111000002e900000273fb0000002000430061006d0020002d0020004800650061006400200044006500700074006802000001cc000000ce0000032900000276fb0000002c005700690072006500320020002d0020004b0069006e00650063007400200055006e006b006e006f0077006e0000000255000000800000000000000000000000010000010f00000294fc0200000003fb0000001e0054006f006f006c002000500072006f00700065007200740069006500730100000041000000780000000000000000fb0000000a00560069006500770073010000004100000294000000b000fffffffb0000001200530065006c0065006300740069006f006e010000025a000000b200000000000000000000000200000490000000a9fc0100000001fb0000000a00560069006500770073030000004e00000080000002e100000197000000030000063e0000003efc0100000002fb0000000800540069006d006501000000000000063e000002f600fffffffb0000000800540069006d00650100000000000004500000000000000000000003860000029400000004000000040000000800000008fc0000000100000002000000010000000a0054006f006f006c00730100000000ffffffff0000000000000000
+  Selection:
+    collapsed: false
+  Time:
+    collapsed: false
+  Tool Properties:
+    collapsed: false
+  Views:
+    collapsed: false
+  Width: 1598
+  X: 0
+  Y: 24

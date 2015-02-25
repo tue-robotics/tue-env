@@ -48,3 +48,9 @@
 - type: target
   name: git-hooks
 
+# -------------------- ROBOTS --------------------
+
+# AMIGO
+- type: target
+  name: amigo-user-ubuntu-14.04
+
