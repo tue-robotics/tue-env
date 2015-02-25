@@ -38,9 +38,9 @@ do_start()
 	echo "-------------------------" >>$LOGFILE
 
 	if [ "$(hostname)" = "amigo1" ]; then
-		su $RUN_USER -s /bin/bash -c "screen -d -m -S astart ~/.tue/installer/targets/amigo1/autolaunch.sh $PIDFILE amigo_launch_files start.launch 2>&1 >>/dev/null" &
+		su $RUN_USER -s /bin/bash -c "screen -d -m -S astart ~/.tue/installer/targets/amigo1/autolaunch.sh $PIDFILE amigo_bringup start.launch 2>&1 >>/dev/null" &
 	elif [ "$(hostname)" = "amigo2" ]; then
-		su $RUN_USER -s /bin/bash -c "screen -d -m -S hstart ~/.tue/installer/targets/amigo1/autolaunch.sh $PIDFILE amigo_launch_files all_hardware.launch 2>&1 >>/dev/null" &
+		su $RUN_USER -s /bin/bash -c "screen -d -m -S hstart ~/.tue/installer/targets/amigo1/autolaunch.sh $PIDFILE amigo_bringup hardware.launch 2>&1 >>/dev/null" &
 	else
 		log_daemon_msg "Don't know what to do"
 		exit 4
