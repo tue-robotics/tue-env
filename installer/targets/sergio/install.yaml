@@ -1,0 +1,30 @@
+# Will be installed on all pcs
+
+# astart
+- type: target
+  name: ros-battery_manager
+  
+- type: target
+  name: ros-emergency_speakup
+
+- type: target
+  name: ros-rgb_lights_manager
+
+# Middleware
+- type: target
+  name: tue-middleware
+
+# Sensors
+- type: target
+  name: ros-hokuyo_node
+- type: target
+  name: ros-openni_launch
+
+# Sergio aliases
+- type: target
+  name: sergio-user
+
+# RoboCup
+- type: target
+  name: tue-robocup-at-home
+
