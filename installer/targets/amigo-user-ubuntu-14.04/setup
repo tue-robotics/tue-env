@@ -1,0 +1,248 @@
+#!/bin/bash
+
+alias amigo-core='export ROS_MASTER_URI=http://amigo1:11311'
+
+# ----------------------------------------------------------------------------
+# - Add scripts directory to PATH
+export PATH=~/.tue/installer/targets/amigo-user-ubuntu-14.04/scripts:$PATH
+
+####################
+#
+# git prompt
+#
+####################
+# source ~/Documents/tools/git-prompt.sh
+GIT_PS1_SHOWDIRTYSTATE=1
+GIT_PS1_SHOWSTASHSTATE=1
+GIT_PS1_SHOWUNTRACKEDFILES=1
+# Explicitly unset color (default anyhow). Use 1 to set it.
+GIT_PS1_SHOWCOLORHINTS=1
+GIT_PS1_DESCRIBE_STYLE="branch"
+GIT_PS1_SHOWUPSTREAM="auto git"
+
+# PROMPT_COMMAND='__git_ps1 "[\[\033[01;34m\]\w\[\033[00m\]]" "\n'\
+# '${debian_chroot:+($debian_chroot)}\[\033[01;32m\]\u@\h\[\033[00m\]:\$ "'
+
+PS1='[\[\033[01;34m\]\w\[\033[00m\]]$(__git_ps1)\n'\
+'${debian_chroot:+($debian_chroot)}\[\033[01;32m\]\u@\h\[\033[00m\] \$ '
+
+####################
+#
+# SSH
+#
+####################
+alias sshamigo1='until ssh -qo ConnectTimeout=1 -X amigo@amigo1; do echo waiting for amigo1 to come online...; sleep 2; done'
+alias sshamigo2='until ssh -qo ConnectTimeout=1 -X amigo@amigo2; do echo waiting for amigo2 to come online...; sleep 2; done'
+alias sshamigo3='until ssh -qo ConnectTimeout=1 amigo@amigo3; do echo waiting for amigo3 to come online...; sleep 2; done'
+alias sshamigo4='until ssh -qo ConnectTimeout=1 -X amigo@amigo4; do echo waiting for amigo4 to come online...; sleep 2; done'
+alias sshamigo5='until ssh -qo ConnectTimeout=1 -X amigo@amigo5; do echo waiting for amigo5 to come online...; sleep 2; done'
+
+####################
+#
+# AMIGO STARTUP
+#
+####################
+alias astart='roslaunch amigo_launch_files start.launch'
+alias aloc='roslaunch amigo_launch_files localization.launch'
+alias asensors='roslaunch amigo_launch_files sensors.launch'
+alias amiddle='roslaunch amigo_launch_files middleware.launch'
+alias amiddle-screen='screen -x -L -R -S amiddle roslaunch amigo_launch_files middleware.launch'
+
+alias ahardware='screen -x -L -R -S ahardware roslaunch amigo_hardware all.launch'
+alias aexecutive='screen -x -L -R -S aexecutive'
+
+####################
+#
+# AMIGO ACTIONS
+#
+####################
+alias say='rostopic pub --once /amigo/text_to_speech/input std_msgs/String'
+alias zeg='rosrun common_admin_files say.sh en'
+alias zegen='rosrun amigo_admin_files say_philips_tts.sh us carlos'
+alias zegnl='rosrun amigo_admin_files say_philips_tts.sh nl david'
+alias praat='rosservice call /text_to_speech/speak david nl default neutral true'
+alias hear='function __hear() { nohup rostopic pub --once /pocketsphinx/output std_msgs/String "!!str $*" 2>/dev/null & disown; unset -f __hear; }; __hear'
+
+alias amigo-high='rostopic pub /amigo/torso/references sensor_msgs/JointState "{header: {seq: 0, stamp: {secs: 0, nsecs: 0}, frame_id: ""}, name: ["torso_joint"], position: [0.35], velocity: [0], effort: [0]}"  --once'
+
+alias amigo-medium='rostopic pub /amigo/torso/references sensor_msgs/JointState "{header: {seq: 0, stamp: {secs: 0, nsecs: 0}, frame_id: ""}, name: ["torso_joint"], position: [0.2], velocity: [0], effort: [0]}"  --once'
+alias amigo-low='rostopic pub /amigo/torso/references sensor_msgs/JointState "{header: {seq: 0, stamp: {secs: 0, nsecs: 0}, frame_id: ""}, name: ["torso_joint"], position: [0.085], velocity: [0], effort: [0]}"  --once'
+alias amigo-case='rostopic pub /amigo/torso/references sensor_msgs/JointState "{header: {seq: 0, stamp: {secs: 0, nsecs: 0}, frame_id: ""}, name: ["torso_joint"], position: [0.12], velocity: [0], effort: [0]}"  --once'
+
+alias amigo-head-straight='amigo-head-move 0.0 0.0'
+alias move-straight="rostopic pub -r 10 /cmd_vel geometry_msgs/Twist  '{linear:  {x: 0.1, y: 0.0, z: 0.0}, angular: {x: 0.0,y: 0.0,z: 0.0}}'"
+alias openleftgripper='rostopic pub --once /amigo/left_gripper/references tue_msgs/GripperCommand -- -1 100'
+alias openrightgripper='rostopic pub --once /amigo/right_gripper/references tue_msgs/GripperCommand -- -1 100'
+alias closeleftgripper='rostopic pub --once /amigo/left_gripper/references tue_msgs/GripperCommand -- 1 100'
+alias closerightgripper='rostopic pub --once /amigo/right_gripper/references tue_msgs/GripperCommand -- 1 100'
+alias amigo-teleop='rosrun tue_teleop_keyboard teleop_twist_keyboard.py /cmd_vel:=/amigo/base/references'
+alias amigostopall='rosrun tue_execution_pack stopamigo.py'
+
+alias amigo-base-reset-odom='rostopic pub --once /amigo/base/reset_odometry std_msgs/Bool 1'
+alias amigo-top-kinect-show='rosrun image_view image_view image:=/amigo/top_kinect/rgb/image_rect_color'
+alias reset-audio="amixer -- sset 'Master' -5dB && amixer -- sset 'Mic Boost' 10dB && amixer -- sset 'Capture' 16.50dB && amixer -- sset 'Digital' 3.5dB && amixer -- sset 'Mic' mute
+"
+alias navc="rostopic pub --once /nav_test_control std_msgs/String 'continue'"
+alias navp="rostopic pub --once /nav_test_control std_msgs/String 'pause'"
+alias navs="rostopic pub --once /nav_test_control std_msgs/String 'stop'"
+
+function depcheck
+{
+  type -P $1 &>/dev/null && return
+  echo "Installing $2"
+  sudo apt-get -y install $2 && return
+  echo "Error installing $2"
+  exit 1
+}
+
+#####################
+#
+# DIAGNOSTICS
+#
+#####################
+alias diag='rosrun robot_monitor robot_monitor'
+alias dashboard='echo this is old dashboard command. please use adashboard for the AMIGO dashboard and sdashboard for the SERGIO dashboard'
+alias adashboard='tue-dashboard amigo1'
+
+alias rviz-amigo='rosrun rviz rviz -d ~/.tue/installer/targets/amigo-user-ubuntu-14.04/rviz_config.rviz'
+
+# alias rviz-amigo-fuerte='source /opt/ros/fuerte/setup.bash; ROS_PACKAGE_PATH=$TUE_TRUNK/amigo_common/amigo_description:$ROS_PACKAGE_PATH; rosrun rviz rviz -d $TUE_TRUNK/amigo_admin_files/configs/rviz/rviz_amigo.vcg; export ROS_DISTRO=groovy; source ~/.bashrc'
+# alias rviz-amigo-groovy='rosrun rviz rviz -d $TUE_TRUNK/amigo_admin_files/configs/rviz/amigo_groovy.rviz'
+# alias rviz-amigo="rviz-amigo-${TUEROS_DISTRO}"
+# alias rviz-amigo-new='rosrun rviz rviz -d $TUE_TRUNK/amigo_admin_files/configs/rviz/rviz_amigo_new.vcg'
+# alias rviz-3dnav='rosrun rviz rviz -d $TUE_TRUNK/amigo_admin_files/configs/rviz/rviz_3dnav.vcg'
+# alias rviz-amigo2-groovy='rosrun rviz rviz -d $TUE_TRUNK/amigo_admin_files/configs/rviz/amigo2_groovy.rviz'
+# alias rviz-amigo2='rosrun rviz rviz -d $TUE_TRUNK/amigo_admin_files/configs/rviz/amigo2_fuerte.vcg'
+# alias rviz-technical-challenge='rosrun rviz rviz -d $TUE_TRUNK/amigo_admin_files/configs/rviz/rviz_technical_challenge.vcg'
+
+# Rviz configs per challenge
+# alias rviz-rips='rosrun rviz rviz -d $TUE_TRUNK/amigo_admin_files/configs/rviz/rviz_rips.vcg'
+# alias rviz-follow-me='rosrun rviz rviz -d $TUE_TRUNK/amigo_admin_files/configs/rviz/rviz_follow_me.vcg'
+# alias rviz-cocktail='rosrun rviz rviz -d $TUE_TRUNK/amigo_admin_files/configs/rviz/rviz_cocktail.vcg'
+# alias rviz-cleanup='rosrun rviz rviz -d $TUE_TRUNK/amigo_admin_files/configs/rviz/rviz_cleanup.vcg'
+# alias rviz-emergency='rosrun rviz rviz -d $TUE_TRUNK/amigo_admin_files/configs/rviz/rviz_emergency.vcg'
+# alias rviz-open-challenge='rosrun rviz rviz -d $TUE_TRUNK/tue_robocup/challenge_open/config.rviz'
+# alias rviz-final-challenge='rosrun rviz rviz -d $TUE_TRUNK/tue_robocup/challenge_final/config.rviz'
+alias rviz-final-challenge-fuerte='rosrun rviz rviz -d $TUE_TRUNK/tue_robocup/challenge_final/rviz-fuerte.vcg'
+alias rviz-egpsr='rosrun rviz rviz -d $TUE_TRUNK/amigo_admin_files/configs/rviz/rviz_egpsr.vcg'
+alias rviz-restaurant='rosrun rviz rviz -d $TUE_TRUNK/amigo_admin_files/configs/rviz/amigo_groovy_restaurant.rviz'
+
+# --------------------------------------------------------------------------------
+
+function amigo-head-move {
+    if [ -z "$2" ]; then
+        echo "Usage: amigo-head-move PAN TILT"
+        return
+    fi
+
+    rostopic pub /amigo/neck/references sensor_msgs/JointState "{header: {seq: 0, stamp: {secs: 0, nsecs: 0}, frame_id: ''}, name: ['neck_pan_joint', 'neck_tilt_joint'], position: [$1, $2], velocity: [0], effort: [0]}"  --once
+}
+
+# --------------------------------------------------------------------------------
+
+function amigo-torso-move-joints {
+    if [ -z "$1" ]; then
+        echo "Usage: amigo-torso-move-joints position"
+        return
+    fi
+
+    ( rostopic pub /amigo/torso/references sensor_msgs/JointState "{header: {seq: 0, stamp: {secs: 0, nsecs: 0}, frame_id: ''}, name: ['torso_joint'], position: [$1], velocity: [0], effort: [0]}"  --once  &> /dev/null & )
+}
+
+# --------------------------------------------------------------------------------
+
+function amigo-right-arm-move-joints {
+    if [ -z "$7" ]; then
+        echo "Usage: amigo-right-arm-move-joints q1 q2 q3 q4 q5 q6 q7"
+        return
+    fi
+
+    ( rostopic pub /amigo/right_arm/references sensor_msgs/JointState "{header: {seq: 0, stamp: {secs: 0, nsecs: 0}, frame_id: ''}, name: ['shoulder_yaw_joint_right', 'shoulder_pitch_joint_right', 'shoulder_roll_joint_right', 'elbow_pitch_joint_right', 'elbow_roll_joint_right', 'wrist_pitch_joint_right', 'wrist_yaw_joint_right'], position: [$1, $2, $3, $4, $5, $6, $7], velocity: [0], effort: [0]}"  --once  &> /dev/null & )
+}
+
+# --------------------------------------------------------------------------------
+
+function amigo-right-arm-move-idle {
+    amigo-right-arm-move-joints -0.1 -0.35 0.2 1.2 0 0 0
+}
+
+# --------------------------------------------------------------------------------
+
+function amigo-left-arm-move-joints {
+    if [ -z "$7" ]; then
+        echo "Usage: amigo-left-arm-move-joints q1 q2 q3 q4 q5 q6 q7"
+        return
+    fi
+
+    ( rostopic pub /amigo/left_arm/references sensor_msgs/JointState "{header: {seq: 0, stamp: {secs: 0, nsecs: 0}, frame_id: ''}, name: ['shoulder_yaw_joint_left', 'shoulder_pitch_joint_left', 'shoulder_roll_joint_left', 'elbow_pitch_joint_left', 'elbow_roll_joint_left', 'wrist_pitch_joint_left', 'wrist_yaw_joint_left'], position: [$1, $2, $3, $4, $5, $6, $7], velocity: [0], effort: [0]}"  --once  &> /dev/null & )
+}
+
+# --------------------------------------------------------------------------------
+
+function amigo-left-arm-move-idle {
+    amigo-left-arm-move-joints -0.1 -0.35 0.2 1.2 0 0 0
+}
+
+# --------------------------------------------------------------------------------
+
+function amigo-arms-move-idle {
+    amigo-right-arm-move-idle
+    amigo-left-arm-move-idle
+}
+
+# --------------------------------------------------------------------------------
+
+function amigo-left-gripper-open {
+    ( rostopic pub /amigo/left_gripper/references tue_msgs/GripperCommand "{direction: -1, max_torque: 10.0}" --once  &> /dev/null & )
+}
+
+# --------------------------------------------------------------------------------
+
+function amigo-left-gripper-close {
+    ( rostopic pub /amigo/left_gripper/references tue_msgs/GripperCommand "{direction: 1, max_torque: 10.0}" --once  &> /dev/null & )
+}
+
+# --------------------------------------------------------------------------------
+
+function amigo-right-gripper-open {
+    ( rostopic pub /amigo/right_gripper/references tue_msgs/GripperCommand "{direction: -1, max_torque: 10.0}" --once  &> /dev/null & )
+}
+
+# --------------------------------------------------------------------------------
+
+function amigo-right-gripper-close {
+    ( rostopic pub /amigo/right_gripper/references tue_msgs/GripperCommand "{direction: 1, max_torque: 10.0}" --once  &> /dev/null & )
+}
+
+# --------------------------------------------------------------------------------
+
+function amigo-hear {
+    if [ -z "$1" ] || [ -n "$2" ]; then
+        echo "Usage: amigo-hear 'TEXT'"
+        return
+    fi    
+
+    if [ "$1" == "yes" ]; then
+        msg='!!str yes'    
+    elif [ "$1" == "no" ]; then
+        msg='!!str no'    
+    else
+        msg="$1"
+    fi
+
+    rostopic pub --once /pocketsphinx/output std_msgs/String "$msg"
+}
+
+# --------------------------------------------------------------------------------
+
+function amigo-top-kinect-record-avi {
+    filename=$1
+
+    if [ -z $filename ]
+    then
+        filename=amigo_top_kinect-`date +"%Y-%m-%d-%H-%M-%S"`.avi
+    fi
+
+    # Lossless codec: FFV1
+    rosrun rgbd record_to_video rgb:=/amigo/top_kinect/rgb/image_color depth:=/amigo/top_kinect/depth_registered/image _fps:=30 _format:=DIVX _filename:=$filename _size:=1
+}

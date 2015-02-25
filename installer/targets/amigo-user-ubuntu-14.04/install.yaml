@@ -1,0 +1,19 @@
+#- type: target
+#  name: tue-common
+#- type: target
+#  name: robot-user
+#- type: target
+#  name: ros-amigo_launch_files
+#- type: target
+#  name: ros-amigo_demo
+
+# TODO: sort out
+#- type: target
+#  name: ros-tf_server
+#- type: target
+#  name: ros-node_alive
+#- type: target
+#  name: ros-tue_maps
+#- type: target
+#  name: ros-amigo_head_ref
+
