@@ -2,7 +2,7 @@
 
 import urllib.request, os, hashlib;
 
-h = '7183a2d3e96f11eeadd761d777e62404e330c659d4bb41d3bdf022e94cab3cd0';
+h = 'eb2297e1a458f27d836c04bb0cbaf282d0e7a3098092775ccb37ca9d6b2e4b7d';
 pf = 'Package Control.sublime-package';
 ipp = os.path.expanduser('~/.config/sublime-text-3/Installed Packages')
 
