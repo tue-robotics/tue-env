@@ -1,1 +1,2 @@
 export ROBOT_BRINGUP_PATH=/home/amigo/ros/hydro/system/src/amigo_bringup
+export ROSLAUNCH_SSH_UNKNOWN=1
