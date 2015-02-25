@@ -3,7 +3,7 @@
 - type: target
   name: robot-user
 - type: target
-  name: ros-amigo_launch_files
+  name: ros-amigo_bringup
 - type: target
   name: ros-amigo_demo
 
