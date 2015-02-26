@@ -5,6 +5,8 @@
 - type: target
   name: ros-amigo_bringup
 - type: target
+  name: ros-amigo_description
+- type: target
   name: ros-amigo_demo
 
 # TODO: sort out
