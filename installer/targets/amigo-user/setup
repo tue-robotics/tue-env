@@ -1,6 +1,6 @@
 #!/bin/bash
 
-export ROBOT_BRINGUP_PATH=/home/amigo/ros/hydro/system/src/amigo_bringup
+export ROBOT_BRINGUP_PATH=$TUE_SYSTEM_DIR/src/amigo_bringup
 
 alias amigo-core='export ROS_MASTER_URI=http://amigo1:11311'
 
