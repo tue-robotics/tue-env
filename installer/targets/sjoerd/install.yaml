@@ -2,8 +2,8 @@
   name: tue-dev
 
 # DEV
-- type: target
-  name: ros-fast_simulator2
+#- type: target
+#  name: ros-fast_simulator2
 
 # ED
 #- type: target
