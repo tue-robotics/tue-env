@@ -19,22 +19,9 @@ alias sshsergio3='until ssh -qo ConnectTimeout=1 -X amigo@sergio3; do echo waiti
 # SERGIO STARTUP
 #
 ####################
-alias sstart='roslaunch sergio_launch_files start.launch'
-alias sloc='roslaunch sergio_launch_files localization.launch'
-alias smiddle='roslaunch sergio_launch_files middleware.launch'
-alias smiddle-screen='screen -x -L -R -S smiddle roslaunch sergio_launch_files middleware.launch'
-function smiddle
-{
-    if [[ $ROS_DISTRO == "groovy" ]]
-    then
-        roslaunch sergio_launch_files middleware.launch
-    else
-        roslaunch sergio_launch_files middleware_hydro.launch
-    fi
-}
-
-alias shardware='screen -x -L -R -S shardware roslaunch sergio_hardware all.launch'
-alias sexecutive='screen -x -L -R -S aexecutive'
+alias sstart='roslaunch sergio_bringup start.launch'
+alias shardware='roslaunch sergio_bringup hardware.launch'
+alias smiddle='roslaunch sergio_bringup middleware.launch'
 
 ####################
 #
