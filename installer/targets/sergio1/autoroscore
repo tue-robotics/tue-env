@@ -40,7 +40,7 @@ do_start()
 	if [ "$(hostname)" = "sergio1" ]; then
 		su $RUN_USER -s /bin/bash -c "screen -d -m -S roscore ~/.tue/installer/targets/sergio1/autoroscore.sh $PIDFILE 2>&1 >>/dev/null" &
 	else
-		echo "Hostname is $(hostname) don't know what to do"
+		echo "Don't know what to do"
 		exit 4
 	fi
 	
@@ -56,8 +56,8 @@ do_stop()
 	log_end_msg $?
 	rm -f $PIDFILE
 	
-	if [ "$(hostname)" = "sergio1" ]; then #amigo1 manages the roscore
-		sudo service autoroslaunch restart #So restart autolaunch service (that waits for new roscore) to make sure we don't mix up roscores
+	if [ "$(hostname)" = "sergio1" ]; then #sergio1 manages the roscore
+		ssh amigo@sergio2 sudo service autoroslaunch restart #So restart service on sergio2 (that waits for new roscore)
 	fi
 	
 }

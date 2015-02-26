@@ -38,9 +38,11 @@ do_start()
 	echo "-------------------------" >>$LOGFILE
 
 	if [ "$(hostname)" = "sergio1" ]; then
-		su $RUN_USER -s /bin/bash -c "screen -d -m -S astart ~/.tue/installer/targets/sergio1/autolaunch.sh $PIDFILE sergio_launch_files start.launch 2>&1 >>/dev/null" &
+		su $RUN_USER -s /bin/bash -c "screen -d -m -S sstart ~/.tue/installer/targets/sergio1/autolaunch.sh $PIDFILE sergio_bringup start.launch 2>&1 >>/dev/null" &
+	elif [ "$(hostname)" = "sergio2" ]; then
+		su $RUN_USER -s /bin/bash -c "screen -d -m -S hstart ~/.tue/installer/targets/sergio1/autolaunch.sh $PIDFILE sergio_bringup hardware.launch 2>&1 >>/dev/null" &
 	else
-		log_daemon_msg "Hostname is $(hostname), don't know what to do"
+		log_daemon_msg "Don't know what to do"
 		exit 4
 	fi
 	
