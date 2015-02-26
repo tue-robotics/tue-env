@@ -45,9 +45,8 @@ alias sshamigo5='until ssh -qo ConnectTimeout=1 -X amigo@amigo5; do echo waiting
 #
 ####################
 alias astart='roslaunch amigo_bringup start.launch'
+alias ahardware='roslaunch amigo_bringup hardware.launch'
 alias amiddle='roslaunch amigo_bringup middleware.launch'
-
-alias ahardware='screen -x -L -R -S ahardware roslaunch amigo_bringup hardware.launch'
 
 ####################
 #
