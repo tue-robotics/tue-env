@@ -1,0 +1,62 @@
+#! /bin/bash
+
+# Written by Sjoerd van den Dries (2012)
+
+WIDTH=$(tput cols)
+HEIGHT=$(tput lines)
+
+if [ $# -eq 0 ]
+then
+    gnome-terminal -t "SERGIO 1" --geometry=${WIDTH}x${HEIGHT}+0+0 --hide-menubar -x ssh amigo@sergio1 & 
+    gnome-terminal -t "SERGIO 2" --geometry=${WIDTH}x${HEIGHT}-0+0 --hide-menubar -x ssh amigo@sergio2 &
+    gnome-terminal -t "SERGIO 3" --geometry=${WIDTH}x${HEIGHT}+0-0 --hide-menubar -x ssh amigo@sergio3 &
+    exit
+fi
+
+# parse options
+WAIT=false
+while getopts ":wh" opt; do
+  case $opt in
+    w)
+        WAIT=true
+      ;;
+    h)
+        echo "Usage: `basename $0` [OPTION]... [COMMAND]
+
+Opens one terminal for each SERGIO pc, and executes COMMAND within each terminal on
+all SERGIO pc's. If multiple commands need to be executed, use single quotes (' ').
+
+Options:
+  -w                  wait for key press before closing terminal.
+  -h                  display this help and exit
+"
+        exit
+      ;;
+    \?)
+        echo "Invalid option: -$OPTARG"
+        exit
+      ;;
+  esac
+done
+
+# clear all flags from command line arguments
+shift $(( OPTIND -1 ))
+
+# concatenate commands
+cmd=""
+for arg in "$@"
+do
+    cmd="$cmd $arg"
+done
+
+# if wait option is set, add key press check at end of command
+if $WAIT
+then
+    cmd="$cmd; read -n 1 -s"
+fi
+
+# open terminals and execute commands
+gnome-terminal -t "SERGIO 1" --geometry=${WIDTH}x${HEIGHT}+0+0 --hide-menubar -x ssh amigo@sergio1 -t bash -ic "'echo \"**** SERGIO1 ****\";$cmd'" & 
+gnome-terminal -t "SERGIO 2" --geometry=${WIDTH}x${HEIGHT}-0+0 --hide-menubar -x ssh amigo@sergio2 -t bash -ic "'echo \"**** SERGIO2 ****\";$cmd'" &
+gnome-terminal -t "SERGIO 3" --geometry=${WIDTH}x${HEIGHT}+0-0 --hide-menubar -x ssh amigo@sergio3 -t bash -ic "'echo \"**** SERGIO3 ****\";$cmd'" &
+
