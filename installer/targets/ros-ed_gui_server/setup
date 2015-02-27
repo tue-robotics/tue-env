@@ -1,1 +1,1 @@
-alias amigo-ed-rviz-publisher='rosrun ed_gui_server ed_rviz_publisher /ed/gui/entities:=/amigo/ed/gui/entities ed/gui/query_meshes:=/amigo/ed/gui/query_meshes'
+alias amigo-ed-rviz-publisher='rosrun ed_gui_server ed_rviz_publisher /ed/gui/entities:=/amigo/ed/gui/entities ed/gui/query_meshes:=/amigo/ed/gui/query_meshes ed/rviz:=/amigo/world_model'
