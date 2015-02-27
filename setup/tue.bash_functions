@@ -322,17 +322,17 @@ function tue-get
 {
     if [ -z "$1" ]
     then
-        echo """tue-get is a tool for installing and removing packages that are under version control.
+        echo """tue-get is a tool for installing and removing packages.
 
     Usage: tue-get COMMAND [ARG1 ARG2 ...]
 
     Possible commands:
 
         dep            - Shows target dependencies
-	    install        - Installs a package
+        install        - Installs a package
         update         - Updates currently installed packages
         remove         - Removes installed package
-        list-installed - Lists all installed packages
+        list-installed - Lists all manually installed packages
 
 """
         return 1
@@ -427,7 +427,12 @@ function tue-get
         fi
     elif [[ $cmd == "list-installed" ]]
     then
-        ls $tue_dep_dir
+        if [[ "$1" == "-a" ]]
+        then
+            ls $tue_dep_dir
+        else
+            ls $TUE_ENV_DIR/.env/installed
+        fi
     elif [[ $cmd == "dep" ]]
     then
         ~/.tue/installer/scripts/tue-get-dep $@
