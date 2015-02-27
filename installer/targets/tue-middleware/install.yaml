@@ -11,6 +11,10 @@
 - type: system
   name: sysstat
 
+# Web interaction
+- type: target
+  name: ros-tue_mobile_ui
+
 # Executive
 
 # Navigation
