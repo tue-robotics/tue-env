@@ -36,6 +36,8 @@
   name: ros-ed_gui_server
 - type: target
   name: ros-ed_localization
+- type: target
+  name: ros-ed_navigation
 
 # Execution
 - type: target
