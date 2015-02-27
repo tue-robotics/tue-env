@@ -576,7 +576,7 @@ Visualization Manager:
         center_point: true
         name_and_type: true
         ns: true
-      Queue Size: 100
+      Queue Size: 1
       Value: true
     - Class: rviz/Marker
       Enabled: true
