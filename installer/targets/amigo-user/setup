@@ -44,9 +44,9 @@ alias sshamigo5='until ssh -qo ConnectTimeout=1 -X amigo@amigo5; do echo waiting
 # AMIGO STARTUP
 #
 ####################
-alias astart='roslaunch amigo_bringup start.launch'
-alias ahardware='roslaunch amigo_bringup hardware.launch'
-alias amiddle='roslaunch amigo_bringup middleware.launch'
+alias astart='ROBOT_BRINGUP_PATH=$TUE_SYSTEM_DIR/src/amigo_bringup; roslaunch amigo_bringup start.launch'
+alias ahardware='ROBOT_BRINGUP_PATH=$TUE_SYSTEM_DIR/src/amigo_bringup; roslaunch amigo_bringup hardware.launch'
+alias amiddle='ROBOT_BRINGUP_PATH=$TUE_SYSTEM_DIR/src/amigo_bringup; roslaunch amigo_bringup middleware.launch'
 
 ####################
 #
