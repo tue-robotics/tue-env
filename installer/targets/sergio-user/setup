@@ -1,6 +1,5 @@
 #!/bin/bash
 
-export ROBOT_BRINGUP_PATH=/home/amigo/ros/hydro/system/src/sergio_bringup
 export PATH=~/.tue/installer/targets/sergio-user/scripts:$PATH
 
 alias sergio-core='export ROS_MASTER_URI=http://sergio1:11311'
