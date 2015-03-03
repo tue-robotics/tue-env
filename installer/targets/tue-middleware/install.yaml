@@ -42,6 +42,8 @@
   name: ros-ed_localization
 - type: target
   name: ros-ed_navigation
+- type: target
+  name: ros-ed_sensor_integration
 
 # Execution
 - type: target
