@@ -19,9 +19,9 @@ alias sshsergio3='until ssh -qo ConnectTimeout=1 -X amigo@sergio3; do echo waiti
 # SERGIO STARTUP
 #
 ####################
-alias sstart='ROBOT_BRINGUP_PATH=$TUE_SYSTEM_DIR/src/sergio_bringup; roslaunch sergio_bringup start.launch'
-alias shardware='ROBOT_BRINGUP_PATH=$TUE_SYSTEM_DIR/src/sergio_bringup; roslaunch sergio_bringup hardware.launch'
-alias smiddle='ROBOT_BRINGUP_PATH=$TUE_SYSTEM_DIR/src/sergio_bringup; roslaunch sergio_bringup middleware.launch'
+alias sstart='export ROBOT_BRINGUP_PATH=$TUE_SYSTEM_DIR/src/sergio_bringup; roslaunch sergio_bringup start.launch'
+alias shardware='export ROBOT_BRINGUP_PATH=$TUE_SYSTEM_DIR/src/sergio_bringup; roslaunch sergio_bringup hardware.launch'
+alias smiddle='export ROBOT_BRINGUP_PATH=$TUE_SYSTEM_DIR/src/sergio_bringup; roslaunch sergio_bringup middleware.launch'
 
 ####################
 #
