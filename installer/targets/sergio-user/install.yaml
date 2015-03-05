@@ -3,5 +3,9 @@
 - type: target
   name: robot-user
 - type: target
-  name: ros-sergio_launch_files
+  name: ros-sergio_bringup
+
+# Sort out
+- type: target
+  name: ros-node_alive
   
