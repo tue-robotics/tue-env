@@ -1,11 +1,8 @@
 - type: target
-  name: tue-hardware
+  name: sergio
 
-  # SERGIO
 - type: target
-  name: sergio-user
-- type: target
-  name: ros-sergio_machine_files
+  name: tue-hardware
 
 # git aliases, commit hooks and git-su
 - type: target
