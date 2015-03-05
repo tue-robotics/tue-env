@@ -1,4 +1,7 @@
 - type: target
+  name: sergio
+
+- type: target
   name: thespeechmachine
 
 - type: target

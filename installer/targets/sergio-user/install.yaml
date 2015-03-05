@@ -4,6 +4,8 @@
   name: robot-user
 - type: target
   name: ros-sergio_bringup
+- type: target
+  name: ros-sergio_description
 
 # Sort out
 - type: target
