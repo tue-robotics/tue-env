@@ -353,7 +353,7 @@ function tue-install-pkg
     sub_dir=$3
     version=$4
 
-    if [ -z "$2"]
+    if [ -z "$2" ]
     then
         tue-install-error "tue-install-pkg needs at least two arguments: source type (git, svn, ...) and source (url)"
     fi
