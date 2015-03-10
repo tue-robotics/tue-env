@@ -31,6 +31,8 @@ alias smiddle='export ROBOT_BRINGUP_PATH=$TUE_SYSTEM_DIR/src/sergio_bringup; ros
 #
 ####################
 
+alias sergio-publish-ed='rosrun ed_gui_server ed_rviz_publisher /ed/gui/entities:=/sergio/ed/gui/entities ed/gui/query_meshes:=/sergio/ed/gui/query_meshes ed/rviz:=/sergio/world_model'
+
 alias sergio-publish-point-cloud='rosrun rgbd rgbd_to_ros /sergio/top_kinect/rgbd /depth/points:=/sergio/top_kinect/point_cloud /depth/image:=/sergio/top_kinect/depth/image /rgb/image:=/sergio/top_kinect/rgb/image'
 
 ####################
