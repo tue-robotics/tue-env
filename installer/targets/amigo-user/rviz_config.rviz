@@ -482,7 +482,7 @@ Visualization Manager:
       Size (Pixels): 3
       Size (m): 0.01
       Style: Flat Squares
-      Topic: /amigo/top_kinect/rgb/points
+      Topic: /amigo/top_kinect/point_cloud
       Use Fixed Frame: true
       Use rainbow: true
       Value: false
