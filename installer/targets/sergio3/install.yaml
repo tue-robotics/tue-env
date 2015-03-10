@@ -1,4 +1,13 @@
 - type: target
+  name: sergio
+
+- type: target
+  name: tue-hardware
+
+- type: target
+  name: ros-kinect_driver
+
+- type: target
   name: thespeechmachine
 
 - type: target
