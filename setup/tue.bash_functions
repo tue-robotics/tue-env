@@ -115,6 +115,15 @@ function tue-add
 
 function tue-make
 {
+    # compile non-ros packages if needed
+    if [ -d $TUE_ENV_DIR/pkgs ]
+    then
+        $TUE_DIR/make/pre-configure.bash
+        $TUE_DIR/make/configure.bash
+        $TUE_DIR/make/make.bash
+        $TUE_DIR/make/post-make.bash
+    fi    
+
     catkin_make --directory $TUE_SYSTEM_DIR -DCMAKE_BUILD_TYPE=RelWithDebInfo $@
 }
 
