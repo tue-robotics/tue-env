@@ -546,8 +546,12 @@ function tue-env
 
     Possible commands:
 
+        init           - Initializes new environment
+        remove         - Removes an existing enviroment (no data is lost)
         switch         - Switch to a different environment
         list           - List all possible environments
+        list-current   - Shows current environment
+        cd             - Changes directory to environment directory
 """
         return 1
     fi
@@ -555,7 +559,52 @@ function tue-env
     cmd=$1
     shift
 
-    if [[ $cmd == "switch" ]]
+    # Make sure the correct directories are there
+    mkdir -p $TUE_DIR/user/envs
+
+    if [[ $cmd == "init" ]]
+    then
+        if [ -z "$1" ]
+        then
+            echo "Usage: tue-env init NAME [ DIRECTORY ]"
+            return 1
+        fi
+
+        local dir=$PWD   # default directory is current directory
+        [ -z "$2" ] || dir=$2
+
+        # TODO: make dir absolute
+
+        if [ -f $TUE_DIR/user/envs/$1 ]
+        then
+            echo "[tue-env] Environment '$1' already exists"
+            return 1
+        fi
+
+        if [ -d $dir/.env ]
+        then
+            echo "[tue-env] Directory '$dir' is already an environment directory."
+            return 1
+        fi
+
+        echo "$dir" > $TUE_DIR/user/envs/$1
+        mkdir -p $dir/.env
+    elif [[ $cmd == "remove" ]]
+    then
+        if [ -z "$1" ]
+        then
+            echo "Usage: tue-env remove ENVIRONMENT"
+            return 1
+        fi
+
+        if [ ! -f $TUE_DIR/user/envs/$1 ]
+        then
+            echo "[tue-env] No such environment: '$1'."
+            return 1
+        fi
+
+        rm $TUE_DIR/user/envs/$1
+    elif [[ $cmd == "switch" ]]
     then
         if [ -z "$1" ]
         then
@@ -563,23 +612,34 @@ function tue-env
             return 1
         fi
 
-        if [ ! -d ~/.tue/envs/$1 ]
+        if [ ! -f $TUE_DIR/user/envs/$1 ]
         then
-            echo "No such environment: '$1'."
+            echo "[tue-env] No such environment: '$1'."
             return 1
         fi
 
-        rm -rf ~/.tue/env
-        ln -s ~/.tue/envs/$1 ~/.tue/env        
+        export TUE_ENV=$1
+        export TUE_ENV_DIR=`cat $TUE_DIR/user/envs/$1`
+
+    elif [[ $cmd == "cd" ]]
+    then
+        local env=$1
+        [ -n "$env" ] || env=$TUE_ENV
+
+        local dir=`cat $TUE_DIR/user/envs/$env`
+        cd $dir
+
     elif [[ $cmd == "list" ]]
     then
-        for env in `ls ~/.tue/envs`
+        [ -d $TUE_DIR/user/envs ] || return 0
+
+        for env in `ls $TUE_DIR/user/envs`
         do
             echo $env
         done
-    elif [[ $cmd == "current" ]]
+    elif [[ $cmd == "list-current" ]]
     then
-        echo $(basename `readlink ~/.tue/env`)
+        echo $TUE_ENV
     else
         echo "[tue-env] Unknown command: '$cmd'"
         return 1
@@ -592,14 +652,16 @@ function _tue-env
     local prev=${COMP_WORDS[COMP_CWORD-1]}
 
     if [ $COMP_CWORD -eq 1 ]; then
-        COMPREPLY=( $(compgen -W "list switch current" -- $cur) )
+        COMPREPLY=( $(compgen -W "init list switch list-current remove cd" -- $cur) )
     else
         cmd=${COMP_WORDS[1]}
-        if [[ $cmd == "switch" ]]
+        if [[ $cmd == "switch" ]] || [[ $cmd == "remove" ]] || [[ $cmd == "cd" ]]
         then
             if [ $COMP_CWORD -eq 2 ]
-                then
-                COMPREPLY=( $(compgen -W "`ls ~/.tue/envs`" -- $cur) )        
+            then
+                local envs=
+                [ -d TUE_DIR/user/envs ] && envs=`ls $TUE_DIR/user/envs`
+                COMPREPLY=( $(compgen -W "$envs" -- $cur) )        
             fi
         fi
     fi
