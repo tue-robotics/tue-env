@@ -4,3 +4,8 @@
       url: https://github.com/tue-robotics/ed_perception.git
 - type: target
   name: libsiftfast
+
+# For people_detector in ed_perception -> laser_human_chest_classifier:
+- type: system
+  name: libgsl0-dev
+
