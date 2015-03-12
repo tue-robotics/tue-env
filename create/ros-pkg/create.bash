@@ -7,7 +7,7 @@ then
 fi
 
 pkg_name=$1
-pkg_dir=~/ros/$TUE_ROS_DISTRO/sources/local/$pkg_name
+pkg_dir=$TUE_ENV_DIR/sources/local/$pkg_name
 
 if [ -d $pkg_dir ]
 then
