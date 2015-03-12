@@ -389,6 +389,8 @@ function tue-install-ros {
     sub_dir=$3
     version=$4
 
+    [ -n "$TUE_ROS_DISTRO" ] || tue-install-error "Environment variable 'TUE_ROS_DISTRO' is not set."
+
     local ros_pkg_name=${TUE_INSTALL_CURRENT_TARGET#ros-}
 
     # First of all, make sure ROS itself is installed
