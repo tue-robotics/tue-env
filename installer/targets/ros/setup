@@ -6,8 +6,8 @@ fi
 
 source /opt/ros/$TUE_ROS_DISTRO/setup.bash
 
-TUE_SYSTEM_DIR=~/ros/$TUE_ROS_DISTRO/system
-TUE_DEV_DIR=~/ros/$TUE_ROS_DISTRO/dev
+TUE_SYSTEM_DIR=$TUE_ENV_DIR/system
+TUE_DEV_DIR=$TUE_ENV_DIR/dev
 
 if [[ $TUE_ROS_DISTRO == "groovy" ]]
 then
