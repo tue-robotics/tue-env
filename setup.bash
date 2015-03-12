@@ -8,7 +8,7 @@ source $TUE_DIR/setup/tue-env.bash
 function _tue-check-env-vars
 {
     [ -n "$TUE_DIR" ] && [ -n "$TUE_ENV" ] && [ -n "$TUE_ENV_DIR" ] \
-       && [ -n "$TUE_BIN" ] && [ -n "$TUE_ROS_DISTRO" ] && return 0   
+       && [ -n "$TUE_BIN" ] && return 0   
     echo "[tue] Not all needed environment variables are set."
     return 1
 }
