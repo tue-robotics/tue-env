@@ -1,5 +1,19 @@
 export TUE_DIR="$( cd "$( dirname "${BASH_SOURCE[0]}" )" && pwd )"
 
+# Load tue-env tool
+source $TUE_DIR/setup/tue-env.bash
+
+# ------------------------------------------
+# Helper function for checking if all env vars are set
+function _tue-check-env-vars
+{
+    [ -n "$TUE_DIR" ] && [ -n "$TUE_ENV" ] && [ -n "$TUE_ENV_DIR" ] \
+       && [ -n "$TUE_BIN" ] && [ -n "$TUE_ROS_DISTRO" ] && return 0   
+    echo "[tue] Not all needed environment variables are set."
+    return 1
+}
+export -f _tue-check-env-vars
+
 # ------------------------------------------
 # Temporarily: make sure the ~/ros/hydro and ~/ros/indigo environment can be found
 if [ "$TUE_ENV" == "hydro" ] || [ "$TUE_ENV" == "indigo" ]
@@ -14,7 +28,7 @@ then
     then
         if [ -z "$TUE_ENV" ]
         then
-            echo "[tue] Please set TUE_ROS_DISTRO or TUE_ENV"
+            # No environment, so all environment specific setup below does not need to be sourced
             return
         else
             TUE_ROS_DISTRO=$TUE_ENV
@@ -29,15 +43,14 @@ then
     mkdir -p $TUE_DIR/user/config
     echo "TUE_ENV" > $TUE_DIR/user/config/default_env
 fi
-
 # ------------------------------------------
 
 if [ -z "$TUE_ENV" ]
 then
     if [ ! -f $TUE_DIR/user/config/default_env ]
     then
-        echo "[tue] No default environment found"
-        return 1
+        # No environment, so all environment specific setup below does not need to be sourced
+        return
     fi
 
     export TUE_ENV=`cat $TUE_DIR/user/config/default_env`
@@ -45,7 +58,7 @@ then
     if [ ! -f $TUE_DIR/user/envs/$TUE_ENV ]
     then
         echo "[tue] No such environment: '$TUE_ENV'"
-        return 1
+        return
     fi
 fi
 
@@ -74,15 +87,3 @@ export PATH=$TUE_BIN:$PATH
 
 # Make sure ROS can find cmake modules of non-ROS packages
 export CMAKE_PREFIX_PATH=$TUE_ENV_DIR/cmake:$CMAKE_PREFIX_PATH
-
-# ------------------------------------------
-# Helper function for checking if all env vars are set
-function _tue-check-env-vars
-{
-    [ -n "$TUE_DIR" ] && [ -n "$TUE_ENV" ] && [ -n "$TUE_ENV_DIR" ] \
-	   && [ -n "$TUE_BIN" ] && [ -n "$TUE_ROS_DISTRO" ] && return 0   
-	echo "[tue] Not all needed environment variables are set."
-	return 1
-}
-export -f _tue-check-env-vars
-
