@@ -20,9 +20,6 @@ else
         echo "[tue-get] Could not update tue-get. Aborting"
         exit 1
     fi
-
-    # Make sure that if something changed to the main setup.bash, we incorporate the changes directly
-    source $TUE_DIR/setup.bash
 fi
 
 # Run installer
