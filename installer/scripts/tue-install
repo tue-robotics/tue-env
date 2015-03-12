@@ -10,7 +10,16 @@ else
     cd $TUE_DIR
     echo -en "Updating tue-get... "    
     git pull --ff-only --prune
+
+    error_code=$?
 	cd $mem_pwd
+
+    if [ ! $error_code -eq 0 ]
+    then
+        echo ""
+        echo "[tue-get] Could not update tue-get. Aborting"
+        exit 1
+    fi
 fi
 
 # Run installer
