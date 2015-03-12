@@ -1,7 +1,7 @@
 #!/bin/bash
 
-TUE_DEV_DIR=$TUE_ENV_DIR/dev
-TUE_SYSTEM_DIR=$TUE_ENV_DIR/system
+_TUE_CATKIN_DEV_DIR=$TUE_ENV_DIR/dev
+_TUE_CATKIN_SYSTEM_DIR=$TUE_ENV_DIR/system
 
 # ----------------------------------------------------------------------------------------------------
 #                                        HELPER FUNCTIONS
@@ -74,22 +74,25 @@ function tue-make
         $TUE_DIR/make/post-make.bash
     fi    
 
-    catkin_make --directory $TUE_SYSTEM_DIR -DCMAKE_BUILD_TYPE=RelWithDebInfo $@
+    if [ -n "$TUE_ROS_DISTRO" ] && [ -d $_TUE_CATKIN_SYSTEM_DIR ]
+    then
+        catkin_make --directory $_TUE_CATKIN_SYSTEM_DIR -DCMAKE_BUILD_TYPE=RelWithDebInfo $@
+    fi
 }
 
 function tue-make-system
 {
-    catkin_make_isolated --directory $TUE_SYSTEM_DIR -DCMAKE_BUILD_TYPE=RelWithDebInfo $@	
+    catkin_make_isolated --directory $_TUE_CATKIN_SYSTEM_DIR -DCMAKE_BUILD_TYPE=RelWithDebInfo $@	
 }
 
 function tue-make-dev
 {
-    catkin_make --directory $TUE_DEV_DIR -DCMAKE_BUILD_TYPE=RelWithDebInfo $@
+    catkin_make --directory $_TUE_CATKIN_DEV_DIR -DCMAKE_BUILD_TYPE=RelWithDebInfo $@
 }
 
 function tue-make-dev-isolated
 {
-    catkin_make_isolated --directory $TUE_DEV_DIR -DCMAKE_BUILD_TYPE=RelWithDebInfo $@
+    catkin_make_isolated --directory $_TUE_CATKIN_DEV_DIR -DCMAKE_BUILD_TYPE=RelWithDebInfo $@
 }
 
 # ----------------------------------------------------------------------------------------------------
@@ -100,20 +103,20 @@ function tue-dev
 {
     if [ -z "$1" ]
     then
-        _list_subdirs $TUE_DEV_DIR/src
+        _list_subdirs $_TUE_CATKIN_DEV_DIR/src
         return 0
     fi
 
     for pkg in $@
     do     
-        if [ ! -d $TUE_SYSTEM_DIR/src/$pkg ]
+        if [ ! -d $_TUE_CATKIN_SYSTEM_DIR/src/$pkg ]
         then
             echo "[tue-dev] '$pkg' does not exist in the system workspace."
-        elif [ -d $TUE_DEV_DIR/src/$pkg ]
+        elif [ -d $_TUE_CATKIN_DEV_DIR/src/$pkg ]
         then
             echo "[tue-dev] '$pkg' is already in the dev workspace."
         else
-            ln -s $TUE_SYSTEM_DIR/src/$pkg $TUE_DEV_DIR/src/$pkg
+            ln -s $_TUE_CATKIN_SYSTEM_DIR/src/$pkg $_TUE_CATKIN_DEV_DIR/src/$pkg
         fi
     done
 
@@ -123,21 +126,21 @@ function tue-dev
 
 function tue-dev-clean
 {
-    for f in `_list_subdirs $TUE_DEV_DIR/src`
+    for f in `_list_subdirs $_TUE_CATKIN_DEV_DIR/src`
     do
         # Test if f is a symbolic link
-        if [[ -L $TUE_DEV_DIR/src/$f ]]
+        if [[ -L $_TUE_CATKIN_DEV_DIR/src/$f ]]
         then
             echo "Cleaned '$f'"
-            rm $TUE_DEV_DIR/src/$f
+            rm $_TUE_CATKIN_DEV_DIR/src/$f
         fi
     done
 
-    rm -rf $TUE_DEV_DIR/devel/share
-    rm -rf $TUE_DEV_DIR/devel/etc
-    rm -rf $TUE_DEV_DIR/devel/include
-    rm -rf $TUE_DEV_DIR/devel/lib
-    rm -rf $TUE_DEV_DIR/build
+    rm -rf $_TUE_CATKIN_DEV_DIR/devel/share
+    rm -rf $_TUE_CATKIN_DEV_DIR/devel/etc
+    rm -rf $_TUE_CATKIN_DEV_DIR/devel/include
+    rm -rf $_TUE_CATKIN_DEV_DIR/devel/lib
+    rm -rf $_TUE_CATKIN_DEV_DIR/build
 }
 
 function _tue-dev
@@ -145,7 +148,7 @@ function _tue-dev
     local cur=${COMP_WORDS[COMP_CWORD]}
     local prev=${COMP_WORDS[COMP_CWORD-1]}
 
-    COMPREPLY=( $(compgen -W "`_list_subdirs $TUE_SYSTEM_DIR/src`" -- $cur) )
+    COMPREPLY=( $(compgen -W "`_list_subdirs $_TUE_CATKIN_SYSTEM_DIR/src`" -- $cur) )
 }
 complete -F _tue-dev tue-dev
 
@@ -213,15 +216,24 @@ function _tue-repo-status
 
 # ----------------------------------------------------------------------------------------------------
 
-function tue-status
+function _tue-dir-status
 {
-    fs=`ls $TUE_SYSTEM_DIR/src`
+    [ -d "$1" ] || return
+
+    local fs=`ls $1`
     for f in $fs
     do
-        pkg_dir=$TUE_SYSTEM_DIR/src/$f
+        pkg_dir=$1/$f
         _tue-repo-status $f $pkg_dir        
-    done
+    done   
+}
 
+# ----------------------------------------------------------------------------------------------------
+
+function tue-status
+{
+    _tue-dir-status $_TUE_CATKIN_SYSTEM_DIR/src
+    _tue-dir-status $TUE_ENV_DIR/pkgs
     _tue-repo-status $TUE_DIR $TUE_DIR
 }
 
@@ -231,10 +243,10 @@ function tue-git-status
 {
     local output=""
 
-    fs=`ls $TUE_SYSTEM_DIR/src`
+    fs=`ls $_TUE_CATKIN_SYSTEM_DIR/src`
     for pkg in $fs
     do
-        pkg_dir=$TUE_SYSTEM_DIR/src/$pkg
+        pkg_dir=$_TUE_CATKIN_SYSTEM_DIR/src/$pkg
 
         if [ -d $pkg_dir ]
         then
@@ -448,10 +460,10 @@ function tue-branch
 
     local branch=$1
 
-    fs=`ls $TUE_SYSTEM_DIR/src`
+    fs=`ls $_TUE_CATKIN_SYSTEM_DIR/src`
     for pkg in $fs
     do
-        pkg_dir=$TUE_SYSTEM_DIR/src/$pkg
+        pkg_dir=$_TUE_CATKIN_SYSTEM_DIR/src/$pkg
 
         if [ -d $pkg_dir ]
         then

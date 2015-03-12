@@ -405,6 +405,9 @@ function tue-install-ros {
         tue-install-error "Environment variable ROS_PACKAGE_INSTALL_DIR not set."
     fi
 
+    # Make sure the ROS package install dir exists
+    mkdir -p $ROS_PACKAGE_INSTALL_DIR
+
     local ros_pkg_dir=$ROS_PACKAGE_INSTALL_DIR/$ros_pkg_name
     local repos_dir=$TUE_REPOS_DIR/$source
     #mkdir -p $repos_dir/..
@@ -519,7 +522,6 @@ INSTALL_DETAILS_FILE=/tmp/tue-get-details-`randid`
 
 # CATKIN PACKAGES
 ROS_PACKAGE_INSTALL_DIR=$TUE_SYSTEM_DIR/src
-mkdir -p $ROS_PACKAGE_INSTALL_DIR
 
 TUE_INSTALL_TARGET_DIR=$TUE_INSTALL_TARGETS_DIR
 TUE_INSTALL_SCRIPTS_DIR=$TUE_DIR/installer/scripts
