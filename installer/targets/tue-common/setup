@@ -1,5 +1,5 @@
-alias trunk='cd ~/ros/$ROS_DISTRO/system/src'
-alias dev='cd ~/ros/$ROS_DISTRO/dev/src'
+alias trunk='cd $TUE_ENV_DIR/system/src'
+alias dev='cd $TUE_ENV_DIR/dev/src'
 
 ##############################################################################################
 #   TOOL FOR SETTING ROS_PACKAGE_PATH
