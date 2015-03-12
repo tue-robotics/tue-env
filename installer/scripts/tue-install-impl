@@ -1,23 +1,6 @@
 #!/bin/bash
+_tue-check-env-vars || exit 1
 
-if [ -z $TUE_BIN ]
-then
-	echo "[tue-get] Variable TUE_BIN not specified."
-	exit
-fi
-
-mkdir -p $TUE_BIN
-
-if [ -z "$TUE_ENV_DIR" ]
-then
-	export TUE_ENV_DIR=~/ros/hydro
-fi
-
-if [ ! -d $TUE_ENV_DIR/.env ]
-then
-	cp -r ~/.tue/envs/default $TUE_ENV_DIR/.env
-fi
-	
 TUE_INSTALL_DEPENDENCIES_DIR=$TUE_ENV_DIR/.env/dependencies
 TUE_INSTALL_DEPENDENCIES_ON_DIR=$TUE_ENV_DIR/.env/dependencies-on
 TUE_INSTALL_INSTALLED_DIR=$TUE_ENV_DIR/.env/installed
@@ -26,7 +9,7 @@ mkdir -p $TUE_INSTALL_DEPENDENCIES_DIR
 mkdir -p $TUE_INSTALL_DEPENDENCIES_ON_DIR
 mkdir -p $TUE_INSTALL_INSTALLED_DIR
 
-TUE_INSTALL_TARGETS_DIR=~/.tue/installer/targets
+TUE_INSTALL_TARGETS_DIR=$TUE_DIR/installer/targets
 
 # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # 
 
@@ -50,16 +33,10 @@ function _make_sure_installed
 
 # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # 
 
-if [ -z "$TUE_ROS_DISTRO" ]
-then
-    echo "[tue-install] TUE_ROS_DISTRO was not set."
-    return
-fi
-
 _make_sure_installed python-yaml git subversion
 
-TUE_SYSTEM_DIR=~/ros/$TUE_ROS_DISTRO/system
-TUE_REPOS_DIR=~/ros/$TUE_ROS_DISTRO/repos
+TUE_SYSTEM_DIR=$TUE_ENV_DIR/system
+TUE_REPOS_DIR=$TUE_ENV_DIR/repos
 
 # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # 
 
@@ -127,7 +104,7 @@ function tue-install-target {
 
         if [ -f $install_file.yaml ]
         then
-            local cmds=`~/.tue/installer/scripts/parse-install-yaml $install_file.yaml`
+            local cmds=`$TUE_DIR/installer/scripts/parse-install-yaml $install_file.yaml`
             if [ $? -eq 0 ]; then
                 for cmd in $cmds
                 do
@@ -175,13 +152,8 @@ function _show_update_message
 
 # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # 
 
-function tue-install-svn {   
-    if [ -n "$TUE_INSTALL_DUMMY" ]; then
-        echo "svn co $1 $2"
-        cp -rf ~/fake-svn/$1 $2       
-        return
-    fi
-   
+function tue-install-svn
+{      
     if [ ! -d $2 ]; then 
         res=$(svn co $1 $2 --trust-server-cert --non-interactive 2>&1)
     else
@@ -197,12 +169,8 @@ function tue-install-svn {
 
 # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # 
 
-function tue-install-git {
-    if [ -n "$TUE_INSTALL_DUMMY" ]; then
-        echo "git clone $1 $2 ($3)"
-        return
-    fi
-
+function tue-install-git
+{
     if [ ! -d $2 ]; then 
         res=$(git clone $1 $2 2>&1)
     else
@@ -427,10 +395,6 @@ function tue-install-ros {
     tue-install-target ros
 
     if [ "$type" = "system" ]; then
-        if [ -z "$TUE_ROS_DISTRO" ]; then
-            tue-install-error "Environment variable ROS_DISTRO not set."
-        fi
-
         TUE_INSTALL_SYSTEMS="ros-$TUE_ROS_DISTRO-$source $TUE_INSTALL_SYSTEMS"
         return
     fi
@@ -555,12 +519,8 @@ INSTALL_DETAILS_FILE=/tmp/tue-get-details-`randid`
 ROS_PACKAGE_INSTALL_DIR=$TUE_SYSTEM_DIR/src
 mkdir -p $ROS_PACKAGE_INSTALL_DIR
 
-# ROSBUILD PACKAGES
-ROSBUILD_PACKAGE_INSTALL_DIR=~/ros/$TUE_ROS_DISTRO/rosbuild/trunk
-mkdir -p $ROSBUILD_PACKAGE_INSTALL_DIR
-
 TUE_INSTALL_TARGET_DIR=$TUE_INSTALL_TARGETS_DIR
-TUE_INSTALL_SCRIPTS_DIR=~/.tue/installer/scripts
+TUE_INSTALL_SCRIPTS_DIR=$TUE_DIR/installer/scripts
 
 TUE_INSTALL_STATE_DIR=/tmp/tue-installer/`randid`
 mkdir -p $TUE_INSTALL_STATE_DIR
@@ -617,25 +577,23 @@ fi
 # Remove temp directories
 rm /tmp/tue-installer -rf
 
-if [ -z "$TUE_INSTALL_DUMMY" ]; then
-    if [ -n "$TUE_INSTALL_SYSTEMS" ]; then
+if [ -n "$TUE_INSTALL_SYSTEMS" ]; then
 
-        echo -e "\nsudo apt-get install $TUE_INSTALL_SYSTEMS" >> $INSTALL_DETAILS_FILE
+    echo -e "\nsudo apt-get install $TUE_INSTALL_SYSTEMS" >> $INSTALL_DETAILS_FILE
 
-        pkgs_to_install=
-        for pkg in $TUE_INSTALL_SYSTEMS
-        do
-            if ! dpkg -s $pkg &> /dev/null
-            then
-                pkgs_to_install="$pkgs_to_install $pkg"
-            fi
-        done
-
-        if [ -n "$pkgs_to_install" ]
-        then    
-    		echo -e "Going to run the following command:\n"
-    		echo "sudo apt-get install -y$pkgs_to_install"
-            sudo apt-get install -y $pkgs_to_install
+    pkgs_to_install=
+    for pkg in $TUE_INSTALL_SYSTEMS
+    do
+        if ! dpkg -s $pkg &> /dev/null
+        then
+            pkgs_to_install="$pkgs_to_install $pkg"
         fi
+    done
+
+    if [ -n "$pkgs_to_install" ]
+    then    
+		echo -e "Going to run the following command:\n"
+		echo "sudo apt-get install -y$pkgs_to_install"
+        sudo apt-get install -y $pkgs_to_install
     fi
 fi

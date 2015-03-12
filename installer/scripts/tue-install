@@ -1,17 +1,18 @@
 #!/bin/bash
+_tue-check-env-vars || exit 1
 
 # Update installer
-if [ ! -d ~/.tue ]
+if [ ! -d $TUE_DIR ]
 then 
-    git clone https://github.com/tue-robotics/tue-env.git ~/.tue
+    git clone https://github.com/tue-robotics/tue-env.git $TUE_DIR
 else
     mem_pwd=$PWD
-    cd ~/.tue
+    cd $TUE_DIR
     echo -en "Updating tue-get... "    
     git pull --ff-only --prune
 	cd $mem_pwd
 fi
 
 # Run installer
-source ~/.tue/installer/scripts/tue-install-impl $@
+source $TUE_DIR/installer/scripts/tue-install-impl $@
 exit $?
