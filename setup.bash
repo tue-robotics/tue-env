@@ -1,36 +1,72 @@
 export TUE_DIR="$( cd "$( dirname "${BASH_SOURCE[0]}" )" && pwd )"
 
-if [ "$ROS_DISTRO_DEFAULT" == "groovy" ]
+# ------------------------------------------
+# Temporarily: make sure the ~/ros/hydro and ~/ros/indigo environment can be found
+if [ "$TUE_ENV" == "hydro" ] || [ "$TUE_ENV" == "indigo" ]
 then
-    source ~/ros/groovy/catkin_ws/src/tue/trunk/amigo_admin_files/bash/amigo_user.bashrc
-else
+    mkdir -p $TUE_DIR/user/envs
+    [ -f $TUE_DIR/user/envs/$TUE_ENV ] || echo "$HOME/ros/$TUE_ENV" > $TUE_DIR/user/envs/$TUE_ENV
+fi
 
+if [ ! -f $TUE_DIR/user/config/default_env ]
+then
     if [ -z "$TUE_ROS_DISTRO" ]
     then
-		if [ -z "$TUE_ENV" ]
-		then
-        	echo "[tue] Please set TUE_ROS_DISTRO or TUE_ENV"
-	        return
-		else
-			TUE_ROS_DISTRO=$TUE_ENV
-		fi
-	else
-		TUE_ENV=$TUE_ROS_DISTRO
-	fi
+        if [ -z "$TUE_ENV" ]
+        then
+            echo "[tue] Please set TUE_ROS_DISTRO or TUE_ENV"
+            return
+        else
+            TUE_ROS_DISTRO=$TUE_ENV
+        fi
+    else
+        TUE_ENV=$TUE_ROS_DISTRO
+    fi
 
     export TUE_ROS_DISTRO=$TUE_ROS_DISTRO
-	export TUE_ENV=$TUE_ENV
-	export TUE_ENV_DIR=~/ros/$TUE_ENV
+    export TUE_ENV=$TUE_ENV
 
-    source ~/.tue/setup/tue.bash_functions
+    mkdir -p $TUE_DIR/user/config
+    echo "TUE_ENV" > $TUE_DIR/user/config/default_env
+fi
 
-    if [ -f $TUE_ENV_DIR/.env/setup/target_setup.bash ]
-	then
-		source $TUE_ENV_DIR/.env/setup/target_setup.bash
-	elif [ -f ~/.tue/env/setup/target_setup.bash ]
+# ------------------------------------------
+
+if [ -z "$TUE_ENV" ]
+then
+    if [ ! -f $TUE_DIR/user/config/default_env ]
     then
-        source ~/.tue/env/setup/target_setup.bash
+        echo "[tue] No default environment found"
+        return 1
     fi
+
+    export TUE_ENV=`cat $TUE_DIR/user/config/default_env`
+
+    if [ ! -f $TUE_DIR/user/envs/$TUE_ENV ]
+    then
+        echo "[tue] No such environment: '$TUE_ENV'"
+        return 1
+    fi
+fi
+
+export TUE_ENV_DIR=`cat $TUE_DIR/user/envs/$TUE_ENV`
+
+if [ ! -d $TUE_ENV_DIR ]
+then
+    echo "[tue] Environment directory '$TUE_ENV_DIR' (environment '$TUE_ENV') does not exist"
+    return 1
+fi
+
+source $TUE_DIR/setup/tue.bash_functions
+
+if [ -f $TUE_ENV_DIR/.env/setup/user_setup.bash ]
+then
+    source $TUE_ENV_DIR/.env/setup/user_setup.bash
+fi
+
+if [ -f $TUE_ENV_DIR/.env/setup/target_setup.bash ]
+then
+	source $TUE_ENV_DIR/.env/setup/target_setup.bash
 fi
 
 export TUE_BIN=~/.tue/bin
@@ -49,11 +85,4 @@ function _tue-check-env-vars
 	return 1
 }
 export -f _tue-check-env-vars
-
-# ------------------------------------------
-
-# Temporarily: make sure the ~/ros/hydro and ~/ros/indigo environment can be found
-mkdir -p $TUE_ENV/user/envs
-[ ! -d ~/ros/hydro ] || [ -f $TUE_ENV/user/envs/hydro ] || echo "$HOME/ros/hydro" > $TUE_ENV/user/envs/hydro
-[ ! -d ~/ros/indigo ] || [ -f $TUE_ENV/user/envs/indigo ] || echo "$HOME/ros/indigo" > $TUE_ENV/user/envs/indigo
 
