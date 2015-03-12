@@ -1,7 +1,7 @@
 #!/bin/bash
 
-TUE_DEV_DIR=~/ros/$TUE_ROS_DISTRO/dev
-TUE_SYSTEM_DIR=~/ros/$TUE_ROS_DISTRO/system
+TUE_DEV_DIR=$TUE_ENV_DIR/dev
+TUE_SYSTEM_DIR=$TUE_ENV_DIR/system
 
 # ----------------------------------------------------------------------------------------------------
 #                                        HELPER FUNCTIONS
@@ -36,12 +36,12 @@ function tue-create
     # remove the first argument (which contained the creation type)
     shift
 
-    if [ -f ~/.tue/create/$creation_type/create.bash ]
+    if [ -f $TUE_DIR/create/$creation_type/create.bash ]
     then
-        source ~/.tue/create/$creation_type/create.bash
-    elif [ ~/.tue/create/$creation_type/create ]
+        source $TUE_DIR/create/$creation_type/create.bash
+    elif [ $TUE_DIR/create/$creation_type/create ]
     then
-        ~/.tue/create/$creation_type/create $@
+        $TUE_DIR/create/$creation_type/create $@
     else
         echo "tue-create: invalid creation type: '$creation_type'."
         return 1
@@ -54,7 +54,7 @@ function _tue-create
     local prev=${COMP_WORDS[COMP_CWORD-1]}
 
     if [ $COMP_CWORD -eq 1 ]; then
-        COMPREPLY=( $(compgen -W "`_list_subdirs ~/.tue/create`" -- $cur) )
+        COMPREPLY=( $(compgen -W "`_list_subdirs $TUE_DIR/create`" -- $cur) )
     fi
 }
 complete -F _tue-create tue-create
@@ -361,7 +361,7 @@ function tue-get
             return 1
         fi
 
-        ~/.tue/installer/scripts/tue-install $@
+        $TUE_DIR/installer/scripts/tue-install $@
         error_code=$?
 
         if [ $error_code -eq 0 ]
@@ -376,7 +376,8 @@ function tue-get
             done
         fi
 
-        source ~/.bashrc
+        [ $error_code -eq 0 ] && source ~/.bashrc
+
         return $error_code
     elif [[ $cmd == "update" ]]
     then
@@ -392,9 +393,9 @@ function tue-get
 
         if [ $error_code -eq 0 ]
         then
-            ~/.tue/installer/scripts/tue-install $@
+            $TUE_DIR/installer/scripts/tue-install $@
             error_code=$?
-            source ~/.bashrc 
+            [ $error_code -eq 0 ] && source ~/.bashrc 
         fi
     
         return $error_code       
@@ -444,7 +445,7 @@ function tue-get
         fi
     elif [[ $cmd == "dep" ]]
     then
-        ~/.tue/installer/scripts/tue-get-dep $@
+        $TUE_DIR/installer/scripts/tue-get-dep $@
     else
         echo "[tue-get] Unknown command: '$cmd'"
         return 1
@@ -462,7 +463,7 @@ function _tue-get
         cmd=${COMP_WORDS[1]}
         if [[ $cmd == "install" ]]
         then
-            COMPREPLY=( $(compgen -W "`ls ~/.tue/installer/targets`" -- $cur) )        
+            COMPREPLY=( $(compgen -W "`ls $TUE_DIR/installer/targets`" -- $cur) )        
         elif [[ $cmd == "dep" ]]
         then
             COMPREPLY=( $(compgen -W "`ls $TUE_ENV_DIR/.env/dependencies`" -- $cur) ) 
