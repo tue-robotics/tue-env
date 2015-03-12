@@ -60,56 +60,6 @@ function _tue-create
 complete -F _tue-create tue-create
 
 # ----------------------------------------------------------------------------------------------------
-#                                            TUE-ADD
-# ----------------------------------------------------------------------------------------------------
-
-function tue-add
-{
-    if [ -z $1 ]
-    then
-        echo "Adds a given folder to the tue repository."
-        echo ""
-        echo "Usage: tue-add DIRECTORY"
-        return 1
-    fi
-
-    if [ ! -d $1 ]
-    then
-        echo "'$1' is not a directory."
-        return 1
-    fi
-
-    if [ -d $1/.svn ]
-    then
-        echo "'$1' is already under version control."
-        return 1
-    fi
-
-    base=$(basename $1)  
-
-    rm -rf /tmp/tue-svn
-    upres=`svn co https://roboticssrv.wtb.tue.nl/svn/ros/trunk /tmp/tue-svn --depth immediates`
-
-    if [ -d /tmp/tue-svn/$base ]
-    then
-        echo "'$base' already exists on the server."
-        return 1
-    fi
-
-    mkdir -p /tmp/tue-svn/$base
-    svn add /tmp/tue-svn/$base    
-
-    svn ci /tmp/tue-svn/$base -m "tue-add: Added package '$base'"
-    if [ $? -eq 0 ]
-    then
-        mv /tmp/tue-svn/$base/.svn $1
-    else
-        echo "Could not add '$base' to the tue repository."
-        return 1
-    fi
-}
-
-# ----------------------------------------------------------------------------------------------------
 #                                            TUE-MAKE
 # ----------------------------------------------------------------------------------------------------
 
@@ -550,6 +500,8 @@ function tue-env
         init           - Initializes new environment
         remove         - Removes an existing enviroment (no data is lost)
         switch         - Switch to a different environment
+        config         - Configures current environment
+        set-default    - Set default environment
         list           - List all possible environments
         list-current   - Shows current environment
         cd             - Changes directory to environment directory
@@ -621,6 +573,24 @@ function tue-env
 
         export TUE_ENV=$1
         export TUE_ENV_DIR=`cat $TUE_DIR/user/envs/$1`
+        
+        source ~/.bashrc
+
+    elif [[ $cmd == "set-default" ]]
+    then
+        if [ -z "$1" ]
+        then
+            echo "Usage: tue-env set-default ENVIRONMENT"
+            return 1
+        fi
+
+        mkdir -p $TUE_DIR/user/config
+        echo "$1" > $TUE_DIR/user/config/default_env
+
+    elif [[ $cmd == "config" ]]
+    then
+        mkdir -p user_setup.bash    
+        vim $TUE_ENV_DIR/.env/setup/user_setup.bash
 
     elif [[ $cmd == "cd" ]]
     then
@@ -653,15 +623,15 @@ function _tue-env
     local prev=${COMP_WORDS[COMP_CWORD-1]}
 
     if [ $COMP_CWORD -eq 1 ]; then
-        COMPREPLY=( $(compgen -W "init list switch list-current remove cd" -- $cur) )
+        COMPREPLY=( $(compgen -W "init list switch list-current remove cd set-default config" -- $cur) )
     else
         cmd=${COMP_WORDS[1]}
-        if [[ $cmd == "switch" ]] || [[ $cmd == "remove" ]] || [[ $cmd == "cd" ]]
+        if [[ $cmd == "switch" ]] || [[ $cmd == "remove" ]] || [[ $cmd == "cd" ]] || [[ $cmd == "set-default" ]]
         then
             if [ $COMP_CWORD -eq 2 ]
             then
                 local envs=
-                [ -d TUE_DIR/user/envs ] && envs=`ls $TUE_DIR/user/envs`
+                [ -d $TUE_DIR/user/envs ] && envs=`ls $TUE_DIR/user/envs`
                 COMPREPLY=( $(compgen -W "$envs" -- $cur) )        
             fi
         fi
