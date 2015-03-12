@@ -41,7 +41,7 @@ then
     export TUE_ENV=$TUE_ENV
 
     mkdir -p $TUE_DIR/user/config
-    echo "TUE_ENV" > $TUE_DIR/user/config/default_env
+    echo "$TUE_ENV" > $TUE_DIR/user/config/default_env
 fi
 # ------------------------------------------
 
