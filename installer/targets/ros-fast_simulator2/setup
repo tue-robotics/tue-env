@@ -1,1 +1,1 @@
-export SIM_PLUGIN_PATH=~/ros/$TUE_ROS_DISTRO/dev/devel/lib:~/ros/$TUE_ROS_DISTRO/system/devel/lib
+export SIM_PLUGIN_PATH=$TUE_ENV_DIR/dev/devel/lib:$TUE_ENV_DIR/system/devel/lib
