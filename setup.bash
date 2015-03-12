@@ -70,6 +70,20 @@ then
     return 1
 fi
 
+# ------------------------------------------
+# Temporarily: make sure the ~/ros/hydro and ~/ros/indigo environment can be found
+
+if [ "$TUE_ENV" == "hydro" ] || [ "$TUE_ENV" == "indigo" ]
+then
+    if [ ! -f $TUE_ENV_DIR/.env/setup/user_setup.bash ]
+    then
+        mkdir -p $TUE_ENV_DIR/.env/setup
+        echo "export TUE_ROS_DISTRO=$TUE_ENV" > $TUE_ENV_DIR/.env/setup/user_setup.bash
+    fi    
+fi
+
+# -----------------------------------------
+
 source $TUE_DIR/setup/tue.bash_functions
 
 if [ -f $TUE_ENV_DIR/.env/setup/user_setup.bash ]
