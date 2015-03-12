@@ -497,5 +497,41 @@ function tue-branch
 
 # ----------------------------------------------------------------------------------------------------
 
+# ----------------------------------------------------------------------------------------------------
+
+# Change directory to a package
+function pcd
+{
+    if [ -z "$1" ]
+    then
+        cd $TUE_ENV_DIR/pkgs
+        return 
+    fi
+
+    if [ ! -d "$TUE_ENV_DIR/pkgs/$1" ]
+    then
+        echo "[pcd] No such package: '$1'"
+        return 1
+    fi
+
+    cd $TUE_ENV_DIR/pkgs/$1
+}
+
+function _pcd
+{
+    local cur=${COMP_WORDS[COMP_CWORD]}
+    local prev=${COMP_WORDS[COMP_CWORD-1]}
+
+    if [ $COMP_CWORD -eq 1 ]
+    then
+        local pkgs=
+        [ -d $TUE_ENV_DIR/pkgs ] && pkgs=`_list_subdirs $TUE_ENV_DIR/pkgs`
+        COMPREPLY=( $(compgen -W "$pkgs" -- $cur) )
+    fi
+}
+complete -F _pcd pcd
+
+# ----------------------------------------------------------------------------------------------------
+
 source $TUE_DIR/setup/tue-data.bash
 
