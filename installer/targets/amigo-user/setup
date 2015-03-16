@@ -36,7 +36,7 @@ PS1='[\[\033[01;34m\]\w\[\033[00m\]]$(__git_ps1)\n'\
 
 alias amigo-publish-ed='rosrun ed_gui_server ed_rviz_publisher /ed/gui/entities:=/amigo/ed/gui/entities ed/gui/query_meshes:=/amigo/ed/gui/query_meshes ed/rviz:=/amigo/world_model'
 
-alias amigo-publish-point-cloud='rosrun rgbd rgbd_to_ros /amigo/top_kinect/rgbd /depth/points:=/amigo/top_kinect/point_cloud /depth/image:=/amigo/top_kinect/depth/image /rgb/image:=/amigo/top_kinect/rgb/image'
+alias amigo-publish-point-cloud='rosrun rgbd rgbd_to_ros /amigo/top_kinect/rgbd __ns:=amigo'
 
 ####################
 #
