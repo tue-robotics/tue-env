@@ -44,6 +44,8 @@
   name: ros-ed_navigation
 - type: target
   name: ros-ed_sensor_integration
+- type: target
+  name: ros-head_ref_ed_client
 
 # Execution
 - type: target
