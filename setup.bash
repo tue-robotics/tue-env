@@ -99,5 +99,7 @@ fi
 export TUE_BIN=~/.tue/bin
 export PATH=$TUE_BIN:$PATH
 
+export TUE_ENV=$TUE_ENV
+
 # Make sure ROS can find cmake modules of non-ROS packages
 export CMAKE_PREFIX_PATH=$TUE_ENV_DIR/cmake:$CMAKE_PREFIX_PATH
