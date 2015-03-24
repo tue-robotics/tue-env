@@ -71,10 +71,10 @@ alias amigo-case='rostopic pub /amigo/torso/references sensor_msgs/JointState "{
 
 alias amigo-head-straight='amigo-head-move 0.0 0.0'
 alias move-straight="rostopic pub -r 10 /cmd_vel geometry_msgs/Twist  '{linear:  {x: 0.1, y: 0.0, z: 0.0}, angular: {x: 0.0,y: 0.0,z: 0.0}}'"
-alias openleftgripper='rostopic pub --once /amigo/left_gripper/references tue_msgs/GripperCommand -- -1 100'
-alias openrightgripper='rostopic pub --once /amigo/right_gripper/references tue_msgs/GripperCommand -- -1 100'
-alias closeleftgripper='rostopic pub --once /amigo/left_gripper/references tue_msgs/GripperCommand -- 1 100'
-alias closerightgripper='rostopic pub --once /amigo/right_gripper/references tue_msgs/GripperCommand -- 1 100'
+alias openleftgripper='rostopic pub --once /amigo/left_arm/gripper/references tue_msgs/GripperCommand -- -1 100'
+alias openrightgripper='rostopic pub --once /amigo/right_arm/gripper/references tue_msgs/GripperCommand -- -1 100'
+alias closeleftgripper='rostopic pub --once /amigo/left_arm/gripper/references tue_msgs/GripperCommand -- 1 100'
+alias closerightgripper='rostopic pub --once /amigo/right_arm/gripper/references tue_msgs/GripperCommand -- 1 100'
 alias amigo-teleop='rosrun tue_teleop_keyboard teleop_twist_keyboard.py /cmd_vel:=/amigo/base/references'
 alias amigostopall='rosrun tue_execution_pack stopamigo.py'
 
