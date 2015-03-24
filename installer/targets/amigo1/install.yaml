@@ -1,2 +1,4 @@
 - type: target
   name: amigo
+- type: target
+  name: ros-kinect_driver
