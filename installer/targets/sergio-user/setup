@@ -60,7 +60,8 @@ alias rviz-sergio='rosrun rviz rviz -d ~/.tue/installer/targets/sergio-user/rviz
 #####################
 function sergio-torso-move-spindle {
     if [ -z "$2" ]; then
-        echo "Used for testing. Usage: sergio-torso-move-spindle lower_spindle upper_splindl"
+        echo "TODO REMOVE: Used for testing."
+        ehco "Usage: sergio-torso-move-spindle lower_spindle upper_splindl" 
         return
     fi
 
@@ -70,9 +71,9 @@ function sergio-torso-move-spindle {
 function sergio-torso-move-joints {
     if [ -z "$2" ]; then
         echo "Usage: sergio-torso-move-joints ankle_joint hip_joint"
-        echo "Physical limits: ankle_joint 0.05 to 1.00 [rad]"
-        echo "                 hip_joint   1.01 to 2.31 [rad]"
-        echo "Note: knee-joint is estimated with use of the ankle_joint. test"
+        echo "Physical limits: ankle_joint 0.152 to 1.00 [rad]"
+        echo "                 hip_joint   1.007 to 2.31 [rad]"
+        echo "Note: knee-joint is calculated with use of the ankle_joint."
         return
     fi
     
