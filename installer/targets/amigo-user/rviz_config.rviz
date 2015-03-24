@@ -6,7 +6,6 @@ Panels:
       Expanded:
         - /Global Options1
         - /TF1/Frames1
-        - /ED - Map1
       Splitter Ratio: 0.678571
     Tree Height: 697
   - Class: rviz/Selection
@@ -697,6 +696,31 @@ Visualization Manager:
       Name: Local Planner - Costmap
       Topic: /amigo/local_planner/local_costmap/costmap
       Value: false
+    - Class: rviz/Marker
+      Enabled: true
+      Marker Topic: /amigo/whole_body_controller/collision_model_markers_fcl
+      Name: WBC - collision model
+      Namespaces:
+        "": true
+      Queue Size: 100
+      Value: true
+    - Class: rviz/MarkerArray
+      Enabled: true
+      Marker Topic: /amigo/whole_body_controller/repulsive_forces_markers_fcl
+      Name: WBC - repulsive forces
+      Namespaces:
+        "": true
+      Queue Size: 100
+      Value: true
+    - Class: rviz/Marker
+      Enabled: true
+      Marker Topic: /amigo/whole_body_controller/cartesian_impedance
+      Name: WBC - cartesian impedance
+      Namespaces:
+        grippoint_left: true
+        grippoint_left_arrow: true
+      Queue Size: 100
+      Value: true
   Enabled: true
   Global Options:
     Background Color: 0; 0; 0
