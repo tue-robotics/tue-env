@@ -11,5 +11,8 @@ fi
 # Update installer
 git clone https://github.com/tue-robotics/tue-env.git ~/.tue
 
+# Create ros environment directory
+mkdir -p ~/ros/$TUE_ENV
+
 # Source the installer commands
 source ~/.tue/setup.bash
