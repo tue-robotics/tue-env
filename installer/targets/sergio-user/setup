@@ -86,7 +86,7 @@ function sergio-torso-move-idle {
 
 function sergio-torso-laser-move {
     if [ -z "$1" ]; then
-        echo "Usage: sergio-torso-laser-move LASER_TILT    (range 0.0 ~ 0.317)"
+        echo "Usage: sergio-torso-laser-move LASER_TILT    (range 0.0 ~ 0.324)"
         return
     fi
 
