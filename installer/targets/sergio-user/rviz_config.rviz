@@ -6,6 +6,7 @@ Panels:
       Expanded:
         - /Global Options1
         - /TF1/Frames1
+        - /ED1/Namespaces1
       Splitter Ratio: 0.678571
     Tree Height: 697
   - Class: rviz/Selection
@@ -61,6 +62,26 @@ Visualization Manager:
           Show Trail: false
           Value: true
         base_torso_mount:
+          Alpha: 1
+          Show Axes: false
+          Show Trail: false
+          Value: true
+        elbow_extra_block2_left:
+          Alpha: 1
+          Show Axes: false
+          Show Trail: false
+          Value: true
+        elbow_extra_block2_right:
+          Alpha: 1
+          Show Axes: false
+          Show Trail: false
+          Value: true
+        elbow_extra_block_left:
+          Alpha: 1
+          Show Axes: false
+          Show Trail: false
+          Value: true
+        elbow_extra_block_right:
           Alpha: 1
           Show Axes: false
           Show Trail: false
@@ -165,6 +186,16 @@ Visualization Manager:
           Show Axes: false
           Show Trail: false
           Value: true
+        fore_arm_top_left:
+          Alpha: 1
+          Show Axes: false
+          Show Trail: false
+          Value: true
+        fore_arm_top_right:
+          Alpha: 1
+          Show Axes: false
+          Show Trail: false
+          Value: true
         grippoint_left:
           Alpha: 1
           Show Axes: false
@@ -211,6 +242,16 @@ Visualization Manager:
           Show Trail: false
           Value: true
         neck_tilt:
+          Alpha: 1
+          Show Axes: false
+          Show Trail: false
+          Value: true
+        pitch_axis_left:
+          Alpha: 1
+          Show Axes: false
+          Show Trail: false
+          Value: true
+        pitch_axis_right:
           Alpha: 1
           Show Axes: false
           Show Trail: false
@@ -301,6 +342,11 @@ Visualization Manager:
           Show Axes: false
           Show Trail: false
           Value: true
+        trunk_inside:
+          Alpha: 1
+          Show Axes: false
+          Show Trail: false
+          Value: true
         upper_arm_left:
           Alpha: 1
           Show Axes: false
@@ -311,7 +357,42 @@ Visualization Manager:
           Show Axes: false
           Show Trail: false
           Value: true
+        upper_arm_top_left:
+          Alpha: 1
+          Show Axes: false
+          Show Trail: false
+          Value: true
+        upper_arm_top_right:
+          Alpha: 1
+          Show Axes: false
+          Show Trail: false
+          Value: true
         upper_leg:
+          Alpha: 1
+          Show Axes: false
+          Show Trail: false
+          Value: true
+        upper_leg_inside:
+          Alpha: 1
+          Show Axes: false
+          Show Trail: false
+          Value: true
+        wheel_left_front:
+          Alpha: 1
+          Show Axes: false
+          Show Trail: false
+          Value: true
+        wheel_left_rear:
+          Alpha: 1
+          Show Axes: false
+          Show Trail: false
+          Value: true
+        wheel_right_front:
+          Alpha: 1
+          Show Axes: false
+          Show Trail: false
+          Value: true
+        wheel_right_rear:
           Alpha: 1
           Show Axes: false
           Show Trail: false
@@ -322,6 +403,26 @@ Visualization Manager:
           Show Trail: false
           Value: true
         wrist_link6_right:
+          Alpha: 1
+          Show Axes: false
+          Show Trail: false
+          Value: true
+        wrist_to_hand_block_left:
+          Alpha: 1
+          Show Axes: false
+          Show Trail: false
+          Value: true
+        wrist_to_hand_block_right:
+          Alpha: 1
+          Show Axes: false
+          Show Trail: false
+          Value: true
+        wrist_visual_left:
+          Alpha: 1
+          Show Axes: false
+          Show Trail: false
+          Value: true
+        wrist_visual_right:
           Alpha: 1
           Show Axes: false
           Show Trail: false
@@ -376,6 +477,7 @@ Visualization Manager:
       Visibility:
         CBNav - Cost cloud: true
         CBNav - Desired Orientation: true
+        CBNav - Ed map: true
         CBNav - Footprint: true
         CBNav - Global Plan: true
         CBNav - Global costmap: true
@@ -391,7 +493,6 @@ Visualization Manager:
         LRF - Back: true
         LRF - Base: true
         LRF - Torso: true
-        Map: true
         Path: true
         Polygon: true
         Reasoner: true
@@ -413,6 +514,7 @@ Visualization Manager:
       Visibility:
         CBNav - Cost cloud: true
         CBNav - Desired Orientation: true
+        CBNav - Ed map: true
         CBNav - Footprint: true
         CBNav - Global Plan: true
         CBNav - Global costmap: true
@@ -428,7 +530,6 @@ Visualization Manager:
         LRF - Back: true
         LRF - Base: true
         LRF - Torso: true
-        Map: true
         Path: true
         Polygon: true
         Reasoner: true
@@ -591,7 +692,8 @@ Visualization Manager:
       Marker Topic: /sergio/world_model
       Name: ED
       Namespaces:
-        {}
+        entities: true
+        labels: false
       Queue Size: 100
       Value: true
     - Class: rviz/MarkerArray
