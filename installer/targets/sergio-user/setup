@@ -60,7 +60,8 @@ alias rviz-sergio='rosrun rviz rviz -d ~/.tue/installer/targets/sergio-user/rviz
 #####################
 function sergio-torso-move-spindle {
     if [ -z "$2" ]; then
-        echo "Used for testing. Usage: sergio-torso-move-spindle lower_spindle upper_splindl"
+        echo "TODO REMOVE: Used for testing."
+        ehco "Usage: sergio-torso-move-spindle lower_spindle upper_splindl" 
         return
     fi
 
@@ -70,18 +71,22 @@ function sergio-torso-move-spindle {
 function sergio-torso-move-joints {
     if [ -z "$2" ]; then
         echo "Usage: sergio-torso-move-joints ankle_joint hip_joint"
-        echo "Physical limits: ankle_joint 0.05 to 1.00 [rad]"
-        echo "                 hip_joint   1.01 to 2.31 [rad]"
-        echo "Note: knee-joint is estimated with use of the ankle_joint. test"
+        echo "Physical limits: ankle_joint 0.152 to 1.00 [rad]"
+        echo "                 hip_joint   1.007 to 2.31 [rad]"
+        echo "Note: knee-joint is calculated with use of the ankle_joint."
         return
     fi
     
     ( rostopic pub /sergio/torso/references sensor_msgs/JointState "{header: {seq: 0, stamp: {secs: 0, nsecs: 0}, frame_id: ''}, name: ['ankle_joint', 'knee_joint', 'hip_joint'], position: [$1, $(echo "1.874*$1+0.1323" |bc) , $2], velocity: [0], effort: [0]}"  --once  &> /dev/null & )
 }
 
+function sergio-torso-move-idle {
+	sergio-torso-move-joints 0.9 1.9
+}
+
 function sergio-torso-laser-move {
     if [ -z "$1" ]; then
-        echo "Usage: sergio-torso-laser-move LASER_TILT    (range 0.0 ~ 0.317)"
+        echo "Usage: sergio-torso-laser-move LASER_TILT    (range 0.0 ~ 0.324)"
         return
     fi
 
