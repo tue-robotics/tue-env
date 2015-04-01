@@ -1,0 +1,5 @@
+- type: ros
+  source:
+      type: git
+      url: https://github.com/tue-robotics/rosbridge_suite.git
+      sub-dir: rosbridge_server
