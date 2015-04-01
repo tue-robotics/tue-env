@@ -189,7 +189,7 @@ function _tue-repo-status
             fi
 
             local current_branch=`git rev-parse --abbrev-ref HEAD`
-            if [ $current_branch != "master" ] && [ $current_branch != "hydro-devel" ]
+            if [ $current_branch != "master" ] && [ $current_branch != "hydro-devel" ] && [ $current_branch != "develop" ]
             then
                 echo -e "\033[1m$name\033[0m is on branch '$current_branch'"
             fi
