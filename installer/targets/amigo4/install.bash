@@ -1,15 +1,3 @@
-## Autoroscore
-if [ ! -f /etc/init.d/autoroscore ] || [[ `diff ~/.tue/installer/targets/sergio1/autoroscore /etc/init.d/autoroscore` != "" ]]
-then
-    sudo cp ~/.tue/installer/targets/sergio1/autoroscore /etc/init.d/autoroscore
-fi
-
-## Autoroslaunch
-if [ ! -f /etc/init.d/autoroslaunch ] || [[ `diff ~/.tue/installer/targets/sergio1/autoroslaunch /etc/init.d/autoroslaunch` != "" ]]
-then
-    sudo cp ~/.tue/installer/targets/sergio1/autoroslaunch /etc/init.d/autoroslaunch
-fi
-
 ## Chrony 
 # If config file does not exist, chrony is probably not installed 
 if [ ! -f /etc/chrony/chrony.conf ]
@@ -31,10 +19,8 @@ then
     fi
     
     # Copy new config
-    sudo cp ~/.tue/installer/targets/sergio1/chrony.conf /etc/chrony/chrony.conf
+    sudo cp ~/.tue/installer/targets/amigo4/chrony.conf /etc/chrony/chrony.conf
     
     # Restart chrony
     sudo service chrony restart
 fi
-
-
