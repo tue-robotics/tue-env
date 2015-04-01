@@ -200,25 +200,25 @@ function amigo-arms-move-idle {
 # --------------------------------------------------------------------------------
 
 function amigo-left-gripper-open {
-    ( rostopic pub /amigo/left_gripper/references tue_msgs/GripperCommand "{direction: -1, max_torque: 10.0}" --once  &> /dev/null & )
+    ( rostopic pub /amigo/left_arm/gripper/references tue_msgs/GripperCommand "{direction: -1, max_torque: 100.0}" --once  &> /dev/null & )
 }
 
 # --------------------------------------------------------------------------------
 
 function amigo-left-gripper-close {
-    ( rostopic pub /amigo/left_gripper/references tue_msgs/GripperCommand "{direction: 1, max_torque: 10.0}" --once  &> /dev/null & )
+    ( rostopic pub /amigo/left_arm/gripper/references tue_msgs/GripperCommand "{direction: 1, max_torque: 100.0}" --once  &> /dev/null & )
 }
 
 # --------------------------------------------------------------------------------
 
 function amigo-right-gripper-open {
-    ( rostopic pub /amigo/right_gripper/references tue_msgs/GripperCommand "{direction: -1, max_torque: 10.0}" --once  &> /dev/null & )
+    ( rostopic pub /amigo/right_arm/gripper/references tue_msgs/GripperCommand "{direction: -1, max_torque: 100.0}" --once  &> /dev/null & )
 }
 
 # --------------------------------------------------------------------------------
 
 function amigo-right-gripper-close {
-    ( rostopic pub /amigo/right_gripper/references tue_msgs/GripperCommand "{direction: 1, max_torque: 10.0}" --once  &> /dev/null & )
+    ( rostopic pub /amigo/right_arm/gripper/references tue_msgs/GripperCommand "{direction: 1, max_torque: 100.0}" --once  &> /dev/null & )
 }
 
 # --------------------------------------------------------------------------------
