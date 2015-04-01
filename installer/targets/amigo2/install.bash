@@ -12,11 +12,8 @@ if ! grep -q "clephas" /etc/chrony/chrony.conf
 then
     echo "Chrony config is probably not correct, will copy"
     
-    # Backup old config (if present)
-    if [-f /etc/chrony/chrony.conf]
-    then
-        sudo mv /etc/chrony/chrony.conf /etc/chrony/chrony.conf.backup
-    fi
+    # Backup old config
+    sudo mv /etc/chrony/chrony.conf /etc/chrony/chrony.conf.backup
     
     # Copy new config
     sudo cp ~/.tue/installer/targets/amigo2/chrony.conf /etc/chrony/chrony.conf
