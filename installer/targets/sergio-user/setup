@@ -13,7 +13,7 @@ alias sergio-core='export ROS_MASTER_URI=http://sergio1:11311'
 ####################
 alias sshsergio1='until ssh -qo ConnectTimeout=1 -X amigo@sergio1; do echo waiting for sergio1 to come online...; sleep 2; done'
 alias sshsergio2='until ssh -qo ConnectTimeout=1 -X amigo@sergio2; do echo waiting for sergio2 to come online...; sleep 2; done'
-alias sshsergio3='until ssh -qo ConnectTimeout=1 -X amigo@sergio3; do echo waiting for sergio3 to come online...; sleep 2; done'
+alias sshsergio3='until ssh -qo ConnectTimeout=1 amigo@sergio3; do echo waiting for sergio3 to come online...; sleep 2; done'
 
 
 ####################
