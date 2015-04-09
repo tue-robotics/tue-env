@@ -1,0 +1,1 @@
+alias ed-hypertable='LD_LIBRARY_PATH=/opt/hypertable/current/lib/:$LD_LIBRARY_PATH ~/ros/indigo/system/devel/lib/ed/ed'
