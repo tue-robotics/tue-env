@@ -27,13 +27,14 @@ mkdir -p ~/ros/$TUE_ROS_DISTRO
 tue-env init ros-$TUE_ROS_DISTRO ~/ros/$TUE_ROS_DISTRO
 
 # Set the correct ROS version for this environment
-echo "export TUE_ROS_DISTRO=$TUE_ROS_DISTRO" > $TUE_ENV_DIR/.env/setup/user_setup.bash
+mkdir -p ~/ros/$TUE_ROS_DISTRO/.env/setup
+echo "export TUE_ROS_DISTRO=$TUE_ROS_DISTRO" > ~/ros/$TUE_ROS_DISTRO/.env/setup/user_setup.bash
 
 # Set this environment as default
 tue-env set-default ros-$TUE_ROS_DISTRO
 
 # Switch to the environment
-tu-env switch ros-$TUE_ROS_DISTRO
+tue-env switch ros-$TUE_ROS_DISTRO
 
 # Install tue-dev
 tue-get install tue-dev
