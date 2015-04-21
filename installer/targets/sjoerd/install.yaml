@@ -1,6 +1,12 @@
 - type: target
   name: tue-dev
 
+# Robots
+- type: target
+  name: amigo-user
+- type: target
+  name: sergio-user
+
 # DEV
 - type: target
   name: ros-fast_simulator2
@@ -38,7 +44,8 @@
   name: ros-stem_tracker
 - type: target
   name: ros-tf_checker
-
+- type: target
+  name: ros-kinect_driver
 
 
 
