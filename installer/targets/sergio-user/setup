@@ -21,9 +21,11 @@ alias sshsergio3='until ssh -qo ConnectTimeout=1 amigo@sergio3; do echo waiting 
 # SERGIO STARTUP
 #
 ####################
-alias sstart='export ROBOT_BRINGUP_PATH=$TUE_SYSTEM_DIR/src/sergio_bringup; roslaunch sergio_bringup start.launch'
-alias shardware='export ROBOT_BRINGUP_PATH=$TUE_SYSTEM_DIR/src/sergio_bringup; roslaunch sergio_bringup hardware.launch'
-alias smiddle='export ROBOT_BRINGUP_PATH=$TUE_SYSTEM_DIR/src/sergio_bringup; roslaunch sergio_bringup middleware.launch'
+alias sergio='export ROBOT_BRINGUP_PATH=$TUE_SYSTEM_DIR/src/sergio_bringup'
+alias sstart='sergio; roslaunch sergio_bringup start.launch'
+alias shardware='sergio; roslaunch sergio_bringup hardware.launch'
+alias smiddle='sergio; roslaunch sergio_bringup middleware.launch'
+alias sgmapping='sergio; roslaunch sergio_bringup gmapping.launch'
 
 ####################
 #
