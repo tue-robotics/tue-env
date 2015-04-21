@@ -58,7 +58,7 @@ alias amigo='export ROBOT_BRINGUP_PATH=$TUE_SYSTEM_DIR/src/amigo_bringup'
 alias astart='amigo; roslaunch amigo_bringup start.launch'
 alias ahardware='amigo; roslaunch amigo_bringup hardware.launch'
 alias amiddle='amigo; roslaunch amigo_bringup middleware.launch'
-alias agmapping='amigo; roslaunch amigo_bringup gmapping.launch'
+alias amiddle-gmapping='amigo; roslaunch amigo_bringup middleware_gmapping.launch'
 
 ####################
 #

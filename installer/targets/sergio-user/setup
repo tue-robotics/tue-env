@@ -25,7 +25,7 @@ alias sergio='export ROBOT_BRINGUP_PATH=$TUE_SYSTEM_DIR/src/sergio_bringup'
 alias sstart='sergio; roslaunch sergio_bringup start.launch'
 alias shardware='sergio; roslaunch sergio_bringup hardware.launch'
 alias smiddle='sergio; roslaunch sergio_bringup middleware.launch'
-alias sgmapping='sergio; roslaunch sergio_bringup gmapping.launch'
+alias smiddle-gmapping='sergio; roslaunch sergio_bringup middleware_gmapping.launch'
 
 ####################
 #
