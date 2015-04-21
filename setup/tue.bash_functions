@@ -535,3 +535,57 @@ complete -F _pcd pcd
 
 source $TUE_DIR/setup/tue-data.bash
 
+# ----------------------------------------------------------------------------------------------------
+
+# Temporarily for RoboCup
+
+function tue-robocup-set-github-origin
+{
+    local mem_pwd=$PWD
+
+    local fs=`ls $TUE_ENV_DIR/repos/https:/github.com/tue-robotics`
+    for pkg in $fs
+    do
+        local pkg_dir=$TUE_ENV_DIR/repos/https:/github.com/tue-robotics/$pkg
+
+        if [ -d $pkg_dir ]
+        then
+            cd $pkg_dir
+            local current_url=`git config --get remote.origin.url`
+
+            if echo "$current_url" | grep -q "tue-robotics"
+            then
+                git remote set-url origin amigo@192.168.2.10:tue-robotics/$pkg
+                echo "Set origin url of '$pkg' to 'amigo@192.168.2.10:tue-robotics/$pkg'"
+            fi
+        fi
+    done
+
+    cd $mem_pwd
+}
+
+function tue-robocup-update
+{
+    local mem_pwd=$PWD
+
+    local fs=`ls $_TUE_CATKIN_SYSTEM_DIR/src`
+    for pkg in $fs
+    do
+        local pkg_dir=$_TUE_CATKIN_SYSTEM_DIR/src/$pkg
+
+        if [ -d $pkg_dir ]
+        then
+            cd $pkg_dir
+            local current_url=`git config --get remote.origin.url`
+
+            if echo "$current_url" | grep -q "192.168.2.10"
+            then
+                echo -n "$pkg: "
+                git pull
+            fi
+        fi
+    done
+
+    cd $mem_pwd
+}
+
