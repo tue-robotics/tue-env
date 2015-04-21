@@ -57,6 +57,7 @@ alias sshamigo5='until ssh -qo ConnectTimeout=1 -X amigo@amigo5; do echo waiting
 alias astart='export ROBOT_BRINGUP_PATH=$TUE_SYSTEM_DIR/src/amigo_bringup; roslaunch amigo_bringup start.launch'
 alias ahardware='export ROBOT_BRINGUP_PATH=$TUE_SYSTEM_DIR/src/amigo_bringup; roslaunch amigo_bringup hardware.launch'
 alias amiddle='export ROBOT_BRINGUP_PATH=$TUE_SYSTEM_DIR/src/amigo_bringup; roslaunch amigo_bringup middleware.launch'
+alias agmapping='export ROBOT_BRINGUP_PATH=$TUE_SYSTEM_DIR/src/amigo_bringup; roslaunch amigo_bringup gmapping.launch'
 
 ####################
 #
