@@ -568,6 +568,9 @@ function tue-robocup-update
 {
     local mem_pwd=$PWD
 
+    cd ~/.tue
+    git pull
+
     local fs=`ls $_TUE_CATKIN_SYSTEM_DIR/src`
     for pkg in $fs
     do
