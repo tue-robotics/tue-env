@@ -2,6 +2,9 @@
 #                OTHER
 # # # # # # # # # # # # # # # # # # # #
 
+# Alias for restoring alsamixer.conf
+alias reset-audio='alsactl --file $TUE_DIR/installer/targets/amigo3/alsamixer.conf restore'
+
 # Set TTS
 export TTS_MODULE=festival
 
