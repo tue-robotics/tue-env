@@ -589,7 +589,9 @@ function tue-robocup-update
         fi
     done
 
-	ln -sf $TUE_ENV_DIR/repos/https:/github.com/tue-robotics/tue_robocup.git/robocup_knowledge $TUE_ENV_DIR/system/src/robocup_knowledge 
+	if [ ! -d $TUE_ENV_DIR/system/src/robocup_knowledge ]; then
+		ln -s $TUE_ENV_DIR/repos/https:/github.com/tue-robotics/tue_robocup.git/robocup_knowledge $TUE_ENV_DIR/system/src/robocup_knowledge 
+	fi
 
     cd $mem_pwd
 }
