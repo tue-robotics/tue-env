@@ -594,3 +594,13 @@ function tue-robocup-update
     cd $mem_pwd
 }
 
+function tue-robocup-set-apt-get-proxy
+{
+    sudo bash -c "echo 'Acquire::http::Proxy \"http://roboticssrv.wtb.tue.nl:3142\";' > /etc/apt/apt.conf.d/01proxy"
+}
+
+function tue-robocup-unset-apt-get-proxy
+{
+    sudo rm /etc/apt/apt.conf.d/01proxy
+}
+
