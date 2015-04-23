@@ -138,6 +138,10 @@ alias rviz-restaurant='rosrun rviz rviz -d $TUE_TRUNK/amigo_admin_files/configs/
 
 # --------------------------------------------------------------------------------
 
+alias amigo-show-ed-kinect='rosrun rgbd multitool --rgbd /amigo/ed/kinect/viz/update_request'
+
+# --------------------------------------------------------------------------------
+
 function amigo-head-move {
     if [ -z "$2" ]; then
         echo "Usage: amigo-head-move PAN TILT"
