@@ -572,7 +572,8 @@ Visualization Manager:
       Marker Topic: /amigo/world_model
       Name: ED
       Namespaces:
-        {}
+        entities: true
+        labels: true
       Queue Size: 1
       Value: true
     - Class: rviz/Marker
@@ -698,27 +699,18 @@ Visualization Manager:
       Value: false
     - Class: rviz/Marker
       Enabled: true
-      Marker Topic: /amigo/whole_body_controller/collision_model_markers_fcl
-      Name: WBC - collision model
+      Marker Topic: /amigo/left_arm/grasp_target
+      Name: Grasp target left (green = corrected)
       Namespaces:
-        "": true
-      Queue Size: 100
-      Value: true
-    - Class: rviz/MarkerArray
-      Enabled: true
-      Marker Topic: /amigo/whole_body_controller/repulsive_forces_markers_fcl
-      Name: WBC - repulsive forces
-      Namespaces:
-        "": true
+        {}
       Queue Size: 100
       Value: true
     - Class: rviz/Marker
       Enabled: true
-      Marker Topic: /amigo/whole_body_controller/cartesian_impedance
-      Name: WBC - cartesian impedance
+      Marker Topic: /amigo/right_arm/grasp_target
+      Name: Grasp target right (green = corrected)
       Namespaces:
-        grippoint_left: true
-        grippoint_left_arrow: true
+        {}
       Queue Size: 100
       Value: true
   Enabled: true
@@ -821,4 +813,4 @@ Window Geometry:
     collapsed: false
   Width: 1724
   X: 126
-  Y: 90
+  Y: 24
