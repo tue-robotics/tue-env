@@ -66,26 +66,6 @@ Visualization Manager:
           Show Axes: false
           Show Trail: false
           Value: true
-        elbow_extra_block2_left:
-          Alpha: 1
-          Show Axes: false
-          Show Trail: false
-          Value: true
-        elbow_extra_block2_right:
-          Alpha: 1
-          Show Axes: false
-          Show Trail: false
-          Value: true
-        elbow_extra_block_left:
-          Alpha: 1
-          Show Axes: false
-          Show Trail: false
-          Value: true
-        elbow_extra_block_right:
-          Alpha: 1
-          Show Axes: false
-          Show Trail: false
-          Value: true
         elbow_link4_left:
           Alpha: 1
           Show Axes: false
@@ -186,16 +166,6 @@ Visualization Manager:
           Show Axes: false
           Show Trail: false
           Value: true
-        fore_arm_top_left:
-          Alpha: 1
-          Show Axes: false
-          Show Trail: false
-          Value: true
-        fore_arm_top_right:
-          Alpha: 1
-          Show Axes: false
-          Show Trail: false
-          Value: true
         grippoint_left:
           Alpha: 1
           Show Axes: false
@@ -242,16 +212,6 @@ Visualization Manager:
           Show Trail: false
           Value: true
         neck_tilt:
-          Alpha: 1
-          Show Axes: false
-          Show Trail: false
-          Value: true
-        pitch_axis_left:
-          Alpha: 1
-          Show Axes: false
-          Show Trail: false
-          Value: true
-        pitch_axis_right:
           Alpha: 1
           Show Axes: false
           Show Trail: false
@@ -342,11 +302,6 @@ Visualization Manager:
           Show Axes: false
           Show Trail: false
           Value: true
-        trunk_inside:
-          Alpha: 1
-          Show Axes: false
-          Show Trail: false
-          Value: true
         upper_arm_left:
           Alpha: 1
           Show Axes: false
@@ -357,42 +312,7 @@ Visualization Manager:
           Show Axes: false
           Show Trail: false
           Value: true
-        upper_arm_top_left:
-          Alpha: 1
-          Show Axes: false
-          Show Trail: false
-          Value: true
-        upper_arm_top_right:
-          Alpha: 1
-          Show Axes: false
-          Show Trail: false
-          Value: true
         upper_leg:
-          Alpha: 1
-          Show Axes: false
-          Show Trail: false
-          Value: true
-        upper_leg_inside:
-          Alpha: 1
-          Show Axes: false
-          Show Trail: false
-          Value: true
-        wheel_left_front:
-          Alpha: 1
-          Show Axes: false
-          Show Trail: false
-          Value: true
-        wheel_left_rear:
-          Alpha: 1
-          Show Axes: false
-          Show Trail: false
-          Value: true
-        wheel_right_front:
-          Alpha: 1
-          Show Axes: false
-          Show Trail: false
-          Value: true
-        wheel_right_rear:
           Alpha: 1
           Show Axes: false
           Show Trail: false
@@ -403,26 +323,6 @@ Visualization Manager:
           Show Trail: false
           Value: true
         wrist_link6_right:
-          Alpha: 1
-          Show Axes: false
-          Show Trail: false
-          Value: true
-        wrist_to_hand_block_left:
-          Alpha: 1
-          Show Axes: false
-          Show Trail: false
-          Value: true
-        wrist_to_hand_block_right:
-          Alpha: 1
-          Show Axes: false
-          Show Trail: false
-          Value: true
-        wrist_visual_left:
-          Alpha: 1
-          Show Axes: false
-          Show Trail: false
-          Value: true
-        wrist_visual_right:
           Alpha: 1
           Show Axes: false
           Show Trail: false
@@ -588,7 +488,7 @@ Visualization Manager:
       Color: 255; 255; 255
       Color Transformer: FlatColor
       Decay Time: 0
-      Enabled: true
+      Enabled: false
       Invert Rainbow: false
       Max Color: 255; 255; 255
       Max Intensity: 101
@@ -604,7 +504,7 @@ Visualization Manager:
       Topic: /sergio/base_laser/scan
       Use Fixed Frame: true
       Use rainbow: true
-      Value: true
+      Value: false
     - Alpha: 1
       Autocompute Intensity Bounds: true
       Autocompute Value Bounds:
@@ -617,7 +517,7 @@ Visualization Manager:
       Color: 85; 255; 0
       Color Transformer: FlatColor
       Decay Time: 0
-      Enabled: true
+      Enabled: false
       Invert Rainbow: false
       Max Color: 255; 255; 255
       Max Intensity: 101
@@ -633,7 +533,7 @@ Visualization Manager:
       Topic: /sergio/torso_laser/scan
       Use Fixed Frame: true
       Use rainbow: true
-      Value: true
+      Value: false
     - Alpha: 1
       Autocompute Intensity Bounds: true
       Autocompute Value Bounds:
@@ -692,8 +592,7 @@ Visualization Manager:
       Marker Topic: /sergio/world_model
       Name: ED
       Namespaces:
-        entities: true
-        labels: false
+        {}
       Queue Size: 100
       Value: true
     - Class: rviz/MarkerArray
@@ -716,7 +615,7 @@ Visualization Manager:
       Marker Topic: /sergio/global_planner/visualization/markers/global_plan
       Name: CBNav - Global Plan
       Namespaces:
-        {}
+        "": true
       Queue Size: 100
       Value: true
     - Class: rviz/Marker
@@ -724,7 +623,7 @@ Visualization Manager:
       Marker Topic: /sergio/global_planner/visualization/markers/goal_positions
       Name: CBNav - Goal Area
       Namespaces:
-        {}
+        "": true
       Queue Size: 100
       Value: true
     - Alpha: 1
@@ -812,26 +711,26 @@ Visualization Manager:
       Class: rviz/Map
       Color Scheme: map
       Draw Behind: false
-      Enabled: true
+      Enabled: false
       Name: CBNav - Ed map
       Topic: /sergio/ed/navigation/map
+      Value: false
+    - Alpha: 0.7
+      Class: rviz/Map
+      Color Scheme: map
+      Draw Behind: false
+      Enabled: true
+      Name: CBNav - Global costmap
+      Topic: /sergio/global_planner/global_costmap/costmap
       Value: true
     - Alpha: 0.7
       Class: rviz/Map
       Color Scheme: map
       Draw Behind: false
-      Enabled: false
-      Name: CBNav - Global costmap
-      Topic: /sergio/global_planner/global_costmap/costmap
-      Value: false
-    - Alpha: 0.7
-      Class: rviz/Map
-      Color Scheme: map
-      Draw Behind: false
-      Enabled: false
+      Enabled: true
       Name: CBNav - Local costmap
       Topic: /sergio/local_planner/local_costmap/costmap
-      Value: false
+      Value: true
   Enabled: true
   Global Options:
     Background Color: 0; 0; 0
@@ -856,22 +755,22 @@ Visualization Manager:
   Views:
     Current:
       Class: rviz/Orbit
-      Distance: 9.87523
+      Distance: 9.87822
       Enable Stereo Rendering:
         Stereo Eye Separation: 0.06
         Stereo Focal Distance: 1
         Swap Stereo Eyes: false
         Value: false
       Focal Point:
-        X: -0.273813
-        Y: 2.51282
-        Z: 0.624409
+        X: 4.06486
+        Y: 1.11405
+        Z: 0.622265
       Name: Current View
       Near Clip Distance: 0.01
-      Pitch: 0.7348
+      Pitch: 1.5698
       Target Frame: <Fixed Frame>
       Value: Orbit (rviz)
-      Yaw: 1.57502
+      Yaw: 1.58002
     Saved: ~
 Window Geometry:
   Cam - Head Depth:
