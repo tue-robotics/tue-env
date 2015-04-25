@@ -26,6 +26,8 @@ alias sstart='sergio; roslaunch sergio_bringup start.launch'
 alias shardware='sergio; roslaunch sergio_bringup hardware.launch'
 alias smiddle='sergio; roslaunch sergio_bringup middleware.launch'
 alias smiddle-gmapping='sergio; roslaunch sergio_bringup middleware_gmapping.launch'
+alias smiddle-robonurse='sergio; roslaunch sergio_bringup middleware_robonurse.launch'
+alias smiddle-restaurant='sergio; roslaunch sergio_bringup middleware_restaurant.launch'
 
 ####################
 #
