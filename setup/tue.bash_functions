@@ -564,6 +564,32 @@ function tue-robocup-set-github-origin
     cd $mem_pwd
 }
 
+function tue-robocup-reset-github-origin
+{
+    local mem_pwd=$PWD
+
+    local fs=`ls $TUE_ENV_DIR/repos/https:/github.com/tue-robotics`
+    for pkg in $fs
+    do
+        local pkg_dir=$TUE_ENV_DIR/repos/https:/github.com/tue-robotics/$pkg
+
+        if [ -d $pkg_dir ]
+        then
+            cd $pkg_dir
+            local current_url=`git config --get remote.origin.url`
+
+            if echo "$current_url" | grep -q "tue-robotics"
+            then
+                local new_url="https://github.com/tue-robotics/$pkg"
+                git remote set-url origin $new_url
+                echo "Set origin url of '$pkg' to '$new_url'"
+            fi
+        fi
+    done
+
+    cd $mem_pwd
+}
+
 function tue-robocup-update
 {
     local mem_pwd=$PWD
