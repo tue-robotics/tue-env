@@ -1,2 +1,4 @@
 - type: target
   name: ros-ed_cloud
+- type: target
+  name: ros-ed_sensor_integration
