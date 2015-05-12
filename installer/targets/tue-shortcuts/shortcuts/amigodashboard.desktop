@@ -2,7 +2,7 @@
 
 [Desktop Entry]
 TryExec=gnome-terminal
-Icon=/home/amigo/.tue/installer/targets/tue-shortcuts/icons/amigodashboardsmall.png
+Icon=/usr/share/pixmaps/tue/amigodashboardsmall.png
 Type=Application
 X-GNOME-DocPath=gnome-terminal/index.html
 X-GNOME-Bugzilla-Bugzilla=GNOME
@@ -17,7 +17,7 @@ X-Ubuntu-Gettext-Domain=gnome-terminal
 
 Terminal=false
 Exec=bash -i -c adashboard
-Icon[en_US]=/home/amigo/.tue/installer/targets/tue-shortcuts/icons/amigodashboardsmall.png
+Icon[en_US]=/usr/share/pixmaps/tue/amigodashboardsmall.png
 Name[en_US]=AMIGO Dashboard
 Name=AMIGO Dashboard
 

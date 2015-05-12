@@ -5,14 +5,14 @@ Name=Terminator
 Comment=Multiple terminals in one window
 TryExec=terminator
 Exec=terminator -ml amigos
-Icon=/home/amigo/.tue/installer/targets/tue-shortcuts/icons/terminatorAmigos.png
+Icon=/usr/share/pixmaps/tue/terminatorAmigos.png
 Type=Application
 Categories=GNOME;GTK;Utility;TerminalEmulator;System;
 X-Ubuntu-Gettext-Domain=terminator
 X-Ayatana-Desktop-Shortcuts=NewWindow;
 Terminal=false
 
-Icon[en_US]=/home/amigo/.tue/installer/targets/tue-shortcuts/icons/terminatorAmigos.png
+Icon[en_US]=/usr/share/pixmaps/tue/terminatorAmigos.png
 
 Name[en_US]=Terminator amigos
 
