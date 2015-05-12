@@ -1,0 +1,38 @@
+# Simulation
+- type: target
+  name: ros-fast_simulator
+- type: target
+  name: ros-fast_simulator_data
+
+# Middleware
+- type: target
+  name: tue-middleware
+- type: target
+  name: ros-tue_mobile_ui
+
+# Visualization
+- type: target
+  name: ros-rviz
+
+# Diagnostics
+- type: ros
+  source:
+      type: system
+      name: viz
+
+- type: target
+  name: spot
+# git aliases, commit hooks and git-su
+- type: target
+  name: git-hooks
+
+# -------------------- ROBOCUP --------------------
+
+- type: target
+  name: tue-robocup-at-home
+
+# -------------------- ROBOTS --------------------
+
+# AMIGO
+- type: target
+  name: amigo-user
