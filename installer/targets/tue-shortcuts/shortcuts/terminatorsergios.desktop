@@ -5,14 +5,14 @@ Name=Terminator
 Comment=Multiple terminals in one window
 TryExec=terminator
 Exec=terminator -ml sergios
-Icon=/home/amigo/.tue/installer/targets/tue-shortcuts/icons/terminatorSergios.png
+Icon=/usr/share/pixmaps/tue/terminatorSergios.png
 Type=Application
 Categories=GNOME;GTK;Utility;TerminalEmulator;System;
 X-Ubuntu-Gettext-Domain=terminator
 X-Ayatana-Desktop-Shortcuts=NewWindow;
 Terminal=false
 
-Icon[en_US]=/home/amigo/.tue/installer/targets/tue-shortcuts/icons/terminatorSergios.png
+Icon[en_US]=/usr/share/pixmaps/tue/terminatorSergios.png
 
 Name[en_US]=Terminator sergios
 Comment[en_US]=Multiple terminals in one window
