@@ -2,7 +2,7 @@
 
 # copying shortcuts to desktop
 echo copying shortcuts to desktop, please drag them into the top bar
-cp ~/.tue/installer/targets/tue-shortcuts/shortcuts/*.desktop ~/Desktop
+cp ~/.tue/installer/targets/tue-shortcuts/shortcuts/.*.desktop ~/Desktop
 
 # copying shortcuts to desktop
 echo copying icons to /usr/share/pixmaps/tue

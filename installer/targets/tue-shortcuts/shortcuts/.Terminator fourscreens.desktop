@@ -1,0 +1,20 @@
+#!/usr/bin/env xdg-open
+
+[Desktop Entry]
+Name=Terminator
+Comment=Multiple terminals in one window
+TryExec=terminator
+Exec=terminator -ml fourscreens
+Icon=terminator
+Type=Application
+Categories=GNOME;GTK;Utility;TerminalEmulator;System;
+X-Ubuntu-Gettext-Domain=terminator
+X-Ayatana-Desktop-Shortcuts=NewWindow;
+Terminal=false
+Name[en_US]=.Terminator fourscreens
+
+[NewWindow Shortcut Group]
+Name=Open a New Window
+Exec=terminator
+TargetEnvironment=Unity
+
