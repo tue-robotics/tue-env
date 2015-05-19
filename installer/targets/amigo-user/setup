@@ -113,8 +113,7 @@ function depcheck
 #
 #####################
 alias diag='rosrun robot_monitor robot_monitor'
-alias dashboard='echo this is old dashboard command. please use adashboard for the AMIGO dashboard and sdashboard for the SERGIO dashboard'
-alias adashboard='tue-dashboard amigo1'
+alias adashboard='tue-dashboard amigo1 & sleep 1;  wmctrl -r ws://amigo1:9090 -b add,sticky'
 
 alias rviz-amigo='rosrun rviz rviz -d ~/.tue/installer/targets/amigo-user/rviz_config.rviz'
 
