@@ -1,15 +1,20 @@
-if [ ! -d ~/ros/hydro/system/src/philips_text_to_speech ]
+dest=$TUE_ENV_DIR/system/src/philips_text_to_speech
+
+if [ ! -d $dest ]
 then
-   URL=https://roboticssrv.wtb.tue.nl/svn/3rdparty/philips_text_to_speech
-   DEST="$HOME/ros/$ROS_DISTRO/repos/https://roboticssrv.wtb.tue.nl/svn/3rdparty/philips_text_to_speech"
-   LINK=$TUE_SYSTEM_DIR/src/philips_text_to_speech
+    echo "
+------------------------------------------------------------
+                   PHILIPS TEXT TO SPEECH    
+------------------------------------------------------------
 
-    tue-install-warning """Cannot install 'philips_text_to_speech' automatically because it is password protected. Please run manually:
+    Software is propietary, so a password is needed to
+    download the package. Please provide password needed
+    to log-in to data@roboticssrv.wtb.tue.nl.
 
-    svn co $URL \\
-           '$DEST' && \\
-    ln -s  '$DEST' \\
-           $LINK
-"""
+"
 
+    mkdir -p $TUE_ENV_DIR/repos/data
+    rsync data@roboticssrv.wtb.tue.nl:/home/data/data/private/data-pkgs/philips_text_to_speech $TUE_ENV_DIR/repos/data/ -av
+
+    ln -s $TUE_ENV_DIR/repos/data/philips_text_to_speech  $dest
 fi
