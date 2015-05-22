@@ -10,7 +10,6 @@ then
     gnome-terminal -t "AMIGO 1" --geometry=${WIDTH}x${HEIGHT}+0+0 --hide-menubar -x ssh amigo@amigo1 & 
     gnome-terminal -t "AMIGO 2" --geometry=${WIDTH}x${HEIGHT}-0+0 --hide-menubar -x ssh amigo@amigo2 &
     gnome-terminal -t "AMIGO 3" --geometry=${WIDTH}x${HEIGHT}+0-0 --hide-menubar -x ssh amigo@amigo3 &
-    gnome-terminal -t "AMIGO 4" --geometry=${WIDTH}x${HEIGHT}-0-0 --hide-menubar -x ssh amigo@amigo4 &
     exit
 fi
 
@@ -60,5 +59,4 @@ fi
 gnome-terminal -t "AMIGO 1" --geometry=${WIDTH}x${HEIGHT}+0+0 --hide-menubar -x ssh amigo@amigo1 -t bash -ic "'echo \"**** AMIGO1 ****\";$cmd'" & 
 gnome-terminal -t "AMIGO 2" --geometry=${WIDTH}x${HEIGHT}-0+0 --hide-menubar -x ssh amigo@amigo2 -t bash -ic "'echo \"**** AMIGO2 ****\";$cmd'" &
 gnome-terminal -t "AMIGO 3" --geometry=${WIDTH}x${HEIGHT}+0-0 --hide-menubar -x ssh amigo@amigo3 -t bash -ic "'echo \"**** AMIGO3 ****\";$cmd'" &
-gnome-terminal -t "AMIGO 4" --geometry=${WIDTH}x${HEIGHT}-0-0 --hide-menubar -x ssh amigo@amigo4 -t bash -ic "'echo \"**** AMIGO4 ****\";$cmd'" &
 

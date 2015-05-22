@@ -19,6 +19,10 @@
   name: ros-hokuyo_node
 - type: target
   name: ros-openni_launch
+  
+# Speech
+- type: target
+  name: ros-philips_text_to_speech
 
 # AMIGO aliases
 - type: target

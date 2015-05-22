@@ -2,9 +2,6 @@
   name: amigo
 
 - type: target
-  name: ros-philips_text_to_speech
-
-- type: target
   name: thespeechmachine
 
 - type: target
