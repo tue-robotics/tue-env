@@ -1,3 +1,5 @@
 # Challenges
 - type: target
   name: ros-tue_robocup
+- type: target
+  name: ros-robocup_knowledge
