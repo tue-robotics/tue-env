@@ -35,7 +35,3 @@ tue-env set-default ros-$TUE_ROS_DISTRO
 
 # Switch to the environment
 tue-env switch ros-$TUE_ROS_DISTRO
-
-# Install tue-dev
-tue-get install tue-dev
-
