@@ -1,6 +1,6 @@
 #!/bin/bash
 
-cd ~/ros/$TUE_ENV/system/src
+cd $TUE_ENV_DIR/system/src
 echo installing hooks in `pwd`
 
 for D in `find . -mindepth 1 -maxdepth 1 -type d -follow`
