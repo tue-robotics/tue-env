@@ -107,3 +107,5 @@ function sergio-head-move {
 
     rostopic pub /sergio/neck/references sensor_msgs/JointState "{header: {seq: 0, stamp: {secs: 0, nsecs: 0}, frame_id: ''}, name: ['neck_pan_joint', 'neck_tilt_joint'], position: [$1, $2], velocity: [0], effort: [0]}"  --once
 }
+
+alias sergio-case='sergio-torso-move-joints 0.45 1.5'
