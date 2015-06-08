@@ -13,9 +13,20 @@ response=${response,,}    # tolower
 if [[ $response =~ ^(yes|y)$ ]]
 then
 	cp ~/.config/terminator/config ~/.config/terminator/configbackup
-    cp ~/.tue/installer/targets/tue-shortcuts/terminatorconfig/config ~/.config/terminator/config
+    cp ~/.tue/installer/targets/tue-shortcuts/config/terminator/config ~/.config/terminator/config
 else
-	echo the config has not been copied, Therefore the working of the shortcuts cannot be guaranteed
+	echo the terminator config has not been copied, Therefore the working of the shortcuts cannot be guaranteed
+fi
+
+# copying variety config file
+read -r -p "Are you sure you want to replace .config/variety/config? [y/N] " response
+response=${response,,}    # tolower
+if [[ $response =~ ^(yes|y)$ ]]
+then
+	cp ~/.config/variety/variety.conf ~/.config/variety/variety.conf.backup
+    cp ~/.tue/installer/targets/tue-shortcuts/config/variety/variety.conf ~/.config/variety/variety.conf
+else
+	echo the variety config has not been copied, Therefore the working of the shortcuts cannot be guaranteed
 fi
 
 echo 
