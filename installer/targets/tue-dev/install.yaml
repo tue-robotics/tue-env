@@ -33,6 +33,19 @@
 
 # -------------------- ROBOTS --------------------
 
-# AMIGO
+- type: target
+  name: ros-dashboard
 - type: target
   name: amigo-user
+- type: target
+  name: sergio-user
+  
+# Handy shit  
+- type: target
+  name: sublime3
+- type: target
+  name: terminator
+- type: target
+  name: vim
+- type: target
+  name: chrome
