@@ -9,3 +9,5 @@
 - type: target
   name: orocos
 
+- type: target
+  name: ros-kinect_driver
