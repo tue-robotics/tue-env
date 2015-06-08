@@ -11,3 +11,9 @@ then
     wget --no-check-certificate http://roboticssrv.wtb.tue.nl/vbox_images/thespeechmachine.tar.gz -O- | tar -xzv --directory ~/.vbox_images
     vboxmanage registervm ~/.vbox_images/thespeechmachine/thespeechmachine.vbox
 fi
+
+red='\033[0;31m'
+NC='\033[0m' # No Color
+echo -e "${red}\nDo the following things to make the vbox work:\n\n- Log into this pc with ssh -X user@pc-name\n- virtualbox\n- Make sure you select pulseaudio and the correct driver\n- Set the correct ip and bridge it!\n- Get the latest version from github (cmd; cd dragonfly_speech_recognition; git pull)\n- Reboot pc\n- Check if it works\n- Store a snapshop\n\nEverybody is happy!\n\n${NC}"
+
+
