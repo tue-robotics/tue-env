@@ -158,7 +158,7 @@ function tue-install-svn
         res=$(svn co $1 $2 --trust-server-cert --non-interactive 2>&1)
     else
         res=$(svn up $2 --trust-server-cert --non-interactive 2>&1)
-        if [[ $res == "At"* ]];
+        if echo "$res" | grep -q "At revision";
         then
             res=
         fi
