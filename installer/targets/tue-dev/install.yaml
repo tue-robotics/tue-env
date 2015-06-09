@@ -22,9 +22,6 @@
 
 - type: target
   name: spot
-# git aliases, commit hooks and git-su
-- type: target
-  name: git-hooks
 
 # -------------------- ROBOCUP --------------------
 

@@ -13,6 +13,10 @@
 # Middleware
 - type: target
   name: tue-middleware
+  
+# Hardware
+- type: target
+  name: tue-hardware
 
 # Sensors
 - type: target

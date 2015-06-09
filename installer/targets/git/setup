@@ -1,20 +1,30 @@
 #!/bin/bash
 
+alias git-logout='git config --global --remove user'
+
+# If this is run the first since this computer was started, remove
+# the user details (forcing the user to 'log-in')
+if [ ! -f /tmp/git-removed-user-details ]
+then
+    git-logout
+    touch /tmp/git-removed-user-details
+fi
+
 name=`git config --global --get user.name`
 email=`git config --global --get user.email`
 
 # ask for user + email if not set
-if [ -z "$name" ]; then
-	echo -e "\ngit configuration\n"
-	read -p "Enter full name: " name
-	git config --global user.name "$name"
-fi
+#if [ -z "$name" ]; then
+#	echo -e "\ngit configuration\n"
+#	read -p "Enter full name: " name
+#	git config --global user.name "$name"
+#fi
 
-if [ -z "$email" ]; then
-	echo -e "\ngit configuration\n"
-	read -p "Enter GitHub email: " email
-	git config --global user.email "$email"
-fi
+#if [ -z "$email" ]; then
+#	echo -e "\ngit configuration\n"
+#	read -p "Enter GitHub email: " email
+#	git config --global user.email "$email"
+#fi
 
 lg=`git config --global --get alias.lg`
 pd=`git config --global --get push.default`
@@ -25,4 +35,3 @@ fi
 if [ -z "$pd" ]; then
 	git config --global push.default "current"
 fi
-
