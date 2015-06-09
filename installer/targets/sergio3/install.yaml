@@ -2,9 +2,6 @@
   name: sergio
 
 - type: target
-  name: tue-hardware
-
-- type: target
   name: ros-kinect_driver
 
 - type: target
@@ -12,7 +9,3 @@
 
 - type: target
   name: audio
-
-# git aliases, commit hooks and git-su
-- type: target
-  name: git-hooks

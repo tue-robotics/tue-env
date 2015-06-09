@@ -1,9 +1,2 @@
 - type: target
   name: sergio
-
-- type: target
-  name: tue-hardware
-
-# git aliases, commit hooks and git-su
-- type: target
-  name: git-hooks
