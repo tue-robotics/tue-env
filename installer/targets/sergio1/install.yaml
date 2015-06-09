@@ -1,13 +1,4 @@
 - type: target
   name: sergio
-
 - type: target
-  name: tue-hardware
- 
-  # temporary placed in sergio1, when all PC's are in use check what should be installd on which PC?
-- type: target
-  name: tue-middleware
-
-# git aliases, commit hooks and git-su
-- type: target
-  name: git-hooks
+  name: orocos

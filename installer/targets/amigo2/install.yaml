@@ -1,9 +1,5 @@
 - type: target
   name: amigo
-
-# Hardware support
-- type: target
-  name: tue-hardware
   
   # Orocos
 - type: target
