@@ -6,8 +6,8 @@ alias git-logout='git config --global --remove user'
 # the user details (forcing the user to 'log-in')
 if [ ! -f /tmp/git-removed-user-details ]
 then
-    git-logout
     touch /tmp/git-removed-user-details
+    git-logout
 fi
 
 name=`git config --global --get user.name`
