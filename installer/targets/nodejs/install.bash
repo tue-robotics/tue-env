@@ -1,9 +1,8 @@
 #!/bin/bash
 
-if [ ! -f /etc/apt/sources.list.d/chris-lea-node_js-precise.list ]
+if [ ! -f /etc/apt/sources.list.d/nodesource.list ]
 then
-	sudo add-apt-repository ppa:chris-lea/node.js
-	sudo apt-get update
+	wget -qO- https://deb.nodesource.com/setup | bash -
 fi
 
 tue-install-system nodejs
