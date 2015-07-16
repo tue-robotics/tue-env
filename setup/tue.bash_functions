@@ -590,12 +590,27 @@ function tue-robocup-reset-github-origin
     cd $mem_pwd
 }
 
+function tue-robocup-install-package
+{
+    local pkg_dir=$TUE_ENV_DIR/repos/https:/github.com/tue-robotics/${1}.git
+   
+    # If directory already exists, return
+    [ -d $pkg_dir ] && return
+
+    git clone amigo@192.168.2.10:tue-robotics/${1}.git $pkg_dir
+
+    ln -s $pkg_dir $TUE_ENV_DIR/system/src/$1
+}
+
 function tue-robocup-update
 {
     local mem_pwd=$PWD
 
     cd ~/.tue
     git pull
+
+    tue-robocup-install-package picaso_4d_systems
+
 
     local fs=`ls $_TUE_CATKIN_SYSTEM_DIR/src`
     for pkg in $fs
