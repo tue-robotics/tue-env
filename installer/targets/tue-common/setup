@@ -1,6 +1,8 @@
 alias trunk='cd $TUE_ENV_DIR/system/src'
 alias dev='cd $TUE_ENV_DIR/dev/src'
 
+alias todo='scp amigo@192.168.2.10:/home/amigo/www/todo.html /tmp/todo.html; vim /tmp/todo.html; scp /tmp/todo.html amigo@192.168.2.10:/home/amigo/www/todo.html' 
+
 ##############################################################################################
 #   TOOL FOR SETTING ROS_PACKAGE_PATH
 ##############################################################################################
