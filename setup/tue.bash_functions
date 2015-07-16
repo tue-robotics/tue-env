@@ -543,6 +543,9 @@ function tue-robocup-set-github-origin
 {
     local mem_pwd=$PWD
 
+    cd ~/.tue
+    git remote set-url origin amigo@192.168.2.10:tue-robotics/tue-env
+
     local fs=`ls $TUE_ENV_DIR/repos/https:/github.com/tue-robotics`
     for pkg in $fs
     do
@@ -567,6 +570,9 @@ function tue-robocup-set-github-origin
 function tue-robocup-reset-github-origin
 {
     local mem_pwd=$PWD
+
+    cd ~/.tue
+    git remote set-url origin https://github.com/tue-robotics/tue-env
 
     local fs=`ls $TUE_ENV_DIR/repos/https:/github.com/tue-robotics`
     for pkg in $fs
