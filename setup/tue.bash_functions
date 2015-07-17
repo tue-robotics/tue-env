@@ -537,14 +537,26 @@ source $TUE_DIR/setup/tue-data.bash
 
 # ----------------------------------------------------------------------------------------------------
 
-# Temporarily for RoboCup
-
-function tue-robocup-set-github-origin
+function tue-set-git-remote
 {
+    local remote=$1
+    local server=$2
+
+    if [ -z $2 ]
+    then
+        echo "Usage: tue-set-git-remote REMOTE SERVER
+
+For example:
+
+    tue-set-git-remote origin https://github.com
+        "
+        return 1
+    fi
+
     local mem_pwd=$PWD
 
     cd ~/.tue
-    git remote set-url origin amigo@192.168.2.10:tue-robotics/tue-env
+    git remote set-url $remote ${server}:tue-robotics/tue-env
 
     local fs=`ls $TUE_ENV_DIR/repos/https:/github.com/tue-robotics`
     for pkg in $fs
@@ -558,8 +570,8 @@ function tue-robocup-set-github-origin
 
             if echo "$current_url" | grep -q "tue-robotics"
             then
-                git remote set-url origin amigo@192.168.2.10:tue-robotics/$pkg
-                echo "Set origin url of '$pkg' to 'amigo@192.168.2.10:tue-robotics/$pkg'"
+                git remote set-url origin ${server}:tue-robotics/$pkg
+                echo "Set origin url of '$pkg' to '${server}:tue-robotics/$pkg'"
             fi
         fi
     done
@@ -567,33 +579,16 @@ function tue-robocup-set-github-origin
     cd $mem_pwd
 }
 
+# Temporarily for RoboCup
+
+function tue-robocup-set-github-origin
+{
+    tue-set-git-remote origin amigo@192.168.2.10
+}
+
 function tue-robocup-reset-github-origin
 {
-    local mem_pwd=$PWD
-
-    cd ~/.tue
-    git remote set-url origin https://github.com/tue-robotics/tue-env
-
-    local fs=`ls $TUE_ENV_DIR/repos/https:/github.com/tue-robotics`
-    for pkg in $fs
-    do
-        local pkg_dir=$TUE_ENV_DIR/repos/https:/github.com/tue-robotics/$pkg
-
-        if [ -d $pkg_dir ]
-        then
-            cd $pkg_dir
-            local current_url=`git config --get remote.origin.url`
-
-            if echo "$current_url" | grep -q "tue-robotics"
-            then
-                local new_url="https://github.com/tue-robotics/$pkg"
-                git remote set-url origin $new_url
-                echo "Set origin url of '$pkg' to '$new_url'"
-            fi
-        fi
-    done
-
-    cd $mem_pwd
+    tue-set-git-remote origin https://github.com
 }
 
 function tue-robocup-install-package
