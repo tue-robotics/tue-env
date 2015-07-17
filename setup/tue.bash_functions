@@ -612,6 +612,11 @@ function tue-robocup-update
 
     tue-robocup-install-package picaso_4d_systems
 
+    # Copy rsettings file
+    if [ "$ROBOT_REAL" != "true" ]
+    then
+        cp ~/.tue/installer/targets/tue-common/rsettings_file ~/.tue/.rsettings
+    fi
 
     local fs=`ls $_TUE_CATKIN_SYSTEM_DIR/src`
     for pkg in $fs
