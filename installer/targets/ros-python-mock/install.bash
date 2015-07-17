@@ -3,5 +3,5 @@ dpkg -s python-pip &> /dev/null || sudo apt-get install python-pip
 
 if [ ! $(pip freeze | grep mock) ]
 then
-	sudo pip install -U mock
+	sudo -H pip install -U mock
 fi
