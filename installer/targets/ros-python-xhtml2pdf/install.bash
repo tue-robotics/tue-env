@@ -3,5 +3,5 @@ dpkg -s python-pip &> /dev/null || sudo apt-get install python-pip
 
 if [ ! $(pip freeze | grep xhtml2pdf) ]
 then
-	sudo pip install -U xhtml2pdf
+	sudo -H pip install -U xhtml2pdf
 fi
