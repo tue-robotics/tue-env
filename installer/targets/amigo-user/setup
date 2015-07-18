@@ -37,7 +37,7 @@ alias astart='amigo; roslaunch amigo_bringup start.launch'
 alias ahardware='amigo; roslaunch amigo_bringup hardware.launch'
 alias amiddle='amigo; roslaunch amigo_bringup middleware.launch'
 alias amiddle-gmapping='amigo; roslaunch amigo_bringup middleware_gmapping.launch'
-alias amiddle-open='amigo; export ROBOT_ENV=rwc2015_empty; roslaunch amigo_bringup middleware_open.launch'
+alias amiddle-open='amigo; roslaunch amigo_bringup middleware_open.launch'
 alias amiddle-restaurant='amigo; roslaunch amigo_bringup middleware_restaurant.launch'
 alias amiddle-final='amigo; roslaunch amigo_bringup middleware_final.launch'
 
