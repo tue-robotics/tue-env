@@ -28,7 +28,7 @@ alias smiddle='sergio; roslaunch sergio_bringup middleware.launch'
 alias smiddle-gmapping='sergio; roslaunch sergio_bringup middleware_gmapping.launch'
 alias smiddle-robonurse='sergio; roslaunch sergio_bringup middleware_robonurse.launch'
 alias smiddle-restaurant='sergio; roslaunch sergio_bringup middleware_restaurant.launch'
-alias smiddle-navigation='amigo; roslaunch sergio_bringup middleware_navigation.launch'
+alias smiddle-navigation='sergio; roslaunch sergio_bringup middleware_navigation.launch'
 alias smiddle-final='sergio; roslaunch sergio_bringup middleware_final.launch'
 
 ####################
