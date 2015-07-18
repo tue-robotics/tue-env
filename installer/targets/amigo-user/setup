@@ -39,6 +39,7 @@ alias amiddle='amigo; roslaunch amigo_bringup middleware.launch'
 alias amiddle-gmapping='amigo; roslaunch amigo_bringup middleware_gmapping.launch'
 alias amiddle-open='amigo; roslaunch amigo_bringup middleware_open.launch'
 alias amiddle-restaurant='amigo; roslaunch amigo_bringup middleware_restaurant.launch'
+alias amiddle-navigation='amigo; roslaunch amigo_bringup middleware_navigation.launch'
 alias amiddle-final='amigo; roslaunch amigo_bringup middleware_final.launch'
 
 ####################
