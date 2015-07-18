@@ -1,3 +1,3 @@
 #!/bin/bash
 
-alias ack="ack-grep -r"
+alias ack="ack-grep --follow"
