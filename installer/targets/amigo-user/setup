@@ -117,6 +117,9 @@ alias rviz-final-challenge-fuerte='rosrun rviz rviz -d $TUE_TRUNK/tue_robocup/ch
 alias rviz-egpsr='rosrun rviz rviz -d $TUE_TRUNK/amigo_admin_files/configs/rviz/rviz_egpsr.vcg'
 alias rviz-restaurant='rosrun rviz rviz -d $TUE_TRUNK/amigo_admin_files/configs/rviz/amigo_groovy_restaurant.rviz'
 
+alias amigo-show-fitter='rosrun rgbd multitool --rgbd /amigo/ed/viz/fitter'
+alias amigo-show-kinect='rosrun rgbd multitool --rgbd /amigo/top_kinect/rgbd'
+
 # --------------------------------------------------------------------------------
 
 alias amigo-show-ed-kinect='rosrun rgbd multitool --rgbd /amigo/ed/kinect/viz/update_request'
