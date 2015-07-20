@@ -30,6 +30,7 @@ alias smiddle-robonurse='sergio; roslaunch sergio_bringup middleware_robonurse.l
 alias smiddle-restaurant='sergio; roslaunch sergio_bringup middleware_restaurant.launch'
 alias smiddle-navigation='sergio; roslaunch sergio_bringup middleware_navigation.launch'
 alias smiddle-final='sergio; roslaunch sergio_bringup middleware_final.launch'
+alias smiddle-open='sergio; roslaunch sergio_bringup middleware_open.launch'
 
 ####################
 #
