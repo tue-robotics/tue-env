@@ -15,6 +15,7 @@ alias sshsergio1='until ssh -qo ConnectTimeout=1 -X amigo@sergio1; do echo waiti
 alias sshsergio2='until ssh -qo ConnectTimeout=1 -X amigo@sergio2; do echo waiting for sergio2 to come online...; sleep 2; done'
 alias sshsergio3='until ssh -qo ConnectTimeout=1 amigo@sergio3; do echo waiting for sergio3 to come online...; sleep 2; done'
 
+alias sergio-odom-reset='rostopic pub --once /sergio/base/reset_odometry std_msgs/Bool 1'
 
 ####################
 #
@@ -29,8 +30,8 @@ alias smiddle-gmapping='sergio; roslaunch sergio_bringup middleware_gmapping.lau
 alias smiddle-robonurse='sergio; roslaunch sergio_bringup middleware_robonurse.launch'
 alias smiddle-restaurant='sergio; roslaunch sergio_bringup middleware_restaurant.launch'
 alias smiddle-navigation='sergio; roslaunch sergio_bringup middleware_navigation.launch'
-alias smiddle-final='rostopic pub --once /sergio/base/reset_odometry std_msgs/Bool 1; sergio; roslaunch sergio_bringup middleware_final.launch'
-alias smiddle-open='rostopic pub --once /sergio/base/reset_odometry std_msgs/Bool 1;sergio; roslaunch sergio_bringup middleware_open.launch'
+alias smiddle-final='sergio-odom-reset; sergio; roslaunch sergio_bringup middleware_final.launch'
+alias smiddle-open='sergio-odom-reset; sergio; roslaunch sergio_bringup middleware_open.launch'
 
 ####################
 #
