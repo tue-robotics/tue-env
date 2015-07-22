@@ -29,7 +29,7 @@ alias smiddle-gmapping='sergio; roslaunch sergio_bringup middleware_gmapping.lau
 alias smiddle-robonurse='sergio; roslaunch sergio_bringup middleware_robonurse.launch'
 alias smiddle-restaurant='sergio; roslaunch sergio_bringup middleware_restaurant.launch'
 alias smiddle-navigation='sergio; roslaunch sergio_bringup middleware_navigation.launch'
-alias smiddle-final='sergio; roslaunch sergio_bringup middleware_final.launch'
+alias smiddle-final='rostopic pub --once /sergio/base/reset_odometry std_msgs/Bool 1; sergio; roslaunch sergio_bringup middleware_final.launch'
 alias smiddle-open='rostopic pub --once /sergio/base/reset_odometry std_msgs/Bool 1;sergio; roslaunch sergio_bringup middleware_open.launch'
 
 ####################
