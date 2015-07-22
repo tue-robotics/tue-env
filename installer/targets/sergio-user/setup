@@ -61,6 +61,7 @@ alias sdashboard='tue-dashboard sergio1 & sleep 1; disown; wmctrl -r ws://sergio
 
 
 alias rviz-sergio='rosrun rviz rviz -d ~/.tue/installer/targets/sergio-user/rviz_config.rviz'
+alias rviz-sergio-final='rosrun rviz rviz -d $TUE_SYSTEM_DIR/src/challenge_final/sergio_rviz_config.rviz'
 
 #####################
 #
