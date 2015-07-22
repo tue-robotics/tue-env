@@ -95,6 +95,7 @@ alias diag='rosrun robot_monitor robot_monitor'
 alias adashboard='tue-dashboard amigo1 & sleep 1; disown; wmctrl -r ws://amigo1:9090 -b add,sticky'
 
 alias rviz-amigo='rosrun rviz rviz -d ~/.tue/installer/targets/amigo-user/rviz_config.rviz'
+alias rviz-amigo-final='rosrun rviz rviz -d $TUE_SYSTEM_DIR/src/challenge_final/amigo_rviz_config.rviz'
 
 # alias rviz-amigo-fuerte='source /opt/ros/fuerte/setup.bash; ROS_PACKAGE_PATH=$TUE_TRUNK/amigo_common/amigo_description:$ROS_PACKAGE_PATH; rosrun rviz rviz -d $TUE_TRUNK/amigo_admin_files/configs/rviz/rviz_amigo.vcg; export ROS_DISTRO=groovy; source ~/.bashrc'
 # alias rviz-amigo-groovy='rosrun rviz rviz -d $TUE_TRUNK/amigo_admin_files/configs/rviz/amigo_groovy.rviz'
