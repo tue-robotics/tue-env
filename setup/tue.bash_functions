@@ -556,7 +556,7 @@ For example:
     local mem_pwd=$PWD
 
     cd ~/.tue
-    git remote set-url $remote ${server}:tue-robotics/tue-env
+    git remote set-url $remote ${server}tue-robotics/tue-env
 
     local fs=`ls $TUE_ENV_DIR/repos/https:/github.com/tue-robotics`
     for pkg in $fs
@@ -570,8 +570,8 @@ For example:
 
             if echo "$current_url" | grep -q "tue-robotics"
             then
-                git remote set-url origin ${server}:tue-robotics/$pkg
-                echo "Set origin url of '$pkg' to '${server}:tue-robotics/$pkg'"
+                git remote set-url origin ${server}tue-robotics/$pkg
+                echo "Set origin url of '$pkg' to '${server}tue-robotics/$pkg'"
             fi
         fi
     done
@@ -583,12 +583,12 @@ For example:
 
 function tue-robocup-set-github-origin
 {
-    tue-set-git-remote origin amigo@192.168.2.10
+    tue-set-git-remote origin amigo@192.168.2.10:
 }
 
 function tue-robocup-reset-github-origin
 {
-    tue-set-git-remote origin https://github.com
+    tue-set-git-remote origin https://github.com/
 }
 
 function tue-robocup-install-package
