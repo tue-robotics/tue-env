@@ -4,7 +4,7 @@ Package manager that can be used to install (ROS) dependencies
 ## Installation
 Run the following commands in a shell:
 ```bash
-export TUE_ENV=hydro && source <(wget -O- https://raw.githubusercontent.com/tue-robotics/tue-env/master/installer/scripts/bootstrap)
+export TUE_ENV=indigo && source <(wget -O- https://raw.githubusercontent.com/tue-robotics/tue-env/master/installer/scripts/bootstrap)
 ```
 
 ## Usage
