@@ -469,8 +469,8 @@ function tue-branch
         then
             local memd=$PWD
             cd $pkg_dir
-            test_branch=$(git branch --list $branch 2>&1)
-            if [ $? -eq 0 ] && [ "$test_branch" ]
+            test_branch=$(git branch -a 2> /dev/null | grep -q MoveIt)
+            if [ $? -eq 0 ]
             then
                 local current_branch=`git rev-parse --abbrev-ref HEAD`
                 if [[ "$current_branch" == "$branch" ]]
