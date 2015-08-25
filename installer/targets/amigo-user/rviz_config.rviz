@@ -420,7 +420,7 @@ Visualization Manager:
           Value: true
       Name: RobotModel
       Robot Description: amigo/robot_description
-      TF Prefix: amigo
+      TF Prefix: 
       Update Interval: 0
       Value: true
       Visual Enabled: true
