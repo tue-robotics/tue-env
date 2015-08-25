@@ -10,6 +10,7 @@ sudo cp ~/.tue/installer/targets/tue-fancydesktop/icons/*.png /usr/share/pixmaps
 
 # copying terminator config file
 cp ~/.config/terminator/config ~/.config/terminator/configbackup
+mkdir -p ~/.config/terminator/config
 cp ~/.tue/installer/targets/tue-fancydesktop/configs/terminator/config ~/.config/terminator/config
 
 # Install Variety
