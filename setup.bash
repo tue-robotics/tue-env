@@ -14,37 +14,6 @@ function _tue-check-env-vars
 }
 export -f _tue-check-env-vars
 
-# ------------------------------------------
-# Temporarily: make sure the ~/ros/hydro and ~/ros/indigo environment can be found
-if [ "$TUE_ENV" == "hydro" ] || [ "$TUE_ENV" == "indigo" ]
-then
-    mkdir -p $TUE_DIR/user/envs
-    [ -f $TUE_DIR/user/envs/$TUE_ENV ] || echo "$HOME/ros/$TUE_ENV" > $TUE_DIR/user/envs/$TUE_ENV
-fi
-
-if [ ! -f $TUE_DIR/user/config/default_env ]
-then
-    if [ -z "$TUE_ROS_DISTRO" ]
-    then
-        if [ -z "$TUE_ENV" ]
-        then
-            # No environment, so all environment specific setup below does not need to be sourced
-            return
-        else
-            TUE_ROS_DISTRO=$TUE_ENV
-        fi
-    else
-        TUE_ENV=$TUE_ROS_DISTRO
-    fi
-
-    export TUE_ROS_DISTRO=$TUE_ROS_DISTRO
-    export TUE_ENV=$TUE_ENV
-
-    mkdir -p $TUE_DIR/user/config
-    echo "$TUE_ENV" > $TUE_DIR/user/config/default_env
-fi
-# ------------------------------------------
-
 if [ -z "$TUE_ENV" ]
 then
     if [ ! -f $TUE_DIR/user/config/default_env ]
@@ -68,18 +37,6 @@ if [ ! -d $TUE_ENV_DIR ]
 then
     echo "[tue] Environment directory '$TUE_ENV_DIR' (environment '$TUE_ENV') does not exist"
     return 1
-fi
-
-# ------------------------------------------
-# Temporarily: make sure the ~/ros/hydro and ~/ros/indigo environment can be found
-
-if [ "$TUE_ENV" == "hydro" ] || [ "$TUE_ENV" == "indigo" ]
-then
-    if [ ! -f $TUE_ENV_DIR/.env/setup/user_setup.bash ]
-    then
-        mkdir -p $TUE_ENV_DIR/.env/setup
-        echo "export TUE_ROS_DISTRO=$TUE_ENV" > $TUE_ENV_DIR/.env/setup/user_setup.bash
-    fi    
 fi
 
 # -----------------------------------------
