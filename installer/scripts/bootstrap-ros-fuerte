@@ -17,9 +17,6 @@ source ~/.tue/setup.bash
 # Set ROS version
 TUE_ROS_DISTRO=fuerte
 
-# Make sure sourcing ~/.tue/setup.bash is added to bashrc
-echo -e "\nsource ~/.tue/setup.bash" >> ~/.bashrc
-
 # Create ros environment directory
 mkdir -p ~/ros/$TUE_ROS_DISTRO
 
@@ -33,9 +30,5 @@ echo "export TUE_ROS_DISTRO=$TUE_ROS_DISTRO" > ~/ros/$TUE_ROS_DISTRO/.env/setup/
 # Set this environment as default
 tue-env set-default ros-$TUE_ROS_DISTRO
 
-# Switch to the environment
-tue-env switch ros-$TUE_ROS_DISTRO
-
-# Install tue-dev
-tue-get install tue-dev
-
+# Activate the default environment
+source ~/.tue/setup.bash
