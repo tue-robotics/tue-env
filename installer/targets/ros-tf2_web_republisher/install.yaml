@@ -1,5 +1,5 @@
 - type: ros
   source:
       type: system
-      name: tf2_web_republisher
+      name: tf2-web-republisher
 
