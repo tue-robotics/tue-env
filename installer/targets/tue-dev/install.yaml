@@ -14,10 +14,6 @@
 - type: target
   name: ros-rviz
 
-# Console
-- type: target
-  name: ros-nl_robot_console
-
 # Diagnostics
 - type: ros
   source:
