@@ -1,3 +1,7 @@
 # Tele-operation
 - type: target
   name: ros-tue_teleop_keyboard
+
+# Console
+- type: target
+  name: ros-nl_robot_console
