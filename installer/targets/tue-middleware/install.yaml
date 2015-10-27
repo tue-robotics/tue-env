@@ -37,6 +37,8 @@
 - type: target
   name: ros-ed_perception
 - type: target
+  name: ros-ed_perception_models
+- type: target
   name: ros-ed_gui_server
 - type: target
   name: ros-ed_localization
