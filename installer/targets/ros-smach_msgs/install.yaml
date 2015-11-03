@@ -1,5 +1,9 @@
+#- type: ros
+#  source:
+#      type: system
+#      name: executive-smach
 - type: ros
   source:
-      type: system
-      name: executive-smach
-
+      type: git
+      url: https://github.com/LoyVanBeek/executive_smach.git
+      sub-dir: smach_msgs
