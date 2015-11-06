@@ -1,5 +1,5 @@
 - type: ros
   source:
-      type: svn
-      url: https://roboticssrv.wtb.tue.nl/svn/ros/trunk/amigo_ref_interpolator
+      type: git
+      url: https://github.com/tue-robotics/amigo_ref_interpolator
 
