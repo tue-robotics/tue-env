@@ -1,4 +1,4 @@
 - type: ros
   source:
-      type: svn
-      url: https://roboticssrv.wtb.tue.nl/svn/data/mirror/cmu-ros-pkg/ann2
+      type: git
+      url: https://github.com/tue-robotics/ann2
