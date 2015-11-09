@@ -42,385 +42,353 @@ Visualization Manager:
         Expand Link Details: false
         Expand Tree: false
         Link Tree Style: Links in Alphabetic Order
-        back_laser:
+        amigo/base:
           Alpha: 1
           Show Axes: false
           Show Trail: false
           Value: true
-        back_lasertop:
+        amigo/base_laser:
           Alpha: 1
           Show Axes: false
           Show Trail: false
           Value: true
-        base:
+        amigo/base_link:
           Alpha: 1
           Show Axes: false
           Show Trail: false
-          Value: true
-        base_kinect/openni_camera:
-          Alpha: 1
-          Show Axes: false
-          Show Trail: false
-          Value: true
-        base_kinect/openni_depth_frame:
-          Alpha: 1
-          Show Axes: false
-          Show Trail: false
-        base_kinect/openni_depth_optical_frame:
-          Alpha: 1
-          Show Axes: false
-          Show Trail: false
-        base_kinect/openni_rgb_frame:
-          Alpha: 1
-          Show Axes: false
-          Show Trail: false
-        base_kinect/openni_rgb_optical_frame:
-          Alpha: 1
-          Show Axes: false
-          Show Trail: false
-        base_laser:
-          Alpha: 1
-          Show Axes: false
-          Show Trail: false
-          Value: true
-        base_link:
-          Alpha: 1
-          Show Axes: false
-          Show Trail: false
-          Value: true
-        base_plate:
+        amigo/base_plate:
           Alpha: 1
           Show Axes: false
           Show Trail: false
           Value: true
-        clavicles:
+        amigo/clavicles:
           Alpha: 1
           Show Axes: false
           Show Trail: false
           Value: true
-        elbow_extra_block2_left:
+        amigo/elbow_extra_block2_left:
           Alpha: 1
           Show Axes: false
           Show Trail: false
           Value: true
-        elbow_extra_block2_right:
+        amigo/elbow_extra_block2_right:
           Alpha: 1
           Show Axes: false
           Show Trail: false
           Value: true
-        elbow_extra_block_left:
+        amigo/elbow_extra_block_left:
           Alpha: 1
           Show Axes: false
           Show Trail: false
           Value: true
-        elbow_extra_block_right:
+        amigo/elbow_extra_block_right:
           Alpha: 1
           Show Axes: false
           Show Trail: false
           Value: true
-        elbow_link4_left:
+        amigo/elbow_link4_left:
           Alpha: 1
           Show Axes: false
           Show Trail: false
           Value: true
-        elbow_link4_right:
+        amigo/elbow_link4_right:
           Alpha: 1
           Show Axes: false
           Show Trail: false
           Value: true
-        finger1_left:
+        amigo/finger1_left:
           Alpha: 1
           Show Axes: false
           Show Trail: false
           Value: true
-        finger1_phalanx_left:
+        amigo/finger1_phalanx_left:
           Alpha: 1
           Show Axes: false
           Show Trail: false
           Value: true
-        finger1_phalanx_right:
+        amigo/finger1_phalanx_right:
           Alpha: 1
           Show Axes: false
           Show Trail: false
           Value: true
-        finger1_right:
+        amigo/finger1_right:
           Alpha: 1
           Show Axes: false
           Show Trail: false
           Value: true
-        finger1_tip_left:
+        amigo/finger1_tip_left:
           Alpha: 1
           Show Axes: false
           Show Trail: false
           Value: true
-        finger1_tip_phalanx_left:
+        amigo/finger1_tip_phalanx_left:
           Alpha: 1
           Show Axes: false
           Show Trail: false
           Value: true
-        finger1_tip_phalanx_right:
+        amigo/finger1_tip_phalanx_right:
           Alpha: 1
           Show Axes: false
           Show Trail: false
           Value: true
-        finger1_tip_right:
+        amigo/finger1_tip_right:
           Alpha: 1
           Show Axes: false
           Show Trail: false
           Value: true
-        finger2_left:
+        amigo/finger2_left:
           Alpha: 1
           Show Axes: false
           Show Trail: false
           Value: true
-        finger2_phalanx_left:
+        amigo/finger2_phalanx_left:
           Alpha: 1
           Show Axes: false
           Show Trail: false
           Value: true
-        finger2_phalanx_right:
+        amigo/finger2_phalanx_right:
           Alpha: 1
           Show Axes: false
           Show Trail: false
           Value: true
-        finger2_right:
+        amigo/finger2_right:
           Alpha: 1
           Show Axes: false
           Show Trail: false
           Value: true
-        finger2_tip_left:
+        amigo/finger2_tip_left:
           Alpha: 1
           Show Axes: false
           Show Trail: false
           Value: true
-        finger2_tip_phalanx_left:
+        amigo/finger2_tip_phalanx_left:
           Alpha: 1
           Show Axes: false
           Show Trail: false
           Value: true
-        finger2_tip_phalanx_right:
+        amigo/finger2_tip_phalanx_right:
           Alpha: 1
           Show Axes: false
           Show Trail: false
           Value: true
-        finger2_tip_right:
+        amigo/finger2_tip_right:
           Alpha: 1
           Show Axes: false
           Show Trail: false
           Value: true
-        fore_arm_left:
+        amigo/fore_arm_left:
           Alpha: 1
           Show Axes: false
           Show Trail: false
           Value: true
-        fore_arm_right:
+        amigo/fore_arm_right:
           Alpha: 1
           Show Axes: false
           Show Trail: false
           Value: true
-        fore_arm_top_left:
+        amigo/fore_arm_top_left:
           Alpha: 1
           Show Axes: false
           Show Trail: false
           Value: true
-        fore_arm_top_right:
+        amigo/fore_arm_top_right:
           Alpha: 1
           Show Axes: false
           Show Trail: false
           Value: true
-        grippoint_left:
+        amigo/grippoint_left:
           Alpha: 1
           Show Axes: false
           Show Trail: false
           Value: true
-        grippoint_right:
+        amigo/grippoint_right:
           Alpha: 1
           Show Axes: false
           Show Trail: false
           Value: true
-        hand_left:
+        amigo/hand_left:
           Alpha: 1
           Show Axes: false
           Show Trail: false
           Value: true
-        hand_right:
+        amigo/hand_right:
           Alpha: 1
           Show Axes: false
           Show Trail: false
           Value: true
-        head:
+        amigo/head:
           Alpha: 1
           Show Axes: false
           Show Trail: false
           Value: true
-        head_mount:
+        amigo/head_mount:
           Alpha: 1
           Show Axes: false
           Show Trail: false
-        lasertop:
+        amigo/lasertop:
           Alpha: 1
           Show Axes: false
           Show Trail: false
           Value: true
-        logo:
+        amigo/logo:
           Alpha: 1
           Show Axes: false
           Show Trail: false
           Value: true
-        neck_pan:
+        amigo/neck_pan:
           Alpha: 1
           Show Axes: false
           Show Trail: false
           Value: true
-        neck_tilt:
+        amigo/neck_tilt:
           Alpha: 1
           Show Axes: false
           Show Trail: false
           Value: true
-        shoulder_link1_left:
+        amigo/shoulder_link1_left:
           Alpha: 1
           Show Axes: false
           Show Trail: false
           Value: true
-        shoulder_link1_right:
+        amigo/shoulder_link1_right:
           Alpha: 1
           Show Axes: false
           Show Trail: false
           Value: true
-        shoulder_link2_left:
+        amigo/shoulder_link2_left:
           Alpha: 1
           Show Axes: false
           Show Trail: false
           Value: true
-        shoulder_link2_right:
+        amigo/shoulder_link2_right:
           Alpha: 1
           Show Axes: false
           Show Trail: false
           Value: true
-        shoulder_mount_left:
+        amigo/shoulder_mount_left:
           Alpha: 1
           Show Axes: false
           Show Trail: false
           Value: true
-        shoulder_mount_right:
+        amigo/shoulder_mount_right:
           Alpha: 1
           Show Axes: false
           Show Trail: false
           Value: true
-        top_kinect/openni_camera:
+        amigo/top_kinect/openni_camera:
           Alpha: 1
           Show Axes: false
           Show Trail: false
           Value: true
-        top_kinect/openni_depth_frame:
+        amigo/top_kinect/openni_depth_frame:
           Alpha: 1
           Show Axes: false
           Show Trail: false
-        top_kinect/openni_depth_optical_frame:
+        amigo/top_kinect/openni_depth_optical_frame:
           Alpha: 1
           Show Axes: false
           Show Trail: false
-        top_kinect/openni_rgb_frame:
+        amigo/top_kinect/openni_rgb_frame:
           Alpha: 1
           Show Axes: false
           Show Trail: false
-        top_kinect/openni_rgb_optical_frame:
+        amigo/top_kinect/openni_rgb_optical_frame:
           Alpha: 1
           Show Axes: false
           Show Trail: false
-        torso:
+        amigo/torso:
           Alpha: 1
           Show Axes: false
           Show Trail: false
           Value: true
-        torso_assist_slider_back:
+        amigo/torso_assist_slider_back:
           Alpha: 1
           Show Axes: false
           Show Trail: false
           Value: true
-        torso_assist_slider_left:
+        amigo/torso_assist_slider_left:
           Alpha: 1
           Show Axes: false
           Show Trail: false
           Value: true
-        torso_assist_slider_right:
+        amigo/torso_assist_slider_right:
           Alpha: 1
           Show Axes: false
           Show Trail: false
           Value: true
-        torso_dummy:
+        amigo/torso_dummy:
           Alpha: 1
           Show Axes: false
           Show Trail: false
           Value: true
-        torso_laser:
+        amigo/torso_laser:
           Alpha: 1
           Show Axes: false
           Show Trail: false
           Value: true
-        torso_lasertop:
+        amigo/torso_lasertop:
           Alpha: 1
           Show Axes: false
           Show Trail: false
           Value: true
-        torso_slider:
+        amigo/torso_slider:
           Alpha: 1
           Show Axes: false
           Show Trail: false
           Value: true
-        upper_arm_left:
+        amigo/upper_arm_left:
           Alpha: 1
           Show Axes: false
           Show Trail: false
           Value: true
-        upper_arm_right:
+        amigo/upper_arm_right:
           Alpha: 1
           Show Axes: false
           Show Trail: false
           Value: true
-        upper_arm_top_left:
+        amigo/upper_arm_top_left:
           Alpha: 1
           Show Axes: false
           Show Trail: false
           Value: true
-        upper_arm_top_right:
+        amigo/upper_arm_top_right:
           Alpha: 1
           Show Axes: false
           Show Trail: false
           Value: true
-        wrist_link6_left:
+        amigo/wrist_link6_left:
           Alpha: 1
           Show Axes: false
           Show Trail: false
           Value: true
-        wrist_link6_right:
+        amigo/wrist_link6_right:
           Alpha: 1
           Show Axes: false
           Show Trail: false
           Value: true
-        wrist_to_hand_block_left:
+        amigo/wrist_to_hand_block_left:
           Alpha: 1
           Show Axes: false
           Show Trail: false
           Value: true
-        wrist_to_hand_block_right:
+        amigo/wrist_to_hand_block_right:
           Alpha: 1
           Show Axes: false
           Show Trail: false
           Value: true
-        wrist_visual_left:
+        amigo/wrist_visual_left:
           Alpha: 1
           Show Axes: false
           Show Trail: false
           Value: true
-        wrist_visual_right:
+        amigo/wrist_visual_right:
           Alpha: 1
           Show Axes: false
           Show Trail: false
           Value: true
       Name: RobotModel
       Robot Description: amigo/robot_description
-      TF Prefix: 
+      TF Prefix: ""
       Update Interval: 0
       Value: true
       Visual Enabled: true
@@ -466,7 +434,7 @@ Visualization Manager:
       Channel Name: intensity
       Class: rviz/PointCloud2
       Color: 255; 255; 255
-      Color Transformer: Intensity
+      Color Transformer: RGB8
       Decay Time: 0
       Enabled: false
       Invert Rainbow: false
@@ -481,7 +449,7 @@ Visualization Manager:
       Size (Pixels): 3
       Size (m): 0.01
       Style: Flat Squares
-      Topic: /amigo/top_kinect/point_cloud
+      Topic: /amigo/depth/points
       Use Fixed Frame: true
       Use rainbow: true
       Value: false
@@ -572,7 +540,7 @@ Visualization Manager:
       Marker Topic: /amigo/world_model
       Name: ED
       Namespaces:
-        entities: true
+        {}
       Queue Size: 1
       Value: true
     - Class: rviz/Marker
@@ -748,22 +716,22 @@ Visualization Manager:
   Views:
     Current:
       Class: rviz/Orbit
-      Distance: 2.38777
+      Distance: 5.46024
       Enable Stereo Rendering:
         Stereo Eye Separation: 0.06
         Stereo Focal Distance: 1
         Swap Stereo Eyes: false
         Value: false
       Focal Point:
-        X: 3.61514
-        Y: -8.37756
-        Z: 2.32769
+        X: 0.573852
+        Y: 4.29663
+        Z: 0.599703
       Name: Current View
       Near Clip Distance: 0.01
-      Pitch: 0.569801
+      Pitch: 0.829801
       Target Frame: <Fixed Frame>
       Value: Orbit (rviz)
-      Yaw: 6.11002
+      Yaw: 2.35183
     Saved:
       - Angle: 0
         Class: rviz/TopDownOrtho
