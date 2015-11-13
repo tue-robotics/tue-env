@@ -20,6 +20,25 @@ alias amigo-publish-point-cloud='rosrun rgbd rgbd_to_ros /amigo/top_kinect/rgbd 
 
 ####################
 #
+# AUDIO
+#
+####################
+
+alias amigo-audio-server='rosnode kill /amigo/audio_player && rosrun text_to_speech player.py play:=audio_player/play __ns:=amigo'
+
+function amigo-audio-play
+{
+    if [ -z "$1" ]
+    then
+        echo "Please provide audio file."
+        return
+    fi
+
+    rosrun text_to_speech play.py $1 /amigo/audio_player/play
+}
+
+####################
+#
 # SSH
 #
 ####################

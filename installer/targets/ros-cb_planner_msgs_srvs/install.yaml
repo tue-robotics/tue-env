@@ -1,5 +1,5 @@
 - type: ros
   source:
-      type: svn
-      url: https://roboticssrv.wtb.tue.nl/svn/ros/trunk/cb_planner_msgs_srvs
+      type: git
+      url: https://github.com/tue-robotics/cb_planner_msgs_srvs
 
