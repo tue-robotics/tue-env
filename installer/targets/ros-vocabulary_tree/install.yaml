@@ -1,5 +1,5 @@
 - type: ros
   source:
-      type: svn
-      url: https://roboticssrv.wtb.tue.nl/svn/data/mirror/ros-pkg/catkin/vocabulary_tree
+      type: git
+      url: https://github.com/tue-robotics/vocabulary_tree
 

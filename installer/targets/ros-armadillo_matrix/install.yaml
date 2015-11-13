@@ -1,5 +1,5 @@
 - type: ros
   source:
-      type: svn
-      url: https://roboticssrv.wtb.tue.nl/svn/ros/trunk/armadillo_matrix
+      type: git
+      url: https://github.com/tue-robotics/armadillo_matrix
 
