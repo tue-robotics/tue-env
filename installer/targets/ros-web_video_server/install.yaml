@@ -1,5 +1,5 @@
 - type: ros
   source:
       type: system
-      name: web_video_server
+      name: web-video-server
 
