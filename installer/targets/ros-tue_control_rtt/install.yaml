@@ -1,0 +1,4 @@
+- type: ros
+  source:
+      type: git
+      url: https://github.com/tue-robotics/tue_control_rtt.git
