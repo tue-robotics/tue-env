@@ -1,5 +1,5 @@
 - type: ros
   source:
       type: git
-      url: https://github.com/tue-robotics/scl_filters
+      url: https://github.com/tue-robotics/scl_filters.git
 
