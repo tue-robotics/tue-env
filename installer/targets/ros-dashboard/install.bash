@@ -2,7 +2,7 @@
 set -e
 
 DIR="$( cd "$( dirname "${BASH_SOURCE[0]}" )" && pwd )"
-$DIR/get-releases linux64 | ./process-releases
+$DIR/get-releases linux64 | $DIR/process-releases
 
 VER=$(uname -r)
 if [ $VER = "14.04" ]
