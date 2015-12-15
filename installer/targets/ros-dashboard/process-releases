@@ -1,0 +1,48 @@
+#!/bin/bash
+set -e
+
+DIR="$( cd "$( dirname "${BASH_SOURCE[0]}" )" && pwd )"
+STDIN=$(cat -)
+
+RELEASES=$(echo "$STDIN" | awk 'match($1, /^v[0-9]+.[0-9]+.[0-9]+$/) {print $0}')
+RELEASES_ALPHA=$(echo "$STDIN" | awk 'match($1, /^v[0-9]+.[0-9]+.[0-9]+-alpha[0-9]+$/) {print $0}')
+
+readarray -t lines < <(echo "$RELEASES")
+LATEST="${lines[0]}"
+
+readarray -t lines < <(echo "$RELEASES_ALPHA")
+LATEST_ALPHA="${lines[0]}"
+
+if [[ -n "$LATEST" ]]
+then
+    TAG=$(echo "$LATEST" | awk '{print $1}')
+    URL=$(echo "$LATEST" | awk '{print $2}')
+
+    if [[ -f "$TUE_BIN/dashboard/$TAG" ]]
+    then
+        echo -e "dashboard:\t\tno updates found"
+    else
+        echo -e "dashboard:\t\tnew version $TAG found"
+        mkdir -p "$TUE_BIN/dashboard"
+        wget "$URL" -O- | tar -xzv --directory "$TUE_BIN/dashboard"
+        ln -sf "$TUE_BIN/dashboard/dashboard" "$TUE_BIN/tue-dashboard"
+        touch "$TUE_BIN/dashboard/$TAG"
+    fi
+fi
+
+if [[ -n "$LATEST_ALPHA" ]]
+then
+    TAG=$(echo "$LATEST_ALPHA" | awk '{print $1}')
+    URL=$(echo "$LATEST_ALPHA" | awk '{print $2}')
+
+    if [[ -f "$TUE_BIN/dashboard-alpha/$TAG" ]]
+    then
+        echo -e "dashboard-alpha:\tno updates found"
+    else
+        echo -e "dashboard-alpha:\tnew version $TAG found"
+        mkdir -p "$TUE_BIN/dashboard-alpha"
+        wget "$URL" -O- | tar -xzv --directory "$TUE_BIN/dashboard-alpha"
+        ln -sf "$TUE_BIN/dashboard-alpha/dashboard" "$TUE_BIN/tue-dashboard-alpha"
+        touch "$TUE_BIN/dashboard-alpha/$TAG"
+    fi
+fi
