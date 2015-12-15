@@ -1,7 +1,6 @@
 #!/bin/bash
 set -e
 
-DIR="$( cd "$( dirname "${BASH_SOURCE[0]}" )" && pwd )"
 STDIN=$(cat -)
 
 RELEASES=$(echo "$STDIN" | awk 'match($1, /^v[0-9]+.[0-9]+.[0-9]+$/) {print $0}')
