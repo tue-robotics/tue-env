@@ -1,4 +1,8 @@
 - type: ros
   source:
+      type: system
+      name: aruco-ros
+- type: ros
+  source:
       type: git
       url: https://github.com/tue-robotics/gripper_detector.git
