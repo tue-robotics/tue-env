@@ -1,4 +1,4 @@
-#!/usr/bin/python3.2
+#!/usr/bin/python3
 
 import urllib.request, os, hashlib;
 
