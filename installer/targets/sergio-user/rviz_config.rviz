@@ -720,6 +720,14 @@ Visualization Manager:
       Name: WorldModel
       Topic: /sergio/ed/gui/entities
       Value: true
+    - Alpha: 0.7
+      Class: rviz/Map
+      Color Scheme: map
+      Draw Behind: false
+      Enabled: false
+      Name: Gmap
+      Topic: /sergio/gmapping/map
+      Value: false
   Enabled: true
   Global Options:
     Background Color: 0; 0; 0
@@ -744,22 +752,22 @@ Visualization Manager:
   Views:
     Current:
       Class: rviz/Orbit
-      Distance: 7.06211
+      Distance: 6.16817
       Enable Stereo Rendering:
         Stereo Eye Separation: 0.06
         Stereo Focal Distance: 1
         Swap Stereo Eyes: false
         Value: false
       Focal Point:
-        X: -0.112811
-        Y: 1.09532
-        Z: 0.575444
+        X: -0.344454
+        Y: 0.825946
+        Z: 0.606632
       Name: Current View
       Near Clip Distance: 0.01
-      Pitch: 1.2448
+      Pitch: 0.974797
       Target Frame: <Fixed Frame>
       Value: Orbit (rviz)
-      Yaw: 1.83002
+      Yaw: 1.95502
     Saved: ~
 Window Geometry:
   Cam - Head Depth:
