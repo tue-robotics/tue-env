@@ -3,6 +3,10 @@ source /etc/lsb-release
 
 # copying shortcuts to desktop
 cp $TUE_DIR/installer/targets/tue-fancydesktop/shortcuts/.*.desktop ~/Desktop
+cp $TUE_DIR/installer/targets/tue-fancydesktop/shortcuts/.*.desktop ~/.local/share/applications/
+find ~/.local/share/applications/ -iname ".*.desktop" -exec rename 's/\.Terminator/Terminator/' '{}' \;
+find ~/.local/share/applications/ -iname ".*.desktop" -exec rename 's/\.AMIGO/AMIGO/' '{}' \;
+find ~/.local/share/applications/ -iname ".*.desktop" -exec rename 's/\.SERGIO/SERGIO/' '{}' \;
 
 # copying shortcuts to desktop
 if [ ! -d /usr/share/pixmaps/tue ]
