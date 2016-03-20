@@ -4,9 +4,10 @@ cd ~/openface
 git clone https://github.com/cmusatyalab/openface.git --recursive
 sudo pip install numpy pandas scipy scikit-learn scikit-image
 
-bash dlib.bash
+DIR="$( cd "$( dirname "${BASH_SOURCE[0]}" )" && pwd )"
+bash $DIR/dlib.bash
 
-bash torch.bash
+bash $DIR/torch.bash
 
 cd ~/openface
 sudo python2 setup.py install
