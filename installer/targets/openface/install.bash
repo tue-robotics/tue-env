@@ -1,7 +1,7 @@
 pushd . 
 mkdir ~/openface
 cd ~/openface
-git clone https://github.com/cmusatyalab/openface.git --recursive
+git clone https://github.com/cmusatyalab/openface.git  ~/openface --recursive
 sudo pip install numpy pandas scipy scikit-learn scikit-image
 
 DIR="$( cd "$( dirname "${BASH_SOURCE[0]}" )" && pwd )"
