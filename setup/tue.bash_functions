@@ -608,7 +608,7 @@ function tue-robocup-update
     local mem_pwd=$PWD
 
     cd ~/.tue
-    git pull
+    git pull --ff-only
 
     tue-robocup-install-package picaso_4d_systems
 
@@ -631,7 +631,7 @@ function tue-robocup-update
             if echo "$current_url" | grep -q "192.168.2.10"
             then
                 echo -n "$pkg: "
-                git pull
+                git pull --ff-only
             fi
         fi
     done
