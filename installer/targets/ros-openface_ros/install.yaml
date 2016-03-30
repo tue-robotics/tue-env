@@ -2,5 +2,3 @@
   source:
       type: git
       url: https://github.com/tue-robotics/openface_ros.git
-- type: target
-  name: openface
