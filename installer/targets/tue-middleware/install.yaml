@@ -31,6 +31,10 @@
 - type: target
   name: ros-text_to_speech
 
+# SLAM
+- type: target
+  name: ros-gmapping
+
 # World model
 - type: target
   name: ros-ed
