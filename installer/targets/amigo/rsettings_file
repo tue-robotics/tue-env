@@ -3,8 +3,8 @@
 # # # # # # # # # # # # # # # # # # # #
 
 # Robot environment
-#export ROBOT_ENV=rwc2015
-export ROBOT_ENV=robotics_testlabs
+export ROBOT_ENV=reo2016
+#export ROBOT_ENV=robotics_testlabs
 #export ROBOT_ENV=tue.library
 
 # Which simulator to use (gazebo, fast_simulator)
@@ -49,13 +49,12 @@ elif [ $ROBOT_ENV == robotics_testlabs ]; then
     export GAZEBO_ROBOT_INIT_Y=0.0
     export GAZEBO_ROBOT_INIT_PHI=1.57
 
-elif [ $ROBOT_ENV == rwc2015 ]; then
+elif [ $ROBOT_ENV == reo2016 ]; then
 
     # Robot initial pose
-    export ROBOT_INIT_X=0
-    export ROBOT_INIT_Y=0
-    export ROBOT_INIT_PHI=0
-
+    export ROBOT_INIT_X=0.0
+    export ROBOT_INIT_Y=0.0
+    export ROBOT_INIT_PHI=0.0
 fi
 
 # # # # # # # # # # # # # # # # # # # #
