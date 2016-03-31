@@ -3,9 +3,9 @@
 cd $TUE_ENV_DIR/system/src
 echo installing hooks in `pwd`
 
-for D in `find . -mindepth 1 -maxdepth 1 -type d -follow`
+for D in `find . -mindepth 1 -maxdepth 1 -type d -follow` ~/.tue
 do
-    pushd $D
+    pushd "$D"
     if git rev-parse --git-dir > /dev/null 2>&1;
     then
         echo "installing git hooks into \"$D\""
