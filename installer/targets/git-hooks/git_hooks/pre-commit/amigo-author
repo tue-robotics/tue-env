@@ -10,7 +10,7 @@ function run_test {
     EMAIL=$(printf '%s\n' "${AUTHORINFO}" | sed -n 's/^.* <\(.*\)> .*$/\1/p')
     echo
     echo "I'm going to commit with \"$NAME <$EMAIL>\""
-    [ "${NAME}" != "amigo" ] || {
+    [ "${NAME}" != "amigo" || "${NAME} != "sergio" ] || {
         echo "Please commit with a username, run \"git su <name>\" to swith users"
         exit 1
     }
