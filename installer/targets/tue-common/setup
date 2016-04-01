@@ -5,6 +5,8 @@ alias dev='cd $TUE_ENV_DIR/dev/src'
 
 alias todo="ssh -t amigo@192.168.2.10 'vim /home/amigo/www/todo.html'"
 
+alias amigo-trigger-open-challenge="rostopic pub --once /amigo/trigger std_msgs/String gpsr"
+
 ##############################################################################################
 #   TOOL FOR SETTING ROS_PACKAGE_PATH
 ##############################################################################################
