@@ -71,7 +71,11 @@ alias zeg='rosrun common_admin_files say.sh en'
 alias zegen='rosrun amigo_admin_files say_philips_tts.sh us carlos'
 alias zegnl='rosrun amigo_admin_files say_philips_tts.sh nl david'
 alias praat='rosservice call /text_to_speech/speak david nl default neutral true'
-alias amigo-hear='rostopic pub --once /amigo/trigger std_msgs/String'
+function amigo-hear() {
+    msg=$@
+    echo "Sending trigger: $msg"
+    rostopic pub --once /amigo/trigger std_msgs/String "data: '$msg'";
+}
 alias hear='amigo-hear'
 
 alias amigo-high='rostopic pub /amigo/torso/references sensor_msgs/JointState "{header: {seq: 0, stamp: {secs: 0, nsecs: 0}, frame_id: ""}, name: ["torso_joint"], position: [0.35], velocity: [0], effort: [0]}"  --once'
@@ -230,25 +234,6 @@ function amigo-right-gripper-open {
 
 function amigo-right-gripper-close {
     ( rostopic pub /amigo/right_arm/gripper/references tue_msgs/GripperCommand "{direction: 1, max_torque: 100.0}" --once  &> /dev/null & )
-}
-
-# --------------------------------------------------------------------------------
-
-function amigo-hear {
-    if [ -z "$1" ] || [ -n "$2" ]; then
-        echo "Usage: amigo-hear 'TEXT'"
-        return
-    fi    
-
-    if [ "$1" == "yes" ]; then
-        msg='!!str yes'    
-    elif [ "$1" == "no" ]; then
-        msg='!!str no'    
-    else
-        msg="$1"
-    fi
-
-    rostopic pub --once /pocketsphinx/output std_msgs/String "$msg"
 }
 
 # --------------------------------------------------------------------------------
