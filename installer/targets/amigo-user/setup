@@ -71,7 +71,8 @@ alias zeg='rosrun common_admin_files say.sh en'
 alias zegen='rosrun amigo_admin_files say_philips_tts.sh us carlos'
 alias zegnl='rosrun amigo_admin_files say_philips_tts.sh nl david'
 alias praat='rosservice call /text_to_speech/speak david nl default neutral true'
-alias hear='function __hear() { nohup rostopic pub --once /pocketsphinx/output std_msgs/String "!!str $*" 2>/dev/null & disown; unset -f __hear; }; __hear'
+alias amigo-hear='rostopic pub --once /amigo/trigger std_msgs/String'
+alias hear='amigo-hear'
 
 alias amigo-high='rostopic pub /amigo/torso/references sensor_msgs/JointState "{header: {seq: 0, stamp: {secs: 0, nsecs: 0}, frame_id: ""}, name: ["torso_joint"], position: [0.35], velocity: [0], effort: [0]}"  --once'
 
