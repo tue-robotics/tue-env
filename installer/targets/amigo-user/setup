@@ -52,14 +52,14 @@ alias sshamigo3='until ssh -qo ConnectTimeout=1 amigo@amigo3; do echo waiting fo
 #
 ####################
 alias amigo='export ROBOT_BRINGUP_PATH=$TUE_SYSTEM_DIR/src/amigo_bringup'
-alias astart='amigo; roslaunch amigo_bringup start.launch'
-alias ahardware='amigo; roslaunch amigo_bringup hardware.launch'
-alias amiddle='amigo; roslaunch amigo_bringup middleware.launch'
-alias amiddle-gmapping='amigo; roslaunch amigo_bringup middleware_gmapping.launch'
-alias amiddle-open='rostopic pub --once /amigo/base/reset_odometry std_msgs/Bool 1;amigo; roslaunch amigo_bringup middleware_open.launch'
-alias amiddle-restaurant='amigo; roslaunch amigo_bringup middleware_restaurant.launch'
-alias amiddle-navigation='amigo; roslaunch amigo_bringup middleware_navigation.launch'
-alias amiddle-final='amigo; roslaunch amigo_bringup middleware_final.launch'
+alias astart='amigo; roslaunch --wait amigo_bringup start.launch'
+alias ahardware='amigo; roslaunch --wait amigo_bringup hardware.launch'
+alias amiddle='amigo; roslaunch --wait amigo_bringup middleware.launch'
+alias amiddle-gmapping='amigo; roslaunch --wait amigo_bringup middleware_gmapping.launch'
+alias amiddle-open='rostopic pub --once /amigo/base/reset_odometry std_msgs/Bool 1; amigo; roslaunch --wait amigo_bringup middleware_open.launch'
+alias amiddle-restaurant='amigo; roslaunch --wait amigo_bringup middleware_restaurant.launch'
+alias amiddle-navigation='amigo; roslaunch --wait amigo_bringup middleware_navigation.launch'
+alias amiddle-final='amigo; roslaunch --wait amigo_bringup middleware_final.launch'
 
 ####################
 #
