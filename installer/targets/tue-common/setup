@@ -5,7 +5,30 @@ alias dev='cd $TUE_ENV_DIR/dev/src'
 
 alias todo="ssh -t amigo@192.168.2.10 'vim /home/amigo/www/todo.html'"
 
-alias amigo-trigger-open-challenge="rostopic pub --once /amigo/trigger std_msgs/String gpsr"
+##############################################################################################
+
+function robot-trigger-command
+{
+    if [ -z "$1" ]
+    then
+        echo "Please specify robot"
+        return
+    fi
+
+    local robot=$1
+
+    if [ -z "$2" ]
+    then
+        local sentence="listen"
+    else
+        local sentence="${@:2}"
+    fi
+
+    ( rostopic pub --once /$robot/trigger std_msgs/String "$sentence" &> /dev/null & )
+}
+
+alias amigo-trigger-command="robot-trigger-command amigo"
+alias sergio-trigger-command="robot-trigger-command sergio"
 
 ##############################################################################################
 #   TOOL FOR SETTING ROS_PACKAGE_PATH
