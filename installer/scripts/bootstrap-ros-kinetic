@@ -1,0 +1,34 @@
+#!/bin/bash
+
+# make sure git is installed
+hash git 2> /dev/null || sudo apt-get install -y git
+
+if [ -e ~/.tue ]
+then
+	mv -f ~/.tue ~/.tue.$(date +%F_%R)
+fi
+
+# Update installer
+git clone https://github.com/tue-robotics/tue-env.git ~/.tue
+
+# Source the installer commands
+source ~/.tue/setup.bash
+
+# Set ROS version
+TUE_ROS_DISTRO=kinetic
+
+# Create ros environment directory
+mkdir -p ~/ros/$TUE_ROS_DISTRO
+
+# Initialize ros environment directory
+tue-env init ros-$TUE_ROS_DISTRO ~/ros/$TUE_ROS_DISTRO
+
+# Set the correct ROS version for this environment
+mkdir -p ~/ros/$TUE_ROS_DISTRO/.env/setup
+echo "export TUE_ROS_DISTRO=$TUE_ROS_DISTRO" > ~/ros/$TUE_ROS_DISTRO/.env/setup/user_setup.bash
+
+# Set this environment as default
+tue-env set-default ros-$TUE_ROS_DISTRO
+
+# Activate the default environment
+source ~/.tue/setup.bash
