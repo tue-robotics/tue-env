@@ -40,6 +40,21 @@ Visualization Manager:
         Expand Link Details: false
         Expand Tree: false
         Link Tree Style: Links in Alphabetic Order
+        back_laser:
+          Alpha: 1
+          Show Axes: false
+          Show Trail: false
+          Value: true
+        back_laser_mount:
+          Alpha: 1
+          Show Axes: false
+          Show Trail: false
+          Value: true
+        back_lasertop:
+          Alpha: 1
+          Show Axes: false
+          Show Trail: false
+          Value: true
         base:
           Alpha: 1
           Show Axes: false
@@ -372,9 +387,9 @@ Visualization Manager:
       Overlay Alpha: 0.9
       Queue Size: 2
       Transport Hint: raw
+      Unreliable: false
       Value: false
       Visibility:
-        "": true
         CBNav - Cost cloud: true
         CBNav - Desired Orientation: true
         CBNav - Ed map: true
@@ -400,6 +415,9 @@ Visualization Manager:
         TF: true
         Value: true
         WorldModel: true
+        follow_operator_breadcrumbs: true
+        follow_operator_position: true
+        restaurant_waypoints: true
       Zoom Factor: 1
     - Class: rviz/Camera
       Enabled: false
@@ -409,9 +427,9 @@ Visualization Manager:
       Overlay Alpha: 0.5
       Queue Size: 2
       Transport Hint: raw
+      Unreliable: false
       Value: false
       Visibility:
-        "": true
         CBNav - Cost cloud: true
         CBNav - Desired Orientation: true
         CBNav - Ed map: true
@@ -437,6 +455,9 @@ Visualization Manager:
         TF: true
         Value: true
         WorldModel: true
+        follow_operator_breadcrumbs: true
+        follow_operator_position: true
+        restaurant_waypoints: true
       Zoom Factor: 1
     - Alpha: 1
       Autocompute Intensity Bounds: true
@@ -464,6 +485,7 @@ Visualization Manager:
       Size (m): 0.01
       Style: Flat Squares
       Topic: /amigo/top_kinect/rgb/points
+      Unreliable: false
       Use Fixed Frame: true
       Use rainbow: true
       Value: false
@@ -501,6 +523,7 @@ Visualization Manager:
       Size (m): 0.025
       Style: Flat Squares
       Topic: /sergio/base_laser/scan
+      Unreliable: false
       Use Fixed Frame: true
       Use rainbow: true
       Value: true
@@ -516,7 +539,7 @@ Visualization Manager:
       Color: 85; 255; 0
       Color Transformer: FlatColor
       Decay Time: 0
-      Enabled: false
+      Enabled: true
       Invert Rainbow: false
       Max Color: 255; 255; 255
       Max Intensity: 101
@@ -530,9 +553,10 @@ Visualization Manager:
       Size (m): 0.01
       Style: Flat Squares
       Topic: /sergio/torso_laser/scan
+      Unreliable: false
       Use Fixed Frame: true
       Use rainbow: true
-      Value: false
+      Value: true
     - Alpha: 1
       Autocompute Intensity Bounds: true
       Autocompute Value Bounds:
@@ -545,7 +569,7 @@ Visualization Manager:
       Color: 255; 170; 0
       Color Transformer: FlatColor
       Decay Time: 0
-      Enabled: false
+      Enabled: true
       Invert Rainbow: false
       Max Color: 255; 255; 255
       Max Intensity: 4096
@@ -558,10 +582,11 @@ Visualization Manager:
       Size (Pixels): 3
       Size (m): 0.01
       Style: Flat Squares
-      Topic: /sergio/base_front_laser
+      Topic: /sergio/back_laser/scan
+      Unreliable: false
       Use Fixed Frame: true
       Use rainbow: true
-      Value: false
+      Value: true
     - Class: rviz/MarkerArray
       Enabled: false
       Marker Topic: /fast_simulator/visualization
@@ -583,6 +608,7 @@ Visualization Manager:
         Y: 0
         Z: 0
       Topic: /sergio/local_planner/DWAPlannerROS/local_traj
+      Unreliable: false
       Value: false
     - Alpha: 1
       Class: rviz/Polygon
@@ -590,13 +616,14 @@ Visualization Manager:
       Enabled: false
       Name: Robot Footprint
       Topic: /sergio/local_planner/local_costmap/robot_footprint/footprint_stamped
+      Unreliable: false
       Value: false
     - Class: rviz/Marker
       Enabled: true
       Marker Topic: /sergio/global_planner/visualization/markers/global_plan
       Name: CBNav - Global Plan
       Namespaces:
-        "": true
+        {}
       Queue Size: 100
       Value: true
     - Class: rviz/Marker
@@ -620,6 +647,7 @@ Visualization Manager:
         Y: 0
         Z: 0
       Topic: /sergio/local_planner/DWAPlannerROS/local_traj
+      Unreliable: false
       Value: false
     - Class: rviz/Marker
       Enabled: false
@@ -655,6 +683,7 @@ Visualization Manager:
       Size (m): 0.01
       Style: Flat Squares
       Topic: /sergio/local_planner/dwa_planner/cost_cloud
+      Unreliable: false
       Use Fixed Frame: true
       Use rainbow: true
       Value: false
@@ -664,6 +693,7 @@ Visualization Manager:
       Enabled: false
       Name: CBNav - Footprint
       Topic: /cb_base_navigation/local_planner_interface/local_costmap/robot_footprint/footprint_stamped
+      Unreliable: false
       Value: false
     - Alpha: 1
       Autocompute Intensity Bounds: false
@@ -691,6 +721,7 @@ Visualization Manager:
       Size (m): 0.01
       Style: Flat Squares
       Topic: /sergio/local_planner/visualization/trajectory_cloud
+      Unreliable: false
       Use Fixed Frame: true
       Use rainbow: true
       Value: true
@@ -701,6 +732,7 @@ Visualization Manager:
       Enabled: false
       Name: CBNav - Ed map
       Topic: /sergio/ed/navigation/map
+      Unreliable: false
       Value: false
     - Alpha: 0.7
       Class: rviz/Map
@@ -709,6 +741,7 @@ Visualization Manager:
       Enabled: false
       Name: CBNav - Global costmap
       Topic: /sergio/global_planner/global_costmap/costmap
+      Unreliable: false
       Value: false
     - Alpha: 0.7
       Class: rviz/Map
@@ -717,12 +750,14 @@ Visualization Manager:
       Enabled: false
       Name: CBNav - Local costmap
       Topic: /sergio/local_planner/local_costmap/costmap
+      Unreliable: false
       Value: false
     - Class: ed_rviz_plugins/WorldModel
       Enabled: true
       Mesh query service name: /sergio/ed/gui/query_meshes
       Name: WorldModel
       Topic: /sergio/ed/gui/entities
+      Unreliable: false
       Value: true
     - Alpha: 0.7
       Class: rviz/Map
@@ -731,6 +766,7 @@ Visualization Manager:
       Enabled: false
       Name: Gmap
       Topic: /sergio/gmapping/map
+      Unreliable: false
       Value: false
     - Class: rviz/Marker
       Enabled: true
@@ -756,6 +792,7 @@ Visualization Manager:
       Name: follow_operator_position
       Radius: 0.2
       Topic: /sergio/follow_operator/operator_position
+      Unreliable: false
       Value: true
   Enabled: true
   Global Options:
@@ -788,15 +825,15 @@ Visualization Manager:
         Swap Stereo Eyes: false
         Value: false
       Focal Point:
-        X: -0.641325
-        Y: 3.55221
-        Z: -0.110689
+        X: 0.369698
+        Y: 0.846011
+        Z: 0.205355
       Name: Current View
       Near Clip Distance: 0.01
-      Pitch: 1.5598
+      Pitch: 1.1098
       Target Frame: <Fixed Frame>
       Value: Orbit (rviz)
-      Yaw: 1.02002
+      Yaw: 1.05502
     Saved: ~
 Window Geometry:
   Cam - Head Depth:
