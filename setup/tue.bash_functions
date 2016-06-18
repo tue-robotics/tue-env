@@ -446,7 +446,7 @@ complete -F _tue-get tue-get
 #                                             TUE-BRANCH
 # ----------------------------------------------------------------------------------------------------
 
-function tue-branch
+function tue-checkout
 {
     if [ -z "$1" ]
     then
@@ -469,7 +469,7 @@ function tue-branch
         then
             local memd=$PWD
             cd $pkg_dir
-            test_branch=$(git branch -a 2> /dev/null | grep -q MoveIt)
+            test_branch=$(git branch -a 2> /dev/null | grep -q $branch)
             if [ $? -eq 0 ]
             then
                 local current_branch=`git rev-parse --abbrev-ref HEAD`
