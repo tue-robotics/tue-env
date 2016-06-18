@@ -18,7 +18,7 @@ GIT_PS1_SHOWUPSTREAM="auto git"
 
 function ROS_MASTER_NAME {
     ROS_MASTER=$(echo $ROS_MASTER_URI | sed 's#http://\(.*\):.*#\1#')
-    if [ "$ROS_MASTER" == "localhost" ]; then
+    if [ "$ROS_MASTER" == "localhost" ] || [ "$ROBOT_REAL" == "true" ]; then
         echo ""
     else
         echo "($ROS_MASTER-core) "
