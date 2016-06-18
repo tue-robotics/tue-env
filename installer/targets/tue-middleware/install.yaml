@@ -31,6 +31,9 @@
 - type: target
   name: ros-text_to_speech
 
+- type: target
+  name: ros-hmi
+
 # SLAM
 - type: target
   name: ros-gmapping
