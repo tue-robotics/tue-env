@@ -15,5 +15,15 @@ GIT_PS1_SHOWUPSTREAM="auto git"
 # PROMPT_COMMAND='__git_ps1 "[\[\033[01;34m\]\w\[\033[00m\]]" "\n'\
 # '${debian_chroot:+($debian_chroot)}\[\033[01;32m\]\u@\h\[\033[00m\]:\$ "'
 
+
+function ROS_MASTER_NAME {
+    ROS_MASTER=$(echo $ROS_MASTER_URI | sed 's#http://\(.*\):.*#\1#')
+    if [ "$ROS_MASTER" == "localhost" ]; then
+        echo ""
+    else
+        echo "($ROS_MASTER-core) "
+    fi
+}
+
 PS1='[\[\033[01;34m\]\w\[\033[00m\]]$(__git_ps1)\n'\
-'${debian_chroot:+($debian_chroot)}\[\033[01;32m\]\u@\h\[\033[00m\] \$ '
+'$(ROS_MASTER_NAME)${debian_chroot:+($debian_chroot)}\[\033[01;32m\]\u@\h\[\033[00m\] \$ '
