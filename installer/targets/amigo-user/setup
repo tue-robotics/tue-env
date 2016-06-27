@@ -51,17 +51,75 @@ alias sshamigo3='until ssh -qo ConnectTimeout=1 amigo@amigo3; do echo waiting fo
 # AMIGO STARTUP
 #
 ####################
+
 alias amigo='export ROBOT_BRINGUP_PATH=$TUE_SYSTEM_DIR/src/amigo_bringup'
-alias astart='amigo; roslaunch amigo_bringup start.launch'
+
+function amigo-set-envs
+{
+    [ -z "$1" ] && echo "Please provide <robot-env>" && return 1
+
+    if [[ "$1" != "rwc2016a" ]] && [[ "$1" != "rwc2016b" ]]
+    then
+        echo "<robot-env> must be rwc2016a or rwc2016b"
+        return 1
+    fi
+
+    amigo    
+    export ROBOT_ENV=$1
+
+    rosparam set /robot_env $1
+    return 0
+}
+
+function _amigo-set-envs_complete
+{
+    local cur=${COMP_WORDS[COMP_CWORD]}
+    local prev=${COMP_WORDS[COMP_CWORD-1]}
+
+    if [ $COMP_CWORD -eq 1 ]
+    then
+        COMPREPLY=( $(compgen -W "rwc2016a rwc2016b" -- $cur) )
+    fi
+}
+complete -F _amigo-set-envs_complete amigo-set-envs
+
+function astart
+{
+    if [[ "$ROBOT_REAL" != "true" ]]
+    then
+        amigo-set-envs $@ || return 1
+    fi
+    roslaunch amigo_bringup start.launch
+}
+
+function amiddle { amigo-set-envs $@ && roslaunch amigo_bringup middleware.launch; }
+function amiddle-gmapping { amigo-set-envs $@ && roslaunch amigo_bringup middleware_gmapping.launch; }
+function amiddle-manipulation-amcl { amigo-set-envs $@ && roslaunch amigo_bringup middleware.launch; }
+function amiddle-manipulation-gmapping { amigo-set-envs $@ && roslaunch amigo_bringup middleware_gmapping.launch; }
+function amiddle-open { rostopic pub --once /amigo/base/reset_odometry std_msgs/Bool 1;amigo-set-envs $@ && roslaunch amigo_bringup middleware_open.launch; }
+function amiddle-restaurant { amigo-set-envs $@ && roslaunch amigo_bringup middleware_restaurant.launch; }
+function amiddle-navigation { amigo-set-envs $@ && roslaunch amigo_bringup middleware_navigation.launch; }
+function amiddle-final { amigo-set-envs $@ && roslaunch amigo_bringup middleware_final.launch; }
+
+complete -F _amigo-set-envs_complete astart
+complete -F _amigo-set-envs_complete amiddle
+complete -F _amigo-set-envs_complete amiddle-gmapping
+complete -F _amigo-set-envs_complete amiddle-manipulation-amcl
+complete -F _amigo-set-envs_complete amiddle-manipulation-gmapping
+complete -F _amigo-set-envs_complete amiddle-open
+complete -F _amigo-set-envs_complete amiddle-restaurant
+complete -F _amigo-set-envs_complete amiddle-navigation
+complete -F _amigo-set-envs_complete amiddle-final
+
 alias ahardware='amigo; roslaunch amigo_bringup hardware.launch'
-alias amiddle='amigo; roslaunch amigo_bringup middleware.launch'
-alias amiddle-gmapping='amigo; roslaunch amigo_bringup middleware_gmapping.launch'
-alias amiddle-manipulation-amcl='amigo; roslaunch amigo_bringup middleware.launch'
-alias amiddle-manipulation-gmapping='amigo; roslaunch amigo_bringup middleware_gmapping.launch'
-alias amiddle-open='rostopic pub --once /amigo/base/reset_odometry std_msgs/Bool 1;amigo; roslaunch amigo_bringup middleware_open.launch'
-alias amiddle-restaurant='amigo; roslaunch amigo_bringup middleware_restaurant.launch'
-alias amiddle-navigation='amigo; roslaunch amigo_bringup middleware_navigation.launch'
-alias amiddle-final='amigo; roslaunch amigo_bringup middleware_final.launch'
+#alias amiddle='amigo; roslaunch amigo_bringup middleware.launch'
+#alias amiddle-gmapping='amigo; roslaunch amigo_bringup middleware_gmapping.launch'
+#alias amiddle-manipulation-amcl='amigo; roslaunch amigo_bringup middleware.launch'
+#alias amiddle-manipulation-gmapping='amigo; roslaunch amigo_bringup middleware_gmapping.launch'
+#alias amiddle-open='rostopic pub --once /amigo/base/reset_odometry std_msgs/Bool 1;amigo; roslaunch amigo_bringup middleware_open.launch'
+#alias amiddle-restaurant='amigo; roslaunch amigo_bringup middleware_restaurant.launch'
+#alias amiddle-navigation='amigo; roslaunch amigo_bringup middleware_navigation.launch'
+#alias amiddle-final='amigo; roslaunch amigo_bringup middleware_final.launch'
 
 ####################
 #
