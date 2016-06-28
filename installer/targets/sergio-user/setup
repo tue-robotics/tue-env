@@ -101,6 +101,8 @@ alias shardware='sergio; roslaunch sergio_bringup hardware.launch'
 # alias smiddle-final='sergio-odom-reset; sergio; roslaunch sergio_bringup middleware_final.launch'
 # alias smiddle-open='sergio-odom-reset; sergio; roslaunch sergio_bringup middleware_open.launch'
 
+alias sergio-continui-gpsr='rosrun hmi_server continue_gui.py $TUE_SYSTEM_DIR/src/challenge_gpsr/src/grammar_gui.fcfg __ns:=sergio'
+
 ####################
 #
 # LOCAL PUBLISHERS
