@@ -12,7 +12,7 @@ function robocup-challenge
         return 1                                                                               
     fi
 
-    if [[ "$2" != "rwc2016a" ]] && [[ "$2" != "rwc2016b" ]] && [[ "$2" != "robotics_testlabs" ]] && [[ "$2" != "rwc2016-common" ]]
+    if [[ "$2" != "rwc2016a" ]] && [[ "$2" != "rwc2016b" ]] && [[ "$2" != "robotics_testlabs" ]] && [[ "$2" != "rwc2016_common" ]]
     then
         echo -e "\e[0;31m<robot-env> is '$2' but must be robotics_testlabs, rwc2016a or rwc2016b\033[0m"
         return 1
@@ -65,12 +65,12 @@ function _robocup-complete-robot
    fi
 }
 
-function challenge-speech-recognition { robocup-challenge $1 rwc2016-common && rosrun challenge_speech_recognition speech_recognition.py $@; }
-function challenge-final { robocup-challenge $1 rwc2016-common && rosrun challenge_final challenge_final.py $@; }
-function challenge-open { robocup-challenge $1 rwc2016-common && rosrun challenge_open challenge_open.py $@; }
-function challenge-person-recognition { robocup-challenge $1 rwc2016-common && rosrun challenge_person_recognition challenge_person_recognition.py $@; }
-function challenge-restaurant { robocup-challenge $1 rwc2016-common && rosrun challenge_restaurant challenge_restaurant.py $@; }
-function challenge-following-and-guiding { robocup-challenge $1 rwc2016-common && rosrun challenge_following_and_guiding challenge_following_and_guiding.py $@; }
+function challenge-speech-recognition { robocup-challenge $1 rwc2016_common && rosrun challenge_speech_recognition speech_recognition.py $@; }
+function challenge-final { robocup-challenge $1 rwc2016_common && rosrun challenge_final challenge_final.py $@; }
+function challenge-open { robocup-challenge $1 rwc2016_common && rosrun challenge_open challenge_open.py $@; }
+function challenge-person-recognition { robocup-challenge $1 rwc2016_common && rosrun challenge_person_recognition challenge_person_recognition.py $@; }
+function challenge-restaurant { robocup-challenge $1 rwc2016_common && rosrun challenge_restaurant challenge_restaurant.py $@; }
+function challenge-following-and-guiding { robocup-challenge $1 rwc2016_common && rosrun challenge_following_and_guiding challenge_following_and_guiding.py $@; }
 
 complete -F _robocup-complete-robot challenge-speech-recognition
 complete -F _robocup-complete-robot challenge-final

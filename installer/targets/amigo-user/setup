@@ -58,7 +58,7 @@ function amigo-set-envs
 {
     [ -z "$1" ] && echo "Please provide <robot-env>" && return 1
 
-    if [[ "$1" != "rwc2016a" ]] && [[ "$1" != "rwc2016b" ]] && [[ "$1" != "robotics_testlabs" ]] && [[ "$1" != "rwc2016-common" ]]
+    if [[ "$1" != "rwc2016a" ]] && [[ "$1" != "rwc2016b" ]] && [[ "$1" != "robotics_testlabs" ]] && [[ "$1" != "rwc2016_common" ]]
     then
         echo "<robot-env> must be robotics_testlabs, rwc2016a or rwc2016b"
         return 1
@@ -88,14 +88,14 @@ function astart
 }
 
 function amiddle { amigo-set-envs $@ && roslaunch amigo_bringup middleware.launch; }
-function amiddle-gmapping { amigo-set-envs rwc2016-common && roslaunch amigo_bringup middleware_gmapping.launch; }
+function amiddle-gmapping { amigo-set-envs rwc2016_common && roslaunch amigo_bringup middleware_gmapping.launch; }
 
 function amiddle-manipulation-amcl { amigo-set-envs $@ && roslaunch amigo_bringup middleware.launch; }
-function amiddle-manipulation-gmapping { amigo-set-envs rwc2016-common && roslaunch amigo_bringup middleware_gmapping.launch; }
-function amiddle-open { rostopic pub --once /amigo/base/reset_odometry std_msgs/Bool 1;amigo-set-envs rwc2016-common && roslaunch amigo_bringup middleware_open.launch; }
-function amiddle-restaurant { amigo-set-envs rwc2016-common && roslaunch amigo_bringup middleware_restaurant.launch; }
+function amiddle-manipulation-gmapping { amigo-set-envs rwc2016_common && roslaunch amigo_bringup middleware_gmapping.launch; }
+function amiddle-open { rostopic pub --once /amigo/base/reset_odometry std_msgs/Bool 1;amigo-set-envs rwc2016_common && roslaunch amigo_bringup middleware_open.launch; }
+function amiddle-restaurant { amigo-set-envs rwc2016_common && roslaunch amigo_bringup middleware_restaurant.launch; }
 function amiddle-navigation { amigo-set-envs $@ && roslaunch amigo_bringup middleware_navigation.launch; }
-function amiddle-final { amigo-set-envs rwc2016-common && roslaunch amigo_bringup middleware_final.launch; }
+function amiddle-final { amigo-set-envs rwc2016_common && roslaunch amigo_bringup middleware_final.launch; }
 
 function _emtpy_complete
 {
