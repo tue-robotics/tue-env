@@ -85,6 +85,13 @@ complete -F _emtpy_complete smiddle-open
 complete -F _emtpy_complete smiddle-restaurant
 complete -F _emtpy_complete smiddle-final
 
+alias smiddle-rips='smiddle'
+alias smiddle-speech-recognition='smiddle-gmapping'
+alias smiddle-person-recognition='smiddle-gmapping'
+alias smiddle-following-and-guiding='smiddle-gmapping'
+alias smiddle-gpsr='smiddle'
+alias smiddle-eegpsr='smiddle'
+
 alias shardware='sergio; roslaunch sergio_bringup hardware.launch'
 # alias smiddle='sergio; roslaunch sergio_bringup middleware.launch'
 # alias smiddle-gmapping='sergio; roslaunch sergio_bringup middleware_gmapping.launch'
