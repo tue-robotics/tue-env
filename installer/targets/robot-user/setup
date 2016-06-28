@@ -23,7 +23,8 @@ function robocup-challenge
     then
         echo -e "\e[0;31mGiven environment does not match middleware, which has environment '$robot_env'\033[0m"                                     
         return 1  
-    fi                                                               
+    fi
+    export ROBOT_ENV=$2
 }
 
 function _robocup-challenge_complete
