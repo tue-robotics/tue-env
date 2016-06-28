@@ -12,9 +12,9 @@ function robocup-challenge
         return 1                                                                               
     fi
 
-    if [[ "$2" != "rwc2016a" ]] && [[ "$2" != "rwc2016b" ]] && [[ "$2" != "robotics_testlabs" ]]
+    if [[ "$2" != "rwc2016a" ]] && [[ "$2" != "rwc2016b" ]] && [[ "$2" != "robotics_testlabs" ]] && [[ "$2" != "rwc2016-common" ]]
     then
-        echo -e "\e[0;31m<robot-env> must be robotics_testlabs, rwc2016a or rwc2016b\033[0m"
+        echo -e "\e[0;31m<robot-env> is '$2' but must be robotics_testlabs, rwc2016a or rwc2016b\033[0m"
         return 1
     fi
 
