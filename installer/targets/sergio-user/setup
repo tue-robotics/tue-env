@@ -92,6 +92,13 @@ alias smiddle-following-and-guiding='smiddle-restaurant'
 alias smiddle-gpsr='smiddle'
 alias smiddle-eegpsr='smiddle'
 
+complete -F _sergio-set-envs_complete smiddle-rips
+complete -F _emtpy_complete smiddle-speech-recognition
+complete -F _emtpy_complete smiddle-person-recognition
+complete -F _emtpy_complete smiddle-following-and-guiding
+complete -F _sergio-set-envs_complete smiddle-gpsr
+complete -F _sergio-set-envs_complete smiddle-eegpsr
+
 alias shardware='sergio; roslaunch sergio_bringup hardware.launch'
 # alias smiddle='sergio; roslaunch sergio_bringup middleware.launch'
 # alias smiddle-gmapping='sergio; roslaunch sergio_bringup middleware_gmapping.launch'
