@@ -134,7 +134,7 @@ alias praat='rosservice call /text_to_speech/speak david nl default neutral true
 function amigo-hear() {
     msg=$@
     echo "Sending trigger: $msg"
-    rostopic pub --once /amigo/trigger std_msgs/String "data: '$msg'";
+    rostopic pub --once /amigo/hmi/string std_msgs/String "data: '$msg'";
 }
 alias hear='amigo-hear'
 
