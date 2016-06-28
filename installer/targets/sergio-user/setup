@@ -102,7 +102,7 @@ alias sergio-publish-point-cloud='rosrun rgbd rgbd_to_ros /sergio/top_kinect/rgb
 function sergio-hear() {
     msg=$@
     echo "Sending trigger: $msg"
-    rostopic pub --once /sergio/trigger std_msgs/String "data: '$msg'";
+    rostopic pub --once /sergio/hmi/string std_msgs/String "data: '$msg'";
 }
 
 ####################
