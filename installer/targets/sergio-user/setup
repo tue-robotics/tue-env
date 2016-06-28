@@ -29,7 +29,7 @@ function sergio-set-envs
 {
     [ -z "$1" ] && echo "Please provide <robot-env>" && return 1
 
-    if [[ "$1" != "rwc2016a" ]] && [[ "$1" != "rwc2016b" ]] && [[ "$1" != "robotics_testlabs" ]] && [[ "$1" != "rwc2016-common" ]]
+    if [[ "$1" != "rwc2016a" ]] && [[ "$1" != "rwc2016b" ]] && [[ "$1" != "robotics_testlabs" ]] && [[ "$1" != "rwc2016_common" ]]
     then
         echo "<robot-env> must be robotics_testlabs, rwc2016a or rwc2016b"
         return 1
@@ -64,12 +64,12 @@ function sstart
 }
 
 function smiddle { sergio-set-envs $@ && roslaunch sergio_bringup middleware.launch; }
-function smiddle-gmapping { sergio-set-envs rwc2016-common && roslaunch sergio_bringup middleware_gmapping.launch; }
+function smiddle-gmapping { sergio-set-envs rwc2016_common && roslaunch sergio_bringup middleware_gmapping.launch; }
 #function smiddle-robonurse { sergio-set-envs $@ && roslaunch sergio_bringup middleware_robonurse.launch; }
-function smiddle-restaurant { sergio-set-envs rwc2016-common && roslaunch sergio_bringup middleware_restaurant.launch; }
+function smiddle-restaurant { sergio-set-envs rwc2016_common && roslaunch sergio_bringup middleware_restaurant.launch; }
 function smiddle-navigation { sergio-set-envs $@ && roslaunch sergio_bringup middleware_navigation.launch; }
-function smiddle-final { sergio-odom-reset; sergio-set-envs rwc2016-common && roslaunch sergio_bringup middleware_final.launch; }
-function smiddle-open { sergio-odom-reset; sergio-set-envs rwc2016-common && roslaunch sergio_bringup middleware_open.launch; }
+function smiddle-final { sergio-odom-reset; sergio-set-envs rwc2016_common && roslaunch sergio_bringup middleware_final.launch; }
+function smiddle-open { sergio-odom-reset; sergio-set-envs rwc2016_common && roslaunch sergio_bringup middleware_open.launch; }
 
 function _emtpy_complete
 {
