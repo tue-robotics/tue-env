@@ -1,8 +1,89 @@
 ####################
 #
+# Robocup
+#
+####################
+
+function robocup-challenge
+{                                                                                              
+    if [ -z "$2" ]                                                                             
+    then                                                                                       
+        echo -e "\e[0;31mPlease provide <robot-name> <robot-env>\033[0m"                                     
+        return 1                                                                               
+    fi
+
+    if [[ "$2" != "rwc2016a" ]] && [[ "$2" != "rwc2016b" ]] && [[ "$2" != "robotics_testlabs" ]]
+    then
+        echo -e "\e[0;31m<robot-env> must be robotics_testlabs, rwc2016a or rwc2016b\033[0m"
+        return 1
+    fi
+
+    local robot_env=$(rosparam get /robot_env)
+    if [[ "$robot_env" != "$2" ]]
+    then
+        echo -e "\e[0;31mGiven environment does not match middleware, which has environment '$robot_env'\033[0m"                                     
+        return 1  
+    fi                                                               
+}
+
+function _robocup-challenge_complete
+{
+    local cur=${COMP_WORDS[COMP_CWORD]}
+    local prev=${COMP_WORDS[COMP_CWORD-1]}
+
+    if [ $COMP_CWORD -eq 1 ]
+    then
+        COMPREPLY=( $(compgen -W "amigo sergio" -- $cur) )
+    elif [ $COMP_CWORD -eq 2 ]
+    then
+        COMPREPLY=( $(compgen -W "rwc2016a rwc2016b robotics_testlabs" -- $cur) )        
+    fi
+}
+complete -F _robocup-challenge_complete robocup-challenge
+
+function challenge-rips { robocup-challenge $@ && rosrun challenge_rips rips.py $1 "${@:3}"; }
+function challenge-gpsr { robocup-challenge $@ && rosrun challenge_gpsr gpsr.py $1 "${@:3}"; }
+function challenge-eegpsr { robocup-challenge $@ && rosrun challenge_eegpsr eegpsr.py $1 "${@:3}"; }
+function challenge-manipulation { robocup-challenge $@ && rosrun challenge_manipulation manipulation.py $1 "${@:3}"; }
+function challenge-navigation { robocup-challenge $@ && rosrun challenge_navigation challenge_navigation.py $1 "${@:3}"; }
+
+complete -F _robocup-challenge_complete challenge-rips
+complete -F _robocup-challenge_complete challenge-gpsr
+complete -F _robocup-challenge_complete challenge-eegpsr
+complete -F _robocup-challenge_complete challenge-manipulation
+complete -F _robocup-challenge_complete challenge-navigation
+
+function _robocup-complete-robot
+{
+    local cur=${COMP_WORDS[COMP_CWORD]}
+    local prev=${COMP_WORDS[COMP_CWORD-1]}
+
+    if [ $COMP_CWORD -eq 1 ]
+    then
+        COMPREPLY=( $(compgen -W "amigo sergio" -- $cur) )
+   fi
+}
+
+function challenge-speech-recognition { robocup-challenge $1 empty && rosrun challenge_speech_recognition speech_recognition.py $@; }
+function challenge-final { robocup-challenge $1 empty && rosrun challenge_final challenge_final.py $@; }
+function challenge-open { robocup-challenge $1 empty && rosrun challenge_open challenge_open.py $@; }
+function challenge-person-recognition { robocup-challenge $1 empty && rosrun challenge_person_recognition challenge_person_recognition.py $@; }
+function challenge-restaurant { robocup-challenge $1 empty && rosrun challenge_restaurant challenge_restaurant.py $@; }
+function challenge-following-and-guiding { robocup-challenge $1 empty && rosrun challenge_following_and_guiding challenge_following_and_guiding.py $@; }
+
+complete -F _robocup-complete-robot challenge-speech-recognition
+complete -F _robocup-complete-robot challenge-final
+complete -F _robocup-complete-robot challenge-open
+complete -F _robocup-complete-robot challenge-person-recognition
+complete -F _robocup-complete-robot challenge-restaurant
+complete -F _robocup-complete-robot challenge-following-and-guiding
+
+####################
+#
 # git prompt
 #
 ####################
+
 # source ~/Documents/tools/git-prompt.sh
 GIT_PS1_SHOWDIRTYSTATE=1
 GIT_PS1_SHOWSTASHSTATE=1
