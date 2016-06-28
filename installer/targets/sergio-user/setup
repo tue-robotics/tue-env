@@ -29,9 +29,9 @@ function sergio-set-envs
 {
     [ -z "$1" ] && echo "Please provide <robot-env>" && return 1
 
-    if [[ "$1" != "rwc2016a" ]] && [[ "$1" != "rwc2016b" ]]
+    if [[ "$1" != "rwc2016a" ]] && [[ "$1" != "rwc2016b" ]] && [[ "$1" != "robotics_testlabs" ]]
     then
-        echo "<robot-env> must be rwc2016a or rwc2016b"
+        echo "<robot-env> must be robotics_testlabs, rwc2016a or rwc2016b"
         return 1
     fi
 
@@ -49,7 +49,7 @@ function _sergio-set-envs_complete
 
     if [ $COMP_CWORD -eq 1 ]
     then
-        COMPREPLY=( $(compgen -W "rwc2016a rwc2016b" -- $cur) )
+        COMPREPLY=( $(compgen -W "rwc2016a rwc2016b robotics_testlabs" -- $cur) )
     fi
 }
 complete -F _sergio-set-envs_complete sergio-set-envs
