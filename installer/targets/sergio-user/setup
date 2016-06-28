@@ -29,7 +29,7 @@ function sergio-set-envs
 {
     [ -z "$1" ] && echo "Please provide <robot-env>" && return 1
 
-    if [[ "$1" != "rwc2016a" ]] && [[ "$1" != "rwc2016b" ]] && [[ "$1" != "robotics_testlabs" ]]
+    if [[ "$1" != "rwc2016a" ]] && [[ "$1" != "rwc2016b" ]] && [[ "$1" != "robotics_testlabs" ]] && [[ "$1" != "rwc2016-common" ]]
     then
         echo "<robot-env> must be robotics_testlabs, rwc2016a or rwc2016b"
         return 1
@@ -64,22 +64,26 @@ function sstart
 }
 
 function smiddle { sergio-set-envs $@ && roslaunch sergio_bringup middleware.launch; }
-function smiddle-gmapping { sergio-set-envs $@ && roslaunch sergio_bringup middleware_gmapping.launch; }
-function smiddle-robonurse { sergio-set-envs $@ && roslaunch sergio_bringup middleware_robonurse.launch; }
-function smiddle-restaurant { sergio-set-envs $@ && roslaunch sergio_bringup middleware_restaurant.launch; }
+function smiddle-gmapping { sergio-set-envs rwc2016-common && roslaunch sergio_bringup middleware_gmapping.launch; }
+#function smiddle-robonurse { sergio-set-envs $@ && roslaunch sergio_bringup middleware_robonurse.launch; }
+function smiddle-restaurant { sergio-set-envs rwc2016-common && roslaunch sergio_bringup middleware_restaurant.launch; }
 function smiddle-navigation { sergio-set-envs $@ && roslaunch sergio_bringup middleware_navigation.launch; }
-function smiddle-final { sergio-odom-reset; sergio-set-envs $@ && roslaunch sergio_bringup middleware_final.launch; }
-function smiddle-open { sergio-odom-reset; sergio-set-envs $@ && roslaunch sergio_bringup middleware_open.launch; }
+function smiddle-final { sergio-odom-reset; sergio-set-envs rwc2016-common && roslaunch sergio_bringup middleware_final.launch; }
+function smiddle-open { sergio-odom-reset; sergio-set-envs rwc2016-common && roslaunch sergio_bringup middleware_open.launch; }
+
+function _emtpy_complete
+{
+    :
+}
 
 complete -F _sergio-set-envs_complete sstart
 complete -F _sergio-set-envs_complete smiddle
-complete -F _sergio-set-envs_complete smiddle-gmapping
-complete -F _sergio-set-envs_complete smiddle-manipulation-amcl
-complete -F _sergio-set-envs_complete smiddle-manipulation-gmapping
-complete -F _sergio-set-envs_complete smiddle-open
-complete -F _sergio-set-envs_complete smiddle-restaurant
 complete -F _sergio-set-envs_complete smiddle-navigation
-complete -F _sergio-set-envs_complete smiddle-final
+complete -F _emtpy_complete smiddle-gmapping
+complete -F _emtpy_complete smiddle-manipulation-gmapping
+complete -F _emtpy_complete smiddle-open
+complete -F _emtpy_complete smiddle-restaurant
+complete -F _emtpy_complete smiddle-final
 
 alias shardware='sergio; roslaunch sergio_bringup hardware.launch'
 # alias smiddle='sergio; roslaunch sergio_bringup middleware.launch'
