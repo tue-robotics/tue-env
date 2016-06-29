@@ -94,7 +94,6 @@ function amiddle-manipulation-amcl { amigo-set-envs $@ && roslaunch amigo_bringu
 function amiddle-manipulation-gmapping { amigo-set-envs rwc2016_common && roslaunch amigo_bringup middleware_gmapping.launch; }
 function amiddle-open { rostopic pub --once /amigo/base/reset_odometry std_msgs/Bool 1;amigo-set-envs rwc2016_common && roslaunch amigo_bringup middleware_open.launch; }
 function amiddle-restaurant { amigo-set-envs rwc2016_common && roslaunch amigo_bringup middleware_restaurant.launch; }
-function amiddle-navigation { amigo-set-envs $@ && roslaunch amigo_bringup middleware_navigation.launch; }
 function amiddle-final { amigo-set-envs rwc2016_common && roslaunch amigo_bringup middleware_final.launch; }
 
 function _emtpy_complete
@@ -116,6 +115,7 @@ alias amiddle-rips='amiddle'
 alias amiddle-speech-recognition='amiddle-gmapping'
 alias amiddle-person-recognition='amiddle-gmapping'
 alias amiddle-following-and-guiding='amiddle-gmapping'
+alias amiddle-navigation='amiddle'
 alias amiddle-gpsr='amiddle'
 alias amiddle-eegpsr='amiddle'
 
@@ -123,6 +123,7 @@ complete -F _amigo-set-envs_complete amiddle-rips
 complete -F _emtpy_complete amiddle-speech-recognition
 complete -F _emtpy_complete amiddle-person-recognition
 complete -F _emtpy_complete amiddle-following-and-guiding
+complete -F _amigo-set-envs_complete amiddle-navigation
 complete -F _amigo-set-envs_complete amiddle-gpsr
 complete -F _amigo-set-envs_complete amiddle-eegpsr
 
