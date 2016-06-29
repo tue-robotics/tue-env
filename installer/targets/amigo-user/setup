@@ -112,7 +112,7 @@ complete -F _emtpy_complete amiddle-restaurant
 complete -F _emtpy_complete amiddle-final
 
 alias amiddle-rips='amiddle'
-alias amiddle-speech-recognition='amiddle-gmapping'
+alias amiddle-speech-recognition='amiddle-restaurant'
 alias amiddle-person-recognition='amiddle-gmapping'
 alias amiddle-following-and-guiding='amiddle-gmapping'
 alias amiddle-navigation='amiddle'
