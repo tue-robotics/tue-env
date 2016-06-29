@@ -5,6 +5,7 @@ export PATH=~/.tue/installer/targets/sergio-user/scripts:$PATH
 export ROBOT_BRINGUP_PATH=$TUE_SYSTEM_DIR/src/sergio_bringup
 
 alias sergio-core='export ROS_MASTER_URI=http://sergio1:11311'
+alias sergio-show-kinect='rosrun rgbd multitool --rgbd /sergio/top_kinect/rgbd'
 
 ####################
 #
