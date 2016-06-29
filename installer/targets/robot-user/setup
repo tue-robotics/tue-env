@@ -45,13 +45,13 @@ complete -F _robocup-challenge_complete robocup-challenge
 function challenge-rips { robocup-challenge $@ && rosrun challenge_rips rips.py $1 "${@:3}"; }
 function challenge-gpsr { robocup-challenge $@ && rosrun challenge_gpsr gpsr.py $1 "${@:3}"; }
 function challenge-eegpsr { robocup-challenge $@ && rosrun challenge_eegpsr eegpsr.py $1 "${@:3}"; }
-function challenge-manipulation { robocup-challenge $@ && rosrun challenge_manipulation manipulation.py $1 "${@:3}"; }
+function challenge-manipulation-amcl { robocup-challenge $@ && rosrun challenge_manipulation manipulation.py $1 "${@:3}"; }
 function challenge-navigation { robocup-challenge $@ && rosrun challenge_navigation challenge_navigation.py $1 "${@:3}"; }
 
 complete -F _robocup-challenge_complete challenge-rips
 complete -F _robocup-challenge_complete challenge-gpsr
 complete -F _robocup-challenge_complete challenge-eegpsr
-complete -F _robocup-challenge_complete challenge-manipulation
+complete -F _robocup-challenge_complete challenge-manipulation-amcl
 complete -F _robocup-challenge_complete challenge-navigation
 
 function _robocup-complete-robot
@@ -68,6 +68,7 @@ function _robocup-complete-robot
 function challenge-speech-recognition { robocup-challenge $1 rwc2016_common && rosrun challenge_speech_recognition speech_recognition.py $@; }
 function challenge-final { robocup-challenge $1 rwc2016_common && rosrun challenge_final challenge_final.py $@; }
 function challenge-open { robocup-challenge $1 rwc2016_common && rosrun challenge_open challenge_open.py $@; }
+function challenge-manipulation-gmapping { robocup-challenge $1 rwc2016_common &&challenge_manipulation manipulation.py $@; }
 function challenge-person-recognition { robocup-challenge $1 rwc2016_common && rosrun challenge_person_recognition challenge_person_recognition.py $@; }
 function challenge-restaurant { robocup-challenge $1 rwc2016_common && rosrun challenge_restaurant challenge_restaurant.py $@; }
 function challenge-following-and-guiding { robocup-challenge $1 rwc2016_common && rosrun challenge_following_and_guiding challenge_following_and_guiding.py $@; }
@@ -75,6 +76,7 @@ function challenge-following-and-guiding { robocup-challenge $1 rwc2016_common &
 complete -F _robocup-complete-robot challenge-speech-recognition
 complete -F _robocup-complete-robot challenge-final
 complete -F _robocup-complete-robot challenge-open
+complete -F _robocup-complete-robot challenge-manipulation-gmapping
 complete -F _robocup-complete-robot challenge-person-recognition
 complete -F _robocup-complete-robot challenge-restaurant
 complete -F _robocup-complete-robot challenge-following-and-guiding
