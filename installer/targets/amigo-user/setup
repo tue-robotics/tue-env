@@ -332,3 +332,7 @@ function amigo-top-kinect-record-avi {
 alias amigo-copy-my-id="ssh-copy-id amigo@amigo1; ssh-copy-id amigo@amigo2; ssh-copy-id amigo@amigo3"
 
 alias amigo-presentation-timer-start='rosrun challenge_final time.py __ns:=amigo'
+
+alias amigo-mount-usb='rosrun challenge_manipulation mount_usb'
+alias amigo-unmount-usb='sudo umount /dev/sdb1' 
+
