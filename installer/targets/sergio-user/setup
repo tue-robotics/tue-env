@@ -85,7 +85,7 @@ complete -F _emtpy_complete smiddle-final
 
 alias smiddle-rips='smiddle'
 alias smiddle-speech-recognition='smiddle-gmapping'
-alias smiddle-person-recognition='smiddle-gmapping'
+alias smiddle-person-recognition='smiddle-restaurant'
 alias smiddle-following-and-guiding='smiddle-restaurant'
 alias smiddle-navigation='smiddle'
 alias smiddle-gpsr='smiddle'
