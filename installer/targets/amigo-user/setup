@@ -136,7 +136,8 @@ alias ahardware='amigo; roslaunch amigo_bringup hardware.launch'
 #alias amiddle-navigation='amigo; roslaunch amigo_bringup middleware_navigation.launch'
 #alias amiddle-final='amigo; roslaunch amigo_bringup middleware_final.launch'
 
-alias amigo-continui-gpsr='rosrun hmi_server continue_gui.py $TUE_SYSTEM_DIR/src/challenge_gpsr/src/grammar_gui.fcfg __ns:=amigo'
+alias amigo-continui='rosrun hmi_server continue_gui.py __ns:=amigo/hmi'
+alias amigo-continui-gpsr='rosrun hmi_server continue_gui.py $TUE_SYSTEM_DIR/src/challenge_gpsr/src/grammar_gui.fcfg __ns:=amigo/hmi'
 
 ####################
 #
