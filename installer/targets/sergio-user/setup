@@ -65,9 +65,7 @@ function sstart
 
 function smiddle { sergio-set-envs $@ && roslaunch sergio_bringup middleware.launch; }
 function smiddle-gmapping { sergio-set-envs rwc2016_common && roslaunch sergio_bringup middleware_gmapping.launch; }
-#function smiddle-robonurse { sergio-set-envs $@ && roslaunch sergio_bringup middleware_robonurse.launch; }
 function smiddle-restaurant { sergio-set-envs rwc2016_common && roslaunch sergio_bringup middleware_restaurant.launch; }
-function smiddle-navigation { sergio-set-envs $@ && roslaunch sergio_bringup middleware_navigation.launch; }
 function smiddle-final { sergio-odom-reset; sergio-set-envs rwc2016_common && roslaunch sergio_bringup middleware_final.launch; }
 function smiddle-open { sergio-odom-reset; sergio-set-envs rwc2016_common && roslaunch sergio_bringup middleware_open.launch; }
 
@@ -89,6 +87,7 @@ alias smiddle-rips='smiddle'
 alias smiddle-speech-recognition='smiddle-gmapping'
 alias smiddle-person-recognition='smiddle-gmapping'
 alias smiddle-following-and-guiding='smiddle-restaurant'
+alias smiddle-navigation='smiddle'
 alias smiddle-gpsr='smiddle'
 alias smiddle-eegpsr='smiddle'
 
@@ -96,6 +95,7 @@ complete -F _sergio-set-envs_complete smiddle-rips
 complete -F _emtpy_complete smiddle-speech-recognition
 complete -F _emtpy_complete smiddle-person-recognition
 complete -F _emtpy_complete smiddle-following-and-guiding
+complete -F _sergio-set-envs_complete smiddle-navigation
 complete -F _sergio-set-envs_complete smiddle-gpsr
 complete -F _sergio-set-envs_complete smiddle-eegpsr
 
