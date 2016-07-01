@@ -4,6 +4,8 @@
 #
 ####################
 
+alias topic-monitor='rosrun robot_launch_files topic_monitor */scan */rgbd */joint_states */base/measurements'
+
 function robocup-challenge
 {                                                                                              
     if [ -z "$2" ]                                                                             
