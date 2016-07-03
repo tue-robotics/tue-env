@@ -67,7 +67,6 @@ function sstart
 function smiddle { sergio-set-envs $@ && roslaunch sergio_bringup middleware.launch; }
 function smiddle-gmapping { sergio-set-envs rwc2016_common && roslaunch sergio_bringup middleware_gmapping.launch; }
 function smiddle-restaurant { sergio-set-envs rwc2016_common && roslaunch sergio_bringup middleware_restaurant.launch; }
-function smiddle-final { sergio-odom-reset; sergio-set-envs rwc2016_common && roslaunch sergio_bringup middleware_final.launch; }
 function smiddle-final-gmapping { sergio-odom-reset; sergio-set-envs rwc2016_common && roslaunch sergio_bringup middleware_final_gmapping.launch; }
 function smiddle-open { sergio-odom-reset; sergio-set-envs rwc2016_common && roslaunch sergio_bringup middleware_open.launch; }
 function smiddle-open-backup { sergio-odom-reset; sergio-set-envs rwc2016_common && roslaunch sergio_bringup middleware_open_backup.launch; }
