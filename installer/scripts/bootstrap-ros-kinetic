@@ -27,6 +27,14 @@ tue-env init ros-$TUE_ROS_DISTRO ~/ros/$TUE_ROS_DISTRO
 mkdir -p ~/ros/$TUE_ROS_DISTRO/.env/setup
 echo "export TUE_ROS_DISTRO=$TUE_ROS_DISTRO" > ~/ros/$TUE_ROS_DISTRO/.env/setup/user_setup.bash
 
+# Add loading of TU/e tools (tue-env, tue-get, etc) to bashrc
+if ! grep -q '~/.tue/setup.bash' ~/.bashrc;
+then
+    echo '
+# Load TU/e tools
+source ~/.tue/setup.bash' >> ~/.bashrc
+fi
+
 # Set this environment as default
 tue-env set-default ros-$TUE_ROS_DISTRO
 
