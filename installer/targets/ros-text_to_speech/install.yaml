@@ -2,8 +2,4 @@
   source:
       type: git
       url: https://github.com/tue-robotics/text_to_speech
-- type: system
-  name: festival
-- type: system
-  name: sox
 

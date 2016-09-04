@@ -2,10 +2,4 @@
   source:
       type: svn
       url: https://roboticssrv.wtb.tue.nl/svn/ros/trunk/tue_gazebo_plugins
-- type: target
-  name: gazebo
-
-# TODO: get rid of dep
-- type: target
-  name: ros-tue_gazebo_worlds
 
