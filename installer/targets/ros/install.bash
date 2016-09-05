@@ -25,68 +25,20 @@ source /opt/ros/$TUE_ROS_DISTRO/setup.bash
 TUE_SYSTEM_DIR=$TUE_ENV_DIR/system
 TUE_DEV_DIR=$TUE_ENV_DIR/dev
 
-if [[ $TUE_ROS_DISTRO == "groovy" ]]
+if [ ! -f $TUE_SYSTEM_DIR/devel/setup.bash ]
 then
-    # create system catkin workspace
-    if [ ! -d $TUE_SYSTEM_DIR/devel ]; then
-        sudo apt-get install python-catkin-pkg -y
-        mkdir -p $TUE_SYSTEM_DIR/src
-        catkin_init_workspace $TUE_SYSTEM_DIR/src
-        cd $TUE_SYSTEM_DIR && catkin_make
-        source $TUE_SYSTEM_DIR/devel/setup.bash
-    fi
+    mkdir -p $TUE_SYSTEM_DIR/src
+    sudo apt-get install g++
+    cd $TUE_SYSTEM_DIR
+    catkin_make
+    source $TUE_SYSTEM_DIR/devel/setup.bash
+fi
 
-    # create dev catkin workspace
-    if [ ! -d $TUE_DEV_DIR/devel ]; then
-        sudo apt-get install python-catkin-pkg -y
-        mkdir -p $TUE_DEV_DIR/src
-        catkin_init_workspace $TUE_DEV_DIR/src
-        cd $TUE_DEV_DIR && catkin_make
-        source $TUE_DEV_DIR/devel/setup.bash
-    fi
-
-    TUE_ROSBUILD_DIR=~/ros/$TUE_ROS_DISTRO/rosbuild
-
-    # create rosbuild workspace
-    if [ ! -f $TUE_ROSBUILD_DIR/.rosinstall ]; then
-        # install rosws (part of rosinstall)
-        sudo apt-get install python-rosinstall -y
-
-        mkdir -p $TUE_ROSBUILD_DIR/trunk
-        rosws init $TUE_ROSBUILD_DIR $TUE_SYSTEM_DIR/devel
-        cd $TUE_ROSBUILD_DIR && rosws set trunk -y
-
-        # make sure system and dev catkin workspaces are favored over the rosbuild_ws
-        cd $TUE_ROSBUILD_DIR && rosws set $TUE_SYSTEM_DIR/src -y
-        cd $TUE_ROSBUILD_DIR && rosws set $TUE_DEV_DIR/src -y
-    fi
-
-    # Check-out user folder
-    if [ ! -d $TUE_ROSBUILD_DIR/user ]
-    then
-        svn co https://roboticssrv.wtb.tue.nl/svn/ros/user $TUE_ROSBUILD_DIR/user --depth immediates --trust-server-cert --non-interactive
-    else
-        svn up $TUE_ROSBUILD_DIR/user
-    fi
-
-    source $TUE_ROSBUILD_DIR/setup.bash
-
-else
-    if [ ! -f $TUE_SYSTEM_DIR/devel/setup.bash ]
-    then
-        mkdir -p $TUE_SYSTEM_DIR/src
-        sudo apt-get install g++
-        cd $TUE_SYSTEM_DIR
-        catkin_make
-        source $TUE_SYSTEM_DIR/devel/setup.bash
-    fi    
-
-    if [ ! -f $TUE_DEV_DIR/devel/setup.bash ]
-    then
-        mkdir -p $TUE_DEV_DIR/src
-        sudo apt-get install g++
-        cd $TUE_DEV_DIR
-        catkin_make
-        source $TUE_DEV_DIR/devel/setup.bash
-    fi
+if [ ! -f $TUE_DEV_DIR/devel/setup.bash ]
+then
+    mkdir -p $TUE_DEV_DIR/src
+    sudo apt-get install g++
+    cd $TUE_DEV_DIR
+    catkin_make
+    source $TUE_DEV_DIR/devel/setup.bash
 fi
