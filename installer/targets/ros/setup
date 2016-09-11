@@ -11,17 +11,4 @@ fi
 TUE_SYSTEM_DIR=$TUE_ENV_DIR/system
 TUE_DEV_DIR=$TUE_ENV_DIR/dev
 
-if [[ $TUE_ROS_DISTRO == "groovy" ]]
-then
-    TUE_ROSBUILD_DIR=~/ros/$TUE_ROS_DISTRO/rosbuild
-    source $TUE_ROSBUILD_DIR/setup.bash
-
-    alias rospkgs="vim $TUE_ROSBUILD_DIR/.rosinstall"
-    
-else
-    source $TUE_DEV_DIR/devel/setup.bash
-fi
-
-
-
-
+source $TUE_DEV_DIR/devel/setup.bash

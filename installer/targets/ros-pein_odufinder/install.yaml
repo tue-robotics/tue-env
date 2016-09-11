@@ -2,6 +2,4 @@
   source:
       type: svn
       url: https://roboticssrv.wtb.tue.nl/svn/ros/trunk/pein_odufinder
-- type: target
-  name: libsiftfast
-    
+
