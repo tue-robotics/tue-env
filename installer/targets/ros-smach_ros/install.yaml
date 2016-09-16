@@ -1,9 +1,5 @@
-#- type: ros
-#  source:
-#      type: system
-#      name: executive-smach
 - type: ros
   source:
-      type: git
-      url: https://github.com/tue-robotics/executive_smach.git
-      sub-dir: smach_ros
+    type: git
+    url: https://github.com/tue-robotics/executive_smach.git
+    sub-dir: smach_ros

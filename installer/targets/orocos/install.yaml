@@ -3,5 +3,5 @@
   name: ros
 - type: ros
   source:
-      type: system
-      name: orocos-toolchain
+    type: system
+    name: orocos-toolchain
