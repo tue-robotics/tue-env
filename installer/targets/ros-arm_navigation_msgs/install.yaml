@@ -1,0 +1,4 @@
+- type: ros
+  source:
+    type: git
+    url: https://github.com/PR2/arm_navigation_msgs.git
