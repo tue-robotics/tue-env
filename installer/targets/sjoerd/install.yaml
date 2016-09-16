@@ -20,8 +20,8 @@
 # Diagnostics
 - type: ros
   source:
-      type: system
-      name: viz
+    type: system
+    name: viz
 
 # -------------------- ROBOCUP --------------------
 

@@ -17,8 +17,8 @@
 # Diagnostics
 - type: ros
   source:
-      type: system
-      name: viz
+    type: system
+    name: viz
 
 - type: target
   name: spot
@@ -36,8 +36,8 @@
   name: amigo-user
 - type: target
   name: sergio-user
-  
-# Handy shit  
+
+# Handy shit
 - type: target
   name: sublime3
 - type: target
