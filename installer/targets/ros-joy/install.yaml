@@ -1,5 +1,4 @@
 - type: ros
   source:
-      type: system
-      name: joystick-drivers
-
+    type: system
+    name: joystick-drivers

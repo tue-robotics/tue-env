@@ -3,9 +3,9 @@
 - type: system
   name: alsa-utils
 - type: system
-  name: mpg123 
+  name: mpg123
 - type: system
-  name: pulseaudio 
+  name: pulseaudio
 - type: system
   name: sox
 - type: system

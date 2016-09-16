@@ -1,5 +1,4 @@
 - type: ros
   source:
-      type: system
-      name: stereo-msgs
-
+    type: system
+    name: stereo-msgs

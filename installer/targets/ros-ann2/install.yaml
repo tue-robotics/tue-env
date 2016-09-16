@@ -1,4 +1,4 @@
 - type: ros
   source:
-      type: git
-      url: https://github.com/tue-robotics/ann2
+    type: git
+    url: https://github.com/tue-robotics/ann2

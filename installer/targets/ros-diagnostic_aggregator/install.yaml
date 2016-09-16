@@ -1,4 +1,4 @@
 - type: ros
   source:
-      type: system
-      name: diagnostics
+    type: system
+    name: diagnostics

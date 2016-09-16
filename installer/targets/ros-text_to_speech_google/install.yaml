@@ -1,5 +1,4 @@
 - type: ros-rosbuild
   source:
-      type: svn
-      url: https://roboticssrv.wtb.tue.nl/svn/ros/code/tue-ros-pkg/trunk/tue_human_machine_interfacing/text_to_speech_google
-    
+    type: svn
+    url: https://roboticssrv.wtb.tue.nl/svn/ros/code/tue-ros-pkg/trunk/tue_human_machine_interfacing/text_to_speech_google

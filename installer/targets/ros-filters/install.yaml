@@ -1,5 +1,4 @@
 - type: ros
   source:
-      type: system
-      name: filters
-
+    type: system
+    name: filters

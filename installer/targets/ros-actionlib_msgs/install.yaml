@@ -1,5 +1,4 @@
 - type: ros
   source:
-      type: system
-      name: actionlib-msgs
-
+    type: system
+    name: actionlib-msgs

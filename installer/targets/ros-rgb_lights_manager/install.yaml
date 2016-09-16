@@ -1,5 +1,4 @@
 - type: ros
   source:
-      type: git
-      url: https://github.com/tue-robotics/rgb_lights_manager.git
-    
+    type: git
+    url: https://github.com/tue-robotics/rgb_lights_manager.git

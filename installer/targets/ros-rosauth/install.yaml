@@ -1,5 +1,4 @@
 - type: ros
   source:
-      type: system
-      name: rosauth
-
+    type: system
+    name: rosauth

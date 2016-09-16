@@ -1,5 +1,4 @@
 - type: ros
   source:
-      type: system
-      name: xsens-driver
-
+    type: system
+    name: xsens-driver

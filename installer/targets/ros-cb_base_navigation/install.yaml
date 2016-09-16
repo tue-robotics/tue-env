@@ -1,5 +1,4 @@
 - type: ros
   source:
-      type: git
-      url: https://github.com/tue-robotics/cb_base_navigation.git
-
+    type: git
+    url: https://github.com/tue-robotics/cb_base_navigation.git

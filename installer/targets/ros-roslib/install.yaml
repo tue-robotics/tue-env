@@ -1,5 +1,4 @@
 - type: ros
   source:
-      type: system
-      name: roslib
-
+    type: system
+    name: roslib

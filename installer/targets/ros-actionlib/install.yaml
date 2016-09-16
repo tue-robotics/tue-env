@@ -1,5 +1,4 @@
 - type: ros
   source:
-      type: system
-      name: actionlib
-
+    type: system
+    name: actionlib

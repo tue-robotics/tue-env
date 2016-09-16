@@ -1,5 +1,4 @@
 - type: ros
   source:
-      type: system
-      name: diagnostics-monitors
-
+    type: system
+    name: diagnostics-monitors

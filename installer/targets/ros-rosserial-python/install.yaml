@@ -1,5 +1,4 @@
 - type: ros
   source:
-      type: system
-      name: rosserial-python
-
+    type: system
+    name: rosserial-python

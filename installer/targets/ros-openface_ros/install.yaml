@@ -1,4 +1,4 @@
 - type: ros
   source:
-      type: git
-      url: https://github.com/tue-robotics/openface_ros.git
+    type: git
+    url: https://github.com/tue-robotics/openface_ros.git

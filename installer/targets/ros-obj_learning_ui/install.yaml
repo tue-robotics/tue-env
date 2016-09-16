@@ -1,5 +1,4 @@
 - type: ros-rosbuild
   source:
-      type: svn
-      url: https://roboticssrv.wtb.tue.nl/svn/ros/code/tue-ros-pkg/trunk/tue_pein/obj_learning_ui
-    
+    type: svn
+    url: https://roboticssrv.wtb.tue.nl/svn/ros/code/tue-ros-pkg/trunk/tue_pein/obj_learning_ui

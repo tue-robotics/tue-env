@@ -1,5 +1,4 @@
 - type: ros
   source:
-      type: svn
-      url: https://roboticssrv.wtb.tue.nl/svn/ros/trunk/tue_octomap_server
-
+    type: svn
+    url: https://roboticssrv.wtb.tue.nl/svn/ros/trunk/tue_octomap_server

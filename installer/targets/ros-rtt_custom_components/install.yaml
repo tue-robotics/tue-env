@@ -1,5 +1,4 @@
 - type: ros-rosbuild
   source:
-      type: svn
-      url: https://roboticssrv.wtb.tue.nl/svn/ros/code/tue-ros-pkg/trunk/rtt_generic_components/rtt_custom_components
-    
+    type: svn
+    url: https://roboticssrv.wtb.tue.nl/svn/ros/code/tue-ros-pkg/trunk/rtt_generic_components/rtt_custom_components

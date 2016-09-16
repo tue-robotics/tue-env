@@ -1,5 +1,4 @@
 - type: ros
   source:
-      type: system
-      name: rx
-
+    type: system
+    name: rx

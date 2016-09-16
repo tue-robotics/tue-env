@@ -1,5 +1,4 @@
 - type: ros
   source:
-      type: system
-      name: class-loader
-
+    type: system
+    name: class-loader

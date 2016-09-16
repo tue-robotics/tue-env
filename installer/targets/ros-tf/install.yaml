@@ -1,5 +1,4 @@
 - type: ros
   source:
-      type: system
-      name: tf
-
+    type: system
+    name: tf

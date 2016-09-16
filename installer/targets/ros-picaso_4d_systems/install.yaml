@@ -1,5 +1,4 @@
 - type: ros
   source:
-      type: git
-      url: https://github.com/tue-robotics/picaso_4d_systems.git
-    
+    type: git
+    url: https://github.com/tue-robotics/picaso_4d_systems.git

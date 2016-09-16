@@ -1,4 +1,4 @@
 - type: ros
   source:
-      type: git
-      url: https://github.com/tue-robotics/ed_cloud.git
+    type: git
+    url: https://github.com/tue-robotics/ed_cloud.git

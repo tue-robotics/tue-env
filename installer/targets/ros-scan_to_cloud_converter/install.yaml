@@ -1,8 +1,5 @@
 - type: ros
   source:
-      type: git
-      url: https://github.com/ccny-ros-pkg/scan_tools.git
-      sub-dir: scan_to_cloud_converter
-
-
-
+    type: git
+    url: https://github.com/ccny-ros-pkg/scan_tools.git
+    sub-dir: scan_to_cloud_converter
