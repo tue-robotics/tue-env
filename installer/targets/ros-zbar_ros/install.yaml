@@ -1,5 +1,4 @@
 - type: ros
   source:
-      type: system
-      name: zbar-ros
-
+    type: system
+    name: zbar-ros

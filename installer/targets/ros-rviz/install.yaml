@@ -1,4 +1,4 @@
 - type: ros
   source:
-      type: system
-      name: rviz
+    type: system
+    name: rviz

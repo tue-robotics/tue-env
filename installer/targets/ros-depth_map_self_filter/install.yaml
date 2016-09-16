@@ -1,5 +1,4 @@
 - type: ros
   source:
-      type: svn
-      url: https://roboticssrv.wtb.tue.nl/svn/ros/trunk/depth_map_self_filter
-
+    type: svn
+    url: https://roboticssrv.wtb.tue.nl/svn/ros/trunk/depth_map_self_filter

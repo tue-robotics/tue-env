@@ -1,5 +1,4 @@
 - type: ros
   source:
-      type: system
-      name: roscpp
-
+    type: system
+    name: roscpp

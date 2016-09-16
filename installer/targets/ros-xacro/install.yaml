@@ -1,5 +1,4 @@
 - type: ros
   source:
-      type: system
-      name: xacro
-
+    type: system
+    name: xacro

@@ -1,4 +1,4 @@
 - type: ros
   source:
-      type: git
-      url: https://github.com/tue-robotics/amigo_force_controller.git
+    type: git
+    url: https://github.com/tue-robotics/amigo_force_controller.git

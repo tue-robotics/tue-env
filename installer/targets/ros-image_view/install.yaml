@@ -1,4 +1,4 @@
 - type: ros
   source:
-      type: system
-      name: image-view
+    type: system
+    name: image-view

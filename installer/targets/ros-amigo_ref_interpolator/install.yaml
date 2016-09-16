@@ -1,5 +1,4 @@
 - type: ros
   source:
-      type: git
-      url: https://github.com/tue-robotics/amigo_ref_interpolator
-
+    type: git
+    url: https://github.com/tue-robotics/amigo_ref_interpolator

@@ -1,5 +1,4 @@
 - type: ros
   source:
-      type: system
-      name: visualization-msgs
-
+    type: system
+    name: visualization-msgs

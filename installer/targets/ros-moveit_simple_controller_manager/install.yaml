@@ -1,4 +1,4 @@
 - type: ros
   source:
-      type: system
-      name: moveit-simple-controller-manager
+    type: system
+    name: moveit-simple-controller-manager

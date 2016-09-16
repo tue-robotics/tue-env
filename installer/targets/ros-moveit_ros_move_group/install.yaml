@@ -1,5 +1,4 @@
 - type: ros
   source:
-      type: system
-      name: moveit-ros-move-group
-
+    type: system
+    name: moveit-ros-move-group

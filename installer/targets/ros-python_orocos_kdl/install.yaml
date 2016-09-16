@@ -1,5 +1,4 @@
 - type: ros
   source:
-      type: system
-      name: python-orocos-kdl
-
+    type: system
+    name: python-orocos-kdl

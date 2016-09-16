@@ -1,5 +1,4 @@
 - type: ros
   source:
-      type: svn
-      url: https://roboticssrv.wtb.tue.nl/svn/ros/trunk/amigo_inverse_reachability
-    
+    type: svn
+    url: https://roboticssrv.wtb.tue.nl/svn/ros/trunk/amigo_inverse_reachability

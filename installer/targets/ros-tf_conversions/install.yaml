@@ -1,5 +1,4 @@
 - type: ros
   source:
-      type: system
-      name: tf-conversions
-
+    type: system
+    name: tf-conversions

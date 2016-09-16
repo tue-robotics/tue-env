@@ -1,5 +1,4 @@
 - type: ros
   source:
-      type: svn
-      url: https://roboticssrv.wtb.tue.nl/svn/ros/trunk/dialogue_manager
-    
+    type: svn
+    url: https://roboticssrv.wtb.tue.nl/svn/ros/trunk/dialogue_manager

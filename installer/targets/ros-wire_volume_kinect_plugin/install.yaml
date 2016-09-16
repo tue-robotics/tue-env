@@ -1,5 +1,4 @@
 - type: ros-rosbuild
   source:
-      type: svn
-      url: https://roboticssrv.wtb.tue.nl/svn/ros/code/tue-ros-pkg/trunk/wire_volume_plugins/wire_volume_kinect_plugin
-    
+    type: svn
+    url: https://roboticssrv.wtb.tue.nl/svn/ros/code/tue-ros-pkg/trunk/wire_volume_plugins/wire_volume_kinect_plugin

@@ -1,4 +1,4 @@
 - type: ros
   source:
-      type: git
-      url: https://github.com/jhu-lcsr/lcsr_tf_tools.git
+    type: git
+    url: https://github.com/jhu-lcsr/lcsr_tf_tools.git

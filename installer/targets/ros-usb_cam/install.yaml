@@ -1,4 +1,4 @@
 - type: ros
   source:
-      type: system
-      name: usb-cam
+    type: system
+    name: usb-cam

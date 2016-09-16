@@ -1,5 +1,4 @@
 - type: ros
   source:
-      type: system
-      name: laser-geometry
-
+    type: system
+    name: laser-geometry

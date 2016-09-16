@@ -1,5 +1,4 @@
 - type: ros
   source:
-      type: git
-      url: https://github.com/tue-robotics/tue_carrot_planner.git
-    
+    type: git
+    url: https://github.com/tue-robotics/tue_carrot_planner.git

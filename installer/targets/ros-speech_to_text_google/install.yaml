@@ -1,5 +1,4 @@
 - type: ros
   source:
-      type: svn
-      url: https://roboticssrv.wtb.tue.nl/svn/ros/trunk/speech_to_text_google
-
+    type: svn
+    url: https://roboticssrv.wtb.tue.nl/svn/ros/trunk/speech_to_text_google

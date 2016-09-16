@@ -1,5 +1,4 @@
 - type: ros
   source:
-      type: system
-      name: mjpeg-server
-
+    type: system
+    name: mjpeg-server

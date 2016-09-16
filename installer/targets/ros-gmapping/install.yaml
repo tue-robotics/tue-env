@@ -1,5 +1,4 @@
 - type: ros
   source:
-      type: system
-      name: slam-gmapping
-
+    type: system
+    name: slam-gmapping

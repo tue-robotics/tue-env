@@ -1,5 +1,4 @@
 - type: ros
   source:
-      type: system
-      name: tf2-web-republisher
-
+    type: system
+    name: tf2-web-republisher

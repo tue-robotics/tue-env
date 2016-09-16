@@ -1,5 +1,4 @@
 - type: ros
   source:
-      type: svn
-      url: https://roboticssrv.wtb.tue.nl/svn/ros/trunk/pein_tabletop_segmentation
-
+    type: svn
+    url: https://roboticssrv.wtb.tue.nl/svn/ros/trunk/pein_tabletop_segmentation

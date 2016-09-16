@@ -1,5 +1,4 @@
 - type: ros
   source:
-      type: system
-      name: rtt-common-msgs
-
+    type: system
+    name: rtt-common-msgs

@@ -1,5 +1,4 @@
 - type: ros
   source:
-      type: git
-      url: https://github.com/tue-robotics/nl_robot_console
-
+    type: git
+    url: https://github.com/tue-robotics/nl_robot_console

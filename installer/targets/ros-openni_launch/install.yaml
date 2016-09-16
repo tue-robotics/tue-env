@@ -1,5 +1,4 @@
 - type: ros
   source:
-      type: system
-      name: openni-launch
-
+    type: system
+    name: openni-launch

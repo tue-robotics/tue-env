@@ -1,5 +1,4 @@
 - type: ros
   source:
-      type: git
-      url: https://github.com/tue-robotics/ed_perception_models.git
-
+    type: git
+    url: https://github.com/tue-robotics/ed_perception_models.git

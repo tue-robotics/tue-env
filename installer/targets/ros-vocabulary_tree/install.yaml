@@ -1,5 +1,4 @@
 - type: ros
   source:
-      type: git
-      url: https://github.com/tue-robotics/vocabulary_tree
-
+    type: git
+    url: https://github.com/tue-robotics/vocabulary_tree
