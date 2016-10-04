@@ -1,4 +1,0 @@
-- type: ros
-  source:
-    type: svn
-    url: https://roboticssrv.wtb.tue.nl/svn/data/data-pkgs/ed_data_storage
