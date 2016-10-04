@@ -1,5 +1,0 @@
-export GAZEBO_MODEL_PATH=~/ros/$TUE_ROS_DISTRO/system/src/amigo_description:$GAZEBO_MODEL_PATH
-
-export GAZEBO_RESOURCE_PATH=~/ros/$TUE_ROS_DISTRO/system/src/amigo_description:$GAZEBO_RESOURCE_PATH
-
-
