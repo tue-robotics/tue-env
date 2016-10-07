@@ -1,4 +1,4 @@
-- type: system
+- type: ros
   source:
     type: git
     url: https://github.com/tue-robotics/tue_simulink_ethercat.git
