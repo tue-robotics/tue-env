@@ -179,12 +179,12 @@ function tue-install-git
 
         res=$(git pull --ff-only --prune 2>&1)
 
-		if [ ! $? -eq 0 ]
-		then
-			tue-install-warning "$res"
-		fi
+        if [ ! $? -eq 0 ]
+        then
+            tue-install-warning "$res"
+        fi
 
-		cd $mem_pwd
+        cd $mem_pwd
 
         if [[ $res == "Already up-to-date"* ]]
         then
@@ -538,6 +538,15 @@ TUE_INSTALL_SYSTEMS=
 
 TUE_INSTALL_WARNINGS=
 TUE_INSTALL_INFOS=
+
+echo
+
+if [ -d $TUE_REPOS_DIR/https: ]
+then
+    echo "Moving to new repos format: $TUE_REPOS_DIR"
+    mv -bv "$TUE_REPOS_DIR/https:"/* "$TUE_REPOS_DIR/"
+    rmdir -v "$TUE_REPOS_DIR/https:"
+fi
 
 if [ -z $1 ]
 then
