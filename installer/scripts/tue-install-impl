@@ -320,7 +320,6 @@ function tue-install-pkg
     source=$2
     sub_dir=$3
     version=$4
-    sourcehttps=${source#https://}
 
     if [ -z "$2" ]
     then
@@ -330,7 +329,11 @@ function tue-install-pkg
     local pkgs_dir=$TUE_ENV_DIR/pkgs
     mkdir -p $pkgs_dir
 
-    local repos_dir=$TUE_REPOS_DIR/$sourcehttps
+    local repos_dir=$TUE_REPOS_DIR/$source
+    # replace spaces with underscores
+    repos_dir=${repos_dir// /_}
+    # now, clean out anything that's not alphanumeric or an underscore
+    repos_dir=${repos_dir//[^a-zA-Z0-9\/\.-]/_}
 
     if [ "$type" = "git" ]
     then
@@ -389,7 +392,6 @@ function tue-install-ros {
     source=$2
     sub_dir=$3
     version=$4
-    sourcehttps=${source#https://}
 
     [ -n "$TUE_ROS_DISTRO" ] || tue-install-error "Environment variable 'TUE_ROS_DISTRO' is not set."
 
@@ -411,7 +413,12 @@ function tue-install-ros {
     mkdir -p $ROS_PACKAGE_INSTALL_DIR
 
     local ros_pkg_dir=$ROS_PACKAGE_INSTALL_DIR/$ros_pkg_name
-    local repos_dir=$TUE_REPOS_DIR/$sourcehttps
+    local repos_dir=$TUE_REPOS_DIR/$source
+    # replace spaces with underscores
+    repos_dir=${repos_dir// /_}
+    # now, clean out anything that's not alphanumeric or an underscore
+    repos_dir=${repos_dir//[^a-zA-Z0-9\/\.-]/_}
+    
     #mkdir -p $repos_dir/..
 
     # For backwards compatibility: if the ros_pkg_dir already exists and is NOT
@@ -548,6 +555,14 @@ then
     rmdir -v "$TUE_REPOS_DIR/https:"
 fi
 
+if [ -d $TUE_REPOS_DIR/github.com ]
+then
+    echo "Moving to new old repos format: $TUE_REPOS_DIR"
+    mkdir -p "$TUE_REPOS_DIR/https_/github.com"
+    mv -bv "$TUE_REPOS_DIR/github.com"/* "$TUE_REPOS_DIR/https_/github.com"
+    rmdir -v "$TUE_REPOS_DIR/github.com"
+fi
+
 if [ -z $1 ]
 then
     # If no targets are provided, update all installed targets
@@ -563,7 +578,7 @@ do
         # Mark as installed
         touch $TUE_INSTALL_INSTALLED_DIR/$target
     fi
-
+    #echo $target
     tue-install-target $target    
 done
 
