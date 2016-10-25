@@ -4,7 +4,7 @@
 # astart
 - type: target
   name: ros-battery_manager
-  
+
 - type: target
   name: ros-emergency_speakup
 
@@ -14,7 +14,7 @@
 # Middleware
 - type: target
   name: tue-middleware
-  
+
 # Hardware
 - type: target
   name: tue-hardware
@@ -24,6 +24,10 @@
   name: ros-hokuyo_node
 - type: target
   name: ros-openni_launch
+
+# Perception
+- type: target
+  name: ros-tensorflow_object_recognition
 
 # Speech
 - type: target
