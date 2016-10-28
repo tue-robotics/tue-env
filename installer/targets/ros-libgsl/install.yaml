@@ -1,4 +1,2 @@
-- type: ros
-  source:
-    type: system
-    name: libgsl0-dev
+- type: system
+  name: libgsl0-dev
