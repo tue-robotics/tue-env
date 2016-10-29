@@ -27,7 +27,9 @@
 
 # Perception
 - type: target
-  name: ros-tensorflow_object_recognition
+  name: ros-tensorflow_ros
+- type: target
+  name: ros-openface_ros
 
 # Speech
 - type: target
