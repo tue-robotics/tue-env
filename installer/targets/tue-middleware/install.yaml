@@ -55,6 +55,8 @@
   name: ros-ed_sensor_integration
 - type: target
   name: ros-head_ref_ed_client
+- type: target
+  name: ros-image_recognition
 
 # Execution
 - type: target
