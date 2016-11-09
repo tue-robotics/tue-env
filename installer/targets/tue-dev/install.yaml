@@ -14,6 +14,10 @@
 - type: target
   name: ros-rviz
 
+# DATA
+- type: target
+  name: megasync
+
 # Diagnostics
 - type: ros
   source:
