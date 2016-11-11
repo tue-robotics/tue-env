@@ -32,8 +32,8 @@
   name: ros-openface_ros
 
 # Speech
-- type: target
-  name: ros-philips_text_to_speech
+#- type: target
+#  name: ros-philips_text_to_speech
 
 # Sergio aliases
 - type: target
