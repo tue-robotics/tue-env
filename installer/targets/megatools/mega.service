@@ -1,0 +1,9 @@
+[Unit]
+Description=Mega Sync Service
+After=local-fs.target network.target
+[Service]
+Type=simple
+ExecStart=/usr/bin/megacopy --config %h/.megarc --local MEGA --remote /Root -d
+Restart=on-failure
+[Install]
+WantedBy=multi-user.target
