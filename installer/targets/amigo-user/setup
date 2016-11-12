@@ -202,26 +202,7 @@ alias adashboard='tue-dashboard amigo1 & sleep 1; disown; wmctrl -r ws://amigo1:
 alias rviz-amigo='rosrun rviz rviz -d ~/.tue/installer/targets/amigo-user/rviz_config.rviz'
 alias rviz-amigo-final='rosrun rviz rviz -d $TUE_SYSTEM_DIR/src/challenge_final/amigo_rviz_config.rviz'
 
-# alias rviz-amigo-fuerte='source /opt/ros/fuerte/setup.bash; ROS_PACKAGE_PATH=$TUE_TRUNK/amigo_common/amigo_description:$ROS_PACKAGE_PATH; rosrun rviz rviz -d $TUE_TRUNK/amigo_admin_files/configs/rviz/rviz_amigo.vcg; export ROS_DISTRO=groovy; source ~/.bashrc'
-# alias rviz-amigo-groovy='rosrun rviz rviz -d $TUE_TRUNK/amigo_admin_files/configs/rviz/amigo_groovy.rviz'
-# alias rviz-amigo="rviz-amigo-${TUEROS_DISTRO}"
-# alias rviz-amigo-new='rosrun rviz rviz -d $TUE_TRUNK/amigo_admin_files/configs/rviz/rviz_amigo_new.vcg'
-# alias rviz-3dnav='rosrun rviz rviz -d $TUE_TRUNK/amigo_admin_files/configs/rviz/rviz_3dnav.vcg'
-# alias rviz-amigo2-groovy='rosrun rviz rviz -d $TUE_TRUNK/amigo_admin_files/configs/rviz/amigo2_groovy.rviz'
-# alias rviz-amigo2='rosrun rviz rviz -d $TUE_TRUNK/amigo_admin_files/configs/rviz/amigo2_fuerte.vcg'
-# alias rviz-technical-challenge='rosrun rviz rviz -d $TUE_TRUNK/amigo_admin_files/configs/rviz/rviz_technical_challenge.vcg'
-
-# Rviz configs per challenge
-# alias rviz-rips='rosrun rviz rviz -d $TUE_TRUNK/amigo_admin_files/configs/rviz/rviz_rips.vcg'
-# alias rviz-follow-me='rosrun rviz rviz -d $TUE_TRUNK/amigo_admin_files/configs/rviz/rviz_follow_me.vcg'
-# alias rviz-cocktail='rosrun rviz rviz -d $TUE_TRUNK/amigo_admin_files/configs/rviz/rviz_cocktail.vcg'
-# alias rviz-cleanup='rosrun rviz rviz -d $TUE_TRUNK/amigo_admin_files/configs/rviz/rviz_cleanup.vcg'
-# alias rviz-emergency='rosrun rviz rviz -d $TUE_TRUNK/amigo_admin_files/configs/rviz/rviz_emergency.vcg'
-# alias rviz-open-challenge='rosrun rviz rviz -d $TUE_TRUNK/tue_robocup/challenge_open/config.rviz'
-# alias rviz-final-challenge='rosrun rviz rviz -d $TUE_TRUNK/tue_robocup/challenge_final/config.rviz'
-alias rviz-final-challenge-fuerte='rosrun rviz rviz -d $TUE_TRUNK/tue_robocup/challenge_final/rviz-fuerte.vcg'
 alias rviz-egpsr='rosrun rviz rviz -d $TUE_TRUNK/amigo_admin_files/configs/rviz/rviz_egpsr.vcg'
-alias rviz-restaurant='rosrun rviz rviz -d $TUE_TRUNK/amigo_admin_files/configs/rviz/amigo_groovy_restaurant.rviz'
 
 alias amigo-show-fitter='rosrun rgbd multitool --rgbd /amigo/ed/viz/fitter'
 alias amigo-show-kinect='rosrun rgbd multitool --rgbd /amigo/top_kinect/rgbd'

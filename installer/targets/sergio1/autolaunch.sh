@@ -13,7 +13,7 @@ elif [ -z "$3" ]
 fi
 
 # Source ros stuff as user is accustomed to
-TUE_ROS_DISTRO=hydro
+TUE_ROS_DISTRO=indigo
 export ROSLAUNCH_SSH_UNKNOWN=1
 source ~/.tue/setup.bash
 

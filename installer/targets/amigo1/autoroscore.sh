@@ -11,7 +11,7 @@ fi
 
 # Source ros stuff as user is accustomed to
 #source /home/amigo/.bashrc
-TUE_ROS_DISTRO=hydro
+TUE_ROS_DISTRO=indigo
 source /home/amigo/.tue/setup.bash
 
 # Launch the file
