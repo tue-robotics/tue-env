@@ -72,7 +72,7 @@ function tue-make
         $TUE_DIR/make/configure.bash
         $TUE_DIR/make/make.bash
         $TUE_DIR/make/post-make.bash
-    fi    
+    fi
 
     if [ -n "$TUE_ROS_DISTRO" ] && [ -d $_TUE_CATKIN_SYSTEM_DIR ]
     then
@@ -82,7 +82,7 @@ function tue-make
 
 function tue-make-system
 {
-    catkin_make_isolated --directory $_TUE_CATKIN_SYSTEM_DIR -DCMAKE_BUILD_TYPE=RelWithDebInfo $@	
+    catkin_make_isolated --directory $_TUE_CATKIN_SYSTEM_DIR -DCMAKE_BUILD_TYPE=RelWithDebInfo $@
 }
 
 function tue-make-dev
@@ -108,7 +108,7 @@ function tue-dev
     fi
 
     for pkg in $@
-    do     
+    do
         if [ ! -d $_TUE_CATKIN_SYSTEM_DIR/src/$pkg ]
         then
             echo "[tue-dev] '$pkg' does not exist in the system workspace."
@@ -189,12 +189,12 @@ function _tue-repo-status
             fi
 
             local current_branch=`git rev-parse --abbrev-ref HEAD`
-            if [ $current_branch != "master" ] && [ $current_branch != "develop" ] && [ $current_branch != "indigo-devel" ] && [ $current_branch != "jade-devel" ]
+            if [ $current_branch != "master" ] && [ $current_branch != "hydro-devel" ] && [ $current_branch != "develop" ] && [ $current_branch != "indigo-devel" ] && [ $current_branch != "toolchain2.9" ]
             then
                 echo -e "\033[1m$name\033[0m is on branch '$current_branch'"
             fi
 
-        fi  
+        fi
 
         cd - &> /dev/null
         vctype=git
@@ -210,8 +210,8 @@ function _tue-repo-status
             echo "--------------------------------------------------"
             echo -e "$status"
             echo "--------------------------------------------------"
-        fi 
-    fi    
+        fi
+    fi
 }
 
 # ----------------------------------------------------------------------------------------------------
@@ -224,8 +224,8 @@ function _tue-dir-status
     for f in $fs
     do
         pkg_dir=$1/$f
-        _tue-repo-status $f $pkg_dir        
-    done   
+        _tue-repo-status $f $pkg_dir
+    done
 }
 
 # ----------------------------------------------------------------------------------------------------
@@ -316,7 +316,7 @@ function tue-get
     shift
 
     if [[ $cmd == "install" ]]
-    then        
+    then
         if [ -z "$1" ]
         then
             echo "Usage: tue-get install TARGET [TARGET2 ...]"
@@ -333,7 +333,7 @@ function tue-get
             mkdir -p $TUE_INSTALL_INSTALLED_DIR
 
             for target in $@
-            do            
+            do
                 touch $TUE_INSTALL_INSTALLED_DIR/$1
             done
         fi
@@ -357,10 +357,10 @@ function tue-get
         then
             $TUE_DIR/installer/scripts/tue-install $@
             error_code=$?
-            [ $error_code -eq 0 ] && source ~/.bashrc 
+            [ $error_code -eq 0 ] && source ~/.bashrc
         fi
-    
-        return $error_code       
+
+        return $error_code
     elif [[ $cmd == "remove" ]]
     then
         if [ -z "$1" ]
@@ -377,7 +377,7 @@ function tue-get
                 echo "[tue-get] Package '$target' is not installed."
                 error=1
             fi
-        done        
+        done
 
         if [ $error -gt 0 ];
         then
@@ -388,7 +388,7 @@ function tue-get
 
         for target in $@
         do
-            rm $tue_installed_dir/$target 
+            rm $tue_installed_dir/$target
         done
 
         echo ""
@@ -425,16 +425,16 @@ function _tue-get
         cmd=${COMP_WORDS[1]}
         if [[ $cmd == "install" ]]
         then
-            COMPREPLY=( $(compgen -W "`ls $TUE_DIR/installer/targets`" -- $cur) )        
+            COMPREPLY=( $(compgen -W "`ls $TUE_DIR/installer/targets`" -- $cur) )
         elif [[ $cmd == "dep" ]]
         then
-            COMPREPLY=( $(compgen -W "`ls $TUE_ENV_DIR/.env/dependencies`" -- $cur) ) 
+            COMPREPLY=( $(compgen -W "`ls $TUE_ENV_DIR/.env/dependencies`" -- $cur) )
         elif [[ $cmd == "update" ]]
         then
-            COMPREPLY=( $(compgen -W "`ls $TUE_ENV_DIR/.env/dependencies`" -- $cur) ) 
+            COMPREPLY=( $(compgen -W "`ls $TUE_ENV_DIR/.env/dependencies`" -- $cur) )
         elif [[ $cmd == "remove" ]]
         then
-            COMPREPLY=( $(compgen -W "`ls $TUE_ENV_DIR/.env/installed`" -- $cur) )  
+            COMPREPLY=( $(compgen -W "`ls $TUE_ENV_DIR/.env/installed`" -- $cur) )
         else
             COMREPLY=""
         fi
@@ -478,7 +478,7 @@ function tue-checkout
                     echo -e "\033[1m$pkg\033[0m: Already on branch $branch"
                 else
                     res=$(git checkout $branch 2>&1)
-                    if [ $? -eq 0 ]                
+                    if [ $? -eq 0 ]
                     then
                         echo -e "\033[1m$pkg\033[0m: checked-out $branch"
                     else
@@ -505,7 +505,7 @@ function pcd
     if [ -z "$1" ]
     then
         cd $TUE_ENV_DIR/pkgs
-        return 
+        return
     fi
 
     if [ ! -d "$TUE_ENV_DIR/pkgs/$1" ]
@@ -594,7 +594,7 @@ function tue-robocup-reset-github-origin
 function tue-robocup-install-package
 {
     local pkg_dir=$TUE_ENV_DIR/repos/https:/github.com/tue-robotics/${1}.git
-   
+
     # If directory already exists, return
     [ -d $pkg_dir ] && return
 
@@ -637,7 +637,7 @@ function tue-robocup-update
     done
 
 	if [ ! -d $TUE_ENV_DIR/system/src/robocup_knowledge ]; then
-		ln -s $TUE_ENV_DIR/repos/https:/github.com/tue-robotics/tue_robocup.git/robocup_knowledge $TUE_ENV_DIR/system/src/robocup_knowledge 
+		ln -s $TUE_ENV_DIR/repos/https:/github.com/tue-robotics/tue_robocup.git/robocup_knowledge $TUE_ENV_DIR/system/src/robocup_knowledge
 	fi
 
     cd $mem_pwd
