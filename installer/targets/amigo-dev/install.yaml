@@ -1,2 +1,4 @@
 - type: target
   name: tue-common
+- type: target
+  name: amigo-user
