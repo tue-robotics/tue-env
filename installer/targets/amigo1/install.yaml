@@ -2,3 +2,5 @@
   name: amigo
 - type: target
   name: ros-kinect_driver
+- type: target
+  name: megatools
