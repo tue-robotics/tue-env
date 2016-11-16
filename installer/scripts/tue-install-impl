@@ -11,7 +11,7 @@ mkdir -p $TUE_INSTALL_INSTALLED_DIR
 
 TUE_INSTALL_TARGETS_DIR=$TUE_DIR/installer/targets
 
-# # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # 
+# # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # #
 
 function _make_sure_installed
 {
@@ -31,20 +31,20 @@ function _make_sure_installed
     fi
 }
 
-# # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # 
+# # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # #
 
 _make_sure_installed python-yaml git subversion
 
 TUE_SYSTEM_DIR=$TUE_ENV_DIR/system
 TUE_REPOS_DIR=$TUE_ENV_DIR/repos
 
-# # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # 
+# # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # #
 
 function randid {
     </dev/urandom tr -dc '0123456789abcdef' | head -c16; echo ""
 }
 
-# # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # 
+# # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # #
 
 function tue-install-error {
     echo -e "\033[38;5;1m
@@ -55,14 +55,14 @@ Error while installing target '$TUE_INSTALL_CURRENT_TARGET':
     exit 1
 }
 
-# # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # 
+# # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # #
 
 function tue-install-warning {
     echo -e "\033[33;5;1m[$TUE_INSTALL_CURRENT_TARGET] WARNING: $1\033[0m"
     TUE_INSTALL_WARNINGS="    [$TUE_INSTALL_CURRENT_TARGET] $1\n${TUE_INSTALL_WARNINGS}"
 }
 
-# # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # 
+# # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # #
 
 function tue-install-info {
     echo -e "\e[0;36m[$TUE_INSTALL_CURRENT_TARGET] INFO: $1\033[0m"
@@ -70,7 +70,7 @@ function tue-install-info {
 }
 
 
-# # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # 
+# # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # #
 
 function tue-install-target {
     local target=$1
@@ -99,7 +99,7 @@ function tue-install-target {
         TUE_INSTALL_CURRENT_TARGET_DIR=$TUE_INSTALL_TARGET_DIR/$target
         TUE_INSTALL_CURRENT_TARGET=$target
 
-        # Empty the target's dependency file        
+        # Empty the target's dependency file
         > $TUE_INSTALL_DEPENDENCIES_DIR/$target
 
         if [ -f $install_file.yaml ]
@@ -112,7 +112,7 @@ function tue-install-target {
                 done
             else
                 tue-install-error "Invalid install.yaml: $cmd"
-            fi 
+            fi
         fi
 
         if [ -f $install_file.bash ]
@@ -127,14 +127,14 @@ function tue-install-target {
     TUE_INSTALL_CURRENT_TARGET_DIR=$TUE_INSTALL_TARGET_DIR/$parent_target
 }
 
-# # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # 
+# # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # #
 
 function tue-install-sys {
     source=$1
     TUE_INSTALL_SYSTEMS="$source $TUE_INSTALL_SYSTEMS"
 }
 
-# # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # 
+# # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # #
 
 function _show_update_message
 {
@@ -150,11 +150,11 @@ function _show_update_message
     fi
 }
 
-# # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # 
+# # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # #
 
 function tue-install-svn
-{      
-    if [ ! -d $2 ]; then 
+{
+    if [ ! -d $2 ]; then
         res=$(svn co $1 $2 --trust-server-cert --non-interactive 2>&1)
     else
         res=$(svn up $2 --trust-server-cert --non-interactive 2>&1)
@@ -164,32 +164,42 @@ function tue-install-svn
         fi
     fi
 
-    _show_update_message $TUE_INSTALL_CURRENT_TARGET "$res"     
+    _show_update_message $TUE_INSTALL_CURRENT_TARGET "$res"
 }
 
-# # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # 
+# # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # #
 
+TUE_INSTALL_GIT_PULL_Q=()
 function tue-install-git
 {
-    if [ ! -d $2 ]; then 
+    if [ ! -d $2 ]; then
         res=$(git clone $1 $2 2>&1)
     else
-        local mem_pwd=$PWD
-        cd $2
+		# Check if we have already pulled the repo
+		if [[ $TUE_INSTALL_GIT_PULL_Q =~ $2 ]]
+		then
+			# We have already pulled this repo, skip it
+			res=
+		else
+			local mem_pwd=$PWD
+			cd $2
 
-        res=$(git pull --ff-only --prune 2>&1)
+			res=$(git pull --ff-only --prune 2>&1)
 
-        if [ ! $? -eq 0 ]
-        then
-            tue-install-warning "$res"
-        fi
+			TUE_INSTALL_GIT_PULL_Q+=$2
 
-        cd $mem_pwd
+			if [ ! $? -eq 0 ]
+			then
+				tue-install-warning "$res"
+			fi
 
-        if [[ $res == "Already up-to-date"* ]]
-        then
-            res=
-        fi
+			cd $mem_pwd
+
+			if [[ $res == "Already up-to-date"* ]]
+			then
+				res=
+			fi
+		fi
     fi
 
     local version=$3
@@ -204,13 +214,13 @@ function tue-install-git
         fi
 
         res=$res$cres
-        cd $mem_pwd 
-    fi    
+        cd $mem_pwd
+    fi
 
-    _show_update_message $TUE_INSTALL_CURRENT_TARGET "$res"     
+    _show_update_message $TUE_INSTALL_CURRENT_TARGET "$res"
 }
 
-# # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # 
+# # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # #
 
 function tue-install-apply-patch
 {
@@ -221,20 +231,20 @@ function tue-install-apply-patch
 
     if [ -z "$TUE_INSTALL_PKG_DIR" ]
     then
-        tue-install-error "Invalid tue-install-apply-patch call: package directory is unknown."        
+        tue-install-error "Invalid tue-install-apply-patch call: package directory is unknown."
     fi
 
     patch_file=$TUE_INSTALL_CURRENT_TARGET_DIR/$1
 
     if [ ! -f $patch_file ]
     then
-        tue-install-error "Invalid tue-install-apply-patch call: patch file '$1' does not exist."  
+        tue-install-error "Invalid tue-install-apply-patch call: patch file '$1' does not exist."
     fi
-    
+
     patch -s -N -r - -p0 -d $TUE_INSTALL_PKG_DIR < $patch_file
 }
 
-# # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # 
+# # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # #
 
 function tue-install-cp
 {
@@ -247,14 +257,14 @@ function tue-install-cp
 
     if [ ! -f $file ]
     then
-        tue-install-error "Invalid tue-install-cp call: file '$1' does not exist."  
+        tue-install-error "Invalid tue-install-cp call: file '$1' does not exist."
     fi
 
     cp $file $2
     echo "cp $file $2"
 }
 
-# # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # 
+# # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # #
 
 # Reads SOURCE_FILE and looks in TARGET_FILE for the first and last line of SOURCE_FILE. If these
 # are not found, SOURCE_FILE is appended to TARGET_FILE. Otherwise, the appearance of the first and
@@ -300,7 +310,7 @@ function tue-install-add-text
     fi
 }
 
-# # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # 
+# # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # #
 
 function tue-install-system
 {
@@ -377,15 +387,15 @@ function tue-install-pkg
             ln -s $repos_dir/$sub_dir $pkg_dir
         fi
     elif [ ! -d $pkg_dir ]
-    then        
+    then
         # Create a symbolic link to the system workspace
         ln -s $repos_dir/$sub_dir $pkg_dir
-    fi              
+    fi
 
-    TUE_INSTALL_PKG_DIR=$ros_pkg_dir    
+    TUE_INSTALL_PKG_DIR=$ros_pkg_dir
 }
 
-# # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # 
+# # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # #
 
 function tue-install-ros {
     type=$1
@@ -418,7 +428,7 @@ function tue-install-ros {
     repos_dir=${repos_dir// /_}
     # now, clean out anything that's not alphanumeric or an underscore
     repos_dir=${repos_dir//[^a-zA-Z0-9\/\.-]/_}
-    
+
     #mkdir -p $repos_dir/..
 
     # For backwards compatibility: if the ros_pkg_dir already exists and is NOT
@@ -463,11 +473,11 @@ function tue-install-ros {
                 ln -s $repos_dir/$sub_dir $ros_pkg_dir
             fi
         elif [ ! -d $ros_pkg_dir ]
-        then        
+        then
             # Create a symbolic link to the system workspace
             ln -s $repos_dir/$sub_dir $ros_pkg_dir
         fi
-      
+
         if  [ -f $ros_pkg_dir/package.xml ]; then
             # Catkin
 
@@ -480,8 +490,8 @@ function tue-install-ros {
 
         else
             tue-install-warning "Does not contain a valid ROS package.xml."
-        fi        
-        
+        fi
+
     else
         tue-install-error "Checking out $source was not successful."
     fi
@@ -489,14 +499,14 @@ function tue-install-ros {
     TUE_INSTALL_PKG_DIR=$ros_pkg_dir
 }
 
-# # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # 
+# # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # #
 
 function generate_setup_file
 {
     # Check whether this target was already added to the setup
     if [[ "$TUE_SETUP_TARGETS" == *" $1 "* ]];
     then
-        return    
+        return
     fi
 
     # Check if the dependency file exists. If not, return
@@ -524,7 +534,7 @@ function generate_setup_file
     TUE_SETUP_TARGETS=" $1$TUE_SETUP_TARGETS"
 }
 
-# # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # 
+# # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # #
 
 INSTALL_DETAILS_FILE=/tmp/tue-get-details-`randid`
 > $INSTALL_DETAILS_FILE
@@ -566,7 +576,7 @@ fi
 if [ -z $1 ]
 then
     # If no targets are provided, update all installed targets
-    targets=`ls $TUE_INSTALL_INSTALLED_DIR`    
+    targets=`ls $TUE_INSTALL_INSTALLED_DIR`
 else
     targets=$@
 fi
@@ -579,7 +589,7 @@ do
         touch $TUE_INSTALL_INSTALLED_DIR/$target
     fi
     #echo $target
-    tue-install-target $target    
+    tue-install-target $target
 done
 
 # (Re-)generate setup file
@@ -621,7 +631,7 @@ if [ -n "$TUE_INSTALL_SYSTEMS" ]; then
     done
 
     if [ -n "$pkgs_to_install" ]
-    then    
+    then
 		echo -e "Going to run the following command:\n"
 		echo "sudo apt-get install -y$pkgs_to_install"
         sudo apt-get install -y $pkgs_to_install
