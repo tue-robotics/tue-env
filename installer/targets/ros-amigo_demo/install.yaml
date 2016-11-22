@@ -1,5 +1,4 @@
 - type: ros
   source:
     type: git
-    url: https://github.com/tue-robotics/tue_robocup.git
-    sub-dir: amigo_demo
+    url: https://github.com/tue-robotics-graveyard/amigo_demo.git
