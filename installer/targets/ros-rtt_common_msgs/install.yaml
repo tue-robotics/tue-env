@@ -2,4 +2,4 @@
   source:
     type: git
     url: https://github.com/orocos/rtt_ros_integration
-    sub-dir: rtt_tf
+    sub-dir: rtt_common_msgs
