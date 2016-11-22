@@ -1,7 +1,2 @@
-# TODO: get rid of ROS dependency
 - type: target
-  name: ros
-- type: ros
-  source:
-    type: system
-    name: orocos-toolchain
+  name: orocos_toolchain

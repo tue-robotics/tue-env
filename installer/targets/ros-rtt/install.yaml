@@ -1,4 +1,2 @@
-- type: ros
-  source:
-    type: system
-    name: orocos-toolchain
+- type: target
+  name: orocos_toolchain
