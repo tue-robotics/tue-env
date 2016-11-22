@@ -1,9 +1,2 @@
 - type: target
   name: amigo
-  
-  # Orocos
-- type: target
-  name: orocos
-
-- type: target
-  name: ros-kinect_driver

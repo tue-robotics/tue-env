@@ -4,3 +4,7 @@
   name: ros-kinect_driver
 - type: target
   name: megatools
+  
+  # Orocos
+- type: target
+  name: ros-amigo_hardware
