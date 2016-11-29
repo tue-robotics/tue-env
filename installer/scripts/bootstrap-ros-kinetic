@@ -2,6 +2,7 @@
 
 # If running in docker, install required dependencies
 if [ -f /.dockerenv ]; then
+    apt-get update
     apt-get install sudo git lsb-release wget curl
 fi
 
