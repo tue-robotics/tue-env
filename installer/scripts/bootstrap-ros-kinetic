@@ -15,7 +15,7 @@ then
 fi
 
 # Update installer
-git clone https://github.com/tue-robotics/tue-env.git ~/.tue
+git clone -b kinetic-devel https://github.com/tue-robotics/tue-env.git ~/.tue
 
 # Source the installer commands
 source ~/.tue/setup.bash
