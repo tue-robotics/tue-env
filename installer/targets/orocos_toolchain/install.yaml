@@ -1,4 +1,4 @@
 - type: system
-  name: ruby-lib
+  name: ruby-dev
 - type: system
   name: libreadline-dev
