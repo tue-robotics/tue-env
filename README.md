@@ -2,10 +2,18 @@
 Package manager that can be used to install (ROS) dependencies
 
 ## Installation
-Run the following commands in a shell:
+
+#### Ubuntu 16.04
 ```bash
-wget https://raw.githubusercontent.com/tue-robotics/tue-env/master/installer/scripts/bootstrap-ros-indigo -O /tmp/bootstrap-ros-indigo
-source /tmp/bootstrap-ros-indigo
+source <(wget -O- https://raw.githubusercontent.com/tue-robotics/tue-env/master/installer/scripts/bootstrap-ros-kinetic)
+tue-get install tue-dev
+source ~/.bashrc
+```
+#### Ubuntu 14.04
+```bash
+source <(wget -O- https://raw.githubusercontent.com/tue-robotics/tue-env/master/installer/scripts/bootstrap-ros-indigo)
+tue-get install tue-dev
+source ~/.bashrc
 ```
 
 ## Usage
