@@ -76,8 +76,13 @@ function tue-make
 
     if [ -n "$TUE_ROS_DISTRO" ] && [ -d $_TUE_CATKIN_SYSTEM_DIR ]
     then
-        catkin_make --directory $_TUE_CATKIN_SYSTEM_DIR -DCMAKE_BUILD_TYPE=RelWithDebInfo $@
-    fi
+		if grep -q catkin_make $_TUE_CATKIN_SYSTEM_DIR/devel/.built_by
+		then
+			catkin_make_isolated --directory $_TUE_CATKIN_SYSTEM_DIR -DCMAKE_BUILD_TYPE=RelWithDebInfo $@
+		else
+			catkin build --workspace $_TUE_CATKIN_SYSTEM_DIR -DCMAKE_BUILD_TYPE=RelWithDebInfo $@
+		fi
+    fi    
 }
 
 function tue-make-system
