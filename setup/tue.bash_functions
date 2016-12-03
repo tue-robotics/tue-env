@@ -109,7 +109,6 @@ function tue-make-system
 
 function tue-make-dev
 {
-{
 	case $(cat $_TUE_CATKIN_SYSTEM_DIR/devel/.built_by) in
 	'catkin_make')
 		catkin_make --directory $_TUE_CATKIN_DEV_DIR -DCMAKE_BUILD_TYPE=RelWithDebInfo $@
@@ -122,10 +121,9 @@ function tue-make-dev
 		catkin build --workspace $_TUE_CATKIN_DEV_DIR $@
 		;;
 	esac
-}}
+}
 
 function tue-make-dev-isolated
-{
 {
 	case $(cat $_TUE_CATKIN_SYSTEM_DIR/devel/.built_by) in
 	'catkin_make')
@@ -139,7 +137,7 @@ function tue-make-dev-isolated
 		catkin build --workspace $_TUE_CATKIN_DEV_DIR $@
 		;;
 	esac
-}}
+}
 
 # ----------------------------------------------------------------------------------------------------
 #                                              TUE-DEV
