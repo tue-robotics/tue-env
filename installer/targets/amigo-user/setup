@@ -89,14 +89,14 @@ function astart
 }
 
 function amiddle { amigo-set-envs $@ && roslaunch amigo_bringup middleware.launch; }
-function amiddle-gmapping { amigo-set-envs rwc2016_common && roslaunch amigo_bringup middleware_gmapping.launch; }
+function amiddle-gmapping { amigo-set-envs robotics_testlabs && roslaunch amigo_bringup middleware_gmapping.launch; }
 
 function amiddle-manipulation-amcl { amigo-set-envs $@ && roslaunch amigo_bringup middleware.launch; }
-function amiddle-manipulation-gmapping { amigo-set-envs rwc2016_common && roslaunch amigo_bringup middleware_gmapping.launch; }
+function amiddle-manipulation-gmapping { amigo-set-envs robotics_testlabs && roslaunch amigo_bringup middleware_gmapping.launch; }
 function amiddle-open { rostopic pub --once /amigo/base/reset_odometry std_msgs/Bool 1;amigo-set-envs rwc2016_common && roslaunch amigo_bringup middleware_open.launch; }
-function amiddle-restaurant { amigo-set-envs rwc2016_common && roslaunch amigo_bringup middleware_restaurant.launch; }
-function amiddle-final { amigo-set-envs rwc2016_common && roslaunch amigo_bringup middleware_final.launch; }
-function amiddle-final-gmapping { amigo-set-envs rwc2016_common && roslaunch amigo_bringup middleware_final_gmapping.launch; }
+function amiddle-restaurant { amigo-set-envs robotics_testlabs && roslaunch amigo_bringup middleware_restaurant.launch; }
+function amiddle-final { amigo-set-envs robotics_testlabs && roslaunch amigo_bringup middleware_final.launch; }
+function amiddle-final-gmapping { amigo-set-envs robotics_testlabs && roslaunch amigo_bringup middleware_final_gmapping.launch; }
 
 function _emtpy_complete
 {

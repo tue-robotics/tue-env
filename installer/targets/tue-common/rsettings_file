@@ -4,8 +4,8 @@
 
 # Robot environment
 #export ROBOT_ENV=reo2016
-#export ROBOT_ENV=robotics_testlabs
-export ROBOT_ENV=rwc2016
+export ROBOT_ENV=robotics_testlabs
+#export ROBOT_ENV=rwc2016
 #export ROBOT_ENV=tue.library
 
 # Which simulator to use (gazebo, fast_simulator)
