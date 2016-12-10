@@ -1,5 +1,11 @@
 #!/bin/bash
 
+# If running in docker, install required dependencies
+if [ -f /.dockerenv ]; then
+    apt-get update
+    apt-get install sudo git lsb-release wget curl
+fi
+
 # make sure git is installed
 hash git 2> /dev/null || sudo apt-get install -y git
 
@@ -9,7 +15,7 @@ then
 fi
 
 # Update installer
-git clone https://github.com/tue-robotics/tue-env.git ~/.tue
+git clone -b kinetic-devel https://github.com/tue-robotics/tue-env.git ~/.tue
 
 # Source the installer commands
 source ~/.tue/setup.bash
