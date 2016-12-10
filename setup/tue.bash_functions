@@ -76,28 +76,67 @@ function tue-make
 
     if [ -n "$TUE_ROS_DISTRO" ] && [ -d $_TUE_CATKIN_SYSTEM_DIR ]
     then
-		if grep -q catkin_make $_TUE_CATKIN_SYSTEM_DIR/devel/.built_by
-		then
-			catkin_make_isolated --directory $_TUE_CATKIN_SYSTEM_DIR -DCMAKE_BUILD_TYPE=RelWithDebInfo $@
-		else
-			catkin build --workspace $_TUE_CATKIN_SYSTEM_DIR -DCMAKE_BUILD_TYPE=RelWithDebInfo $@
-		fi
-    fi    
+		case $(cat $_TUE_CATKIN_SYSTEM_DIR/devel/.built_by) in
+		'catkin_make')
+			catkin_make --directory $_TUE_CATKIN_SYSTEM_DIR -DCMAKE_BUILD_TYPE=RelWithDebInfo $@
+			;;
+		'catkin build')
+			catkin build --workspace $_TUE_CATKIN_SYSTEM_DIR $@
+			;;
+		'')
+			catkin init --workspace $_TUE_CATKIN_SYSTEM_DIR $@
+			catkin build --workspace $_TUE_CATKIN_SYSTEM_DIR $@
+			;;
+		esac
+    fi
 }
 
 function tue-make-system
 {
-    catkin_make_isolated --directory $_TUE_CATKIN_SYSTEM_DIR -DCMAKE_BUILD_TYPE=RelWithDebInfo $@
+	case $(cat $_TUE_CATKIN_SYSTEM_DIR/devel/.built_by) in
+	'catkin_make')
+		catkin_make --directory $_TUE_CATKIN_SYSTEM_DIR -DCMAKE_BUILD_TYPE=RelWithDebInfo $@
+		;;
+	'catkin build')
+		catkin build --workspace $_TUE_CATKIN_SYSTEM_DIR $@
+		;;
+	'')
+		catkin init --workspace $_TUE_CATKIN_SYSTEM_DIR $@
+		catkin build --workspace $_TUE_CATKIN_SYSTEM_DIR $@
+		;;
+	esac
 }
 
 function tue-make-dev
 {
-    catkin_make --directory $_TUE_CATKIN_DEV_DIR -DCMAKE_BUILD_TYPE=RelWithDebInfo $@
+	case $(cat $_TUE_CATKIN_SYSTEM_DIR/devel/.built_by) in
+	'catkin_make')
+		catkin_make --directory $_TUE_CATKIN_DEV_DIR -DCMAKE_BUILD_TYPE=RelWithDebInfo $@
+		;;
+	'catkin build')
+		catkin build --workspace $_TUE_CATKIN_DEV_DIR $@
+		;;
+	'')
+		catkin init --workspace $_TUE_CATKIN_DEV_DIR $@
+		catkin build --workspace $_TUE_CATKIN_DEV_DIR $@
+		;;
+	esac
 }
 
 function tue-make-dev-isolated
 {
-    catkin_make_isolated --directory $_TUE_CATKIN_DEV_DIR -DCMAKE_BUILD_TYPE=RelWithDebInfo $@
+	case $(cat $_TUE_CATKIN_SYSTEM_DIR/devel/.built_by) in
+	'catkin_make')
+		catkin_make_isolated --directory $_TUE_CATKIN_DEV_DIR -DCMAKE_BUILD_TYPE=RelWithDebInfo $@
+		;;
+	'catkin build')
+		catkin build --workspace $_TUE_CATKIN_DEV_DIR $@
+		;;
+	'')
+		catkin init --workspace $_TUE_CATKIN_DEV_DIR $@
+		catkin build --workspace $_TUE_CATKIN_DEV_DIR $@
+		;;
+	esac
 }
 
 # ----------------------------------------------------------------------------------------------------
@@ -264,6 +303,71 @@ function tue-git-status
             fi
         fi
     done
+}
+
+# ----------------------------------------------------------------------------------------------------
+#                                              NOBLEO-REVERT
+# ----------------------------------------------------------------------------------------------------
+
+function tue-revert
+{
+	human_time="$*"
+
+    fs=`ls $_TUE_CATKIN_SYSTEM_DIR/src`
+    for pkg in $fs
+    do
+        pkg_dir=$_TUE_CATKIN_SYSTEM_DIR/src/$pkg
+
+        if [ -d $pkg_dir ]
+        then
+            cd $pkg_dir
+            branch=$(git rev-parse --abbrev-ref HEAD 2>&1)
+            if [ $? -eq 0 ] && [ $branch != "HEAD" ]
+            then
+                new_hash=$(git rev-list -1 --before="$human_time" $branch)
+                current_hash=$(git rev-parse HEAD)
+                git diff -s --exit-code $new_hash $current_hash
+                if [ $? -eq 0 ]
+                then
+                    newtime=$(git show -s --format=%ci)
+                    printf "\e[0;36m%-20s\033[0m %-15s \e[1m%s\033[0m %s\n" "$branch is fine" "$new_hash" "$newtime" "$pkg"
+                else
+                    git checkout -q $new_hash
+                    newbranch=$(git rev-parse --abbrev-ref HEAD 2>&1)
+                    newtime=$(git show -s --format=%ci)
+                    echo $branch > .do_not_commit_this
+                    printf "\e[0;36m%-20s\033[0m %-15s \e[1m%s\033[0m %s\n" "$newbranch based on $branch" "$new_hash" "$newtime" "$pkg"
+                fi
+            else
+                echo "Package $pkg could not be reverted, current state: $branch"
+            fi
+        fi
+    done
+}
+
+# ----------------------------------------------------------------------------------------------------
+#                                              NOBLEO-REVERT-UNDO
+# ----------------------------------------------------------------------------------------------------
+
+function tue-revert-undo
+{
+    fs=`ls $_TUE_CATKIN_SYSTEM_DIR/src`
+    for pkg in $fs
+    do
+        pkg_dir=$_TUE_CATKIN_SYSTEM_DIR/src/$pkg
+
+        if [ -d $pkg_dir ]
+        then
+            cd $pkg_dir
+            if [ -f .do_not_commit_this ]
+            then
+                echo $pkg
+                git checkout `cat .do_not_commit_this`
+                rm .do_not_commit_this
+            fi
+        fi
+    done
+    tue-git-status
 }
 
 # ----------------------------------------------------------------------------------------------------
