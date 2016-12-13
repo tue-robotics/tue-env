@@ -1,0 +1,5 @@
+- type: ros
+  source:
+    type: git
+    url: https://bitbucket.org/traclabs/trac_ik.git
+    sub-dir: trac_ik_lib
