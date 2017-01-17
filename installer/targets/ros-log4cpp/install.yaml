@@ -1,5 +1,5 @@
 - type: ros
   source:
     type: git
-    url: https://github.com/orocos-toolchain/ocl.git
+    url: https://github.com/orocos-toolchain/log4cpp.git
     version: toolchain-2.9
