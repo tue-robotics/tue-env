@@ -1,2 +1,17 @@
+# Middleware
 - type: target
-  name: amigo
+  name: tue-middleware
+
+# Perception
+- type: target
+  name: ros-tensorflow_ros
+- type: target
+  name: ros-openface_ros
+
+# AMIGO aliases
+- type: target
+  name: amigo-user
+
+# RoboCup
+- type: target
+  name: tue-robocup-at-home
