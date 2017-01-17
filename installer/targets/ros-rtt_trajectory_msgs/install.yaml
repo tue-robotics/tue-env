@@ -1,4 +1,6 @@
 - type: ros
   source:
-    type: system
-    name: rtt-common-msgs
+    type: git
+    url: https://github.com/orocos/rtt_ros_integration
+    sub-dir: typekits/rtt_trajectory_msgs
+    version: toolchain-2.9

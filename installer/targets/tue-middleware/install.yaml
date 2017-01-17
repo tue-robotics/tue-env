@@ -27,6 +27,10 @@
 - type: target
   name: ros-tue_manipulation
 
+# AR tracking
+- type: target
+  name: ros-ar_track_alvar
+
 # Speech
 - type: target
   name: ros-text_to_speech

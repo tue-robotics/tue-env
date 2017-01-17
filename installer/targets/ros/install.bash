@@ -30,7 +30,9 @@ then
     mkdir -p $TUE_SYSTEM_DIR/src
     sudo apt-get install g++
     cd $TUE_SYSTEM_DIR
-    catkin_make
+    catkin init
+    mkdir -p src
+    catkin build
     source $TUE_SYSTEM_DIR/devel/setup.bash
 fi
 
@@ -39,6 +41,8 @@ then
     mkdir -p $TUE_DEV_DIR/src
     sudo apt-get install g++
     cd $TUE_DEV_DIR
-    catkin_make
+    catkin init
+    mkdir -p src
+    catkin build
     source $TUE_DEV_DIR/devel/setup.bash
 fi
