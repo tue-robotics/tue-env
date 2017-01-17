@@ -3,3 +3,4 @@
     type: git
     url: https://github.com/orocos/rtt_ros_integration
     sub-dir: rtt_ros_msgs
+    version: toolchain-2.9
