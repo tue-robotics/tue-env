@@ -1,2 +1,5 @@
-- type: target
-  name: orocos_toolchain
+- type: ros
+  source:
+    type: git
+    url: https://github.com/orocos-toolchain/orogen.git
+    version: toolchain-2.9
