@@ -1,4 +1,5 @@
 - type: ros
   source:
-    type: system
-    name: orocos-toolchain
+    type: git
+    url: https://github.com/orocos-toolchain/orogen.git
+    version: toolchain-2.9
