@@ -2,6 +2,3 @@
   source:
     type: git
     url: https://github.com/tue-robotics/rtt_control_components.git
-# soem_beckhoff_drivers added as target here because it cannot exist in package.xml
-- type: target
-  name: ros-soem_beckhoff_drivers
