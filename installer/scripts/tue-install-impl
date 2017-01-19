@@ -128,12 +128,12 @@ function tue-install-target {
 }
 
 # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # #
-
-function tue-install-sys {
-    source=$1
-    TUE_INSTALL_SYSTEMS="$source $TUE_INSTALL_SYSTEMS"
-}
-
+# tue-install-system does the same, this one is not used
+# function tue-install-sys {
+#     source=$1
+#     TUE_INSTALL_SYSTEMS="$source $TUE_INSTALL_SYSTEMS"
+# }
+# 
 # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # #
 
 function _show_update_message
@@ -324,6 +324,18 @@ function tue-install-system
 
 # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # #
 
+function tue-install-pip
+{
+    if [ -z "$1" ]
+    then
+        tue-install-error "Invalid tue-install-pip call: needs package as argument."
+    fi
+
+    TUE_INSTALL_PIPS="$1 $TUE_INSTALL_PIPS"
+}
+
+# # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # #
+# Looks like it is not used
 function tue-install-pkg
 {
     type=$1
@@ -552,6 +564,7 @@ TUE_INSTALL_TEMP_DIR=/tmp/tue-installer/`randid`
 mkdir -p $TUE_INSTALL_TEMP_DIR
 
 TUE_INSTALL_SYSTEMS=
+TUE_INSTALL_PIPS=
 
 TUE_INSTALL_WARNINGS=
 TUE_INSTALL_INFOS=
@@ -617,6 +630,7 @@ fi
 # Remove temp directories
 rm /tmp/tue-installer -rf
 
+# Installing all system (apt-get) targets, which are collected during the install
 if [ -n "$TUE_INSTALL_SYSTEMS" ]; then
 
     echo -e "\nsudo apt-get install $TUE_INSTALL_SYSTEMS" >> $INSTALL_DETAILS_FILE
@@ -624,7 +638,7 @@ if [ -n "$TUE_INSTALL_SYSTEMS" ]; then
     pkgs_to_install=
     for pkg in $TUE_INSTALL_SYSTEMS
     do
-        if ! dpkg -s $pkg &> /dev/null
+        if ! dpkg -s $pkg &> /dev/null # Check if pkg is not already installed
         then
             pkgs_to_install="$pkgs_to_install $pkg"
         fi
@@ -633,7 +647,32 @@ if [ -n "$TUE_INSTALL_SYSTEMS" ]; then
     if [ -n "$pkgs_to_install" ]
     then
 		echo -e "Going to run the following command:\n"
-		echo "sudo apt-get install -y$pkgs_to_install"
+		echo "sudo apt-get install -y $pkgs_to_install"
         sudo apt-get install -y $pkgs_to_install
+    fi
+fi
+
+# Installing all python (pip) targets, which are collected during the install
+if [ -n "$TUE_INSTALL_PIPS=" ]; then
+
+    echo -e "\nsudo pip install $TUE_INSTALL_PIPS" >> $INSTALL_DETAILS_FILE
+
+    # Check if python-pip is already installed, if not, install python-pip
+    dpkg -s python-pip &> /dev/null || sudo apt-get install -y python-pip
+
+    pkgs_to_install=
+    for pkg in $TUE_INSTALL_PIPS=
+    do
+        if [ ! $(pip freeze | grep $pkg) ] # Check if pkg is not already installed
+        then
+            pkgs_to_install="$pkgs_to_install $pkg"
+        fi
+    done
+
+    if [ -n "$pkgs_to_install" ]
+    then
+		echo -e "Going to run the following command:\n"
+		echo "sudo -H pip install -U $pkgs_to_install"
+        sudo -H pip install -U $pkgs_to_install
     fi
 fi
