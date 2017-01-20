@@ -1,2 +1,2 @@
-- type: pip
-  name: markdown
+- type: system
+  name: python-markdown

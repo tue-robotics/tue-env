@@ -1,2 +1,2 @@
-- type: pip
-  name: matplotlib
+- type: system
+  name: python-matplotlib
