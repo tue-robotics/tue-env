@@ -653,7 +653,7 @@ if [ -n "$TUE_INSTALL_SYSTEMS" ]; then
 fi
 
 # Installing all python (pip) targets, which are collected during the install
-if [ -n "$TUE_INSTALL_PIPS=" ]; then
+if [ -n "$TUE_INSTALL_PIPS" ]; then
 
     echo -e "\nsudo pip install $TUE_INSTALL_PIPS" >> $INSTALL_DETAILS_FILE
 
@@ -661,7 +661,7 @@ if [ -n "$TUE_INSTALL_PIPS=" ]; then
     dpkg -s python-pip &> /dev/null || sudo apt-get install -y python-pip
 
     pkgs_to_install=
-    for pkg in $TUE_INSTALL_PIPS=
+    for pkg in $TUE_INSTALL_PIPS
     do
         if [ ! $(pip freeze | grep $pkg) ] # Check if pkg is not already installed
         then
