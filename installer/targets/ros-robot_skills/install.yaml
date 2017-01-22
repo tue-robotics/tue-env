@@ -1,5 +1,4 @@
 - type: ros
   source:
     type: git
-    url: https://github.com/tue-robotics/tue_robocup.git
-    sub-dir: robot_skills
+    url: https://github.com/tue-robotics/robot_skills.git
