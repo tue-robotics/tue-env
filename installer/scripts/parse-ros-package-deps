@@ -23,6 +23,12 @@ def main():
     deps = doc.findall('depend')
     dep_set |= set([dep.text for dep in deps])
 
+    deps = doc.findall('exec_depend')
+    dep_set |= set([dep.text for dep in deps])
+    
+    deps = doc.findall('test_depend')
+    dep_set |= set([dep.text for dep in deps])
+
     print '\n'.join(dep_set)
 
 if __name__ == "__main__":
