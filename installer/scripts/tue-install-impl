@@ -173,7 +173,7 @@ TUE_INSTALL_GIT_PULL_Q=()
 function tue-install-git
 {
     if [ ! -d $2 ]; then
-        res=$(git clone $1 $2 2>&1)
+        res=$(git clone --recursive $1 $2 2>&1)
     else
 		# Check if we have already pulled the repo
 		if [[ $TUE_INSTALL_GIT_PULL_Q =~ $2 ]]
