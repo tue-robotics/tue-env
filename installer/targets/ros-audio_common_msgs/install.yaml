@@ -1,5 +1,4 @@
 - type: ros
   source:
-    type: git
-    url: https://github.com/tue-robotics/audio_common.git
-    sub-dir: audio_common_msgs
+    type: system
+    name: audio-common-msgs
