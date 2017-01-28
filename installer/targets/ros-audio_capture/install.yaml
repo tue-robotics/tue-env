@@ -2,4 +2,4 @@
   source:
     type: git
     url: https://github.com/tue-robotics/audio_common.git
-    sub-dir: audio_common_msgs
+    sub-dir: audio_capture
