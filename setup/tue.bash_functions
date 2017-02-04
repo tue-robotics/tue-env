@@ -233,7 +233,7 @@ function _tue-repo-status
             fi
 
             local current_branch=`git rev-parse --abbrev-ref HEAD`
-            if [ $current_branch != "master" ] && [ $current_branch != "hydro-devel" ] && [ $current_branch != "develop" ] && [ $current_branch != "indigo-devel" ] && [ $current_branch != "toolchain2.9" ]
+            if [ $current_branch != "master" ] && [ $current_branch != "hydro-devel" ] && [ $current_branch != "develop" ] && [ $current_branch != "indigo-devel" ] && [ $current_branch != "toolchain-2.9" ]
             then
                 echo -e "\033[1m$name\033[0m is on branch '$current_branch'"
             fi
@@ -667,11 +667,16 @@ For example:
     cd ~/.tue
     git remote set-url $remote ${server}tue-robotics/tue-env
     
-    local fs=`ls $TUE_ENV_DIR/repos/https_/github.com/tue-robotics`
+    tue_dir=$TUE_ENV_DIR/repos/https_/github.com/tue-robotics
+    # replace spaces with underscores
+    tue_dir=${pkg_dir// /_}
+    # now, clean out anything that's not alphanumeric or an underscore
+    tue_dir=${pkg_dir//[^a-zA-Z0-9\/\.-]/_}
+    
+    local fs=`ls $tue_dir`
     for pkg in $fs
     do
         local pkg_dir=$TUE_ENV_DIR/repos/https_/github.com/tue-robotics/$pkg
-        
         # replace spaces with underscores
         pkg_dir=${pkg_dir// /_}
         # now, clean out anything that's not alphanumeric or an underscore
@@ -708,7 +713,6 @@ function tue-robocup-reset-github-origin
 function tue-robocup-install-package
 {
     local pkg_dir=$TUE_ENV_DIR/repos/https_/github.com/tue-robotics/${1}.git
-    
     # replace spaces with underscores
     pkg_dir=${pkg_dir// /_}
     # now, clean out anything that's not alphanumeric or an underscore
@@ -728,9 +732,7 @@ function tue-robocup-update
 
     cd ~/.tue
     git pull --ff-only
-
-    tue-robocup-install-package picaso_4d_systems #WHY????
-
+    
     # Copy rsettings file
     if [ "$ROBOT_REAL" != "true" ]
     then
