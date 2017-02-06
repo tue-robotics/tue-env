@@ -677,10 +677,6 @@ For example:
     for pkg in $fs
     do
         local pkg_dir=$TUE_ENV_DIR/repos/https_/github.com/tue-robotics/$pkg
-        # replace spaces with underscores
-        pkg_dir=${pkg_dir// /_}
-        # now, clean out anything that's not alphanumeric or an underscore
-        pkg_dir=${pkg_dir//[^a-zA-Z0-9\/\.-]/_}
 
         if [ -d $pkg_dir ]
         then
@@ -712,12 +708,15 @@ function tue-robocup-reset-github-origin
 
 function tue-robocup-install-package
 {
-    local pkg_dir=$TUE_ENV_DIR/repos/https_/github.com/tue-robotics/${1}.git
+    local pkgs_dir=$TUE_ENV_DIR/repos/https_/github.com/tue-robotics
     # replace spaces with underscores
-    pkg_dir=${pkg_dir// /_}
+    pkgs_dir=${pkgs_dir// /_}
     # now, clean out anything that's not alphanumeric or an underscore
-    pkg_dir=${pkg_dir//[^a-zA-Z0-9\/\.-]/_}
-    
+    pkgs_dir=${pkgs_dir//[^a-zA-Z0-9\/\.-]/_}
+
+    local pkg_dir=$pkgs_dir/${1}.git
+
+
     # If directory already exists, return
     [ -d $pkg_dir ] && return
 
@@ -757,9 +756,9 @@ function tue-robocup-update
         fi
     done
 
-	if [ ! -d $TUE_ENV_DIR/system/src/robocup_knowledge ]; then
-		ln -s $TUE_ENV_DIR/repos/https_/github.com/tue-robotics/tue_robocup.git/robocup_knowledge $TUE_ENV_DIR/system/src/robocup_knowledge
-	fi
+    if [ ! -d $TUE_ENV_DIR/system/src/robocup_knowledge ]; then
+        ln -s $TUE_ENV_DIR/repos/https_/github.com/tue-robotics/tue_robocup.git/robocup_knowledge $TUE_ENV_DIR/system/src/robocup_knowledge
+    fi
 
     cd $mem_pwd
 }
