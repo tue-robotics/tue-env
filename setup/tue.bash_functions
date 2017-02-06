@@ -667,13 +667,13 @@ For example:
     cd ~/.tue
     git remote set-url $remote ${server}tue-robotics/tue-env
     
-    tue_dir=$TUE_ENV_DIR/repos/https_/github.com/tue-robotics
+    pkgs_dir=$TUE_ENV_DIR/repos/https_/github.com/tue-robotics
     # replace spaces with underscores
-    tue_dir=${pkg_dir// /_}
+    pkgs_dir=${pkgs_dir// /_}
     # now, clean out anything that's not alphanumeric or an underscore
-    tue_dir=${pkg_dir//[^a-zA-Z0-9\/\.-]/_}
+    pkgs_dir=${pkgs_dir//[^a-zA-Z0-9\/\.-]/_}
     
-    local fs=`ls $tue_dir`
+    local fs=`ls $pkgs_dir`
     for pkg in $fs
     do
         local pkg_dir=$TUE_ENV_DIR/repos/https_/github.com/tue-robotics/$pkg
