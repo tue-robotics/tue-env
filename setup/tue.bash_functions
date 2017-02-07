@@ -233,7 +233,7 @@ function _tue-repo-status
             fi
 
             local current_branch=`git rev-parse --abbrev-ref HEAD`
-            if [ $current_branch != "master" ] && [ $current_branch != "hydro-devel" ] && [ $current_branch != "develop" ] && [ $current_branch != "indigo-devel" ] && [ $current_branch != "toolchain2.9" ]
+            if [ $current_branch != "master" ] && [ $current_branch != "hydro-devel" ] && [ $current_branch != "develop" ] && [ $current_branch != "indigo-devel" ] && [ $current_branch != "toolchain-2.9" ]
             then
                 echo -e "\033[1m$name\033[0m is on branch '$current_branch'"
             fi
@@ -666,11 +666,17 @@ For example:
 
     cd ~/.tue
     git remote set-url $remote ${server}tue-robotics/tue-env
-
-    local fs=`ls $TUE_ENV_DIR/repos/https:/github.com/tue-robotics`
+    
+    pkgs_dir=$TUE_ENV_DIR/repos/https_/github.com/tue-robotics
+    # replace spaces with underscores
+    pkgs_dir=${pkgs_dir// /_}
+    # now, clean out anything that's not alphanumeric or an underscore
+    pkgs_dir=${pkgs_dir//[^a-zA-Z0-9\/\.-]/_}
+    
+    local fs=`ls $pkgs_dir`
     for pkg in $fs
     do
-        local pkg_dir=$TUE_ENV_DIR/repos/https:/github.com/tue-robotics/$pkg
+        local pkg_dir=$TUE_ENV_DIR/repos/https_/github.com/tue-robotics/$pkg
 
         if [ -d $pkg_dir ]
         then
@@ -702,7 +708,14 @@ function tue-robocup-reset-github-origin
 
 function tue-robocup-install-package
 {
-    local pkg_dir=$TUE_ENV_DIR/repos/https:/github.com/tue-robotics/${1}.git
+    local pkgs_dir=$TUE_ENV_DIR/repos/https_/github.com/tue-robotics
+    # replace spaces with underscores
+    pkgs_dir=${pkgs_dir// /_}
+    # now, clean out anything that's not alphanumeric or an underscore
+    pkgs_dir=${pkgs_dir//[^a-zA-Z0-9\/\.-]/_}
+
+    local pkg_dir=$pkgs_dir/${1}.git
+
 
     # If directory already exists, return
     [ -d $pkg_dir ] && return
@@ -718,9 +731,7 @@ function tue-robocup-update
 
     cd ~/.tue
     git pull --ff-only
-
-    tue-robocup-install-package picaso_4d_systems
-
+    
     # Copy rsettings file
     if [ "$ROBOT_REAL" != "true" ]
     then
@@ -745,9 +756,9 @@ function tue-robocup-update
         fi
     done
 
-	if [ ! -d $TUE_ENV_DIR/system/src/robocup_knowledge ]; then
-		ln -s $TUE_ENV_DIR/repos/https:/github.com/tue-robotics/tue_robocup.git/robocup_knowledge $TUE_ENV_DIR/system/src/robocup_knowledge
-	fi
+    if [ ! -d $TUE_ENV_DIR/system/src/robocup_knowledge ]; then
+        ln -s $TUE_ENV_DIR/repos/https_/github.com/tue-robotics/tue_robocup.git/robocup_knowledge $TUE_ENV_DIR/system/src/robocup_knowledge
+    fi
 
     cd $mem_pwd
 }
