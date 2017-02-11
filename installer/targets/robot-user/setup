@@ -146,6 +146,14 @@ function _github-protect-branch() {
 		-sD - -o /dev/null | grep Status
 }
 
+function _github-check-protect-branch() {
+    echo "Protecting '$2' of '$1'"
+    curl https://api.github.com/repos/$1/branches/$2 \
+        -u $myuser:$mypass \
+        -H "Accept: application/vnd.github.loki-preview" \
+        -s | jq .protection
+}
+
 function _github-view-protect-branch() {
 	echo "View protection of '$2' of '$1'"
 	_github-prompt
@@ -165,6 +173,21 @@ function github-protect-branches() {
 
         while read -r repo; do
             _github-protect-branch "tue-robotics/$repo" "$1"
+        done <<< "$repos"
+    fi
+}
+
+function github-check-protect-branches() {
+    if [[ -z $1 ]]
+    then
+        echo -e "Usage: github-protect-branches <branch>"
+    else
+        echo "Protecting the $1 branch"
+        _github-prompt
+        repos=$(github-list-repos)
+
+        while read -r repo; do
+            _github-check-protect-branch "tue-robotics/$repo" "$1"
         done <<< "$repos"
     fi
 }
