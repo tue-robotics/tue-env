@@ -1,3 +1,4 @@
 function fix_permissions() {
-    sudo setcap cap_net_raw+ep /home/amigo/ros/kinetic/system/devel/bin/deployer-gnulinux
+    sudo setcap cap_net_raw+ep `which deployer-gnulinux`
+    sudo setcap cap_net_raw+ep `which rttscript-gnulinux`
 }
