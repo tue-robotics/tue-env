@@ -3,4 +3,3 @@
     type: git
     url: https://github.com/tue-robotics/tue_robocup.git
     sub-dir: tue_robocup
-    version: refactor/cleanup_and_merge
