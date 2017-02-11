@@ -1,3 +1,9 @@
-# hub is installed as a ruby gem
-hash gem 2> /dev/null || sudo apt-get install ruby
-hash hub 2> /dev/null || sudo gem install hub
+#!/bin/bash
+
+if [ ! -f /etc/apt/sources.list.d/cpick-ubuntu-hub-xenial.list ]
+then
+    sudo add-apt-repository ppa:cpick/hub
+    sudo apt-get update
+fi
+
+tue-install-system hub
