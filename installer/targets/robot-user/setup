@@ -115,3 +115,38 @@ PS1='[\[\033[01;34m\]\w\[\033[00m\]]$(__git_ps1)\n'\
 '$(ROS_MASTER_NAME)${debian_chroot:+($debian_chroot)}\[\033[01;32m\]\u@\h\[\033[00m\] \$ '
 
 alias scores='scp amigo@192.168.2.110:/home/amigo/database/per_challenge/scores.html /tmp/scores.html && google-chrome /tmp/scores.html'
+
+function github-cache-credentials() {
+    if [[ -z $1 ]]
+    then
+        echo -e "Usage: github-cache-credentials <counter><minutes,hours,days,weeks> like 10m, 1h,..."
+    else
+    input=$1
+		counter=${input//[^0-9]/} #keep number
+		time_type=${input//[^a-zA-Z]/} #keep letters
+
+		if [ $time_type == "m" ] || [ $time_type == "min" ]
+		then
+			echo -e "I will remember your credentials for $counter minutes"
+			counter=$(( counter * 60 ))
+			git config --global credential.helper "cache --timeout=$counter"
+		elif [ $time_type == "h" ] || [ $time_type == "hour" ] || [ $time_type == "hours" ]
+		then
+			echo -e "I will remember your credentials for $counter hours"
+			counter=$(( counter * 60 * 60 ))
+			git config --global credential.helper "cache --timeout=$counter"
+		elif [ $time_type == "d" ] || [ $time_type == "day" ] || [ $time_type == "days" ]
+		then
+			echo -e "I will remember your credentials for $counter days"
+			counter=$(( counter * 60 * 60 *24 ))
+			git config --global credential.helper "cache --timeout=$counter"
+		elif [ $time_type == "w" ] || [$time_type == "week" ] || [ $time_type == "weeks" ]
+		then
+			echo -e "I will remember your credentials for $counter weeks"
+			counter=$(( counter * 60 * 60 * 24 * 7 ))
+			git config --global credential.helper "cache --timeout=$counter"
+		else
+			echo -e "Incorrect inputs"
+		fi
+	fi
+}
