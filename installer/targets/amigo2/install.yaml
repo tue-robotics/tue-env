@@ -1,3 +1,6 @@
+- type: target
+  name: amigo
+
 # Middleware
 - type: target
   name: tue-middleware
