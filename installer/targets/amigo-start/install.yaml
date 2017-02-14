@@ -1,0 +1,26 @@
+- type: target
+  name: ros-dragonfly_speech_recognition
+
+- type: target
+  name: ros-hmi
+
+- type: target
+  name: ros-text_to_speech
+
+- type: target
+  name: ros-amigo_description
+
+- type: target
+  name: ros-robot_state_publisher
+
+- type: target
+  name: ros-rosbridge_server
+
+- type: target
+  name: ros-tue_mobile_ui
+
+- type: target
+  name: ros-tf_server
+
+- type: target
+  name: ros-node_alive

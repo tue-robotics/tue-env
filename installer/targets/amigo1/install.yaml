@@ -1,10 +1,26 @@
 - type: target
   name: amigo
+
 - type: target
-  name: ros-kinect_driver
-- type: target
-  name: megatools
-  
-  # Orocos
+  name: amigo-start
+
 - type: target
   name: ros-amigo_hardware
+  
+- type: target
+  name: ros-kinect_driver
+
+- type: target
+  name: ros-urg-node
+
+- type: target
+  name: ros-battery_manager
+
+- type: target
+  name: ros-rgb_lights_manager
+
+- type: target
+  name: ros-emergency_speakup
+
+- type: target
+  name: tue-hardware
