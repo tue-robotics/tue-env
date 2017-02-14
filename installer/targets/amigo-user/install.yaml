@@ -6,6 +6,6 @@
 
 - type: target
   name: ros-amigo_bringup
-  
+
 - type: target
   name: ros-amigo_description

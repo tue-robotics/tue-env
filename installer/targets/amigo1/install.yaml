@@ -6,12 +6,15 @@
 
 - type: target
   name: ros-amigo_hardware
-  
+
+- type: target
+  name: audio
+
 - type: target
   name: ros-kinect_driver
 
 - type: target
-  name: ros-urg-node
+  name: ros-urg_node
 
 - type: target
   name: ros-battery_manager
@@ -21,6 +24,3 @@
 
 - type: target
   name: ros-emergency_speakup
-
-- type: target
-  name: tue-hardware
