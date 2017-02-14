@@ -1,6 +1,5 @@
 - type: target
   name: robot
 
-# AMIGO aliases
 - type: target
   name: amigo-user
