@@ -25,17 +25,18 @@ if [ ! -f "$HOME/.megarc" ]; then
     chmod 640 ~/.megarc
 fi
 
+
 # Setup the sync service
-if [ ! -f "$HOME/.config/systemd/user/mega.timer" ]; then
+if [ ! -f "/etc/systemd/system/mega.timer" ]; then
     # Create mega service
-    echo "Copying mega service files to ~/.config/systemd/user/"
-    install -D $DIR/mega.service $HOME/.config/systemd/user/mega.service
-    install -D $DIR/mega.timer $HOME/.config/systemd/user/mega.timer
+    echo "Copying mega service files to /etc/systemd/system"
 
-    # Start the timer sync service
-    systemctl --user start mega.timer
+    sudo cp $DIR/mega.service /etc/systemd/system/
+    sudo cp $DIR/mega.timer /etc/systemd/system/
 
-    # Auto enable on startup
-    systemctl --user enable mega.timer
+    # Reload and enable
+    sudo systemctl daemon-reload
+    sudo systemctl start mega.service
+    sudo systemctl enable mega.service
 fi
 
