@@ -5,57 +5,15 @@
 # Robot environment
 #export ROBOT_ENV=reo2016
 export ROBOT_ENV=robotics_testlabs
-#export ROBOT_ENV=rwc2016
-#export ROBOT_ENV=tue.library
-
-# Which simulator to use (gazebo, fast_simulator)
-export SIMULATOR=fast_simulator
-
-# # # # # # # # # # # # # # # # # # # #
-#                  ED
-# # # # # # # # # # # # # # # # # # # #
-
-# ED configuration (amigo, simple)
-export ED_CONFIG=amigo
-
-# # # # # # # # # # # # # # # # # # # #
-#                AMIGO
-# # # # # # # # # # # # # # # # # # # #
-
-# Navigation type: 2d, 3d
-export AMIGO_NAV=3d
-
-# Localization type: amcl, gmapping, odom
-export AMIGO_LOC=odom
-
-# # # # # # # # # # # # # # # # # # # #
-
 
 # Set Robot initial pose based on environment
 
-if [ $ROBOT_ENV == tue.library ]; then
- 
-    # Robot initial pose
-    export ROBOT_INIT_X=-3.0
-    export ROBOT_INIT_Y=0.0
-    export ROBOT_INIT_PHI=-1.57
+if [ $ROBOT_ENV == robotics_testlabs ]; then
 
-    # Robot initial Gazebo pose
-    export GAZEBO_ROBOT_INIT_X=0.8 
-    export GAZEBO_ROBOT_INIT_Y=0.0
-    export GAZEBO_ROBOT_INIT_PHI=1.57
-
-elif [ $ROBOT_ENV == robotics_testlabs ]; then
- 
     # Robot initial pose
     export ROBOT_INIT_X=0.586
     export ROBOT_INIT_Y=4.259
     export ROBOT_INIT_PHI=0
-
-    # Robot initial Gazebo pose
-    export GAZEBO_ROBOT_INIT_X=0.8 
-    export GAZEBO_ROBOT_INIT_Y=0.0
-    export GAZEBO_ROBOT_INIT_PHI=1.57
 
 elif [ $ROBOT_ENV == reo2016 ]; then
 
@@ -63,18 +21,6 @@ elif [ $ROBOT_ENV == reo2016 ]; then
     export ROBOT_INIT_X=0.0
     export ROBOT_INIT_Y=0.0
     export ROBOT_INIT_PHI=0.0
-
-elif [ $ROBOT_ENV == rwc2016 ]; then
-
-    # Robot initial pose
-    export ROBOT_INIT_X=-0.5
-    export ROBOT_INIT_Y=0.0
-    export ROBOT_INIT_PHI=0.0
-
 fi
-
-# # # # # # # # # # # # # # # # # # # #
-#              MACHINES
-# # # # # # # # # # # # # # # # # # # #
 
 export ROBOT_MACHINE_DIR=$TUE_ENV_DIR/system/src/amigo_machine_files

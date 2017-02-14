@@ -2,10 +2,3 @@
 - type: target
   name: ros-tue_teleop_keyboard
 
-# Console
-- type: target
-  name: ros-nl_robot_console
-
-# ED rviz plugin
-- type: target
-  name: ros-ed_rviz_plugins
