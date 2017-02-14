@@ -1,6 +1,9 @@
 - type: target
   name: amigo
 
+- type: target
+  name: megatools
+
 # Middleware
 - type: target
   name: tue-middleware
