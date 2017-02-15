@@ -3,7 +3,8 @@ Description=Mega Sync Service
 After=local-fs.target network.target
 [Service]
 Type=simple
-ExecStart=/usr/bin/megacopy --config %h/.megarc --local MEGA --remote /Root -d
+ExecStart=/usr/bin/sudo -H -u amigo bash -c '/usr/bin/megacopy --config $HOME/.megarc --local $HOME/MEGA --remote /Root -d'
+
 Restart=on-failure
 [Install]
 WantedBy=multi-user.target

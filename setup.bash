@@ -40,7 +40,11 @@ then
 fi
 
 # -----------------------------------------
+# Fix annoying perl language warnings
+export LC_ALL="en_US.UTF-8"
 
+# -----------------------------------------
+# Load all the bash functions
 source $TUE_DIR/setup/tue.bash_functions
 
 if [ -f $TUE_ENV_DIR/.env/setup/user_setup.bash ]
