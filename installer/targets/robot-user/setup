@@ -159,3 +159,4 @@ if [ ! $ROBOT_REAL ] ; then
 		export ROS_IP=`hostname -I | sed 's/.*\(192\.168\.2\.[0-9]\+\).*/\1/'`
 	fi
 fi
+
