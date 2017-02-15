@@ -28,4 +28,6 @@ if [ ! -d ~/openface ]; then
     if [[ $(python -c "import openface") -eq 1 ]]; then
         echo "openface is not properly installed"
     fi
+
+    luarocks install dpnn
 fi

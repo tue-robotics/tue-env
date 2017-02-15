@@ -3,3 +3,5 @@
     type: git
     url: https://github.com/tue-robotics/image_recognition.git
     sub-dir: openface_ros
+- type: target
+  name: openface

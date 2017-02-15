@@ -1,14 +1,11 @@
 - type: target
   name: tue-common
+
 - type: target
   name: robot-user
+
 - type: target
   name: ros-amigo_bringup
+
 - type: target
   name: ros-amigo_description
-
-# TODO: sort out
-- type: target
-  name: ros-tf_server
-- type: target
-  name: ros-node_alive
