@@ -7,11 +7,11 @@
 alias topic-monitor='rosrun robot_launch_files topic_monitor */scan */rgbd */joint_states */base/measurements'
 
 function robocup-challenge
-{                                                                                              
-    if [ -z "$2" ]                                                                             
-    then                                                                                       
-        echo -e "\e[0;31mPlease provide <robot-name> <robot-env>\033[0m"                                     
-        return 1                                                                               
+{
+    if [ -z "$2" ]
+    then
+        echo -e "\e[0;31mPlease provide <robot-name> <robot-env>\033[0m"
+        return 1
     fi
 
     if [[ "$2" != "rwc2016a" ]] && [[ "$2" != "rwc2016b" ]] && [[ "$2" != "robotics_testlabs" ]] && [[ "$2" != "rwc2016_common" ]]
@@ -23,8 +23,8 @@ function robocup-challenge
     local robot_env=$(rosparam get /robot_env)
     if [[ "$robot_env" != "$2" ]]
     then
-        echo -e "\e[0;31mGiven environment does not match middleware, which has environment '$robot_env'\033[0m"                                     
-        return 1  
+        echo -e "\e[0;31mGiven environment does not match middleware, which has environment '$robot_env'\033[0m"
+        return 1
     fi
     export ROBOT_ENV=$2
 }
@@ -39,7 +39,7 @@ function _robocup-challenge_complete
         COMPREPLY=( $(compgen -W "amigo sergio" -- $cur) )
     elif [ $COMP_CWORD -eq 2 ]
     then
-        COMPREPLY=( $(compgen -W "rwc2016a rwc2016b robotics_testlabs" -- $cur) )        
+        COMPREPLY=( $(compgen -W "rwc2016a rwc2016b robotics_testlabs" -- $cur) )
     fi
 }
 complete -F _robocup-challenge_complete robocup-challenge
@@ -115,3 +115,13 @@ PS1='[\[\033[01;34m\]\w\[\033[00m\]]$(__git_ps1)\n'\
 '$(ROS_MASTER_NAME)${debian_chroot:+($debian_chroot)}\[\033[01;32m\]\u@\h\[\033[00m\] \$ '
 
 alias scores='scp amigo@192.168.2.110:/home/amigo/database/per_challenge/scores.html /tmp/scores.html && google-chrome /tmp/scores.html'
+
+# SET THE ROS IP IF ON ROBOT NETWORK
+
+# Set the ROS_IP if we are on the 192.168.2.* range and not on the real robot
+if [ ! $ROBOT_REAL ] ; then
+	if `hostname -I | grep -q 192.168.2.` ; then
+		export ROS_IP=`hostname -I | sed 's/.*\(192\.168\.2\.[0-9]\+\).*/\1/'`
+	fi
+fi
+
