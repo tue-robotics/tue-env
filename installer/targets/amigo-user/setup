@@ -54,89 +54,14 @@ alias sshamigo2='until ssh -qo ConnectTimeout=1 -X amigo@amigo2; do echo waiting
 
 alias amigo='export ROBOT_BRINGUP_PATH=$TUE_SYSTEM_DIR/src/amigo_bringup'
 
-function amigo-set-envs
-{
-    [ -z "$1" ] && echo "Please provide <robot-env>" && return 1
-
-    if [[ "$1" != "rwc2016a" ]] && [[ "$1" != "rwc2016b" ]] && [[ "$1" != "robotics_testlabs" ]] && [[ "$1" != "rwc2016_common" ]]
-    then
-        echo "<robot-env> must be robotics_testlabs, rwc2016a or rwc2016b"
-        return 1
-    fi
-
-    amigo
-    export ROBOT_ENV=$1
-
-    rosparam set /robot_env $1
-    return 0
-}
-
-function _amigo-set-envs_complete
-{
-    local cur=${COMP_WORDS[COMP_CWORD]}
-    [ $COMP_CWORD -eq 1 ] && COMPREPLY=( $(compgen -W "robotics_testlabs rwc2016a rwc2016b" -- $cur) )
-}
-complete -F _amigo-set-envs_complete amigo-set-envs
-
 function astart
 {
-    if [[ "$ROBOT_REAL" != "true" ]]
-    then
-        amigo-set-envs $@ || return 1
-    fi
-    roslaunch amigo_bringup start.launch
+    roslaunch amigo_bringup start.launch $@
 }
-
-function amiddle { amigo-set-envs $@ && roslaunch amigo_bringup middleware.launch; }
-function amiddle-gmapping { amigo-set-envs robotics_testlabs && roslaunch amigo_bringup middleware_gmapping.launch; }
-
-function amiddle-manipulation-amcl { amigo-set-envs $@ && roslaunch amigo_bringup middleware.launch; }
-function amiddle-manipulation-gmapping { amigo-set-envs robotics_testlabs && roslaunch amigo_bringup middleware_gmapping.launch; }
-function amiddle-open { rostopic pub --once /amigo/base/reset_odometry std_msgs/Bool 1;amigo-set-envs rwc2016_common && roslaunch amigo_bringup middleware_open.launch; }
-function amiddle-restaurant { amigo-set-envs robotics_testlabs && roslaunch amigo_bringup middleware_restaurant.launch; }
-function amiddle-final { amigo-set-envs robotics_testlabs && roslaunch amigo_bringup middleware_final.launch; }
-function amiddle-final-gmapping { amigo-set-envs robotics_testlabs && roslaunch amigo_bringup middleware_final_gmapping.launch; }
-
-function _emtpy_complete
+function amiddle
 {
-    :
+    roslaunch amigo_bringup middleware.launch $@
 }
-
-complete -F _amigo-set-envs_complete astart
-complete -F _amigo-set-envs_complete amiddle
-complete -F _amigo-set-envs_complete amiddle-manipulation-amcl
-complete -F _amigo-set-envs_complete amiddle-navigation
-complete -F _emtpy_complete amiddle-gmapping
-complete -F _emtpy_complete amiddle-manipulation-gmapping
-complete -F _emtpy_complete amiddle-open
-complete -F _emtpy_complete amiddle-restaurant
-complete -F _emtpy_complete amiddle-final
-
-alias amiddle-rips='amiddle'
-alias amiddle-speech-recognition='amiddle-restaurant'
-alias amiddle-person-recognition='amiddle-gmapping'
-alias amiddle-following-and-guiding='amiddle-gmapping'
-alias amiddle-navigation='amiddle'
-alias amiddle-gpsr='amiddle'
-alias amiddle-eegpsr='amiddle'
-
-complete -F _amigo-set-envs_complete amiddle-rips
-complete -F _emtpy_complete amiddle-speech-recognition
-complete -F _emtpy_complete amiddle-person-recognition
-complete -F _emtpy_complete amiddle-following-and-guiding
-complete -F _amigo-set-envs_complete amiddle-navigation
-complete -F _amigo-set-envs_complete amiddle-gpsr
-complete -F _amigo-set-envs_complete amiddle-eegpsr
-
-alias ahardware='amigo; roslaunch amigo_bringup hardware.launch'
-#alias amiddle='amigo; roslaunch amigo_bringup middleware.launch'
-#alias amiddle-gmapping='amigo; roslaunch amigo_bringup middleware_gmapping.launch'
-#alias amiddle-manipulation-amcl='amigo; roslaunch amigo_bringup middleware.launch'
-#alias amiddle-manipulation-gmapping='amigo; roslaunch amigo_bringup middleware_gmapping.launch'
-#alias amiddle-open='rostopic pub --once /amigo/base/reset_odometry std_msgs/Bool 1;amigo; roslaunch amigo_bringup middleware_open.launch'
-#alias amiddle-restaurant='amigo; roslaunch amigo_bringup middleware_restaurant.launch'
-#alias amiddle-navigation='amigo; roslaunch amigo_bringup middleware_navigation.launch'
-#alias amiddle-final='amigo; roslaunch amigo_bringup middleware_final.launch'
 
 alias amigo-continui='rosrun hmi_server continue_gui.py __ns:=amigo/hmi'
 alias amigo-continui-gpsr='rosrun hmi_server continue_gui.py $TUE_SYSTEM_DIR/src/challenge_gpsr/src/grammar_gui.fcfg __ns:=amigo/hmi'
