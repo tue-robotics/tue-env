@@ -56,10 +56,12 @@ alias amigo='export ROBOT_BRINGUP_PATH=$TUE_SYSTEM_DIR/src/amigo_bringup'
 
 function astart
 {
+	amigo
     roslaunch amigo_bringup start.launch $@
 }
 function amiddle
 {
+	amigo
     roslaunch amigo_bringup middleware.launch $@
 }
 
