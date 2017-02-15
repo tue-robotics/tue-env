@@ -1,0 +1,1 @@
+alias mega-service-restart='sudo systemctl restart mega.service && echo "sudo journalctl -u mega.service -f # <-- To inspect the journal of the service"'
