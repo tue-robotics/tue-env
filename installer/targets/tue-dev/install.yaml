@@ -36,8 +36,13 @@
 
 - type: target
   name: ros-dashboard
+
 - type: target
   name: amigo-user
+
+- type: target
+  name: amigo-start
+
 - type: target
   name: sergio-user
 
