@@ -144,7 +144,7 @@ function amigo-torso-move-joints {
         return
     fi
 
-    ( rostopic pub /amigo/torso/references sensor_msgs/JointState "{header: {seq: 0, stamp: {secs: 0, nsecs: 0}, frame_id: ''}, name: ['torso_joint'], position: [$1], velocity: [0], effort: [0]}"  --once  &> /dev/null & )
+    ( rostopic pub /amigo/hardware/references sensor_msgs/JointState "{header: {seq: 0, stamp: {secs: 0, nsecs: 0}, frame_id: ''}, name: ['torso_joint'], position: [$1], velocity: [0], effort: [0]}"  --once  &> /dev/null & )
 }
 
 # --------------------------------------------------------------------------------
@@ -155,7 +155,7 @@ function amigo-right-arm-move-joints {
         return
     fi
 
-    ( rostopic pub /amigo/right_arm/references sensor_msgs/JointState "{header: {seq: 0, stamp: {secs: 0, nsecs: 0}, frame_id: ''}, name: ['shoulder_yaw_joint_right', 'shoulder_pitch_joint_right', 'shoulder_roll_joint_right', 'elbow_pitch_joint_right', 'elbow_roll_joint_right', 'wrist_pitch_joint_right', 'wrist_yaw_joint_right'], position: [$1, $2, $3, $4, $5, $6, $7], velocity: [0], effort: [0]}"  --once  &> /dev/null & )
+    ( rostopic pub /amigo/hardware/references sensor_msgs/JointState "{header: {seq: 0, stamp: {secs: 0, nsecs: 0}, frame_id: ''}, name: ['shoulder_yaw_joint_right', 'shoulder_pitch_joint_right', 'shoulder_roll_joint_right', 'elbow_pitch_joint_right', 'elbow_roll_joint_right', 'wrist_pitch_joint_right', 'wrist_yaw_joint_right'], position: [$1, $2, $3, $4, $5, $6, $7], velocity: [0], effort: [0]}"  --once  &> /dev/null & )
 }
 
 # --------------------------------------------------------------------------------
@@ -172,7 +172,7 @@ function amigo-left-arm-move-joints {
         return
     fi
 
-    ( rostopic pub /amigo/left_arm/references sensor_msgs/JointState "{header: {seq: 0, stamp: {secs: 0, nsecs: 0}, frame_id: ''}, name: ['shoulder_yaw_joint_left', 'shoulder_pitch_joint_left', 'shoulder_roll_joint_left', 'elbow_pitch_joint_left', 'elbow_roll_joint_left', 'wrist_pitch_joint_left', 'wrist_yaw_joint_left'], position: [$1, $2, $3, $4, $5, $6, $7], velocity: [0], effort: [0]}"  --once  &> /dev/null & )
+    ( rostopic pub /amigo/hardware/references sensor_msgs/JointState "{header: {seq: 0, stamp: {secs: 0, nsecs: 0}, frame_id: ''}, name: ['shoulder_yaw_joint_left', 'shoulder_pitch_joint_left', 'shoulder_roll_joint_left', 'elbow_pitch_joint_left', 'elbow_roll_joint_left', 'wrist_pitch_joint_left', 'wrist_yaw_joint_left'], position: [$1, $2, $3, $4, $5, $6, $7], velocity: [0], effort: [0]}"  --once  &> /dev/null & )
 }
 
 # --------------------------------------------------------------------------------
