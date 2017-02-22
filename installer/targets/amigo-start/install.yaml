@@ -30,3 +30,16 @@
 
 - type: target
   name: ros-head_ref
+
+# Additional mesage definitions required for websocket calls
+# This is why you should make separate message packages o.O
+- type: target
+  name: ros-image_recognition_msgs
+- type: target
+  name: ros-ed_robocup
+- type: target
+  name: ros-ed_sensor_integration
+- type: target
+  name: ros-cb_planner_msgs_srvs
+- type: target
+  name: ros-ed_perception
