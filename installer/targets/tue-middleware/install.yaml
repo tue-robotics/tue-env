@@ -34,10 +34,13 @@
 
   name: ros-ed_gui_server
 - type: target
-
   name: ros-ed_localization
+
 - type: target
   name: ros-ed_navigation
+
+- type: target
+  name: ros-ed_robocup
 
 - type: target
   name: ros-ed_sensor_integration
