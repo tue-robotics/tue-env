@@ -54,17 +54,6 @@ alias sshamigo2='until ssh -qo ConnectTimeout=1 -X amigo@amigo2; do echo waiting
 
 alias amigo='export ROBOT_BRINGUP_PATH=$TUE_SYSTEM_DIR/src/amigo_bringup'
 
-function astart
-{
-	amigo
-    roslaunch amigo_bringup start.launch $@
-}
-function amiddle
-{
-	amigo
-    roslaunch amigo_bringup middleware.launch $@
-}
-
 alias amigo-continui='rosrun hmi_server continue_gui.py __ns:=amigo/hmi'
 alias amigo-continui-gpsr='rosrun hmi_server continue_gui.py $TUE_SYSTEM_DIR/src/challenge_gpsr/src/grammar_gui.fcfg __ns:=amigo/hmi'
 
@@ -126,9 +115,6 @@ function depcheck
 #####################
 alias diag='rosrun robot_monitor robot_monitor'
 alias adashboard='tue-dashboard amigo1 & sleep 1; disown; wmctrl -r ws://amigo1:9090 -b add,sticky'
-
-alias rviz-amigo='rosrun rviz rviz -d ~/.tue/installer/targets/amigo-user/rviz_config.rviz'
-alias rviz-amigo-final='rosrun rviz rviz -d $TUE_SYSTEM_DIR/src/challenge_final/amigo_rviz_config.rviz'
 
 alias rviz-egpsr='rosrun rviz rviz -d $TUE_TRUNK/amigo_admin_files/configs/rviz/rviz_egpsr.vcg'
 
