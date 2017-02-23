@@ -3,3 +3,4 @@
     type: git
     url: https://github.com/ros-drivers/audio_common.git
     sub-dir: audio_common_msgs
+    # maybe use ros-system target in future, when bug is fixed (commit 587610fd1380fb0155349ac9be51e7f9113eb389 by Rokus)
