@@ -3,3 +3,4 @@
     type: git
     url: https://github.com/tue-robotics/navigation.git
     sub-dir: move_base_msgs
+    version: kinetic-devel
