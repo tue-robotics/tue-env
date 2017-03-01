@@ -3,3 +3,4 @@
     type: git
     url: https://github.com/tue-robotics/navigation.git
     sub-dir: navfn
+    version: kinetic-devel
