@@ -3,3 +3,4 @@
     type: git
     url: https://github.com/tue-robotics/navigation.git
     sub-dir: carrot_planner
+    version: kinetic-devel
