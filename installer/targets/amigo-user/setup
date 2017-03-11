@@ -43,8 +43,8 @@ function amigo-audio-play
 # SSH
 #
 ####################
-alias sshamigo1='until ssh -qo ConnectTimeout=1 -X amigo@amigo1; do echo waiting for amigo1 to come online...; sleep 2; done'
-alias sshamigo2='until ssh -qo ConnectTimeout=1 -X amigo@amigo2; do echo waiting for amigo2 to come online...; sleep 2; done'
+alias sshamigo1='until ssh -qo ConnectTimeout=1 amigo@amigo1; do echo waiting for amigo1 to come online...; sleep 2; done'
+alias sshamigo2='until ssh -qo ConnectTimeout=1 amigo@amigo2; do echo waiting for amigo2 to come online...; sleep 2; done'
 
 ####################
 #
