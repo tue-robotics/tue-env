@@ -1,45 +1,8 @@
 - type: target
   name: robot
 
-# astart
 - type: target
-  name: ros-battery_manager
+  name: ros-sergio_bringup
 
-- type: target
-  name: ros-emergency_speakup
-
-- type: target
-  name: ros-rgb_lights_manager
-
-# Middleware
-- type: target
-  name: tue-middleware
-
-# Hardware
-- type: target
-  name: tue-hardware
-
-# Sensors
-- type: target
-  name: ros-urg_node
-- type: target
-  name: ros-openni_launch
-
-# Perception
-- type: target
-  name: ros-tensorflow_ros
-- type: target
-  name: ros-openface_ros
-
-# Speech
-#- type: target
-#  name: ros-philips_text_to_speech
-
-# Sergio aliases
 - type: target
   name: sergio-user
-
-# RoboCup
-- type: target
-  name: tue-robocup-at-home
-
