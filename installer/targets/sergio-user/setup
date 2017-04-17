@@ -3,115 +3,11 @@
 export PATH=~/.tue/installer/targets/sergio-user/scripts:$PATH
 
 export ROBOT_BRINGUP_PATH=$TUE_SYSTEM_DIR/src/sergio_bringup
-
 alias sergio-core='export ROS_MASTER_URI=http://sergio1:11311'
-alias sergio-show-kinect='rosrun rgbd multitool --rgbd /sergio/top_kinect/rgbd'
 
-####################
-#
-# SSH
-#
-####################
-alias sshsergio1='until ssh -qo ConnectTimeout=1 -X amigo@sergio1; do echo waiting for sergio1 to come online...; sleep 2; done'
-alias sshsergio2='until ssh -qo ConnectTimeout=1 -X amigo@sergio2; do echo waiting for sergio2 to come online...; sleep 2; done'
-alias sshsergio3='until ssh -qo ConnectTimeout=1 amigo@sergio3; do echo waiting for sergio3 to come online...; sleep 2; done'
-
-alias sergio-odom-reset='rostopic pub --once /sergio/base/reset_odometry std_msgs/Bool 1'
-
-####################
-#
-# SERGIO STARTUP
-#
-####################
-
-alias sergio='export ROBOT_BRINGUP_PATH=$TUE_SYSTEM_DIR/src/sergio_bringup'
-
-function sergio-set-envs
-{
-    [ -z "$1" ] && echo "Please provide <robot-env>" && return 1
-
-    if [[ "$1" != "rwc2016a" ]] && [[ "$1" != "rwc2016b" ]] && [[ "$1" != "robotics_testlabs" ]] && [[ "$1" != "rwc2016_common" ]]
-    then
-        echo "<robot-env> must be robotics_testlabs, rwc2016a or rwc2016b"
-        return 1
-    fi
-
-    sergio    
-    export ROBOT_ENV=$1
-
-    rosparam set /robot_env $1
-    return 0
-}
-
-function _sergio-set-envs_complete
-{
-    local cur=${COMP_WORDS[COMP_CWORD]}
-    local prev=${COMP_WORDS[COMP_CWORD-1]}
-
-    if [ $COMP_CWORD -eq 1 ]
-    then
-        COMPREPLY=( $(compgen -W "rwc2016a rwc2016b robotics_testlabs" -- $cur) )
-    fi
-}
-complete -F _sergio-set-envs_complete sergio-set-envs
-
-function sstart
-{
-    if [[ "$ROBOT_REAL" != "true" ]]
-    then
-        sergio-set-envs $@ || return 1
-    fi
-    roslaunch sergio_bringup start.launch
-}
-
-function smiddle { sergio-set-envs $@ && roslaunch sergio_bringup middleware.launch; }
-function smiddle-gmapping { sergio-set-envs robotics_testlabs && roslaunch sergio_bringup middleware_gmapping.launch; }
-function smiddle-restaurant { sergio-set-envs robotics_testlabs && roslaunch sergio_bringup middleware_restaurant.launch; }
-function smiddle-final-gmapping { sergio-odom-reset; sergio-set-envs robotics_testlabs && roslaunch sergio_bringup middleware_final_gmapping.launch; }
-function smiddle-open { sergio-odom-reset; sergio-set-envs robotics_testlabs && roslaunch sergio_bringup middleware_open.launch; }
-function smiddle-open-backup { sergio-odom-reset; sergio-set-envs robotics_testlabs && roslaunch sergio_bringup middleware_open_backup.launch; }
-
-function _emtpy_complete
-{
-    :
-}
-
-complete -F _sergio-set-envs_complete sstart
-complete -F _sergio-set-envs_complete smiddle
-complete -F _sergio-set-envs_complete smiddle-navigation
-complete -F _emtpy_complete smiddle-gmapping
-complete -F _emtpy_complete smiddle-manipulation-gmapping
-complete -F _emtpy_complete smiddle-open
-complete -F _emtpy_complete smiddle-restaurant
-complete -F _emtpy_complete smiddle-final
-
-alias smiddle-rips='smiddle'
-alias smiddle-speech-recognition='smiddle-restaurant'
-alias smiddle-person-recognition='smiddle-restaurant'
-alias smiddle-following-and-guiding='smiddle-restaurant'
-alias smiddle-navigation='smiddle'
-alias smiddle-gpsr='smiddle'
-alias smiddle-eegpsr='smiddle'
-
-complete -F _sergio-set-envs_complete smiddle-rips
-complete -F _emtpy_complete smiddle-speech-recognition
-complete -F _emtpy_complete smiddle-person-recognition
-complete -F _emtpy_complete smiddle-following-and-guiding
-complete -F _sergio-set-envs_complete smiddle-navigation
-complete -F _sergio-set-envs_complete smiddle-gpsr
-complete -F _sergio-set-envs_complete smiddle-eegpsr
-
-alias shardware='sergio; roslaunch sergio_bringup hardware.launch'
-# alias smiddle='sergio; roslaunch sergio_bringup middleware.launch'
-# alias smiddle-gmapping='sergio; roslaunch sergio_bringup middleware_gmapping.launch'
-# alias smiddle-robonurse='sergio; roslaunch sergio_bringup middleware_robonurse.launch'
-# alias smiddle-restaurant='sergio; roslaunch sergio_bringup middleware_restaurant.launch'
-# alias smiddle-navigation='sergio; roslaunch sergio_bringup middleware_navigation.launch'
-# alias smiddle-final='sergio-odom-reset; sergio; roslaunch sergio_bringup middleware_final.launch'
-# alias smiddle-open='sergio-odom-reset; sergio; roslaunch sergio_bringup middleware_open.launch'
-
-alias sergio-continui='rosrun hmi_server continue_gui.py __ns:=sergio/hmi'
-alias sergio-continui-gpsr='rosrun hmi_server continue_gui.py $TUE_SYSTEM_DIR/src/challenge_gpsr/src/grammar_gui.fcfg __ns:=sergio/hmi'
+# ----------------------------------------------------------------------------
+# - Add scripts directory to PATH
+export PATH=~/.tue/installer/targets/sergio-user/scripts:$PATH
 
 ####################
 #
@@ -122,19 +18,33 @@ alias sergio-continui-gpsr='rosrun hmi_server continue_gui.py $TUE_SYSTEM_DIR/sr
 alias sergio-publish-ed='rosrun ed_gui_server ed_rviz_publisher /ed/gui/entities:=/sergio/ed/gui/entities ed/gui/query_meshes:=/sergio/ed/gui/query_meshes ed/rviz:=/sergio/world_model'
 
 alias sergio-publish-point-cloud='rosrun rgbd rgbd_to_ros /sergio/top_kinect/rgbd __ns:=sergio'
-function sergio-hear() {
-    msg=$@
-    echo "Sending trigger: $msg"
-    rostopic pub --once /sergio/hmi/string std_msgs/String "data: '$msg'";
+
+####################
+#
+# AUDIO
+#
+####################
+
+alias sergio-audio-server='rosnode kill /sergio/audio_player && rosrun text_to_speech player.py play:=audio_player/play __ns:=sergio'
+
+function sergio-audio-play
+{
+    if [ -z "$1" ]
+    then
+        echo "Please provide audio file."
+        return
+    fi
+
+    rosrun text_to_speech play.py $1 /sergio/audio_player/play
 }
 
 ####################
 #
-# SERGIO ACTIONS
+# SSH
 #
 ####################
-alias sergio-teleop='rosrun tue_teleop_keyboard teleop_twist_keyboard.py /cmd_vel:=/sergio/base/references'
-# alias rviz-sergio=''
+alias sshsergio1='until ssh -qo ConnectTimeout=1 amigo@sergio1; do echo waiting for sergio1 to come online...; sleep 2; done'
+alias sshsergio2='until ssh -qo ConnectTimeout=1 amigo@sergio2; do echo waiting for sergio2 to come online...; sleep 2; done'
 
 #####################
 #
@@ -144,24 +54,76 @@ alias sergio-teleop='rosrun tue_teleop_keyboard teleop_twist_keyboard.py /cmd_ve
 alias diag='rosrun robot_monitor robot_monitor'
 alias sdashboard='tue-dashboard sergio1 & sleep 1; disown; wmctrl -r ws://sergio1:9090 -b add,sticky'
 
+alias sergio-show-fitter='rosrun rgbd multitool --rgbd /sergio/ed/viz/fitter'
+alias sergio-show-kinect='rosrun rgbd multitool --rgbd /sergio/top_kinect/rgbd'
 
-alias rviz-sergio='rosrun rviz rviz -d ~/.tue/installer/targets/sergio-user/rviz_config.rviz'
-alias rviz-sergio-final='rosrun rviz rviz -d $TUE_SYSTEM_DIR/src/challenge_final/sergio_rviz_config.rviz'
+# --------------------------------------------------------------------------------
 
-#####################
+alias sergio-show-ed-kinect='rosrun rgbd multitool --rgbd /sergio/ed/kinect/viz/update_request'
+
+# --------------------------------------------------------------------------------
+
+
+####################
 #
-# SERGIO FUNCTIONS
+# SERGIO STARTUP
 #
-#####################
-function sergio-torso-move-spindle {
+####################
+
+alias sergio='export ROBOT_BRINGUP_PATH=$TUE_SYSTEM_DIR/src/sergio_bringup'
+
+alias sergio-continui='rosrun hmi_server continue_gui.py __ns:=sergio/hmi'
+alias sergio-continui-gpsr='rosrun hmi_server continue_gui.py $TUE_SYSTEM_DIR/src/challenge_gpsr/src/grammar_gui.fcfg __ns:=sergio/hmi'
+
+####################
+#
+# SERGIO ACTIONS
+#
+####################
+
+alias say='rostopic pub --once /sergio/text_to_speech/input std_msgs/String'
+function praat() {
+        rosservice call /sergio/text_to_speech/speak "{language: 'nl', voice: 'david', character: 'default', emotion: 'neutral', sentence: '$@', blocking_call: false}"
+}
+
+function sergio-hear() {
+    msg=$@
+    echo "Sending trigger: $msg"
+    rostopic pub --once /sergio/hmi/string std_msgs/String "data: '$msg'";
+}
+alias hear='sergio-hear'
+
+alias sergio-head-straight='sergio-head-move 0.0 0.0'
+alias move-straight="rostopic pub -r 10 /cmd_vel geometry_msgs/Twist  '{linear:  {x: 0.1, y: 0.0, z: 0.0}, angular: {x: 0.0,y: 0.0,z: 0.0}}'"
+alias sergio-teleop='rosrun tue_teleop_keyboard teleop_twist_keyboard.py /cmd_vel:=/sergio/base/references'
+
+alias sergio-base-reset-odom='rostopic pub --once /sergio/base/reset_odometry std_msgs/Bool 1'
+alias sergio-top-kinect-show='rosrun image_view image_view image:=/sergio/top_kinect/rgb/image_rect_color'
+alias reset-audio="amixer -- sset 'Master' -5dB && amixer -- sset 'Mic Boost' 10dB && amixer -- sset 'Capture' 16.50dB && amixer -- sset 'Digital' 3.5dB && amixer -- sset 'Mic' mute
+"
+
+alias sergio-action-server="rosrun action_server main.py sergio __ns:=sergio"
+
+function depcheck
+{
+  type -P $1 &>/dev/null && return
+  echo "Installing $2"
+  sudo apt-get -y install $2 && return
+  echo "Error installing $2"
+  exit 1
+}
+
+# --------------------------------------------------------------------------------
+
+function sergio-head-move {
     if [ -z "$2" ]; then
-        echo "TODO REMOVE: Used for testing."
-        ehco "Usage: sergio-torso-move-spindle lower_spindle upper_splindl" 
+        echo "Usage: sergio-head-move PAN TILT"
         return
     fi
 
-    ( rostopic pub /sergio/torso/references sensor_msgs/JointState "{header: {seq: 0, stamp: {secs: 0, nsecs: 0}, frame_id: ''}, name: ['torso_lower_spindle', 'torso_upper_spindle'], position: [$1, $2], velocity: [0], effort: [0]}"  --once  &> /dev/null & )
+    rostopic pub /sergio/neck/references sensor_msgs/JointState "{header: {seq: 0, stamp: {secs: 0, nsecs: 0}, frame_id: ''}, name: ['neck_pan_joint', 'neck_tilt_joint'], position: [$1, $2], velocity: [0], effort: [0]}"  --once
 }
+
 
 function sergio-torso-move-joints {
     if [ -z "$2" ]; then
@@ -186,15 +148,6 @@ function sergio-torso-laser-move {
     fi
 
     rostopic pub /sergio/neck/references sensor_msgs/JointState "{header: {seq: 0, stamp: {secs: 0, nsecs: 0}, frame_id: ''}, name: ['laser_tilt_joint'], position: [$1], velocity: [0], effort: [0]}"  --once
-}
-
-function sergio-head-move {
-    if [ -z "$2" ]; then
-        echo "Usage: sergio-head-move PAN TILT"
-        return
-    fi
-
-    rostopic pub /sergio/neck/references sensor_msgs/JointState "{header: {seq: 0, stamp: {secs: 0, nsecs: 0}, frame_id: ''}, name: ['neck_pan_joint', 'neck_tilt_joint'], position: [$1, $2], velocity: [0], effort: [0]}"  --once
 }
 
 alias sergio-case='sergio-torso-move-joints 0.45 1.5'

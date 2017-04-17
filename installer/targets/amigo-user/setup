@@ -46,6 +46,24 @@ function amigo-audio-play
 alias sshamigo1='until ssh -qo ConnectTimeout=1 amigo@amigo1; do echo waiting for amigo1 to come online...; sleep 2; done'
 alias sshamigo2='until ssh -qo ConnectTimeout=1 amigo@amigo2; do echo waiting for amigo2 to come online...; sleep 2; done'
 
+#####################
+#
+# DIAGNOSTICS
+#
+#####################
+alias diag='rosrun robot_monitor robot_monitor'
+alias adashboard='tue-dashboard amigo1 & sleep 1; disown; wmctrl -r ws://amigo1:9090 -b add,sticky'
+
+alias amigo-show-fitter='rosrun rgbd multitool --rgbd /amigo/ed/viz/fitter'
+alias amigo-show-kinect='rosrun rgbd multitool --rgbd /amigo/top_kinect/rgbd'
+
+# --------------------------------------------------------------------------------
+
+alias amigo-show-ed-kinect='rosrun rgbd multitool --rgbd /amigo/ed/kinect/viz/update_request'
+
+# --------------------------------------------------------------------------------
+
+
 ####################
 #
 # AMIGO STARTUP
@@ -62,11 +80,12 @@ alias amigo-continui-gpsr='rosrun hmi_server continue_gui.py $TUE_SYSTEM_DIR/src
 # AMIGO ACTIONS
 #
 ####################
+
 alias say='rostopic pub --once /amigo/text_to_speech/input std_msgs/String'
-alias zeg='rosrun common_admin_files say.sh en'
-alias zegen='rosrun amigo_admin_files say_philips_tts.sh us carlos'
-alias zegnl='rosrun amigo_admin_files say_philips_tts.sh nl david'
-alias praat='rosservice call /text_to_speech/speak david nl default neutral true'
+function zeg() {
+        rosservice call /amigo/text_to_speech/speak "{language: 'nl', voice: 'david', character: 'default', emotion: 'neutral', sentence: '$@', blocking_call: false}"
+}
+
 function amigo-hear() {
     msg=$@
     echo "Sending trigger: $msg"
@@ -87,15 +106,11 @@ alias openrightgripper='rostopic pub --once /amigo/right_arm/gripper/references 
 alias closeleftgripper='rostopic pub --once /amigo/left_arm/gripper/references tue_msgs/GripperCommand -- 1 100'
 alias closerightgripper='rostopic pub --once /amigo/right_arm/gripper/references tue_msgs/GripperCommand -- 1 100'
 alias amigo-teleop='rosrun tue_teleop_keyboard teleop_twist_keyboard.py /cmd_vel:=/amigo/base/references'
-alias amigostopall='rosrun tue_execution_pack stopamigo.py'
 
 alias amigo-base-reset-odom='rostopic pub --once /amigo/base/reset_odometry std_msgs/Bool 1'
 alias amigo-top-kinect-show='rosrun image_view image_view image:=/amigo/top_kinect/rgb/image_rect_color'
 alias reset-audio="amixer -- sset 'Master' -5dB && amixer -- sset 'Mic Boost' 10dB && amixer -- sset 'Capture' 16.50dB && amixer -- sset 'Digital' 3.5dB && amixer -- sset 'Mic' mute
 "
-alias navc="rostopic pub --once /nav_test_control std_msgs/String 'continue'"
-alias navp="rostopic pub --once /nav_test_control std_msgs/String 'pause'"
-alias navs="rostopic pub --once /nav_test_control std_msgs/String 'stop'"
 
 alias amigo-action-server="rosrun action_server main.py amigo __ns:=amigo"
 
@@ -108,23 +123,6 @@ function depcheck
   exit 1
 }
 
-#####################
-#
-# DIAGNOSTICS
-#
-#####################
-alias diag='rosrun robot_monitor robot_monitor'
-alias adashboard='tue-dashboard amigo1 & sleep 1; disown; wmctrl -r ws://amigo1:9090 -b add,sticky'
-
-alias rviz-egpsr='rosrun rviz rviz -d $TUE_TRUNK/amigo_admin_files/configs/rviz/rviz_egpsr.vcg'
-
-alias amigo-show-fitter='rosrun rgbd multitool --rgbd /amigo/ed/viz/fitter'
-alias amigo-show-kinect='rosrun rgbd multitool --rgbd /amigo/top_kinect/rgbd'
-
-# --------------------------------------------------------------------------------
-
-alias amigo-show-ed-kinect='rosrun rgbd multitool --rgbd /amigo/ed/kinect/viz/update_request'
-
 # --------------------------------------------------------------------------------
 
 function amigo-head-move {
@@ -135,8 +133,6 @@ function amigo-head-move {
 
     rostopic pub /amigo/neck/references sensor_msgs/JointState "{header: {seq: 0, stamp: {secs: 0, nsecs: 0}, frame_id: ''}, name: ['neck_pan_joint', 'neck_tilt_joint'], position: [$1, $2], velocity: [0], effort: [0]}"  --once
 }
-
-# --------------------------------------------------------------------------------
 
 function amigo-torso-move-joints {
     if [ -z "$1" ]; then
@@ -230,6 +226,5 @@ alias amigo-copy-my-id="ssh-copy-id amigo@amigo1; ssh-copy-id amigo@amigo2; ssh-
 
 alias amigo-presentation-timer-start='rosrun challenge_final time.py __ns:=amigo'
 
-alias amigo-mount-usb='rosrun challenge_manipulation mount_usb'
+alias amigo-mount-usb='rosrun challenge_storing_groceries mount_usb'
 alias amigo-unmount-usb='sudo umount /dev/sdb1'
-
