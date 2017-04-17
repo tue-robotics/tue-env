@@ -9,7 +9,6 @@ if [ $# -eq 0 ]
 then
     gnome-terminal -t "AMIGO 1" --geometry=${WIDTH}x${HEIGHT}+0+0 --hide-menubar -x ssh amigo@amigo1 & 
     gnome-terminal -t "AMIGO 2" --geometry=${WIDTH}x${HEIGHT}-0+0 --hide-menubar -x ssh amigo@amigo2 &
-    gnome-terminal -t "AMIGO 3" --geometry=${WIDTH}x${HEIGHT}+0-0 --hide-menubar -x ssh amigo@amigo3 &
     exit
 fi
 
@@ -58,5 +57,4 @@ fi
 # open terminals and execute commands
 gnome-terminal -t "AMIGO 1" --geometry=${WIDTH}x${HEIGHT}+0+0 --hide-menubar -x ssh amigo@amigo1 -t bash -ic "'echo \"**** AMIGO1 ****\";$cmd'" & 
 gnome-terminal -t "AMIGO 2" --geometry=${WIDTH}x${HEIGHT}-0+0 --hide-menubar -x ssh amigo@amigo2 -t bash -ic "'echo \"**** AMIGO2 ****\";$cmd'" &
-gnome-terminal -t "AMIGO 3" --geometry=${WIDTH}x${HEIGHT}+0-0 --hide-menubar -x ssh amigo@amigo3 -t bash -ic "'echo \"**** AMIGO3 ****\";$cmd'" &
 
