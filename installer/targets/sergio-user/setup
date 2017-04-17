@@ -152,4 +152,4 @@ function sergio-torso-laser-move {
 
 alias sergio-case='sergio-torso-move-joints 0.45 1.5'
 
-alias sergio-copy-my-id="ssh-copy-id amigo@sergio1; ssh-copy-id amigo@sergio2; ssh-copy-id amigo@sergio3"
+alias sergio-copy-my-id="ssh-copy-id amigo@sergio1; ssh-copy-id amigo@sergio2"
