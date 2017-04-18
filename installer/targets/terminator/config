@@ -79,13 +79,13 @@
       type = Terminal
       order = 0
       parent = child2
-      command = until ssh -qo ConnectTimeout=1 -X amigo@amigo1; do echo waiting for amigo1 to come online...; sleep 2; done
+      command = until ssh -qo ConnectTimeout=1 amigo@amigo1; do echo waiting for amigo1 to come online...; sleep 2; done
     [[[terminal4]]]
       profile = default
       type = Terminal
       order = 1
       parent = child2
-      command = until ssh -qo ConnectTimeout=1 -X amigo@amigo2; do echo waiting for amigo2 to come online...; sleep 2; done
+      command = until ssh -qo ConnectTimeout=1 amigo@amigo2; do echo waiting for amigo2 to come online...; sleep 2; done
     [[[terminal7]]]
       profile = default
       type = Terminal
@@ -125,13 +125,13 @@
       type = Terminal
       order = 0
       parent = child2
-      command = until ssh -qo ConnectTimeout=1 -X amigo@sergio1; do echo waiting for sergio1 to come online...; sleep 2; done
+      command = until ssh -qo ConnectTimeout=1 amigo@sergio1; do echo waiting for sergio1 to come online...; sleep 2; done
     [[[terminal4]]]
       profile = default
       type = Terminal
       order = 1
       parent = child2
-      command = until ssh -qo ConnectTimeout=1 -X amigo@sergio2; do echo waiting for sergio2 to come online...; sleep 2; done
+      command = until ssh -qo ConnectTimeout=1 amigo@sergio2; do echo waiting for sergio2 to come online...; sleep 2; done
     [[[terminal7]]]
       profile = default
       type = Terminal
