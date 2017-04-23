@@ -1,3 +1,0 @@
-export ROBOT_REAL=true
-export ROS_MASTER_URI=http://sergio1:11311
-

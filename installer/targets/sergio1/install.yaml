@@ -1,4 +1,26 @@
 - type: target
   name: sergio
+
 - type: target
-  name: orocos
+  name: sergio-start
+
+- type: target
+  name: ros-sergio_hardware
+
+- type: target
+  name: audio
+
+- type: target
+  name: ros-kinect_driver
+
+- type: target
+  name: ros-urg_node
+
+- type: target
+  name: ros-battery_manager
+
+- type: target
+  name: ros-rgb_lights_manager
+
+- type: target
+  name: ros-emergency_speakup
