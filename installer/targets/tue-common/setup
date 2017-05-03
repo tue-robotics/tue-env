@@ -1,7 +1,7 @@
 alias trunk='cd $TUE_ENV_DIR/system/src'
 alias dev='cd $TUE_ENV_DIR/dev/src'
 
-alias todo="ssh -t amigo@192.168.2.10 'vim /home/amigo/www/todo.html'"
+alias todo="ssh -t amigo@192.168.44.10 'vim /home/amigo/www/todo.html'"
 
 ##############################################################################################
 
