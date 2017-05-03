@@ -748,7 +748,7 @@ function tue-robocup-update
             cd $pkg_dir
             local current_url=`git config --get remote.origin.url`
 
-            if echo "$current_url" | grep -q "192.168.2.10"
+            if echo "$current_url" | grep -q "192.168.44.10"
             then
                 echo -n "$pkg: "
                 git pull --ff-only
