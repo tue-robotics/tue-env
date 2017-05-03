@@ -698,7 +698,7 @@ For example:
 
 function tue-robocup-set-github-origin
 {
-    tue-set-git-remote origin amigo@192.168.2.10:
+    tue-set-git-remote origin amigo@192.168.44.10:
 }
 
 function tue-robocup-reset-github-origin
@@ -720,7 +720,7 @@ function tue-robocup-install-package
     # If directory already exists, return
     [ -d $pkg_dir ] && return
 
-    git clone amigo@192.168.2.10:tue-robotics/${1}.git $pkg_dir
+    git clone amigo@192.168.44.10:tue-robotics/${1}.git $pkg_dir
 
     ln -s $pkg_dir $TUE_ENV_DIR/system/src/$1
 }
