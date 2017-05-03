@@ -2,4 +2,5 @@
   source:
     type: git
     url: https://github.com/orocos-toolchain/ocl.git
-    version: toolchain-2.9
+#    version: toolchain-2.9 # Use this again when https://github.com/orocos-toolchain/ocl/issues/61 is solved
+    version: 76bf916101690d065216a49cf0578c3607075517
