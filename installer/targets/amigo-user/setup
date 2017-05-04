@@ -222,7 +222,7 @@ function amigo-top-kinect-record-avi {
     rosrun rgbd record_to_video rgb:=/amigo/top_kinect/rgb/image_color depth:=/amigo/top_kinect/depth_registered/image _fps:=30 _format:=DIVX _filename:=$filename _size:=1
 }
 
-alias amigo-copy-my-id="ssh-copy-id amigo@amigo1; ssh-copy-id amigo@amigo2; ssh-copy-id amigo@amigo3"
+alias amigo-copy-my-id="ssh-copy-id amigo@amigo1; ssh-copy-id amigo@amigo2"
 
 alias amigo-presentation-timer-start='rosrun challenge_final time.py __ns:=amigo'
 
