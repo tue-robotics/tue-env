@@ -82,3 +82,8 @@ if [ ! $ROBOT_REAL ] ; then
 	fi
 fi
 
+# DECLARE ALIAS FOR QUICK SSHf
+alias quickssh='echo "ControlMaster auto
+ControlPath /tmp/%r@%h:%p
+ControlPersist yes" > ~/.ssh/config'
+
