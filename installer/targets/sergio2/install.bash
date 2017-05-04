@@ -8,7 +8,7 @@ fi
 
 # If clephas (the author) is not in the config, it's probably not the correct one
 # Hence: copy
-if ! grep -q "clephas" /etc/chrony/chrony.conf 
+if ! cmp /etc/chrony/chrony.conf ~/.tue/installer/targets/sergio2/chrony.conf --quiet
 then
     echo "Chrony config is probably not correct, will copy"
     
