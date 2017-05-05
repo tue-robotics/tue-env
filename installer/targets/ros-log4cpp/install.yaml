@@ -1,5 +1,7 @@
 - type: ros
   source:
-    type: git
-    url: https://github.com/orocos-toolchain/log4cpp.git
-    version: toolchain-2.9
+    type: system
+    name: log4cpp
+#    type: git
+#    url: https://github.com/orocos-toolchain/log4cpp.git
+#    version: toolchain-2.9
