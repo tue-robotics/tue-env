@@ -1,5 +1,7 @@
 - type: ros
   source:
-    type: git
-    url: https://github.com/tue-robotics/rtt.git
-    version: toolchain-2.9
+    type: system
+    name: rtt
+#    type: git
+#    url: https://github.com/tue-robotics/rtt.git
+#    version: toolchain-2.9
