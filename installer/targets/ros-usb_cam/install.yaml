@@ -1,4 +1,4 @@
 - type: ros
   source:
-    type: system
-    name: usb-cam
+    type: git
+    url: https://github.com/bosch-ros-pkg/usb_cam
