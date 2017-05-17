@@ -1,2 +1,13 @@
 - type: target
   name: sergio
+
+- type: target
+  name: megatools
+
+# Middleware
+- type: target
+  name: tue-middleware
+
+# RoboCup
+- type: target
+  name: tue-robocup-at-home

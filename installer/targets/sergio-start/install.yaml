@@ -1,0 +1,45 @@
+- type: target
+  name: ros-dragonfly_speech_recognition
+
+- type: target
+  name: ros-hmi
+
+- type: target
+  name: ros-text_to_speech
+
+- type: target
+  name: ros-sergio_description
+
+- type: target
+  name: ros-robot_state_publisher
+
+- type: target
+  name: ros-rosbridge_server
+
+- type: target
+  name: ros-tue_mobile_ui
+
+- type: target
+  name: ros-tf_server
+
+- type: target
+  name: ros-node_alive
+
+- type: target
+  name: ros-tue_manipulation
+
+- type: target
+  name: ros-head_ref
+
+# Additional mesage definitions required for websocket calls
+# This is why you should make separate message packages o.O
+- type: target
+  name: ros-image_recognition_msgs
+- type: target
+  name: ros-ed_robocup
+- type: target
+  name: ros-ed_sensor_integration
+- type: target
+  name: ros-cb_planner_msgs_srvs
+- type: target
+  name: ros-ed_perception

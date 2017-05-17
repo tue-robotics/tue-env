@@ -3,12 +3,12 @@
 if [ ! -f /etc/chrony/chrony.conf ]
 then
     echo "I guess chrony is not installed"
-    sudo apt-get install chrony
+    sudo apt-get install chrony -y
 fi
 
 # If clephas (the author) is not in the config, it's probably not the correct one
 # Hence: copy
-if ! grep -q "clephas" /etc/chrony/chrony.conf 
+if ! cmp /etc/chrony/chrony.conf ~/.tue/installer/targets/amigo1/chrony.conf --quiet
 then
     echo "Chrony config is probably not correct, will copy"
     

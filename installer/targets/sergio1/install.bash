@@ -1,15 +1,3 @@
-## Autoroscore
-if [ ! -f /etc/init.d/autoroscore ] || [[ `diff ~/.tue/installer/targets/sergio1/autoroscore /etc/init.d/autoroscore` != "" ]]
-then
-    sudo cp ~/.tue/installer/targets/sergio1/autoroscore /etc/init.d/autoroscore
-fi
-
-## Autoroslaunch
-if [ ! -f /etc/init.d/autoroslaunch ] || [[ `diff ~/.tue/installer/targets/sergio1/autoroslaunch /etc/init.d/autoroslaunch` != "" ]]
-then
-    sudo cp ~/.tue/installer/targets/sergio1/autoroslaunch /etc/init.d/autoroslaunch
-fi
-
 ## Chrony 
 # If config file does not exist, chrony is probably not installed 
 if [ ! -f /etc/chrony/chrony.conf ]
@@ -20,7 +8,7 @@ fi
 
 # If clephas (the author) is not in the config, it's probably not the correct one
 # Hence: copy
-if ! grep -q "clephas" /etc/chrony/chrony.conf 
+if ! cmp /etc/chrony/chrony.conf ~/.tue/installer/targets/sergio1/chrony.conf --quiet
 then
     echo "Chrony config is probably not correct, will copy"
     
