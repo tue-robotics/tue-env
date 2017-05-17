@@ -16,9 +16,15 @@ else
 
     if [ ! $error_code -eq 0 ]
     then
-        echo ""
-        echo "[tue-get] Could not update tue-get. Aborting"
-        exit 1
+        # prompt for conformation
+        exec < /dev/tty
+        read -p "[tue-get] Could not update tue-get. Continue? " -n 1 -r
+        exec <&-
+        echo    # (optional) move to a new line
+        if [[ ! $REPLY =~ ^[Yy]$ ]]
+        then
+            exit 1
+        fi
     fi
 fi
 
