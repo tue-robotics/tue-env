@@ -2,6 +2,9 @@
 - type: target
   name: tue-common
 
+- type: target
+  name: ros-diagnostic_aggregator
+
 # Navigation
 - type: target
   name: ros-cb_base_navigation
