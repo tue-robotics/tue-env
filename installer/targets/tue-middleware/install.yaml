@@ -5,6 +5,9 @@
 - type: target
   name: ros-diagnostic_aggregator
 
+- type: target
+  name: ros-node_alive
+
 # Navigation
 - type: target
   name: ros-cb_base_navigation
