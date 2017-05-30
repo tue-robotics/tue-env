@@ -1,4 +1,4 @@
 - type: ros
   source:
-    type: git
-    url: https://github.com/tue-robotics/tue_manipulation.git
+    type: system
+    name: rtt-ros-comm
