@@ -1,0 +1,14 @@
+sudo: true
+dist: trusty
+
+jobs:
+  include:
+    - stage: build docker image
+      script:
+      - export IMAGE_NAME=tuerobotics/tue-env:$TRAVIS_BRANCH
+      # build the Docker image (this will use the Dockerfile in the root of the repo)
+      - docker build -t $IMAGE_NAME .
+      # authenticate with the Docker Hub registry
+      - docker login -u="$DOCKER_USERNAME" -p="$DOCKER_PASSWORD"
+      # push the new Docker image to the Docker registry
+      - docker push $DOCKER_USERNAME/travis-ci-build-stages-demo

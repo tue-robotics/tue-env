@@ -3,19 +3,22 @@
 # If running in docker, install required dependencies
 if [ -f /.dockerenv ]; then
     apt-get update
-    apt-get install sudo git lsb-release wget curl
+    apt-get install --assume-yes sudo git lsb-release wget curl
 fi
 
 # make sure git is installed
 hash git 2> /dev/null || sudo apt-get install -y git
 
-if [ -e ~/.tue ]
+if [[ -e ~/.tue && -z "$CI" ]]
 then
 	mv -f ~/.tue ~/.tue.$(date +%F_%R)
 fi
 
-# Update installer
-git clone https://github.com/tue-robotics/tue-env.git ~/.tue
+if [[ -z "$CI" ]]
+then
+    # Update installer
+    git clone https://github.com/tue-robotics/tue-env.git ~/.tue
+fi
 
 # Source the installer commands
 source ~/.tue/setup.bash
