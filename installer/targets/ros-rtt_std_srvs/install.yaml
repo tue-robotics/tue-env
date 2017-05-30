@@ -1,7 +1,7 @@
 - type: ros
   source:
     type: system
-    name: rtt-ros-integration
+    name: rtt-std-srvs
 #    type: git
 #    url: https://github.com/orocos/rtt_ros_integration
 #    sub-dir: typekits/rtt_std_srvs
