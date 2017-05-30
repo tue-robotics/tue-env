@@ -1,7 +1,7 @@
 - type: ros
   source:
     type: system
-    name: rtt-ros-integration
+    name: rtt-sensor-msgs
 #    type: git
 #    url: https://github.com/orocos/rtt_ros_integration
 #    sub-dir: typekits/rtt_sensor_msgs
