@@ -14,4 +14,6 @@ jobs:
       # authenticate with the Docker Hub registry
       - docker login -u="$DOCKER_HUB_USERNAME" -p="$DOCKER_HUB_PASSWORD"
       # push the new Docker image to the Docker registry
-      - docker push $IMAGE_NAME
+      - 'if [[ $TRAVIS_PULL_REQUEST == “false” ]]; then
+            docker push $IMAGE_NAME
+         fi'
