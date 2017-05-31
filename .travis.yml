@@ -6,6 +6,7 @@ jobs:
   include:
     - stage: build docker image
       script:
+      - echo $DOCKER_USERNAME
       # create tag based on branch name
       - export IMAGE_NAME=tuerobotics/tue-env:`echo "$TRAVIS_BRANCH" | tr '[:upper:]' '[:lower:]' | sed -e 's:/:_:g'`
       - echo "$IMAGE_NAME"
