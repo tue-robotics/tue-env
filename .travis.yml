@@ -7,7 +7,7 @@ jobs:
     - stage: build docker image
       script:
       # create tag based on branch name
-      - export IMAGE_NAME=`echo "tuerobotics/tue-env:$TRAVIS_BRANCH" | tr '[:upper:]' '[:lower:]' | sed -e 's:/:_:g'`
+      - export IMAGE_NAME=tuerobotics/tue-env:`echo "$TRAVIS_BRANCH" | tr '[:upper:]' '[:lower:]' | sed -e 's:/:_:g'`
       - echo "$IMAGE_NAME"
       # build the Docker image (this will use the Dockerfile in the root of the repo)
       - docker build -t $IMAGE_NAME .
