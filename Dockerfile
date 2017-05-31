@@ -1,7 +1,7 @@
 FROM ubuntu:16.04
 
 # Install commands used in our scripts
-ENV DEBIAN_FRONTEND=noninteractive #Prevents apt errors that use a 'gui'
+ENV DEBIAN_FRONTEND=noninteractive
 RUN apt-get update -qq && apt-get install -qq --assume-yes --no-install-recommends sudo apt-utils git wget curl lsb-release
 
 # Add amigo user
