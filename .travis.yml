@@ -1,5 +1,6 @@
 sudo: true
 dist: trusty
+language: cpp
 
 jobs:
   include:
@@ -7,9 +8,10 @@ jobs:
       script:
       # create tag based on branch name
       - export IMAGE_NAME=`echo "tuerobotics/tue-env:$TRAVIS_BRANCH" | tr '[:upper:]' '[:lower:]' | sed -e 's:/:_:g'`
+      - echo "$IMAGE_NAME"
       # build the Docker image (this will use the Dockerfile in the root of the repo)
       - docker build -t $IMAGE_NAME .
       # authenticate with the Docker Hub registry
       - docker login -u="$DOCKER_USERNAME" -p="$DOCKER_PASSWORD"
       # push the new Docker image to the Docker registry
-      - docker push $DOCKER_USERNAME/travis-ci-build-stages-demo
+      - docker push $IMAGE_NAME
