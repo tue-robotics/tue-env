@@ -32,8 +32,12 @@ IMAGE_BRANCH_NAME=tuerobotics/tue-env:`echo "$BRANCH" | tr '[:upper:]' '[:lower:
 IMAGE_MASTER_NAME=tuerobotics/tue-env:master
 
 # Run the docker image (user master as fallback)
+echo "\e[35m[Trying to fetch docker image: $IMAGE_BRANCH_NAME]\e[0m"
 docker run --detach --interactive --name tue-env $IMAGE_BRANCH_NAME || docker run --detach --interactive --name tue-env $IMAGE_MASTER_NAME 
 
 # Install the pacakge
-  - docker exec tue-env bash -c "export CI='true'; source /home/amigo/.bashrc; tue-get install ros-$PACKAGE"
-  - docker exec tue-env bash -c "cd ~/ros/kinetic/system/src/$PACKAGE && git reset --hard $COMMIT"
+echo "\e[35m[tue-get install ros-$PACKAGE]\e[0m"
+docker exec tue-env bash -c "export CI='true'; source /home/amigo/.bashrc; tue-get install ros-$PACKAGE"
+
+echo "\e[35m[Reset package to this commit]\e[0m"
+docker exec tue-env bash -c "cd ~/ros/kinetic/system/src/$PACKAGE && git reset --hard $COMMIT"
