@@ -1,5 +1,6 @@
 #!/bin/bash
 # This script can only be ran after the install-package.sh script
+set -o errexit #Stop on errors
 
 for i in "$@"
 do
