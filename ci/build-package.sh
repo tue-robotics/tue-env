@@ -17,4 +17,4 @@ done
 echo "PACKAGE     = ${PACKAGE}"
 
 # Compile the package
-docker exec tue-env bash -c "export CI='true'; source /home/amigo/.bashrc; cd ~/ros/kinetic/system/src/$REPO_NAME && catkin build --this --no-status"
+docker exec tue-env bash -c "export CI='true'; source /home/amigo/.bashrc; cd ~/ros/kinetic/system/src/$PACKAGE && catkin build --this --no-status"
