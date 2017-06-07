@@ -26,6 +26,16 @@ echo -e "\e[35m\e[1m PACKAGE     = ${PACKAGE} \e[0m"
 echo -e "\e[35m\e[1m BRANCH      = ${BRANCH} \e[0m"
 echo -e "\e[35m\e[1m COMMIT PATH = ${COMMIT} \e[0m"
 
+echo -e "\e[35m\e[1m 
+This build can be reproduced locally using the following commands:
+
+tue-get install docker
+~/.tue/ci/install-package.sh --package=${PACKAGE} --branch=${BRANCH} --commit=${COMMIT}
+~/.tue/ci/build-package.sh --package=${PACKAGE} 
+
+Optionally fix your compilation errors and rerun only the last command
+\e[0m"
+
 # Determine docker tag if the same branch exists there
 IMAGE_BRANCH_NAME=tuerobotics/tue-env:`echo "$BRANCH" | tr '[:upper:]' '[:lower:]' | sed -e 's:/:_:g'`
 
