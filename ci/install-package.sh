@@ -42,9 +42,8 @@ IMAGE_BRANCH_NAME=tuerobotics/tue-env:`echo "$BRANCH" | tr '[:upper:]' '[:lower:
 # Set the default fallback branch to master
 IMAGE_MASTER_NAME=tuerobotics/tue-env:master
 
-# Remove any previously started containers
-docker stop tue-env
-docker rm tue-env
+# Remove any previously started containers if they exist (if not exist, still return true to let the script continue)
+docker stop tue-env || true && docker rm tue-env || true
 
 # Run the docker image (user master as fallback)
 echo -e "\e[35m\e[1m Trying to fetch docker image: $IMAGE_BRANCH_NAME \e[0m"
