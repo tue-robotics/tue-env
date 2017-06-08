@@ -7,7 +7,7 @@ then
 
 	# Unfortunately this is necessary. tue-get only installs
 	# system debs in the end (TODO: make nicer)
-	sudo apt-get install nodejs
+	sudo apt-get --assume-yes install nodejs
 
 	sudo -H npm install -g grunt-cli
 fi

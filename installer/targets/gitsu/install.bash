@@ -1,6 +1,6 @@
 # gitsu is installed as a ruby gem
-hash gem 2> /dev/null || sudo apt-get install ruby
-hash git-su 2> /dev/null || sudo gem install gitsu
+hash gem 2> /dev/null || sudo apt-get install --assume-yes ruby
+hash git-su 2> /dev/null || sudo gem install --assume-yes gitsu
 
 # install the authors file
 if [ ! -f ~/.gitsu ]
