@@ -5,7 +5,8 @@ _tue-check-env-vars || exit 1
 if [ ! -d $TUE_DIR ]
 then 
     git clone https://github.com/tue-robotics/tue-env.git $TUE_DIR
-else
+elif [[ -z "$CI" ]] #Do not update with continuous integration
+then
     mem_pwd=$PWD
     cd $TUE_DIR
     echo -en "Updating tue-get... "    
