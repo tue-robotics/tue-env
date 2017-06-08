@@ -16,21 +16,26 @@ case $i in
     COMMIT="${i#*=}"
     shift # past argument=value
     ;;
+    -r=*|--pullrequest=*)
+    PULL_REQUEST="${i#*=}"
+    shift # past argument=value
+    ;;    
     *)
             # unknown option
     ;;
 esac
 done
 
-echo -e "\e[35m\e[1m PACKAGE     = ${PACKAGE} \e[0m"
-echo -e "\e[35m\e[1m BRANCH      = ${BRANCH} \e[0m"
-echo -e "\e[35m\e[1m COMMIT PATH = ${COMMIT} \e[0m"
+echo -e "\e[35m\e[1m PACKAGE      = ${PACKAGE} \e[0m"
+echo -e "\e[35m\e[1m BRANCH       = ${BRANCH} \e[0m"
+echo -e "\e[35m\e[1m COMMIT       = ${COMMIT} \e[0m"
+echo -e "\e[35m\e[1m PULL_REQUEST = ${PULL_REQUEST} \e[0m"
 
 echo -e "\e[35m\e[1m 
 This build can be reproduced locally using the following commands:
 
 tue-get install docker
-~/.tue/ci/install-package.sh --package=${PACKAGE} --branch=${BRANCH} --commit=${COMMIT}
+~/.tue/ci/install-package.sh --package=${PACKAGE} --branch=${BRANCH} --commit=${COMMIT} --pullrequest=${PULL_REQUEST}
 ~/.tue/ci/build-package.sh --package=${PACKAGE} 
 
 Optionally fix your compilation errors and rerun only the last command
@@ -53,9 +58,15 @@ then
     docker run --detach --interactive --name tue-env $IMAGE_MASTER_NAME 
 fi
 
-# Install the pacakge
+# Install the package
 echo -e "\e[35m\e[1m tue-get install ros-$PACKAGE \e[0m"
 docker exec tue-env bash -c "export CI='true'; source /home/amigo/.bashrc; tue-get install ros-$PACKAGE"
 
+# Set the package to the right commit
 echo -e "\e[35m\e[1m Reset package to this commit \e[0m"
-docker exec tue-env bash -c "cd ~/ros/kinetic/system/src/$PACKAGE && git reset --hard $COMMIT"
+if [[ $PULL_REQUEST == "false" ]]; 
+then
+    docker exec tue-env bash -c "cd ~/ros/kinetic/system/src/$PACKAGE && git reset --hard $COMMIT"
+else
+    docker exec tue-env bash -c "cd ~/ros/kinetic/system/src/$PACKAGE && git fetch origin pull/$PULL_REQUEST/head:PULLREQUEST && git checkout PULLREQUEST"
+fi
