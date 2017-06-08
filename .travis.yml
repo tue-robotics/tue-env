@@ -1,0 +1,8 @@
+sudo: true
+dist: trusty
+language: cpp
+
+jobs:
+  include:
+    - stage: build docker image
+      script: ci/build-docker-image.sh
