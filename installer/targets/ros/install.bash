@@ -13,7 +13,7 @@ then
     sudo apt-get update
 
     # Install basic ROS packages. All other packages will be installed using tue-rosdep
-    sudo apt-get install -y ros-$TUE_ROS_DISTRO-ros-base cmake python-catkin-pkg python-empy python-nose python-setuptools libgtest-dev build-essential python-catkin-tools
+    sudo apt-get install  --assume-yes ros-$TUE_ROS_DISTRO-ros-base cmake python-catkin-pkg python-empy python-nose python-setuptools libgtest-dev build-essential python-catkin-tools
 
     sudo rosdep init || true # make sure it always succeeds, even if rosdep init was already called
 
@@ -28,7 +28,7 @@ TUE_DEV_DIR=$TUE_ENV_DIR/dev
 if [ ! -f $TUE_SYSTEM_DIR/devel/setup.bash ]
 then
     mkdir -p $TUE_SYSTEM_DIR/src
-    sudo apt-get install g++
+    sudo apt-get install --assume-yes g++
     cd $TUE_SYSTEM_DIR
     catkin init
     mkdir -p src
@@ -39,7 +39,7 @@ fi
 if [ ! -f $TUE_DEV_DIR/devel/setup.bash ]
 then
     mkdir -p $TUE_DEV_DIR/src
-    sudo apt-get install g++
+    sudo apt-get install --assume-yes g++
     cd $TUE_DEV_DIR
     catkin init
     mkdir -p src

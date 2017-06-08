@@ -3,7 +3,7 @@
 if [ ! -f /etc/chrony/chrony.conf ]
 then
     echo "I guess chrony is not installed"
-    sudo apt-get install chrony
+    sudo apt-get install --assume-yes chrony
 fi
 
 # If clephas (the author) is not in the config, it's probably not the correct one
