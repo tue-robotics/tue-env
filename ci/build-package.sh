@@ -20,3 +20,7 @@ echo -e "\e[35m\e[1m PACKAGE     = ${PACKAGE} \e[0m"
 # Compile the package
 echo -e "\e[35m\e[1m Compile the package \e[0m"
 docker exec tue-env bash -c "export CI='true'; source /home/amigo/.bashrc; cd ~/ros/kinetic/system/src/$PACKAGE && catkin build --this --no-status"
+
+# Run unit tests
+echo -e "\e[35m\e[1m Run unit test on this package (catkin run_test --this --no-deps \e[0m"
+docker exec tue-env bash -c "export CI='true'; source /home/amigo/.bashrc; cd ~/ros/kinetic/system/src/$PACKAGE && catkin run_tests --this --no-status --no-deps"
