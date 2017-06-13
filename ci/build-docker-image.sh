@@ -13,7 +13,7 @@ docker build -t $IMAGE_NAME .
 docker login -u="$DOCKER_HUB_USERNAME" -p="$DOCKER_HUB_PASSWORD"
 
 # push the new Docker image to the Docker registry only after acceptance of pull request
-if [[ $TRAVIS_PULL_REQUEST == “false” ]]; 
+if [[ $TRAVIS_PULL_REQUEST == "false" ]]; 
 then
     echo -e "\e[35m\e[1m docker push $IMAGE_NAME \e[0m"
     docker push $IMAGE_NAME
