@@ -1,5 +1,6 @@
 #!/bin/bash
-_tue-check-env-vars || exit 1
+set -o errexit # Stop on errors
+_tue-check-env-vars
 
 # Update installer
 if [ ! -d $TUE_DIR ]
@@ -31,4 +32,3 @@ fi
 
 # Run installer
 source $TUE_DIR/installer/scripts/tue-install-impl $@
-exit $?
