@@ -15,7 +15,7 @@ if [ ! -d "$DATA_DIR" ]; then
     sudo dpkg -i $DEST
 
     # Fix deps
-    sudo apt-get -f install
+    sudo apt-get --assume-yes -f install
 
     echo "NOW Please configure the mega client with the AMIGO credentials"
 fi

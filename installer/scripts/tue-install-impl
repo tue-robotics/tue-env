@@ -633,7 +633,7 @@ rm /tmp/tue-installer -rf
 # Installing all system (apt-get) targets, which are collected during the install
 if [ -n "$TUE_INSTALL_SYSTEMS" ]; then
 
-    echo -e "\nsudo apt-get install $TUE_INSTALL_SYSTEMS" >> $INSTALL_DETAILS_FILE
+    echo -e "\nsudo apt-get --assume-yes install $TUE_INSTALL_SYSTEMS" >> $INSTALL_DETAILS_FILE
 
     pkgs_to_install=
     for pkg in $TUE_INSTALL_SYSTEMS
