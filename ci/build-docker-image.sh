@@ -17,4 +17,7 @@ if [[ $TRAVIS_PULL_REQUEST == "false" ]];
 then
     echo -e "\e[35m\e[1m docker push $IMAGE_NAME \e[0m"
     docker push $IMAGE_NAME
+    
+    echo -e "\e[35m\e[1m Succeeded, see: \e[0m"
+    docker images
 fi
