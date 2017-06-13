@@ -1,24 +1,25 @@
 #!/bin/bash
 set -o errexit #Stop on errors
 
+# Standard argument parsing, example: install-package --branch=master --package=ros_robot
 for i in "$@"
 do
 case $i in
     -p=*|--package=*)
     PACKAGE="${i#*=}"
-    shift # past argument=value
+    shift 
     ;;
     -b=*|--branch=*)
     BRANCH="${i#*=}"
-    shift # past argument=value
+    shift 
     ;;
     -c=*|--commit=*)
     COMMIT="${i#*=}"
-    shift # past argument=value
+    shift 
     ;;
     -r=*|--pullrequest=*)
     PULL_REQUEST="${i#*=}"
-    shift # past argument=value
+    shift
     ;;    
     *)
             # unknown option
