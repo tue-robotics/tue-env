@@ -1,0 +1,2 @@
+- type: pip
+  name: pyyaml
