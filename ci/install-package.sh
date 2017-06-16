@@ -42,22 +42,28 @@ tue-get install docker
 Optionally fix your compilation errors and rerun only the last command
 \e[0m"
 
+# Name of the docker image
+IMAGE_NAME=tuerobotics/tue-env
 # Determine docker tag if the same branch exists there
-IMAGE_BRANCH_NAME=tuerobotics/tue-env:`echo "$BRANCH" | tr '[:upper:]' '[:lower:]' | sed -e 's:/:_:g'`
+BRANCH_TAG=`echo "$BRANCH" | tr '[:upper:]' '[:lower:]' | sed -e 's:/:_:g'`
 
 # Set the default fallback branch to master
-IMAGE_MASTER_NAME=tuerobotics/tue-env:master
+MASTER_TAG=master
 
 # Remove any previously started containers if they exist (if not exist, still return true to let the script continue)
-docker stop tue-env || true && docker rm tue-env || true
+docker stop tue-env  &> /dev/null || true && docker rm tue-env &> /dev/null || true
 
-# Run the docker image (user master as fallback)
-echo -e "\e[35m\e[1m Trying to fetch docker image: $IMAGE_BRANCH_NAME \e[0m"
-if ! docker run --detach --interactive --name tue-env $IMAGE_BRANCH_NAME
+# Pull the identical branch name from dockerhub if exist, use master as fallback
+echo -e "\e[35m\e[1m Trying to fetch docker image: $IMAGE_NAME:$BRANCH_TAG \e[0m"
+if ! docker pull $IMAGE_NAME:$BRANCH_TAG 2>&1 | grep -v 'not found' #Silence not found error to avoid confusion
 then
-    echo -e "\e[35m\e[1m Not found, fall back to master branch: $IMAGE_MASTER_NAME \e[0m"
-    docker run --detach --interactive --name tue-env $IMAGE_MASTER_NAME 
+    echo -e "\e[35m\e[1m Not found, fall back to master branch: $IMAGE_NAME:$MASTER_TAG \e[0m"
+    docker pull $IMAGE_NAME:$MASTER_TAG 
+    BRANCH_TAG=master
 fi
+
+# Run the docker image
+docker run --detach --interactive --name tue-env $IMAGE_NAME:$BRANCH_TAG
 
 # Install the package
 echo -e "\e[35m\e[1m tue-get install ros-$PACKAGE \e[0m"
