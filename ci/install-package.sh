@@ -55,9 +55,9 @@ docker stop tue-env  &> /dev/null || true && docker rm tue-env &> /dev/null || t
 
 # Pull the identical branch name from dockerhub if exist, use master as fallback
 echo -e "\e[35m\e[1m Trying to fetch docker image: $IMAGE_NAME:$BRANCH_TAG \e[0m"
-if ! docker pull $IMAGE_NAME:$BRANCH_TAG 2>&1 | grep -v 'not found' #Silence not found error to avoid confusion
+if ! docker pull $IMAGE_NAME:$BRANCH_TAG
 then
-    echo -e "\e[35m\e[1m Not found, fall back to master branch: $IMAGE_NAME:$MASTER_TAG \e[0m"
+    echo -e "\e[35m\e[1m No worries, we just test against the master branch: $IMAGE_NAME:$MASTER_TAG \e[0m"
     docker pull $IMAGE_NAME:$MASTER_TAG 
     BRANCH_TAG=master
 fi
