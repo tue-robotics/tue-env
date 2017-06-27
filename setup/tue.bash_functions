@@ -568,6 +568,7 @@ function tue-checkout
     fi
 
     local branch=$1
+	cd $TUE_DIR; git checkout $branch > /dev/null; cd - > /dev/null
 
     fs=`ls $_TUE_CATKIN_SYSTEM_DIR/src`
     for pkg in $fs
@@ -666,13 +667,13 @@ For example:
 
     cd ~/.tue
     git remote set-url $remote ${server}tue-robotics/tue-env
-    
+
     pkgs_dir=$TUE_ENV_DIR/repos/https_/github.com/tue-robotics
     # replace spaces with underscores
     pkgs_dir=${pkgs_dir// /_}
     # now, clean out anything that's not alphanumeric or an underscore
     pkgs_dir=${pkgs_dir//[^a-zA-Z0-9\/\.-]/_}
-    
+
     local fs=`ls $pkgs_dir`
     for pkg in $fs
     do
@@ -731,7 +732,7 @@ function tue-robocup-update
 
     cd ~/.tue
     git pull --ff-only
-    
+
     # Copy rsettings file
     if [ "$ROBOT_REAL" != "true" ]
     then
