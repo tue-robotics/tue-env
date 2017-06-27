@@ -582,6 +582,7 @@ function tue-checkout
     fi
 
     local branch=$1
+	cd $TUE_DIR; git checkout $branch > /dev/null; cd - > /dev/null
 
     fs=`ls $_TUE_CATKIN_SYSTEM_DIR/src`
     for pkg in $fs
