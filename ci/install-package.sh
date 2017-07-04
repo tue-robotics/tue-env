@@ -1,5 +1,5 @@
 #!/bin/bash
-set -o errexit # Stop on errors
+set -o errexit #Stop on errors
 
 # Standard argument parsing, example: install-package --branch=master --package=ros_robot
 for i in "$@"
