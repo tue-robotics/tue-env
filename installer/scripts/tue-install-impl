@@ -661,9 +661,11 @@ if [ -n "$TUE_INSTALL_PIPS" ]; then
     dpkg -s python-pip &> /dev/null || sudo apt-get install -y python-pip
 
     pkgs_to_install=
+    pip_installed=$(pip freeze)
+    pip_installed="$(echo "${pip_installed}" | tr '[:upper:]' '[:lower:]')"
     for pkg in $TUE_INSTALL_PIPS
     do
-        if [ ! $(pip freeze | grep $pkg) ] # Check if pkg is not already installed
+        if [ ! $(echo "$pip_installed" | grep $pkg) ] # Check if pkg is not already installed
         then
             pkgs_to_install="$pkgs_to_install $pkg"
         fi
