@@ -318,8 +318,8 @@ function tue-install-system
     then
         tue-install-error "Invalid tue-install-system call: needs package as argument."
     fi
-    system_pkg="$(echo "$1" | tr '[:upper:]' '[:lower:]')"
-    TUE_INSTALL_SYSTEMS="$system_pkg $TUE_INSTALL_SYSTEMS"
+    
+    TUE_INSTALL_SYSTEMS="$1 $TUE_INSTALL_SYSTEMS"
 }
 
 # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # #
