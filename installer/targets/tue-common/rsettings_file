@@ -4,6 +4,7 @@
 #export ROBOT_ENV=reo2016
 export ROBOT_ENV=robotics_testlabs
 #export ROBOT_ENV=rgo2017
+#export ROBOT_ENV=rwc2017
 
 # Set Robot initial pose based on environment
 
@@ -27,6 +28,13 @@ elif [ $ROBOT_ENV == rgo2017 ]; then
     export ROBOT_INIT_X=-1.0
     export ROBOT_INIT_Y=0.0
     export ROBOT_INIT_PHI=0.0
+
+elif [ $ROBOT_ENV == rwc2017 ]; then
+
+    # Robot initial pose
+    export ROBOT_INIT_X=0.0
+    export ROBOT_INIT_Y=1.0
+    export ROBOT_INIT_PHI=1.57079632679
 fi
 
 export ROBOT_MACHINE_DIR=$TUE_ENV_DIR/system/src/amigo_machine_files
