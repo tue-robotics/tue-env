@@ -453,6 +453,11 @@ function tue-install-ros {
     fi
 
     if [ "$type" = "git" ]; then
+        i=$((${#source}-4))
+        curr_ext="${source:$i}"
+        if [ ! "$curr_ext" = ".git" ]; then
+            source+=".git"
+        fi
         tue-install-git $source $repos_dir $version
         echo "git clone $source" >> $INSTALL_DETAILS_FILE
         [ "$version" ] && echo "# NOTE: check-out version $version" >> $INSTALL_DETAILS_FILE
