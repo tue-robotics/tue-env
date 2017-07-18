@@ -1,4 +1,5 @@
 - type: ros
   source:
     type: git
-    url: https://github.com/tue-robotics/openpose_ros.git
+    url: https://github.com/tue-robotics/image_recognition.git
+    sub-dir: openface_ros
