@@ -6,7 +6,7 @@ then
 	sudo apt remove opencv* libopencv* # Explicitly ask for confirmation
 fi
 
-if ! dpkg-query -l opencv* libopencv* > /dev/null
+if ! dpkg-query -l ros-kinetic-opencv3 > /dev/null
 then
 	sudo apt install --assume-yes ros-kinetic-opencv3
 fi
