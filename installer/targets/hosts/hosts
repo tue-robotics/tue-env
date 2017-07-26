@@ -12,6 +12,8 @@ ff02::2 ip6-allrouters
 192.168.44.91    amigo1
 192.168.44.92    amigo2
 192.168.44.93    amigo3
+192.168.44.94    tegra-ubuntu
+192.168.44.95    matrix
 
 # sergio
 192.168.44.71    sergio1
