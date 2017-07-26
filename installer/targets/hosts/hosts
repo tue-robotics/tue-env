@@ -18,6 +18,9 @@ ff02::2 ip6-allrouters
 192.168.44.72    sergio2
 192.168.44.73    sergio3
 
+# server
+192.168.44.10    roboticssrv
+
 # at-home pc's
 192.168.44.101   athome1
 192.168.44.102   athome2
@@ -48,7 +51,7 @@ ff02::2 ip6-allrouters
 
 # user pc's
 192.168.44.181 jlunenburg
-192.168.44.182 tim
+192.168.44.182 Precision #Tim
 192.168.44.183 senote-50
 192.168.44.184 lenovo
 192.168.44.185 probook450
