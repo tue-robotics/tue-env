@@ -706,6 +706,16 @@ function tue-robocup-reset-github-origin
     tue-set-git-remote origin https://github.com/
 }
 
+function tue-robocup-set-timezone-robocup
+{
+	sudo timedatectl set-timezone Asia/Tokyo
+}
+
+function tue-robocup-set-timezone-home
+{
+    sudo timedatectl set-timezone Europe/Amsterdam
+}
+
 function tue-robocup-install-package
 {
     local pkgs_dir=$TUE_ENV_DIR/repos/https_/github.com/tue-robotics
