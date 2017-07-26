@@ -32,9 +32,9 @@ elif [ $ROBOT_ENV == rgo2017 ]; then
 elif [ $ROBOT_ENV == rwc2017 ]; then
 
     # Robot initial pose
-    export ROBOT_INIT_X=0.0
-    export ROBOT_INIT_Y=1.0
-    export ROBOT_INIT_PHI=1.57079632679
+    export ROBOT_INIT_X=9.3
+    export ROBOT_INIT_Y=-7.3
+    export ROBOT_INIT_PHI=2.35619449019
 fi
 
 export ROBOT_MACHINE_DIR=$TUE_ENV_DIR/system/src/amigo_machine_files
