@@ -13,6 +13,11 @@ then
 	echo_and_run sudo apt install --assume-yes ros-kinetic-opencv3
 fi
 
+if ! dpkg-query -l libopenblas-dev > /dev/null
+then
+    echo_and_run sudo apt install --assume-yes libopenblas-dev
+fi
+
 symlink() { if [ ! -h "$2" ] ; then sudo ln -fsv "$@"; fi; }
 
 symlink /opt/ros/kinetic/lib/libopencv_core3.so /usr/lib/libopencv_core.so
