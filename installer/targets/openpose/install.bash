@@ -15,14 +15,14 @@ function apt-if-required() {
 	done
 }
 
-if dpkg-query -l opencv* libopencv* > /dev/null 2>&1
-then
-	echo_and_run sudo apt remove opencv* libopencv* # Explicitly ask for confirmation
-fi
-
 if dpkg-query -l libopencv4tegra* > /dev/null 2>&1
 then
 	echo_and_run sudo dpkg -r libopencv4tegra* # Originally not installed with apt-get
+fi
+
+if dpkg-query -l opencv* libopencv* > /dev/null 2>&1
+then
+	echo_and_run sudo apt remove opencv* libopencv* # Explicitly ask for confirmation
 fi
 
 apt-if-required ros-kinetic-opencv3 libopenblas-dev python-pip
