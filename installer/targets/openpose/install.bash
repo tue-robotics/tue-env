@@ -3,7 +3,7 @@ set -e
 
 echo_and_run() { echo "$@" ; "$@" ; }
 
-if dpkg-query -l opencv* libopencv* 2&>1 /dev/null
+if dpkg-query -l opencv* libopencv* > /dev/null 2>&1
 then
 	echo_and_run sudo apt remove opencv* libopencv* # Explicitly ask for confirmation
 fi
@@ -38,11 +38,21 @@ fi
 sed -i 's/# OPENCV_VERSION := 3/OPENCV_VERSION := 3/g' ~/openpose/ubuntu/Makefile.config.Ubuntu16_cuda8.example
 sed -i 's/# OPENCV_VERSION := 3/OPENCV_VERSION := 3/g' ~/openpose/3rdparty/caffe/Makefile.config.Ubuntu16_cuda8.example
 
+# Switch architecture if desired
+if [ ! -d /usr/lib/x86_64-linux-gnu ]
+then
+    sed -i 's/x86_64-linux-gnu/aarch64-linux-gnu/g' ~/openpose/ubuntu/Makefile.config.Ubuntu16_cuda8.example
+fi
+
 # Do not update, takes long, not required
 sed -i 's/sudo apt-get --assume-yes update/# sudo apt-get --assume-yes update/g' ~/openpose/3rdparty/caffe/install_caffe_if_cuda8.sh
 
 # sudo pip needs capital H
 sed -i 's/sudo -h pip install numpy protobuf/sudo -H pip install numpy protobuf/g' ~/openpose/3rdparty/caffe/install_caffe_if_cuda8.sh
+
+# copy Makefile
+cp ~/openpose/3rdparty/caffe/Makefile.config.Ubuntu16_cuda8.example ~/openpose/3rdparty/caffe/Makefile.config
+cp ~/openpose/ubuntu/Makefile.config.Ubuntu16_cuda8.example ~/openpose/Makefile.config
 
 if [ ! -d ~/openpose/build ]
 then
