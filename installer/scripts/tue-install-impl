@@ -128,13 +128,6 @@ function tue-install-target {
 }
 
 # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # #
-# tue-install-system does the same, this one is not used
-# function tue-install-sys {
-#     source=$1
-#     TUE_INSTALL_SYSTEMS="$source $TUE_INSTALL_SYSTEMS"
-# }
-# 
-# # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # #
 
 function _show_update_message
 {
@@ -654,7 +647,6 @@ do
         # Mark as installed
         touch $TUE_INSTALL_INSTALLED_DIR/$target
     fi
-    #echo $target
     tue-install-target $target
 done
 
