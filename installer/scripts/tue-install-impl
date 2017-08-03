@@ -260,8 +260,22 @@ function tue-install-cp
         tue-install-error "Invalid tue-install-cp call: file '$1' does not exist."
     fi
 
-    cp $file $2
-    echo "cp $file $2"
+    # Check if user is allowed to write on target destination
+    local root_required=true
+    if namei -l $2 | grep -q $USER
+    then
+        root_required=false
+    fi
+
+    if ! cmp --quiet $file $2
+    then
+        if $root_required
+        then
+            sudo cp --verbose $file $2
+        else
+            cp --verbose $file $2
+        fi
+    fi
 }
 
 # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # #
@@ -287,6 +301,12 @@ function tue-install-add-text
     local source_file=$TUE_INSTALL_CURRENT_TARGET_DIR/$1
     local target_file=$2
 
+    local root_required=true
+    if namei -l $target_file | grep -q $USER
+    then
+        root_required=false
+    fi
+
     if [ ! -f $source_file ]
     then
         tue-install-error "tue-install-add-text: No such file: $source_file"
@@ -303,10 +323,21 @@ function tue-install-add-text
 
     if ! grep -q "$begin_tag" $target_file
     then
-        echo -e "$text" >> $target_file
+        if $root_required
+        then
+            echo -e "$text" | sudo tee --append $target_file
+        else
+            echo -e "$text" | tee --append $target_file
+        fi
     else
-        sed -e "/^$end_tag/r $source_file" -e "/^$begin_tag/,/^$end_tag/d" $target_file > $target_file.tmp
-        mv $target_file.tmp $target_file
+        if $root_required
+        then
+            sed -e "/^$end_tag/r $source_file" -e "/^$begin_tag/,/^$end_tag/d" $target_file | sudo tee $target_file.tmp
+            sudo mv $target_file.tmp $target_file
+        else
+            sed -e "/^$end_tag/r $source_file" -e "/^$begin_tag/,/^$end_tag/d" $target_file | tee $target_file.tmp
+            mv $target_file.tmp $target_file
+        fi
     fi
 }
 
