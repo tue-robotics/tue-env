@@ -355,6 +355,28 @@ function tue-install-system
 
 # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # #
 
+function tue-add-apt-repository
+{
+    if [ -z "$1" ]
+    then
+        tue-install-error "Invalid tue-add-apt-repository call: needs ppa as argument."
+    fi
+
+    if [[ ! $1 == ppa:* ]]
+    then
+        tue-install-error "Invalid tue-add-apt-repository call: needs to start with ppa:"
+    fi
+
+    if [ $(grep -h "^deb.*$1" /etc/apt/sources.list.d/* > /dev/null 2>&1) ]
+    then
+        tue-install-info "Adding $1"
+        sudo add-apt-repository -y $1
+        sudo apt update
+    fi
+}
+
+# # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # #
+
 function tue-install-pip
 {
     if [ -z "$1" ]
