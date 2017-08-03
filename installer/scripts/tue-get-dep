@@ -35,7 +35,7 @@ function _show_dep
 if [ -z $1 ]
 then
     echo "[tue-get dep] Usage: tue-get dep TARGET_FROM [ TARGET_TO ]"
-    exit 1
+    return 1
 fi
 
 if [[ "$1" == '.' ]]
