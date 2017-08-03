@@ -168,31 +168,31 @@ function tue-install-git
     if [ ! -d $2 ]; then
         res=$(git clone --recursive $1 $2 2>&1)
     else
-		# Check if we have already pulled the repo
-		if [[ $TUE_INSTALL_GIT_PULL_Q =~ $2 ]]
-		then
-			# We have already pulled this repo, skip it
-			res=
-		else
-			local mem_pwd=$PWD
-			cd $2
+        # Check if we have already pulled the repo
+        if [[ $TUE_INSTALL_GIT_PULL_Q =~ $2 ]]
+        then
+            # We have already pulled this repo, skip it
+            res=
+        else
+            local mem_pwd=$PWD
+            cd $2
+    
+            res=$(git pull --ff-only --prune 2>&1)
+    
+            TUE_INSTALL_GIT_PULL_Q+=$2
 
-			res=$(git pull --ff-only --prune 2>&1)
-
-			TUE_INSTALL_GIT_PULL_Q+=$2
-
-			if [ ! $? -eq 0 ]
-			then
-				tue-install-warning "$res"
-			fi
-
-			cd $mem_pwd
-
-			if [[ $res == "Already up-to-date"* ]]
-			then
-				res=
-			fi
-		fi
+            if [ ! $? -eq 0 ]
+            then
+                tue-install-warning "$res"
+            fi
+    
+            cd $mem_pwd
+    
+            if [[ $res == "Already up-to-date"* ]]
+            then
+                res=
+            fi
+        fi
     fi
 
     local version=$3
@@ -691,8 +691,8 @@ if [ -n "$TUE_INSTALL_SYSTEMS" ]; then
 
     if [ -n "$pkgs_to_install" ]
     then
-		echo -e "Going to run the following command:\n"
-		echo "sudo apt-get install -y $pkgs_to_install"
+        echo -e "Going to run the following command:\n"
+        echo "sudo apt-get install -y $pkgs_to_install"
         sudo apt-get install -y $pkgs_to_install
     fi
 fi
