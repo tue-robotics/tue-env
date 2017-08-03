@@ -418,6 +418,13 @@ function tue-get
         return 1
     fi
 
+    #Create btrfs snapshot if possible:
+    if df --print-type / | grep -q btrfs
+    then
+        sudo mkdir -p /snap/root
+        sudo btrfs subvolume snapshot / /snap/root/$(date +%Y-%m-%d_%H:%M:%S)
+    fi
+
     local tue_dep_dir=$TUE_ENV_DIR/.env/dependencies
     local tue_installed_dir=$TUE_ENV_DIR/.env/installed
 
