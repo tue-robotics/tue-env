@@ -1,5 +1,5 @@
 #!/bin/bash
-#_tue-check-env-vars || exit 1
+#_tue-check-env-vars || return 1
 
 TUE_INSTALL_DEPENDENCIES_DIR=$TUE_ENV_DIR/.env/dependencies
 TUE_INSTALL_DEPENDENCIES_ON_DIR=$TUE_ENV_DIR/.env/dependencies-on
@@ -52,7 +52,7 @@ Error while installing target '$TUE_INSTALL_CURRENT_TARGET':
 
     $1
 \033[0m"
-    exit 1
+    return 1
 }
 
 # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # #
