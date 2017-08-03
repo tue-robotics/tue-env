@@ -713,21 +713,11 @@ if [ -n "$TUE_INSTALL_PIPS" ]; then
     # Check if python-pip is already installed, if not, install python-pip
     dpkg -s python-pip &> /dev/null || sudo apt-get install -y python-pip
 
-    pkgs_to_install=
-    pip_installed=$(pip freeze)
-    pip_installed="$(echo "${pip_installed}" | tr '[:upper:]' '[:lower:]')"
-    for pkg in $TUE_INSTALL_PIPS
-    do
-        if [ ! $(echo "$pip_installed" | grep $pkg) ] # Check if pkg is not already installed
-        then
-            pkgs_to_install="$pkgs_to_install $pkg"
-        fi
-    done
-
-    if [ -n "$pkgs_to_install" ]
+    # Just install the packages because checking for installation is not faster
+    if [ -n "$TUE_INSTALL_PIPS" ]
     then
-		echo -e "Going to run the following command:\n"
-		echo "sudo -H pip install -U $pkgs_to_install"
-        sudo -H pip install -U $pkgs_to_install
+        echo -e "Going to run the following command:\n"
+        echo "yes | pip install --user $TUE_INSTALL_PIPS"
+        yes | pip install --user $TUE_INSTALL_PIPS
     fi
 fi
