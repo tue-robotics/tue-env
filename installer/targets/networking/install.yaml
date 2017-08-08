@@ -1,0 +1,8 @@
+- type: system
+  name: libnss-mdns # Allows for searching .local dns names
+- type: system
+  name: avahi-daemon # Allows for exposing .local dns name
+- type: system
+  name: avahi-dnsconfd
+- type: system
+  name: nmap # General debugging utility typically not easy to install during network troubles
