@@ -3,7 +3,7 @@ if [ ! -d ~/openface ]; then
     mkdir ~/openface
     cd ~/openface
     git clone https://github.com/cmusatyalab/openface.git  ~/openface --recursive
-    sudo pip install numpy pandas scipy scikit-learn scikit-image
+    sudo apt install python-numpy python-pandas python-scipy python-sklearn python-skimage
 
     DIR="$( cd "$( dirname "${BASH_SOURCE[0]}" )" && pwd )"
     bash $DIR/dlib.bash
