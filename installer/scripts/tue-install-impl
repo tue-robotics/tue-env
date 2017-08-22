@@ -330,8 +330,9 @@ function tue-install-pip
     then
         tue-install-error "Invalid tue-install-pip call: needs package as argument."
     fi
-
-    TUE_INSTALL_PIPS="$1 $TUE_INSTALL_PIPS"
+    
+    pip_pkg="$(echo "$1" | tr '[:upper:]' '[:lower:]')"
+    TUE_INSTALL_PIPS="$pip_pkg $TUE_INSTALL_PIPS"
 }
 
 # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # #
