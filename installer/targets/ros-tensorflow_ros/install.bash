@@ -7,6 +7,8 @@ then
     # ToDo: use pip target
     echo -e "\nInstalling tensorflow using pip.\n"
 
+    sudo apt install -y python-mock python-protobuf python-numpy python-wheel python-six
+
     if [[ $(lsb_release -rs) > "16.03" ]]
     then
         pip install -U $TF_BINARY_URL --user
