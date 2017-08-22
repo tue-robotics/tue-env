@@ -1,2 +1,2 @@
-- type: pip
-  name: requests
+- type: system
+  name: python-requests

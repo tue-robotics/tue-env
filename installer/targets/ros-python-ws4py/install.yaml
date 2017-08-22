@@ -1,2 +1,2 @@
-- type: pip
-  name: ws4py
+- type: system
+  name: python-ws4py

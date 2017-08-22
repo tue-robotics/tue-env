@@ -1,2 +1,2 @@
-- type: pip
-  name: pillow
+- type: system
+  name: python-pillow

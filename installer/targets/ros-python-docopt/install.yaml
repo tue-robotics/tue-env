@@ -1,2 +1,2 @@
-- type: pip
-  name: docopt
+- type: system
+  name: python-docopt
