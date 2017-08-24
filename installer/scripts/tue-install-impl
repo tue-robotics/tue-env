@@ -619,8 +619,6 @@ do
     case "$1" in
         --debug) DEBUG=true
             ;;
-        --opt2) echo "option 2"
-            ;;
         --*) echo "unknown option $1"
             ;;
         *) targets="$targets $1"
