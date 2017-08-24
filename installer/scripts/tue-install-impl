@@ -627,7 +627,7 @@ do
     shift
 done
 
-if [ -z targets ]
+if [[ -z "${targets// }" ]] #If only whitespace
 then
     # If no targets are provided, update all installed targets
     targets=`ls $TUE_INSTALL_INSTALLED_DIR`
