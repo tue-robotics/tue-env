@@ -4,3 +4,9 @@
     url: https://github.com/tue-robotics/navigation.git
     sub-dir: map_server
     version: kinetic-devel
+
+- type: target
+  name: gimp
+
+- type: target
+  name: imagemagick
