@@ -1,35 +1,102 @@
+#! /bin/bash
+
+function _parse_yaml_map_server {
+   local prefix=$2
+   local s='[[:space:]]*' w='[a-zA-Z0-9_]*' fs=$(echo @|tr @ '\034')
+   sed -ne "s|^\($s\):|\1|" \
+        -e "s|^\($s\)\($w\)$s:$s[\"']\(.*\)[\"']$s\$|\1$fs\2$fs\3|p" \
+        -e "s|^\($s\)\($w\)$s:$s\(.*\)$s\$|\1$fs\2$fs\3|p"  $1 |
+   awk -F$fs '{
+      indent = length($1)/2;
+      vname[indent] = $2;
+      for (i in vname) {if (i > indent) {delete vname[i]}}
+      if (length($3) > 0) {
+         vn=""; for (i=0; i<indent; i++) {vn=(vn)(vname[i])("_")}
+         printf("%s%s%s=\"%s\"\n", "'$prefix'",vn, $2, $3);
+      }
+   }'
+}
+
 function tue-save-map {
     if [ -z "$1" ]; then
         echo "Usage: tue-save-map MAP_NAME
 
-The map will be stored in the package amigo_maps, in folder map/MAP_NAME/loc, map/MAP_NAME/nav and map/MAP_NAME/raw."
+The map will be stored in the package ed_object_models, in folder models/MAP_NAME/walls."
         return
     fi
 
+    MODELS_DIR=`rospack find ed_object_models`/models
+    MODEL_DIR=$MODELS_DIR/$1
+
+    if [ -d "$MODEL_DIR" ]; then
+        echo "$1 already exists"
+        return
+    fi
+
+    # remove any possible old files
     rm -f /tmp/temp_map.pgm
     rm -f /tmp/temp_map.yaml
+    rm -f /tmp/temp_map.png
+    rm -f /tmp/temp_map.xcf
+
 
     # store the map in /tmp
-    rosrun map_server map_saver -f /tmp/temp_map map:=/nav_map
+    rosrun map_server map_saver -f /tmp/temp_map
 
-    # create the map directory structure (nav, loc, raw) in tue_maps/maps
-    MAP_DIR=`rospack find tue_maps`/maps
-    mkdir -p $MAP_DIR/$1/loc
-    mkdir -p $MAP_DIR/$1/nav
-    mkdir -p $MAP_DIR/$1/raw
+    # parse yaml from gmapping
+    eval $(_parse_yaml_map_server /tmp/temp_map.yaml)
+    # seperate origin offset into an array, because ED requires three seperate values.
+    origin=$(echo "$origin" | tr -d "[]")
+    IFS=', ' read -r -a origin <<< "$origin"
 
-    # change reference to the image file in the yaml file to 'pgm'
-    sed -i "s/\/tmp\/temp_map.pgm/pgm/g" /tmp/temp_map.yaml
+    # create the map directory structure (MAP_NAME/walls) in ed_object_models/models
+    mkdir -p $MODEL_DIR/walls/shape
 
-    # move the yaml and pgm to the raw folder
-    mv /tmp/temp_map.yaml $MAP_DIR/$1/raw/yaml
-    mv /tmp/temp_map.pgm $MAP_DIR/$1/raw/pgm
+    # create main model.yaml
+    cat > $MODEL_DIR/model.yaml <<EOL
+composition:
+- type: "$1/walls"
+  id: "walls"
+  pose:
+      x: 0
+      y: 0
+      z: 0
+EOL
 
-    # copy the yaml and pgm files to the loc folder
-    cp $MAP_DIR/$1/raw/yaml $MAP_DIR/$1/loc/yaml
-    cp $MAP_DIR/$1/raw/pgm $MAP_DIR/$1/loc/pgm
+    # create walls model.yaml
+    cat > $MODEL_DIR/walls/model.yaml <<EOL
+type: walls
+shape:
+    path: shape/heightmap.pgm
+    blockheight: 2.0
+    resolution: $resolution
+    origin_x: ${origin[0]}
+    origin_y: ${origin[1]}
+    origin_z: ${origin[2]}
+EOL
 
-    # copy the yaml and pgm files to the nav folder
-    cp $MAP_DIR/$1/raw/yaml $MAP_DIR/$1/nav/yaml
-    cp $MAP_DIR/$1/raw/pgm $MAP_DIR/$1/nav/pgm
+    # remove grey background and convert background to transparent (pgm does not support transparency, so converted to png)
+    convert /tmp/temp_map.pgm -threshold 1% /tmp/temp_map.pgm
+    convert /tmp/temp_map.pgm -transparent white /tmp/temp_map.png # only for xcf
+
+    # converting png to xcf
+    {
+    gimp -n -i -b - <<EOF
+(let* ( (file's (cadr (file-glob "/tmp/temp_map.png" 1))) (filename "") (image 0) (layer 0) )
+  (while (pair? file's)
+    (set! image (car (gimp-file-load RUN-NONINTERACTIVE (car file's) (car file's))))
+    (set! layer (car (gimp-image-merge-visible-layers image CLIP-TO-IMAGE)))
+    (set! filename (string-append (substring (car file's) 0 (- (string-length (car file's)) 4)) ".xcf"))
+    (gimp-file-save RUN-NONINTERACTIVE image layer filename filename)
+    (gimp-image-delete image)
+    (set! file's (cdr file's))
+    )
+  (gimp-quit 0)
+  )
+EOF
+    } &> /dev/null # because of stupid gimp warnings
+
+    # copy the pgm to the walls/shape folder
+    cp /tmp/temp_map.pgm $MODEL_DIR/walls/shape/heightmap.pgm
+    cp /tmp/temp_map.xcf $MODEL_DIR/walls/shape/heightmap.xcf
 }
