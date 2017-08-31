@@ -1,5 +1,4 @@
 - type: ros
   source:
-    type: git
     type: system
     name: audio-capture
