@@ -425,7 +425,7 @@ function tue-get
     shift
 
     #Create btrfs snapshot if possible and usefull:
-    if [[ "$cmd" =~ ^(install|update|remove)$ ]] && $(df --print-type / | grep -q btrfs)
+    if [[ "$cmd" =~ ^(install|update)$ ]] && $(df --print-type / | grep -q btrfs)
     then
         sudo mkdir -p /snap/root
         sudo btrfs subvolume snapshot / /snap/root/$(date +%Y-%m-%d_%H:%M:%S)
