@@ -455,6 +455,9 @@ function tue-get
         error_code=0
         for target in $@
         do
+            #Skip options
+            [[ $target = '--'* ]] && continue
+
             if [ ! -f $TUE_ENV_DIR/.env/dependencies/$target ]
             then
                 echo "[tue-get] Package '$target' is not installed."
