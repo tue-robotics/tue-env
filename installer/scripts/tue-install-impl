@@ -133,7 +133,7 @@ function tue-install-target {
 #     source=$1
 #     TUE_INSTALL_SYSTEMS="$source $TUE_INSTALL_SYSTEMS"
 # }
-# 
+#
 # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # #
 
 function _show_update_message
@@ -665,7 +665,7 @@ if [ -n "$TUE_INSTALL_PIPS" ]; then
     pip_installed="$(echo "${pip_installed}" | tr '[:upper:]' '[:lower:]')"
     for pkg in $TUE_INSTALL_PIPS
     do
-        if [ ! $(echo "$pip_installed" | grep $pkg) ] # Check if pkg is not already installed
+        if ! echo "$pip_installed" | grep "$pkg" # Check if pkg is not already installed
         then
             pkgs_to_install="$pkgs_to_install $pkg"
         fi
