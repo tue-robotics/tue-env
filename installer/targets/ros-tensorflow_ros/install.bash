@@ -11,9 +11,9 @@ then
 
     if [[ $(lsb_release -rs) > "16.03" ]]
     then
-        pip install -U $TF_BINARY_URL --user
+        pip install $TF_BINARY_URL --user
     else
-        sudo pip install -U $TF_BINARY_URL
+        sudo pip install $TF_BINARY_URL
     fi
 else
     echo -e "Tensorflow already installed"
