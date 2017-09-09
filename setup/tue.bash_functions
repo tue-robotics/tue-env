@@ -583,7 +583,7 @@ function tue-checkout
 
     local branch=$1
     cd $TUE_DIR
-	pkg=tue-env
+    pkg=tue-env
     test_branch=$(git branch -a 2> /dev/null | grep -q $branch)
     if [ $? -eq 0 ]
     then
