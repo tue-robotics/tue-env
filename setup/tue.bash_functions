@@ -583,7 +583,7 @@ function tue-checkout
             then
             	echo -e "\033[1m$pkg\033[0m: checked-out $branch"
             else
-				echo ""
+		echo ""
                 echo -e "    \033[1m$pkg\033[0m"
                 echo "--------------------------------------------------"
                 echo -e "\033[38;5;1m$res\033[0m"
