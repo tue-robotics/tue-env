@@ -69,6 +69,14 @@ function tue-install-info {
     TUE_INSTALL_INFOS="    [$TUE_INSTALL_CURRENT_TARGET] $1\n${TUE_INSTALL_INFOS}"
 }
 
+# # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # #
+
+function tue-install-debug {
+    if [ "$DEBUG" = "true" ]; then
+        echo -e "\e[0;34m[$TUE_INSTALL_CURRENT_TARGET] INFO: $1\033[0m"
+    fi
+}
+
 
 # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # #
 
@@ -88,6 +96,7 @@ function tue-install-target {
     fi
 
     if [ ! -f $TUE_INSTALL_STATE_DIR/$target ]; then
+        tue-install-debug "File $TUE_INSTALL_STATE_DIR/$target does not exist, going to installation procedure"
 
         if [ ! -d $TUE_INSTALL_TARGET_DIR/$target ]
         then
@@ -100,14 +109,17 @@ function tue-install-target {
         TUE_INSTALL_CURRENT_TARGET=$target
 
         # Empty the target's dependency file
+        tue-install-debug "Emptying $TUE_INSTALL_DEPENDENCIES_DIR/$target"
         > $TUE_INSTALL_DEPENDENCIES_DIR/$target
 
         if [ -f $install_file.yaml ]
         then
+            tue-install-debug "Parsing $install_file.yaml"
             local cmds=`$TUE_DIR/installer/scripts/parse-install-yaml $install_file.yaml`
             if [ $? -eq 0 ]; then
                 for cmd in $cmds
                 do
+                    tue-install-debug "Running following command: $cmd"
                     ${cmd//^/ }
                 done
             else
@@ -117,6 +129,7 @@ function tue-install-target {
 
         if [ -f $install_file.bash ]
         then
+            tue-install-debug "Sourcing $install_file.bash"
             source $install_file.bash
         fi
 
@@ -125,6 +138,8 @@ function tue-install-target {
 
     TUE_INSTALL_CURRENT_TARGET=$parent_target
     TUE_INSTALL_CURRENT_TARGET_DIR=$TUE_INSTALL_TARGET_DIR/$parent_target
+
+    tue-install-debug "Finished installing $target"
 }
 
 # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # #
@@ -165,29 +180,31 @@ function tue-install-svn
 TUE_INSTALL_GIT_PULL_Q=()
 function tue-install-git
 {
+    tue-install-debug "tue-install-git $@"
     if [ ! -d $2 ]; then
+        tue-install-debug "git clone --recursive $1 $2"
         res=$(git clone --recursive $1 $2 2>&1)
     else
         # Check if we have already pulled the repo
         if [[ $TUE_INSTALL_GIT_PULL_Q =~ $2 ]]
         then
+            tue-install-debug "Repo previously pulled, skipping"
             # We have already pulled this repo, skip it
             res=
         else
             local mem_pwd=$PWD
             cd $2
-    
+
+            tue-install-debug "cd $2 && git pull --ff-only --prune"
+
             res=$(git pull --ff-only --prune 2>&1)
-    
+
+            tue-install-debug "$res"
+
             TUE_INSTALL_GIT_PULL_Q+=$2
 
-            if [ ! $? -eq 0 ]
-            then
-                tue-install-warning "$res"
-            fi
-    
             cd $mem_pwd
-    
+
             if [[ $res == "Already up-to-date"* ]]
             then
                 res=
@@ -200,6 +217,9 @@ function tue-install-git
     then
         mem_pwd=$PWD
         cd $2
+
+        tue-install-debug "cd $2 && git checkout $version"
+
         cres=$(git checkout $version 2>&1)
         if [[ $cres == "Already on "* ]]
         then
@@ -461,6 +481,8 @@ function tue-install-ros {
     sub_dir=$3
     version=$4
 
+    tue-install-debug "Installing ros package: type = $type, source = $source"
+
     [ -n "$TUE_ROS_DISTRO" ] || tue-install-error "Environment variable 'TUE_ROS_DISTRO' is not set."
 
     local ros_pkg_name=${TUE_INSTALL_CURRENT_TARGET#ros-}
@@ -469,6 +491,7 @@ function tue-install-ros {
     tue-install-target ros
 
     if [ "$type" = "system" ]; then
+        tue-install-debug "Adding $source to apt list"
         TUE_INSTALL_SYSTEMS="ros-$TUE_ROS_DISTRO-$source $TUE_INSTALL_SYSTEMS"
         return
     fi
@@ -478,6 +501,7 @@ function tue-install-ros {
     fi
 
     # Make sure the ROS package install dir exists
+    tue-install-debug "Creating ROS package install dir: $ROS_PACKAGE_INSTALL_DIR"
     mkdir -p $ROS_PACKAGE_INSTALL_DIR
 
     local ros_pkg_dir=$ROS_PACKAGE_INSTALL_DIR/$ros_pkg_name
@@ -497,9 +521,11 @@ function tue-install-ros {
     then
         repos_dir=$ros_pkg_dir
     fi
+    tue-install-debug "repos_dir = $repos_dir"
 
     if [ "$type" = "git" ]; then
         tue-install-git $source $repos_dir $version
+        tue-install-debug "git clone $source"
         echo "git clone $source" >> $INSTALL_DETAILS_FILE
         [ "$version" ] && echo "# NOTE: check-out version $version" >> $INSTALL_DETAILS_FILE
     elif [ "$type" = "svn" ]; then
@@ -632,12 +658,25 @@ then
     rmdir -v "$TUE_REPOS_DIR/github.com"
 fi
 
-if [ -z $1 ]
+# idiomatic parameter and option handling in sh
+targets=""
+while test $# -gt 0
+do
+    case "$1" in
+        --debug) DEBUG=true
+            ;;
+        --*) echo "unknown option $1"
+            ;;
+        *) targets="$targets $1"
+            ;;
+    esac
+    shift
+done
+
+if [[ -z "${targets// }" ]] #If only whitespace
 then
     # If no targets are provided, update all installed targets
     targets=`ls $TUE_INSTALL_INSTALLED_DIR`
-else
-    targets=$@
 fi
 
 for target in $targets
@@ -647,6 +686,8 @@ do
         # Mark as installed
         touch $TUE_INSTALL_INSTALLED_DIR/$target
     fi
+    
+    tue-install-debug "Main loop: installing $target"
     tue-install-target $target
 done
 

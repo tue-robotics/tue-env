@@ -3,6 +3,6 @@
     type: system
     name: rtt-ros-integration
 #    type: git
-#    url: https://github.com/orocos/rtt_ros_integration
+#    url: https://github.com/orocos/rtt_ros_integration.git
 #    sub-dir: rtt_rosclock
 #    version: toolchain-2.9

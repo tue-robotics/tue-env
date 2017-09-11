@@ -17,7 +17,7 @@ function robot-trigger-command
 
     if [ -z "$2" ]
     then
-        local sentence="listen"
+        local sentence="continue"
     else
         local sentence="${@:2}"
     fi

@@ -65,6 +65,9 @@ fi
 # Run the docker image
 docker run --detach --interactive --name tue-env $IMAGE_NAME:$BRANCH_TAG
 
+# Refresh the apt cache in the docker image
+docker exec tue-env bash -c "sudo apt-get update -qq"
+
 # Install the package
 echo -e "\e[35m\e[1m tue-get install ros-$PACKAGE \e[0m"
 docker exec tue-env bash -c "export CI='true'; source /home/amigo/.bashrc; tue-get install ros-$PACKAGE"

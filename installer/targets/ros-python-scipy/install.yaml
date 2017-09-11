@@ -1,2 +1,2 @@
-- type: pip
-  name: scipy
+- type: system
+  name: python-scipy
