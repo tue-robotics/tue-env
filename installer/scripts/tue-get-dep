@@ -23,13 +23,24 @@ function _show_dep
             return
         fi
     else
-    	echo ${indent}$1
+        #get package version
+        packagexml="$(rospack find "${1//ros-}" 2> /dev/null)/package.xml"
+        if [ -f $packagexml ]
+        then
+            version=$(xmlstarlet sel -t -m '//version[1]' -v . -n <$packagexml)
+            #xmlstarlet ed --inplace --update '//version[1]' -v 0.4.0 $packagexml
+        else
+            version=""
+        fi
+
+        #echo output
+        echo ${indent}$1 $version
     fi
 
     for t in `cat $TUE_ENV_DIR/.env/dependencies/$1`
-	do
-		_show_dep $t "$2" "--$indent" "$tmp"
-	done
+    do
+        _show_dep $t "$2" "--$indent" "$tmp"
+    done
 }
 
 if [ -z $1 ]
@@ -41,9 +52,9 @@ fi
 if [[ "$1" == '.' ]]
 then
     for t in `ls $TUE_ENV_DIR/.env/dependencies`
-	do
-		_show_dep $t $2
-	done
+    do
+        _show_dep $t $2
+    done
 else
     _show_dep $1 $2
 fi
