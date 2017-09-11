@@ -54,7 +54,7 @@ fi
 
 if [ -f $TUE_ENV_DIR/.env/setup/target_setup.bash ]
 then
-	source $TUE_ENV_DIR/.env/setup/target_setup.bash
+    source $TUE_ENV_DIR/.env/setup/target_setup.bash
 fi
 
 export TUE_BIN=~/.tue/bin
@@ -64,3 +64,4 @@ export TUE_ENV=$TUE_ENV
 
 # Make sure ROS can find cmake modules of non-ROS packages
 #export CMAKE_PREFIX_PATH=$TUE_ENV_DIR/cmake:$CMAKE_PREFIX_PATH
+export CURRENT_CMAKE_BUILD_DIR="$(catkin locate --workspace $TUE_SYSTEM_DIR --build)"

@@ -109,7 +109,7 @@ function tue-make-system
 
 function tue-make-dev
 {
-	case $(cat $_TUE_CATKIN_SYSTEM_DIR/devel/.built_by) in
+	case $(cat $_TUE_CATKIN_DEV_DIR/devel/.built_by) in
 	'catkin_make')
 		catkin_make --directory $_TUE_CATKIN_DEV_DIR -DCMAKE_BUILD_TYPE=RelWithDebInfo $@
 		;;
@@ -462,6 +462,9 @@ function tue-get
         error_code=0
         for target in $@
         do
+            #Skip options
+            [[ $target = '--'* ]] && continue
+
             if [ ! -f $TUE_ENV_DIR/.env/dependencies/$target ]
             then
                 echo "[tue-get] Package '$target' is not installed."
@@ -673,13 +676,13 @@ For example:
 
     cd ~/.tue
     git remote set-url $remote ${server}tue-robotics/tue-env
-    
+
     pkgs_dir=$TUE_ENV_DIR/repos/https_/github.com/tue-robotics
     # replace spaces with underscores
     pkgs_dir=${pkgs_dir// /_}
     # now, clean out anything that's not alphanumeric or an underscore
     pkgs_dir=${pkgs_dir//[^a-zA-Z0-9\/\.-]/_}
-    
+
     local fs=`ls $pkgs_dir`
     for pkg in $fs
     do
@@ -713,6 +716,16 @@ function tue-robocup-reset-github-origin
     tue-set-git-remote origin https://github.com/
 }
 
+function tue-robocup-set-timezone-robocup
+{
+	sudo timedatectl set-timezone Asia/Tokyo
+}
+
+function tue-robocup-set-timezone-home
+{
+    sudo timedatectl set-timezone Europe/Amsterdam
+}
+
 function tue-robocup-install-package
 {
     local pkgs_dir=$TUE_ENV_DIR/repos/https_/github.com/tue-robotics
@@ -738,7 +751,7 @@ function tue-robocup-update
 
     cd ~/.tue
     git pull --ff-only
-    
+
     # Copy rsettings file
     if [ "$ROBOT_REAL" != "true" ]
     then
