@@ -1,0 +1,5 @@
+- type: ppa
+  name: cpick/hub
+
+- type: system
+  name: hub
