@@ -1,0 +1,5 @@
+- type: ppa
+  name: peterlevi/ppa
+
+- type: system
+  name: variety
