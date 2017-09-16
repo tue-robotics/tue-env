@@ -348,7 +348,7 @@ function tue-install-ppa
 {
     if [ -z "$1" ]
     then
-        tue-install-error "Invalid tue-add-apt-repository call: needs ppa as argument."
+        tue-install-error "Invalid tue-add-apt-repository call: needs ppa as argument, but without ppa:."
     fi
 
     if [[ $1 == ppa:* ]]
@@ -690,15 +690,17 @@ rm /tmp/tue-installer -rf
 # Installing all the ppa repo's, which are collected during install
 if [ -n "$TUE_INSTALL_PPA" ]; then
 
-    echo -e "\nsudo add-apt-repository $TUE_INSTALL_PPA" >> $INSTALL_DETAILS_FILE
+    echo -e "\nsudo add-apt-repository -y $TUE_INSTALL_PPA" >> $INSTALL_DETAILS_FILE
 
     for ppa in $TUE_INSTALL_PPA
     do
-        if [ $(grep -h "^deb.*$1" /etc/apt/sources.list.d/* > /dev/null 2>&1) ]
+        if [ -z "$(grep -h "^deb.*$ppa" /etc/apt/sources.list.d/* 2>&1)" ]
         then
             PPA_ADDED=true
             tue-install-info "Adding ppa: $ppa"
             sudo add-apt-repository -y ppa:$ppa
+        else
+            tue-install-debug "ppa:$ppa is already added previously"
         fi
     done
     if [ -n "$PPA_ADDED" ]; then
@@ -722,8 +724,8 @@ if [ -n "$TUE_INSTALL_SYSTEMS" ]; then
 
     if [ -n "$pkgs_to_install" ]
     then
-		echo -e "Going to run the following command:\n"
-		echo "sudo apt-get install -y $pkgs_to_install"
+        echo -e "Going to run the following command:\n"
+        echo "sudo apt-get install -y $pkgs_to_install"
         sudo apt-get install -y $pkgs_to_install
     fi
 fi
@@ -749,8 +751,8 @@ if [ -n "$TUE_INSTALL_PIPS" ]; then
 
     if [ -n "$pkgs_to_install" ]
     then
-		echo -e "Going to run the following command:\n"
-		echo "sudo -H pip install -U $pkgs_to_install"
+        echo -e "Going to run the following command:\n"
+        echo "sudo -H pip install -U $pkgs_to_install"
         sudo -H pip install -U $pkgs_to_install
     fi
 fi
