@@ -33,6 +33,7 @@ function _make_sure_installed
 
 # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # #
 
+# Make sure tools used by this installer are installed
 _make_sure_installed python-yaml git subversion python-pip
 
 TUE_SYSTEM_DIR=$TUE_ENV_DIR/system

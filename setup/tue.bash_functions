@@ -414,6 +414,10 @@ function tue-get
         remove         - Removes installed package
         list-installed - Lists all manually installed packages
 
+    Possible options:
+        --debug        - Shows more debugging information
+        --release      - Generate debian packages of every installed package
+
 """
         return 1
     fi
