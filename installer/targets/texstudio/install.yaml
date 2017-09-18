@@ -1,5 +1,5 @@
 - type: ppa
-  name: blahota/texstudio
+  name: ppa:blahota/texstudio
 
 - type: system
   name: texstudio
