@@ -374,7 +374,7 @@ function tue-revert-undo
 #                                              TUE-GET
 # ----------------------------------------------------------------------------------------------------
 
-function _tue_depends1
+function _tue_depends
 {
     local tue_dep_dir=$TUE_ENV_DIR/.env/dependencies
 

@@ -83,7 +83,7 @@ function tue-install-debug {
 function tue-install-target {
     local target=$1
 
-    #echo $target
+    tue-install-debug "Installing $target"
 
     local parent_target=$TUE_INSTALL_CURRENT_TARGET
 
@@ -633,8 +633,6 @@ TUE_INSTALL_PIPS=
 TUE_INSTALL_WARNINGS=
 TUE_INSTALL_INFOS=
 
-echo
-
 if [ -d $TUE_REPOS_DIR/https: ]
 then
     echo "Moving to new repos format: $TUE_REPOS_DIR"
@@ -733,7 +731,7 @@ fi
 # Installing all system (apt-get) targets, which are collected during the install
 if [ -n "$TUE_INSTALL_SYSTEMS" ]; then
 
-    echo -e "\nsudo apt-get -y install $TUE_INSTALL_SYSTEMS" >> $INSTALL_DETAILS_FILE
+    echo -e "\nsudo apt-get --assume-yes install $TUE_INSTALL_SYSTEMS" >> $INSTALL_DETAILS_FILE
 
     pkgs_to_install=
     for pkg in $TUE_INSTALL_SYSTEMS
@@ -747,7 +745,7 @@ if [ -n "$TUE_INSTALL_SYSTEMS" ]; then
     if [ -n "$pkgs_to_install" ]
     then
         echo -e "Going to run the following command:\n"
-        echo "sudo apt-get install -y $pkgs_to_install\n"
+        echo "sudo apt-get install -y $pkgs_to_install"
         sudo apt-get install -y $pkgs_to_install
     fi
 fi
@@ -761,7 +759,7 @@ if [ -n "$TUE_INSTALL_PIPS" ]; then
     if [ -n "$TUE_INSTALL_PIPS" ]
     then
         echo -e "Going to run the following command:\n"
-        echo "yes | pip install --user $TUE_INSTALL_PIPS\n"
+        echo "yes | pip install --user $TUE_INSTALL_PIPS"
         yes | pip install --user $TUE_INSTALL_PIPS
     fi
 fi
