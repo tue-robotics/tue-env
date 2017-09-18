@@ -544,13 +544,13 @@ function _tue-get
         cmd=${COMP_WORDS[1]}
         if [[ $cmd == "install" ]]
         then
-            COMPREPLY=( $(compgen -W "`ls $TUE_DIR/installer/targets`" -- $cur) )
+            COMPREPLY=( $(compgen -W "`ls $TUE_DIR/installer/targets` --debug" -- $cur) )
         elif [[ $cmd == "dep" ]]
         then
-            COMPREPLY=( $(compgen -W "`ls $TUE_ENV_DIR/.env/dependencies`" -- $cur) )
+            COMPREPLY=( $(compgen -W "`ls $TUE_ENV_DIR/.env/dependencies` --plain --verbose --all" -- $cur) )
         elif [[ $cmd == "update" ]]
         then
-            COMPREPLY=( $(compgen -W "`ls $TUE_ENV_DIR/.env/dependencies`" -- $cur) )
+            COMPREPLY=( $(compgen -W "`ls $TUE_ENV_DIR/.env/dependencies` --debug" -- $cur) )
         elif [[ $cmd == "remove" ]]
         then
             COMPREPLY=( $(compgen -W "`ls $TUE_ENV_DIR/.env/installed`" -- $cur) )
