@@ -1,5 +1,5 @@
 - type: ppa
-  name: peterlevi/ppa
+  name: ppa:peterlevi/ppa
 
 - type: system
   name: variety
