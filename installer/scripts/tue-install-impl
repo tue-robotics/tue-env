@@ -33,7 +33,7 @@ function _make_sure_installed
 
 # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # #
 
-_make_sure_installed python-yaml git subversion
+_make_sure_installed python-yaml git subversion python-pip
 
 TUE_SYSTEM_DIR=$TUE_ENV_DIR/system
 TUE_REPOS_DIR=$TUE_ENV_DIR/repos
@@ -695,9 +695,6 @@ fi
 if [ -n "$TUE_INSTALL_PIPS" ]; then
 
     echo -e "\nsudo pip install $TUE_INSTALL_PIPS" >> $INSTALL_DETAILS_FILE
-
-    # Check if python-pip is already installed, if not, install python-pip
-    dpkg -s python-pip &> /dev/null || sudo apt-get install -y python-pip
 
     pkgs_to_install=
     pip_installed=$(pip freeze)
