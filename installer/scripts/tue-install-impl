@@ -73,7 +73,7 @@ function tue-install-info {
 
 function tue-install-debug {
     if [ "$DEBUG" = "true" ]; then
-        echo -e "\e[0;34m[$TUE_INSTALL_CURRENT_TARGET] INFO: $1\033[0m"
+        echo -e "\e[0;34m[$TUE_INSTALL_CURRENT_TARGET] DEBUG: $1\033[0m"
     fi
 }
 
@@ -712,7 +712,7 @@ rm /tmp/tue-installer -rf
 if [ -n "$TUE_INSTALL_PPA" ]; then
 
     echo -e "\nsudo add-apt-repository -y $TUE_INSTALL_PPA" >> $INSTALL_DETAILS_FILE
-
+    PPA_ADDED=
     for ppa in $TUE_INSTALL_PPA
     do
         if [ -z "$(grep -h "^deb.*${ppa#ppa:}" /etc/apt/sources.list.d/* 2>&1)" ]
@@ -747,7 +747,7 @@ if [ -n "$TUE_INSTALL_SYSTEMS" ]; then
     if [ -n "$pkgs_to_install" ]
     then
         echo -e "Going to run the following command:\n"
-        echo "sudo apt-get install -y $pkgs_to_install"
+        echo "sudo apt-get install -y $pkgs_to_install\n"
         sudo apt-get install -y $pkgs_to_install
     fi
 fi
@@ -761,7 +761,7 @@ if [ -n "$TUE_INSTALL_PIPS" ]; then
     if [ -n "$TUE_INSTALL_PIPS" ]
     then
         echo -e "Going to run the following command:\n"
-        echo "yes | pip install --user $TUE_INSTALL_PIPS"
+        echo "yes | pip install --user $TUE_INSTALL_PIPS\n"
         yes | pip install --user $TUE_INSTALL_PIPS
     fi
 fi
