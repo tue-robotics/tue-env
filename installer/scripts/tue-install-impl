@@ -710,7 +710,7 @@ rm /tmp/tue-installer -rf
 # Installing all the ppa repo's, which are collected during install
 if [ -n "$TUE_INSTALL_PPA" ]; then
 
-    echo -e "\nsudo add-apt-repository -y $TUE_INSTALL_PPA" >> $INSTALL_DETAILS_FILE
+    echo -e "\nsudo add-apt-repository --yes $TUE_INSTALL_PPA" >> $INSTALL_DETAILS_FILE
     PPA_ADDED=
     for ppa in $TUE_INSTALL_PPA
     do
@@ -718,7 +718,7 @@ if [ -n "$TUE_INSTALL_PPA" ]; then
         then
             PPA_ADDED=true
             tue-install-info "Adding ppa: $ppa"
-            sudo add-apt-repository -y $ppa
+            sudo add-apt-repository --yes $ppa
         else
             tue-install-debug "$ppa is already added previously"
         fi
@@ -732,7 +732,7 @@ fi
 # Installing all system (apt-get) targets, which are collected during the install
 if [ -n "$TUE_INSTALL_SYSTEMS" ]; then
 
-    echo -e "\nsudo apt-get --assume-yes install $TUE_INSTALL_SYSTEMS" >> $INSTALL_DETAILS_FILE
+    echo -e "\nsudo apt-get install --assume-yes $TUE_INSTALL_SYSTEMS" >> $INSTALL_DETAILS_FILE
 
     pkgs_to_install=
     for pkg in $TUE_INSTALL_SYSTEMS
@@ -746,8 +746,8 @@ if [ -n "$TUE_INSTALL_SYSTEMS" ]; then
     if [ -n "$pkgs_to_install" ]
     then
         echo -e "Going to run the following command:\n"
-        echo "sudo apt-get install -y $pkgs_to_install"
-        sudo apt-get install -y $pkgs_to_install
+        echo -e "sudo apt-get install --assume-yes $pkgs_to_install\n"
+        sudo apt-get install --assume-yes $pkgs_to_install
     fi
 fi
 
@@ -760,7 +760,7 @@ if [ -n "$TUE_INSTALL_PIPS" ]; then
     if [ -n "$TUE_INSTALL_PIPS" ]
     then
         echo -e "Going to run the following command:\n"
-        echo "yes | pip install --user $TUE_INSTALL_PIPS"
+        echo -e "yes | pip install --user $TUE_INSTALL_PIPS\n"
         yes | pip install --user $TUE_INSTALL_PIPS
     fi
 fi
