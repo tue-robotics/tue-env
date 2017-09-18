@@ -24,7 +24,7 @@ then
         echo    # (optional) move to a new line
         if [[ ! $REPLY =~ ^[Yy]$ ]]
         then
-            return 1
+            exit 1
         fi
     fi
 fi
