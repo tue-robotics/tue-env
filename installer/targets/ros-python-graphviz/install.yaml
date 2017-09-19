@@ -1,2 +1,2 @@
-- type: system
-  name: python-pygraphviz
+- type: pip
+  name: graphviz
