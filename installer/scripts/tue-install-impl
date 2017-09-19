@@ -717,7 +717,9 @@ if [ -n "$TUE_INSTALL_SYSTEMS" ]; then
     pkgs_to_install=
     for pkg in $TUE_INSTALL_SYSTEMS
     do
-        if ! dpkg -s $pkg &> /dev/null # Check if pkg is not already installed
+        # Check if pkg is not already installed dpkg -S does not cover previously removed packages
+        # Based on https://stackoverflow.com/questions/1298066
+        if ! dpkg-query -W -f='${Status}' $pkg 2>/dev/null | grep -q "ok installed"
         then
             pkgs_to_install="$pkgs_to_install $pkg"
         fi
