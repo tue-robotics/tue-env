@@ -2,3 +2,5 @@
 - type: target
   name: ros-tue_teleop_keyboard
 
+- type: target
+  name: tue-save-map
