@@ -581,35 +581,32 @@ function tue-checkout
         return 1
     fi
 
-    local branch=$1
-    cd $TUE_DIR
-    pkg=tue-env
-    test_branch=$(git branch -a 2> /dev/null | grep -q $branch)
-    if [ $? -eq 0 ]
-    then
-    	local current_branch=`git rev-parse --abbrev-ref HEAD`
-        if [[ "$current_branch" == "$branch" ]]
-        then
-        	echo -e "\033[1m$pkg\033[0m: Already on branch $branch"
-		else
-        	res=$(git checkout $branch 2>&1)
-            if [ $? -eq 0 ]
-            then
-            	echo -e "\033[1m$pkg\033[0m: checked-out $branch"
-            else
-		echo ""
-                echo -e "    \033[1m$pkg\033[0m"
-                echo "--------------------------------------------------"
-                echo -e "\033[38;5;1m$res\033[0m"
-                echo "--------------------------------------------------"
-            fi
-        fi
-    fi
-
-    fs=`ls $_TUE_CATKIN_SYSTEM_DIR/src`
-    for pkg in $fs
+    while test $# -gt 0
     do
-        pkg_dir=$_TUE_CATKIN_SYSTEM_DIR/src/$pkg
+        case "$1" in
+            --only-pkgs) local NO_TUE_ENV="true"
+            ;;
+            --*) echo "unknown option $1"; exit 1;
+            ;;
+            *) local branch=$1
+            ;;
+        esac
+        shift
+    done
+
+    fs=`ls -d -1 $_TUE_CATKIN_SYSTEM_DIR/src/**`
+    fs="$HOME/.tue $fs"
+    for pkg_dir in $fs
+    do
+        pkg=${pkg_dir#$_TUE_CATKIN_SYSTEM_DIR/src/}
+        if [[ $pkg =~ ".tue" ]]
+        then
+            if [ -n "$NO_TUE_ENV" ]
+            then
+                continue
+            fi
+            pkg="tue-env"
+        fi
 
         if [ -d $pkg_dir ]
         then
