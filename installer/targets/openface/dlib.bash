@@ -29,6 +29,9 @@ sudo sh -c 'echo "/usr/lib/openblas-base/" > /etc/ld.so.conf.d/libopenblas-base.
 #Finally, run ldconfig to update the cache.
 sudo ldconfig
 
+#Remove source files
+sudo rm -rf ~/src
+
 echo "dlib.bash finished"
 
 popd
