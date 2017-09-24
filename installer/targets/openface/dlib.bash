@@ -2,8 +2,8 @@ pushd .
 
 echo "Installing DLib"
 
-mkdir -p ~/src
-cd ~/src
+mkdir -p /tmp/dlib
+cd /tmp/dlib
 wget https://github.com/davisking/dlib/releases/download/v18.16/dlib-18.16.tar.bz2
 tar xf dlib-18.16.tar.bz2
 cd dlib-18.16/python_examples
@@ -12,8 +12,6 @@ cd build
 cmake ../../tools/python
 cmake --build . --config Release
 sudo cp dlib.so /usr/local/lib/python2.7/dist-packages
-
-export LD_LIBRARY_PATH=/usr/lib/openblas-base/
 
 
 #From http://serverfault.com/questions/201709/how-to-set-ld-library-path-in-ubuntu
@@ -30,7 +28,7 @@ sudo sh -c 'echo "/usr/lib/openblas-base/" > /etc/ld.so.conf.d/libopenblas-base.
 sudo ldconfig
 
 #Remove source files
-sudo rm -rf ~/src
+sudo rm -rf /tmp/dlib
 
 echo "dlib.bash finished"
 
