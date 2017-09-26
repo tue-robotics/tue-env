@@ -595,17 +595,19 @@ function tue-checkout
     done
 
     fs=`ls -d -1 $_TUE_CATKIN_SYSTEM_DIR/src/**`
-    fs="$HOME/.tue $fs"
+    if [ -z "$NO_TUE_ENV" ]
+    then
+        fs="$HOME/.tue $fs"
+    fi
     for pkg_dir in $fs
     do
         pkg=${pkg_dir#$_TUE_CATKIN_SYSTEM_DIR/src/}
-        if [[ $pkg =~ ".tue" ]]
+        if [ -z "$NO_TUE_ENV" ]
         then
-            if [ -n "$NO_TUE_ENV" ]
+            if [[ $pkg =~ ".tue" ]]
             then
-                continue
+                pkg="tue-env"
             fi
-            pkg="tue-env"
         fi
 
         if [ -d $pkg_dir ]
