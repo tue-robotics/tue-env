@@ -578,7 +578,7 @@ function tue-checkout
     tue-checkout BRANCH-NAME [option]
 
     options:
-    --only-pks: tue-env is not checkout to the specified branch
+    --only-pks: tue-env is not checkedout to the specified branch
 
 """
         return 1
