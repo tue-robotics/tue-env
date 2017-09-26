@@ -2,6 +2,7 @@
 [keybindings]
 [profiles]
   [[default]]
+    scrollback_infinite = True
 [layouts]
   [[default]]
     [[[child1]]]
