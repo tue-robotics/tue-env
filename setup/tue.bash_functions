@@ -575,7 +575,10 @@ function tue-checkout
     then
         echo """Switches all packages to the given branch, if such a branch exists in that package. Usage:
 
-    tue-checkout BRANCH-NAME
+    tue-checkout BRANCH-NAME [option]
+
+    options:
+    --only-pks: tue-env is not checkout to the specified branch
 
 """
         return 1
