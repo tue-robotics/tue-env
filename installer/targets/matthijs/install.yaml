@@ -4,9 +4,12 @@
 # Handy shit
 - type: target
   name: chrome-dev
+- type: target
+  name: qtcreator
+- type: target
+  name: pycharm
+  
 - type: system
   name: geany
 - type: system
   name: gedit
-- type: target
-  name: qtcreator
