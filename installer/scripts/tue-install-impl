@@ -1,5 +1,5 @@
 #!/bin/bash
-#_tue-check-env-vars || exit 1
+#_tue-check-env-vars || return 1
 
 TUE_INSTALL_DEPENDENCIES_DIR=$TUE_ENV_DIR/.env/dependencies
 TUE_INSTALL_DEPENDENCIES_ON_DIR=$TUE_ENV_DIR/.env/dependencies-on
@@ -33,6 +33,7 @@ function _make_sure_installed
 
 # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # #
 
+# Make sure tools used by this installer are installed
 _make_sure_installed python-yaml git subversion python-pip
 
 TUE_SYSTEM_DIR=$TUE_ENV_DIR/system
@@ -52,7 +53,7 @@ Error while installing target '$TUE_INSTALL_CURRENT_TARGET':
 
     $1
 \033[0m"
-    exit 1
+    return 1
 }
 
 # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # #
@@ -73,7 +74,7 @@ function tue-install-info {
 
 function tue-install-debug {
     if [ "$DEBUG" = "true" ]; then
-        echo -e "\e[0;34m[$TUE_INSTALL_CURRENT_TARGET] INFO: $1\033[0m"
+        echo -e "\e[0;34m[$TUE_INSTALL_CURRENT_TARGET] DEBUG: $1\033[0m"
     fi
 }
 
@@ -83,7 +84,7 @@ function tue-install-debug {
 function tue-install-target {
     local target=$1
 
-    #echo $target
+    tue-install-debug "Installing $target"
 
     local parent_target=$TUE_INSTALL_CURRENT_TARGET
 
@@ -143,13 +144,6 @@ function tue-install-target {
 }
 
 # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # #
-# tue-install-system does the same, this one is not used
-# function tue-install-sys {
-#     source=$1
-#     TUE_INSTALL_SYSTEMS="$source $TUE_INSTALL_SYSTEMS"
-# }
-# 
-# # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # #
 
 function _show_update_message
 {
@@ -201,13 +195,9 @@ function tue-install-git
         else
             local mem_pwd=$PWD
             cd $2
-
             tue-install-debug "cd $2 && git pull --ff-only --prune"
-
             res=$(git pull --ff-only --prune 2>&1)
-
             tue-install-debug "$res"
-
             TUE_INSTALL_GIT_PULL_Q+=$2
 
             cd $mem_pwd
@@ -280,8 +270,22 @@ function tue-install-cp
         tue-install-error "Invalid tue-install-cp call: file '$1' does not exist."
     fi
 
-    cp $file $2
-    echo "cp $file $2"
+    # Check if user is allowed to write on target destination
+    local root_required=true
+    if namei -l $2 | grep -q $USER
+    then
+        root_required=false
+    fi
+
+    if ! cmp --quiet $file $2
+    then
+        if $root_required
+        then
+            sudo cp --verbose $file $2
+        else
+            cp --verbose $file $2
+        fi
+    fi
 }
 
 # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # #
@@ -307,6 +311,12 @@ function tue-install-add-text
     local source_file=$TUE_INSTALL_CURRENT_TARGET_DIR/$1
     local target_file=$2
 
+    local root_required=true
+    if namei -l $target_file | grep -q $USER
+    then
+        root_required=false
+    fi
+
     if [ ! -f $source_file ]
     then
         tue-install-error "tue-install-add-text: No such file: $source_file"
@@ -323,10 +333,21 @@ function tue-install-add-text
 
     if ! grep -q "$begin_tag" $target_file
     then
-        echo -e "$text" >> $target_file
+        if $root_required
+        then
+            echo -e "$text" | sudo tee --append $target_file
+        else
+            echo -e "$text" | tee --append $target_file
+        fi
     else
-        sed -e "/^$end_tag/r $source_file" -e "/^$begin_tag/,/^$end_tag/d" $target_file > $target_file.tmp
-        mv $target_file.tmp $target_file
+        if $root_required
+        then
+            sed -e "/^$end_tag/r $source_file" -e "/^$begin_tag/,/^$end_tag/d" $target_file | sudo tee $target_file.tmp
+            sudo mv $target_file.tmp $target_file
+        else
+            sed -e "/^$end_tag/r $source_file" -e "/^$begin_tag/,/^$end_tag/d" $target_file | tee $target_file.tmp
+            mv $target_file.tmp $target_file
+        fi
     fi
 }
 
@@ -613,8 +634,6 @@ TUE_INSTALL_PIPS=
 TUE_INSTALL_WARNINGS=
 TUE_INSTALL_INFOS=
 
-echo
-
 if [ -d $TUE_REPOS_DIR/https: ]
 then
     echo "Moving to new repos format: $TUE_REPOS_DIR"
@@ -658,6 +677,7 @@ do
         # Mark as installed
         touch $TUE_INSTALL_INSTALLED_DIR/$target
     fi
+    
     tue-install-debug "Main loop: installing $target"
     tue-install-target $target
 done
@@ -690,15 +710,15 @@ rm /tmp/tue-installer -rf
 # Installing all the ppa repo's, which are collected during install
 if [ -n "$TUE_INSTALL_PPA" ]; then
 
-    echo -e "\nsudo add-apt-repository -y $TUE_INSTALL_PPA" >> $INSTALL_DETAILS_FILE
-
+    echo -e "\nsudo add-apt-repository --yes $TUE_INSTALL_PPA" >> $INSTALL_DETAILS_FILE
+    PPA_ADDED=
     for ppa in $TUE_INSTALL_PPA
     do
         if [ -z "$(grep -h "^deb.*${ppa#ppa:}" /etc/apt/sources.list.d/* 2>&1)" ]
         then
             PPA_ADDED=true
             tue-install-info "Adding ppa: $ppa"
-            sudo add-apt-repository -y $ppa
+            sudo add-apt-repository --yes $ppa
         else
             tue-install-debug "$ppa is already added previously"
         fi
@@ -712,7 +732,7 @@ fi
 # Installing all system (apt-get) targets, which are collected during the install
 if [ -n "$TUE_INSTALL_SYSTEMS" ]; then
 
-    echo -e "\nsudo apt-get --assume-yes install $TUE_INSTALL_SYSTEMS" >> $INSTALL_DETAILS_FILE
+    echo -e "\nsudo apt-get install --assume-yes $TUE_INSTALL_SYSTEMS" >> $INSTALL_DETAILS_FILE
 
     pkgs_to_install=
     for pkg in $TUE_INSTALL_SYSTEMS
@@ -728,31 +748,21 @@ if [ -n "$TUE_INSTALL_SYSTEMS" ]; then
     if [ -n "$pkgs_to_install" ]
     then
         echo -e "Going to run the following command:\n"
-        echo "sudo apt-get install -y $pkgs_to_install"
-        sudo apt-get install -y $pkgs_to_install
+        echo -e "sudo apt-get install --assume-yes $pkgs_to_install\n"
+        sudo apt-get install --assume-yes $pkgs_to_install
     fi
 fi
 
 # Installing all python (pip) targets, which are collected during the install
 if [ -n "$TUE_INSTALL_PIPS" ]; then
 
-    echo -e "\nsudo pip install $TUE_INSTALL_PIPS" >> $INSTALL_DETAILS_FILE
+    echo -e "\nyes | pip install --user $TUE_INSTALL_PIPS" >> $INSTALL_DETAILS_FILE
 
-    pkgs_to_install=
-    pip_installed=$(pip freeze)
-    pip_installed="$(echo "${pip_installed}" | tr '[:upper:]' '[:lower:]')"
-    for pkg in $TUE_INSTALL_PIPS
-    do
-        if [ ! $(echo "$pip_installed" | grep $pkg) ] # Check if pkg is not already installed
-        then
-            pkgs_to_install="$pkgs_to_install $pkg"
-        fi
-    done
-
-    if [ -n "$pkgs_to_install" ]
+    # Just install the packages because checking for installation is not faster
+    if [ -n "$TUE_INSTALL_PIPS" ]
     then
         echo -e "Going to run the following command:\n"
-        echo "sudo -H pip install -U $pkgs_to_install"
-        sudo -H pip install -U $pkgs_to_install
+        echo -e "yes | pip install --user $TUE_INSTALL_PIPS\n"
+        yes | pip install --user $TUE_INSTALL_PIPS
     fi
 fi
