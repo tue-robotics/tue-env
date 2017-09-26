@@ -57,6 +57,11 @@ then
     source $TUE_ENV_DIR/.env/setup/target_setup.bash
 fi
 
+if [ -f $TUE_DIR/setup/tue.bash_aliases ]
+then
+    source $TUE_DIR/setup/tue.bash_aliases
+fi
+
 export TUE_BIN=~/.tue/bin
 export PATH=$TUE_BIN:/usr/lib/ccache:$PATH
 

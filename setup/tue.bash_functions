@@ -306,7 +306,7 @@ function tue-git-status
 }
 
 # ----------------------------------------------------------------------------------------------------
-#                                              NOBLEO-REVERT
+#                                              TUE-REVERT
 # ----------------------------------------------------------------------------------------------------
 
 function tue-revert
@@ -346,7 +346,7 @@ function tue-revert
 }
 
 # ----------------------------------------------------------------------------------------------------
-#                                              NOBLEO-REVERT-UNDO
+#                                              TUE-REVERT-UNDO
 # ----------------------------------------------------------------------------------------------------
 
 function tue-revert-undo
@@ -374,7 +374,7 @@ function tue-revert-undo
 #                                              TUE-GET
 # ----------------------------------------------------------------------------------------------------
 
-function _tue_depends1
+function _tue_depends
 {
     local tue_dep_dir=$TUE_ENV_DIR/.env/dependencies
 
@@ -414,6 +414,10 @@ function tue-get
         remove         - Removes installed package
         list-installed - Lists all manually installed packages
 
+    Possible options:
+        --debug        - Shows more debugging information
+        --release      - Generate debian packages of every installed package
+
 """
         return 1
     fi
@@ -423,6 +427,13 @@ function tue-get
 
     cmd=$1
     shift
+
+    #Create btrfs snapshot if possible and usefull:
+    if [[ "$cmd" =~ ^(install|update|remove)$ ]] && $(df --print-type / | grep -q btrfs)
+    then
+        sudo mkdir -p /snap/root
+        sudo btrfs subvolume snapshot / /snap/root/$(date +%Y-%m-%d_%H:%M:%S)
+    fi
 
     if [[ $cmd == "install" ]]
     then
@@ -537,13 +548,13 @@ function _tue-get
         cmd=${COMP_WORDS[1]}
         if [[ $cmd == "install" ]]
         then
-            COMPREPLY=( $(compgen -W "`ls $TUE_DIR/installer/targets`" -- $cur) )
+            COMPREPLY=( $(compgen -W "`ls $TUE_DIR/installer/targets` --debug" -- $cur) )
         elif [[ $cmd == "dep" ]]
         then
-            COMPREPLY=( $(compgen -W "`ls $TUE_ENV_DIR/.env/dependencies`" -- $cur) )
+            COMPREPLY=( $(compgen -W "`ls $TUE_ENV_DIR/.env/dependencies` --plain --verbose --all" -- $cur) )
         elif [[ $cmd == "update" ]]
         then
-            COMPREPLY=( $(compgen -W "`ls $TUE_ENV_DIR/.env/dependencies`" -- $cur) )
+            COMPREPLY=( $(compgen -W "`ls $TUE_ENV_DIR/.env/dependencies` --debug" -- $cur) )
         elif [[ $cmd == "remove" ]]
         then
             COMPREPLY=( $(compgen -W "`ls $TUE_ENV_DIR/.env/installed`" -- $cur) )
