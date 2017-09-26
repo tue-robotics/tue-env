@@ -1,0 +1,12 @@
+- type: target
+  name: tue-dev
+
+# Handy shit
+- type: target
+  name: chrome-dev
+- type: system
+  name: geany
+- type: system
+  name: gedit
+- type: target
+  name: qtcreator
