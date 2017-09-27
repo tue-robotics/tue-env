@@ -94,7 +94,7 @@ EOL
   (gimp-quit 0)
   )
 EOF
-    } &> /dev/null # because of stupid gimp warnings
+    } &> /dev/null # because of gimp warnings
 
     # copy the pgm and xcf to the walls/shape folder
     cp /tmp/temp_map.pgm $MODEL_DIR/walls/shape/heightmap.pgm
