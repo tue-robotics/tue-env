@@ -1,7 +1,9 @@
 [global_config]
+  suppress_multiple_term_dialog = True
 [keybindings]
 [profiles]
   [[default]]
+    background_image = None
     scrollback_infinite = True
 [layouts]
   [[default]]
@@ -11,7 +13,7 @@
     [[[window0]]]
       type = Window
       parent = ""
-  [[four]]
+  [[fourscreens]]
     [[[child0]]]
       position = 0:24
       type = Window
