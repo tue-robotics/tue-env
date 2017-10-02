@@ -6,14 +6,14 @@ Package manager that can be used to install (ROS) dependencies
 #### Ubuntu 16.04
 ```bash
 source <(wget -O- https://raw.githubusercontent.com/tue-robotics/tue-env/master/installer/scripts/bootstrap-ros-kinetic)
-tue-get install tue-dev
+tue-get install tue-dev #or
 tue-get install tue-dev-full #tue-dev plus extra tools
 source ~/.bashrc
 ```
 #### Ubuntu 14.04
 ```bash
 source <(wget -O- https://raw.githubusercontent.com/tue-robotics/tue-env/master/installer/scripts/bootstrap-ros-indigo)
-tue-get install tue-dev
+tue-get install tue-dev #or
 tue-get install tue-dev-full #tue-dev plus extra tools
 source ~/.bashrc
 ```
