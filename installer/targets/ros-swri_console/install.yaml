@@ -1,4 +1,4 @@
 - type: ros
   source:
     type: system
-    url: swri-console
+    name: swri-console
