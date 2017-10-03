@@ -196,7 +196,7 @@ function tue-install-git
             local mem_pwd=$PWD
             cd $2
             tue-install-debug "cd $2 && git pull --ff-only --prune"
-            res=$(git pull --ff-only --prune 2>&1)
+            res=$(git pull --ff-only --prune 2>&1 || true)
             tue-install-debug "$res"
             TUE_INSTALL_GIT_PULL_Q+=$2
 
