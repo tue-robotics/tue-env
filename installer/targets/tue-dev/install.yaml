@@ -49,18 +49,6 @@
 - type: target
   name: sergio-start
 
-# Handy shit
-- type: target
-  name: sublime3
-- type: target
-  name: terminator
-- type: target
-  name: vim
-- type: target
-  name: chrome
-- type: target
-  name: gitsu
-
 # Console
 - type: target
   name: ros-nl_robot_console
@@ -68,7 +56,22 @@
 # ED rviz plugin
 - type: target
   name: ros-ed_rviz_plugins
-  
+
 # HSR commands
 - type: target
   name: hsr-user
+
+# Handy shit
+- type: target
+  name: terminator
+- type: target
+  name: vim
+- type: target
+  name: gitsu
+
+- type: system
+  name: htop
+- type: system
+  name: ccache
+- type: system
+  name: meld

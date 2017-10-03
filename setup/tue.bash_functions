@@ -306,7 +306,7 @@ function tue-git-status
 }
 
 # ----------------------------------------------------------------------------------------------------
-#                                              NOBLEO-REVERT
+#                                              TUE-REVERT
 # ----------------------------------------------------------------------------------------------------
 
 function tue-revert
@@ -346,7 +346,7 @@ function tue-revert
 }
 
 # ----------------------------------------------------------------------------------------------------
-#                                              NOBLEO-REVERT-UNDO
+#                                              TUE-REVERT-UNDO
 # ----------------------------------------------------------------------------------------------------
 
 function tue-revert-undo
@@ -374,7 +374,7 @@ function tue-revert-undo
 #                                              TUE-GET
 # ----------------------------------------------------------------------------------------------------
 
-function _tue_depends1
+function _tue_depends
 {
     local tue_dep_dir=$TUE_ENV_DIR/.env/dependencies
 
@@ -414,6 +414,10 @@ function tue-get
         remove         - Removes installed package
         list-installed - Lists all manually installed packages
 
+    Possible options:
+        --debug        - Shows more debugging information
+        --release      - Generate debian packages of every installed package
+
 """
         return 1
     fi
@@ -423,6 +427,13 @@ function tue-get
 
     cmd=$1
     shift
+
+    #Create btrfs snapshot if possible and usefull:
+    if [[ "$cmd" =~ ^(install|update|remove)$ ]] && $(df --print-type / | grep -q btrfs)
+    then
+        sudo mkdir -p /snap/root
+        sudo btrfs subvolume snapshot / /snap/root/$(date +%Y-%m-%d_%H:%M:%S)
+    fi
 
     if [[ $cmd == "install" ]]
     then
@@ -537,13 +548,13 @@ function _tue-get
         cmd=${COMP_WORDS[1]}
         if [[ $cmd == "install" ]]
         then
-            COMPREPLY=( $(compgen -W "`ls $TUE_DIR/installer/targets`" -- $cur) )
+            COMPREPLY=( $(compgen -W "`ls $TUE_DIR/installer/targets` --debug" -- $cur) )
         elif [[ $cmd == "dep" ]]
         then
-            COMPREPLY=( $(compgen -W "`ls $TUE_ENV_DIR/.env/dependencies`" -- $cur) )
+            COMPREPLY=( $(compgen -W "`ls $TUE_ENV_DIR/.env/dependencies` --plain --verbose --all" -- $cur) )
         elif [[ $cmd == "update" ]]
         then
-            COMPREPLY=( $(compgen -W "`ls $TUE_ENV_DIR/.env/dependencies`" -- $cur) )
+            COMPREPLY=( $(compgen -W "`ls $TUE_ENV_DIR/.env/dependencies` --debug" -- $cur) )
         elif [[ $cmd == "remove" ]]
         then
             COMPREPLY=( $(compgen -W "`ls $TUE_ENV_DIR/.env/installed`" -- $cur) )
@@ -564,18 +575,43 @@ function tue-checkout
     then
         echo """Switches all packages to the given branch, if such a branch exists in that package. Usage:
 
-    tue-branch BRANCH-NAME
+    tue-checkout BRANCH-NAME [option]
+
+    options:
+    --only-pks: tue-env is not checkedout to the specified branch
 
 """
         return 1
     fi
 
-    local branch=$1
-
-    fs=`ls $_TUE_CATKIN_SYSTEM_DIR/src`
-    for pkg in $fs
+    while test $# -gt 0
     do
-        pkg_dir=$_TUE_CATKIN_SYSTEM_DIR/src/$pkg
+        case "$1" in
+            --only-pkgs) local NO_TUE_ENV="true"
+            ;;
+            --*) echo "unknown option $1"; exit 1;
+            ;;
+            *) local branch=$1
+            ;;
+        esac
+        shift
+    done
+
+    fs=`ls -d -1 $_TUE_CATKIN_SYSTEM_DIR/src/**`
+    if [ -z "$NO_TUE_ENV" ]
+    then
+        fs="$HOME/.tue $fs"
+    fi
+    for pkg_dir in $fs
+    do
+        pkg=${pkg_dir#$_TUE_CATKIN_SYSTEM_DIR/src/}
+        if [ -z "$NO_TUE_ENV" ]
+        then
+            if [[ $pkg =~ ".tue" ]]
+            then
+                pkg="tue-env"
+            fi
+        fi
 
         if [ -d $pkg_dir ]
         then

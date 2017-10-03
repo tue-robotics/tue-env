@@ -1,5 +1,5 @@
 #!/bin/bash
-_tue-check-env-vars || exit 1
+_tue-check-env-vars || return 1
 
 # Update installer
 if [ ! -d $TUE_DIR ]
@@ -13,7 +13,7 @@ then
     git pull --ff-only --prune
 
     error_code=$?
-	cd $mem_pwd
+    cd $mem_pwd
 
     if [ ! $error_code -eq 0 ]
     then
@@ -31,4 +31,3 @@ fi
 
 # Run installer
 source $TUE_DIR/installer/scripts/tue-install-impl $@
-exit $?

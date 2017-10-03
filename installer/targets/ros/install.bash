@@ -6,6 +6,9 @@ fi
 
 if [ ! -d /opt/ros/$TUE_ROS_DISTRO ]
 then
+
+    sudo apt-get install lsb wget -y
+    
     sudo sh -c 'echo "deb http://packages.ros.org/ros/ubuntu $(lsb_release -sc) main" > /etc/apt/sources.list.d/ros-latest.list'
 
     wget http://packages.ros.org/ros.key -O - | sudo apt-key add -
@@ -28,7 +31,7 @@ TUE_DEV_DIR=$TUE_ENV_DIR/dev
 if [ ! -f $TUE_SYSTEM_DIR/devel/setup.bash ]
 then
     mkdir -p $TUE_SYSTEM_DIR/src
-    sudo apt-get install --assume-yes g++
+    hash g++ 2> /dev/null || sudo apt-get install --assume-yes g++
     cd $TUE_SYSTEM_DIR
     catkin init
     mkdir -p src
@@ -39,7 +42,7 @@ fi
 if [ ! -f $TUE_DEV_DIR/devel/setup.bash ]
 then
     mkdir -p $TUE_DEV_DIR/src
-    sudo apt-get install --assume-yes g++
+    hash g++ 2> /dev/null || sudo apt-get install --assume-yes g++
     cd $TUE_DEV_DIR
     catkin init
     mkdir -p src
