@@ -196,11 +196,23 @@ function tue-install-git
             local mem_pwd=$PWD
             cd $2
             tue-install-debug "cd $2 && git pull --ff-only --prune"
-            res=$(git pull --ff-only --prune 2>&1 || true)
+            res=$(git pull --ff-only --prune)
+            error_code=$?
             tue-install-debug "$res"
-            TUE_INSTALL_GIT_PULL_Q+=$2
-
             cd $mem_pwd
+            if [ ! $error_code -eq 0 ]
+            then
+                # prompt for conformation
+                exec < /dev/tty
+                read -p "[$TUE_INSTALL_CURRENT_TARGET] Could not update. Continue? [y/n]" -n 1 -r
+                exec <&-
+                echo    # (optional) move to a new line
+                if [[ ! $REPLY =~ ^[Yy]$ ]]
+                then
+                    exit 1
+                fi
+            fi
+            TUE_INSTALL_GIT_PULL_Q+=$2
 
             if [[ $res == "Already up-to-date"* ]]
             then
