@@ -359,7 +359,7 @@ function tue-install-system
     then
         tue-install-error "Invalid tue-install-system call: needs package as argument."
     fi
-
+	tue-install-debug "Adding $1 to apt list"
     TUE_INSTALL_SYSTEMS="$1 $TUE_INSTALL_SYSTEMS"
 }
 
@@ -376,7 +376,7 @@ function tue-install-ppa
     then
         tue-install-error "Invalid tue-install-ppa call: needs to start with ppa:"
     fi
-
+	tue-install-debug "Adding $1 to PPA list"
     TUE_INSTALL_PPA="$1 $TUE_INSTALL_PPA"
 }
 
@@ -388,7 +388,7 @@ function tue-install-pip
     then
         tue-install-error "Invalid tue-install-pip call: needs package as argument."
     fi
-
+	tue-install-debug "Adding $1 to pip list"
     TUE_INSTALL_PIPS="$1 $TUE_INSTALL_PIPS"
 }
 
@@ -483,8 +483,8 @@ function tue-install-ros {
     tue-install-target ros
 
     if [ "$type" = "system" ]; then
-        tue-install-debug "Adding $source to apt list"
-        TUE_INSTALL_SYSTEMS="ros-$TUE_ROS_DISTRO-$source $TUE_INSTALL_SYSTEMS"
+        tue-install-debug "tue-install-system ros-$TUE_ROS_DISTRO-$source"
+        tue-install-system ros-$TUE_ROS_DISTRO-$source
         return
     fi
 
