@@ -446,18 +446,6 @@ function tue-get
         $TUE_DIR/installer/scripts/tue-install $@
         error_code=$?
 
-        if [ $error_code -eq 0 ]
-        then
-            # Mark targets as installed
-            TUE_INSTALL_INSTALLED_DIR=$TUE_ENV_DIR/.env/installed
-            mkdir -p $TUE_INSTALL_INSTALLED_DIR
-
-            for target in $@
-            do
-                touch $TUE_INSTALL_INSTALLED_DIR/$1
-            done
-        fi
-
         [ $error_code -eq 0 ] && source ~/.bashrc
 
         return $error_code
