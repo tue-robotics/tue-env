@@ -3,6 +3,6 @@
 - type: system
   name: avahi-daemon # Allows for exposing .local dns name
 - type: system
-  name: avahi-dnsconfd
+  name: avahi-dnsconfd # Listens on the network for announced DNS servers and passes them to resolvconf
 - type: system
   name: nmap # General debugging utility typically not easy to install during network troubles
