@@ -178,7 +178,6 @@ function tue-install-svn
 
 # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # #
 
-TUE_INSTALL_GIT_PULL_Q=()
 function tue-install-git
 {
     tue-install-debug "tue-install-git $@"
@@ -611,6 +610,8 @@ function generate_setup_file
 }
 
 # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # #
+#                                           MAIN LOOP
+# # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # #
 
 INSTALL_DETAILS_FILE=/tmp/tue-get-details-`randid`
 > $INSTALL_DETAILS_FILE
@@ -626,6 +627,8 @@ mkdir -p $TUE_INSTALL_STATE_DIR
 
 TUE_INSTALL_TEMP_DIR=/tmp/tue-installer/`randid`
 mkdir -p $TUE_INSTALL_TEMP_DIR
+
+TUE_INSTALL_GIT_PULL_Q=()
 
 TUE_INSTALL_SYSTEMS=
 TUE_INSTALL_PPA=
