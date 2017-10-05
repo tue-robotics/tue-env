@@ -13,3 +13,6 @@
   name: geany
 - type: system
   name: gedit
+
+- type: target
+  name: ros-swri_console
