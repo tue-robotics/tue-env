@@ -675,14 +675,15 @@ fi
 
 for target in $targets
 do
+    tue-install-debug "Main loop: installing $target"
+    tue-install-target $target
+
     if [ -d $TUE_INSTALL_TARGET_DIR/$target ]
     then
         # Mark as installed
+	tue-install-debug "[$target] marked as installed after a successful install"
         touch $TUE_INSTALL_INSTALLED_DIR/$target
     fi
-    
-    tue-install-debug "Main loop: installing $target"
-    tue-install-target $target
 done
 
 # (Re-)generate setup file
