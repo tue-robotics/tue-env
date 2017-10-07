@@ -12,11 +12,19 @@ ff02::2 ip6-allrouters
 192.168.44.91    amigo1
 192.168.44.92    amigo2
 192.168.44.93    amigo3
+192.168.44.94    tegra-ubuntu
+192.168.44.95    matrix
 
 # sergio
 192.168.44.71    sergio1
 192.168.44.72    sergio2
 192.168.44.73    sergio3
+
+# hero
+192.168.44.81    hsrb
+
+# server
+192.168.44.10    roboticssrv
 
 # at-home pc's
 192.168.44.101   athome1
@@ -48,8 +56,9 @@ ff02::2 ip6-allrouters
 
 # user pc's
 192.168.44.181 jlunenburg
-192.168.44.182 tim
+192.168.44.182 Precision #Tim
 192.168.44.183 senote-50
 192.168.44.184 lenovo
 192.168.44.185 probook450
 192.168.44.186 loy-ubuntu1604
+192.168.44.187 ompc-robotics #Max

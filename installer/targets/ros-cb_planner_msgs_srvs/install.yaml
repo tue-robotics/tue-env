@@ -1,4 +1,4 @@
 - type: ros
   source:
     type: git
-    url: https://github.com/tue-robotics/cb_planner_msgs_srvs
+    url: https://github.com/tue-robotics/cb_planner_msgs_srvs.git
