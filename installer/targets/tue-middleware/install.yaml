@@ -65,4 +65,7 @@
   name: ros-tensorflow_ros
 
 - type: target
+
+  name: ros-people_detector
+- type: target
   name: ros-openface_ros

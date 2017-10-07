@@ -32,3 +32,7 @@ RUN  /home/amigo/.tue/installer/scripts/bootstrap-ros-kinetic
 
 # Already install ros since we will use this anyway
 RUN bash -c 'source /home/amigo/.bashrc && tue-get install ros'
+
+# Cleanup, make sure image is usable like any other computer
+RUN sudo chown -R amigo:amigo ~/.tue
+RUN cd ~/.tue && git remote set-url origin https://github.com/tue-robotics/tue-env.git

@@ -1,0 +1,8 @@
+- type: target
+  name: chrony-client-pc
+
+- type: target
+  name: ros-openpose_ros
+
+#- type: target
+#  name: openpose #Lets leave this manual for now

@@ -1,0 +1,5 @@
+- type: ppa
+  name: ppa:cpick/hub
+
+- type: system
+  name: hub
