@@ -178,13 +178,13 @@ function tue-install-svn
 
 # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # #
 
-TUE_INSTALL_GIT_PULL_Q=()
 function tue-install-git
 {
     tue-install-debug "tue-install-git $@"
     if [ ! -d $2 ]; then
         tue-install-debug "git clone --recursive $1 $2"
         res=$(git clone --recursive $1 $2 2>&1)
+	TUE_INSTALL_GIT_PULL_Q+=$2
     else
         # Check if we have already pulled the repo
         if [[ $TUE_INSTALL_GIT_PULL_Q =~ $2 ]]
@@ -359,7 +359,7 @@ function tue-install-system
     then
         tue-install-error "Invalid tue-install-system call: needs package as argument."
     fi
-
+	tue-install-debug "Adding $1 to apt list"
     TUE_INSTALL_SYSTEMS="$1 $TUE_INSTALL_SYSTEMS"
 }
 
@@ -376,7 +376,7 @@ function tue-install-ppa
     then
         tue-install-error "Invalid tue-install-ppa call: needs to start with ppa:"
     fi
-
+	tue-install-debug "Adding $1 to PPA list"
     TUE_INSTALL_PPA="$1 $TUE_INSTALL_PPA"
 }
 
@@ -388,7 +388,7 @@ function tue-install-pip
     then
         tue-install-error "Invalid tue-install-pip call: needs package as argument."
     fi
-
+	tue-install-debug "Adding $1 to pip list"
     TUE_INSTALL_PIPS="$1 $TUE_INSTALL_PIPS"
 }
 
@@ -483,8 +483,8 @@ function tue-install-ros {
     tue-install-target ros
 
     if [ "$type" = "system" ]; then
-        tue-install-debug "Adding $source to apt list"
-        TUE_INSTALL_SYSTEMS="ros-$TUE_ROS_DISTRO-$source $TUE_INSTALL_SYSTEMS"
+        tue-install-debug "tue-install-system ros-$TUE_ROS_DISTRO-$source"
+        tue-install-system ros-$TUE_ROS_DISTRO-$source
         return
     fi
 
@@ -611,6 +611,8 @@ function generate_setup_file
 }
 
 # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # #
+#                                           MAIN LOOP
+# # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # #
 
 INSTALL_DETAILS_FILE=/tmp/tue-get-details-`randid`
 > $INSTALL_DETAILS_FILE
@@ -627,6 +629,8 @@ mkdir -p $TUE_INSTALL_STATE_DIR
 TUE_INSTALL_TEMP_DIR=/tmp/tue-installer/`randid`
 mkdir -p $TUE_INSTALL_TEMP_DIR
 
+TUE_INSTALL_GIT_PULL_Q=()
+
 TUE_INSTALL_SYSTEMS=
 TUE_INSTALL_PPA=
 TUE_INSTALL_PIPS=
@@ -634,10 +638,13 @@ TUE_INSTALL_PIPS=
 TUE_INSTALL_WARNINGS=
 TUE_INSTALL_INFOS=
 
+# # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # #
+#                                           For backwards compatibility
+# # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # #
 if [ -d $TUE_REPOS_DIR/https: ]
 then
     echo "Moving to new repos format: $TUE_REPOS_DIR"
-    mv -bv "$TUE_REPOS_DIR/https:"/* "$TUE_REPOS_DIR/"
+    mv -bv "$TUE_REPOS_DIR/https:"/* "$TUE_REPOS_DIR/https_"
     rmdir -v "$TUE_REPOS_DIR/https:"
 fi
 
@@ -648,6 +655,7 @@ then
     mv -bv "$TUE_REPOS_DIR/github.com"/* "$TUE_REPOS_DIR/https_/github.com"
     rmdir -v "$TUE_REPOS_DIR/github.com"
 fi
+# # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # #
 
 # idiomatic parameter and option handling in sh
 targets=""
@@ -672,14 +680,15 @@ fi
 
 for target in $targets
 do
+    tue-install-debug "Main loop: installing $target"
+    tue-install-target $target
+
     if [ -d $TUE_INSTALL_TARGET_DIR/$target ]
     then
         # Mark as installed
+	tue-install-debug "[$target] marked as installed after a successful install"
         touch $TUE_INSTALL_INSTALLED_DIR/$target
     fi
-    
-    tue-install-debug "Main loop: installing $target"
-    tue-install-target $target
 done
 
 # (Re-)generate setup file
