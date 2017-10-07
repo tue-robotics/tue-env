@@ -50,7 +50,7 @@ alias sshsergio2='until ssh -qo ConnectTimeout=1 amigo@sergio2; do echo waiting 
 #
 #####################
 alias diag='rosrun robot_monitor robot_monitor'
-alias sdashboard='tue-dashboard sergio1 & sleep 1; disown; wmctrl -r ws://sergio1:9090 -b add,sticky'
+alias sergio-dashboard='tue-dashboard sergio1 & sleep 1; disown; wmctrl -r ws://sergio1:9090 -b add,sticky'
 
 alias sergio-show-fitter='rosrun rgbd multitool --rgbd /sergio/ed/viz/fitter'
 alias sergio-show-kinect='rosrun rgbd multitool --rgbd /sergio/top_kinect/rgbd'
