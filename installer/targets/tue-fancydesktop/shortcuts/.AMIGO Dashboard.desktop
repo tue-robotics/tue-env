@@ -16,7 +16,7 @@ Actions=New
 X-Ubuntu-Gettext-Domain=gnome-terminal
 
 Terminal=false
-Exec=bash -i -c adashboard
+Exec=bash -i -c amigo-dashboard
 Icon[en_US]=/usr/share/pixmaps/tue/amigodashboardsmall.png
 Name[en_US]=.AMIGO Dashboard
 Name=AMIGO Dashboard

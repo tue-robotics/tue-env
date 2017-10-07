@@ -58,7 +58,7 @@ function connect-to-amigo-subnet
 #
 #####################
 alias diag='rosrun robot_monitor robot_monitor'
-alias adashboard='tue-dashboard amigo1 & sleep 1; disown; wmctrl -r ws://amigo1:9090 -b add,sticky'
+alias amigo-dashboard='tue-dashboard amigo1 & sleep 1; disown; wmctrl -r ws://amigo1:9090 -b add,sticky'
 
 alias amigo-show-fitter='rosrun rgbd multitool --rgbd /amigo/ed/viz/fitter'
 alias amigo-show-kinect='rosrun rgbd multitool --rgbd /amigo/top_kinect/rgbd'
