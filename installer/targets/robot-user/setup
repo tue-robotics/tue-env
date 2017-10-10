@@ -1,4 +1,4 @@
-alias local-core='export ROS_MASTER_URI=http://localhost:11311'
+alias local-core='unset ROS_MASTER_URI'
 
 ####################
 #
