@@ -2,3 +2,7 @@
   source:
     type: git
     url: https://github.com/tue-robotics/dashboard.git
+    
+- type: system
+  name: wmctrl
+
