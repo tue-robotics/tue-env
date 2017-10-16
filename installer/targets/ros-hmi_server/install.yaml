@@ -1,5 +1,0 @@
-- type: ros
-  source:
-    type: git
-    url: https://github.com/tue-robotics/hmi.git
-    sub-dir: hmi_server
