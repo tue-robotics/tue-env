@@ -1,2 +1,0 @@
-alias ed-hypertable='LD_LIBRARY_PATH=/opt/hypertable/current/lib/:$LD_LIBRARY_PATH $TUE_ENV_DIR/system/devel/lib/ed/ed'
-alias cloud-rviz='rosrun rviz rviz -d `rospack find ed_cloud`/config/ed-cloud.rviz'
