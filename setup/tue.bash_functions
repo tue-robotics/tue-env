@@ -277,7 +277,6 @@ function _tue-dir-status
 function tue-status
 {
     _tue-dir-status $_TUE_CATKIN_SYSTEM_DIR/src
-    _tue-dir-status $TUE_ENV_DIR/pkgs
     _tue-repo-status $TUE_DIR $TUE_DIR
 }
 
