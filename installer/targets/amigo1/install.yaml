@@ -15,6 +15,9 @@
 
 - type: target
   name: ros-urg_node
+  
+- type: target
+  name: ros-laser_filters
 
 - type: target
   name: ros-battery_manager
