@@ -3,8 +3,6 @@
 - type: target
   name: ros-soem_beckhoff_drivers
 - type: target
-  name: ros-soem_core
-- type: target
   name: ros-rtt_control_components
 - type: target
   name: ros-tue_ethercat_drivers
