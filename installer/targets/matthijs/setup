@@ -10,10 +10,4 @@ function sb
 source ~/.bashrc
 }
 
-function gitpull
-{
-git pull --ff-only
-}
-
 export CURRENT_CMAKE_BUILD_DIR="$(catkin locate --workspace $TUE_SYSTEM_DIR --build)"
-
