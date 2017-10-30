@@ -3,6 +3,8 @@
 
 # Handy shit
 - type: target
+  name: ack
+- type: target
   name: chrome-dev
 - type: target
   name: qtcreator
