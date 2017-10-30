@@ -8,3 +8,6 @@ then
 else
     tue-install-debug "geany config does exists, so not copying matthijs config"
 fi
+
+tue-install-debug "git config --global --add pull.ff only"
+git config --global --add pull.ff only
