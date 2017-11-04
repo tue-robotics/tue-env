@@ -41,8 +41,8 @@ function sergio-audio-play
 # SSH
 #
 ####################
-alias sshsergio1='until ssh -qo ConnectTimeout=1 amigo@sergio1; do echo waiting for sergio1 to come online...; sleep 2; done'
-alias sshsergio2='until ssh -qo ConnectTimeout=1 amigo@sergio2; do echo waiting for sergio2 to come online...; sleep 2; done'
+alias sshsergio1='wait-for-host.py amigo@sergio1 && ssh amigo@sergio1'
+alias sshsergio2='wait-for-host.py amigo@sergio2 && ssh amigo@sergio2'
 
 #####################
 #

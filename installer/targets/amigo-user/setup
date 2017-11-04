@@ -43,8 +43,8 @@ function amigo-audio-play
 # SSH
 #
 ####################
-alias sshamigo1='until ssh -qo ConnectTimeout=1 amigo@amigo1; do echo waiting for amigo1 to come online...; sleep 2; done'
-alias sshamigo2='until ssh -qo ConnectTimeout=1 amigo@amigo2; do echo waiting for amigo2 to come online...; sleep 2; done'
+alias sshamigo1='wait-for-host.py amigo@amigo1 && ssh amigo@amigo1'
+alias sshamigo2='wait-for-host.py amigo@amigo2 && ssh amigo@amigo2'
 function connect-to-amigo-subnet
 {
     command="sudo ifconfig $(route | grep '^default' | grep -o '[^ ]*$'):0 $(grep -m1 $(hostname) ~/.tue/installer/targets/hosts/hosts | awk '{print $1}') up"
