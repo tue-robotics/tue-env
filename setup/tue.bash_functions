@@ -225,7 +225,7 @@ function _tue-repo-status
         if [ $? -eq 0 ]
         then
             # Is git
-            if echo -e "$res" | grep -q 'ahead' | grep -q 'behind' # Check if ahead of branch
+            if echo "$res" | grep -q 'behind' ||  echo "$res" | grep -q 'ahead' # Check if behind or ahead of branch
             then
                 status=$res
             else
@@ -732,7 +732,7 @@ function tue-robocup-reset-github-origin
 
 function tue-robocup-set-timezone-robocup
 {
-	sudo timedatectl set-timezone Asia/Tokyo
+    sudo timedatectl set-timezone America/Toronto
 }
 
 function tue-robocup-set-timezone-home
