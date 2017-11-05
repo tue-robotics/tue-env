@@ -9,5 +9,11 @@ else
     tue-install-debug "geany config does exists, so not copying matthijs config"
 fi
 
-tue-install-debug "git config --global --add pull.ff only"
-git config --global --add pull.ff only
+git_config_items="pull.ff=true color.ui=always"
+for item in $git_config_items
+do
+        option=${item%=*}
+        value=${item#*=}
+        tue-install-debug "git config --global --replace-all $option $value"
+        git config --global --replace-all $option $value
+done
