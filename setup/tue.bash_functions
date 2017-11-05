@@ -225,7 +225,7 @@ function _tue-repo-status
         if [ $? -eq 0 ]
         then
             # Is git
-            if echo "$res" | grep -q '\['   # Check if ahead of branch
+            if echo -e "$res" | grep -q 'ahead' | grep -q 'behind' # Check if ahead of branch
             then
                 status=$res
             else
@@ -242,18 +242,16 @@ function _tue-repo-status
 
         cd - &> /dev/null
         vctype=git
-    #else
-    #    show=false
     fi
 
     if [ -n "$vctype" ]
     then
         if [ -n "$status" ]; then
-            echo ""
+            echo -e ""
             echo -e "\033[38;5;1mM  \033[0m($vctype) \033[1m$name\033[0m"
-            echo "--------------------------------------------------"
+            echo -e "--------------------------------------------------"
             echo -e "$status"
-            echo "--------------------------------------------------"
+            echo -e "--------------------------------------------------"
         fi
     fi
 }
@@ -310,7 +308,7 @@ function tue-git-status
 
 function tue-revert
 {
-	human_time="$*"
+    human_time="$*"
 
     fs=`ls $_TUE_CATKIN_SYSTEM_DIR/src`
     for pkg in $fs
