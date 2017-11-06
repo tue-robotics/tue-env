@@ -225,7 +225,7 @@ function _tue-repo-status
         if [ $? -eq 0 ]
         then
             # Is git
-            if echo "$res" | grep -q 'behind' ||  echo "$res" | grep -q 'ahead' # Check if behind or ahead of branch
+            if echo "$res" | grep -q -E 'behind|ahead' # Check if behind or ahead of branch
             then
                 status=$res
             else
