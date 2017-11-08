@@ -1,8 +1,7 @@
 #!/bin/bash
-set -o errexit # Stop on errors
 
 # make sure git is installed
-hash git 2> /dev/null || sudo apt-get install -y git
+hash git 2> /dev/null || sudo apt-get install --assume-yes git
 
 if [[ -e ~/.tue && -z "$CI" ]]
 then

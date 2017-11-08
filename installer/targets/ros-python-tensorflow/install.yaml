@@ -1,0 +1,2 @@
+- type: pip
+  name: tensorflow>=1.3.0

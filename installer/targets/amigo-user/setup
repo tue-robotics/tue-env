@@ -45,6 +45,12 @@ function amigo-audio-play
 ####################
 alias sshamigo1='until ssh -qo ConnectTimeout=1 amigo@amigo1; do echo waiting for amigo1 to come online...; sleep 2; done'
 alias sshamigo2='until ssh -qo ConnectTimeout=1 amigo@amigo2; do echo waiting for amigo2 to come online...; sleep 2; done'
+function connect-to-amigo-subnet
+{
+    command="sudo ifconfig $(route | grep '^default' | grep -o '[^ ]*$'):0 $(grep -m1 $(hostname) ~/.tue/installer/targets/hosts/hosts | awk '{print $1}') up"
+    echo $command
+    eval $command
+}
 
 #####################
 #
@@ -52,7 +58,7 @@ alias sshamigo2='until ssh -qo ConnectTimeout=1 amigo@amigo2; do echo waiting fo
 #
 #####################
 alias diag='rosrun robot_monitor robot_monitor'
-alias adashboard='tue-dashboard amigo1 & sleep 1; disown; wmctrl -r ws://amigo1:9090 -b add,sticky'
+alias amigo-dashboard='tue-dashboard amigo1 & sleep 1; disown; wmctrl -r ws://amigo1:9090 -b add,sticky'
 
 alias amigo-show-fitter='rosrun rgbd multitool --rgbd /amigo/ed/viz/fitter'
 alias amigo-show-kinect='rosrun rgbd multitool --rgbd /amigo/top_kinect/rgbd'

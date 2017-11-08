@@ -1,5 +1,5 @@
 #!/bin/bash
-set -o errexit # Stop on errors
+set -o errexit #Stop on errors
 
 # Standard argument parsing, example: install-package --branch=master --package=ros_robot
 for i in "$@"
@@ -64,6 +64,9 @@ fi
 
 # Run the docker image
 docker run --detach --interactive --name tue-env $IMAGE_NAME:$BRANCH_TAG
+
+# Refresh the apt cache in the docker image
+docker exec tue-env bash -c "sudo apt-get update -qq"
 
 # Install the package
 echo -e "\e[35m\e[1m tue-get install ros-$PACKAGE \e[0m"
