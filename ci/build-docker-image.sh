@@ -1,5 +1,5 @@
 #!/bin/bash
-set -o errexit # Stop on errors
+set -o errexit #Stop on errors
 
 # create tag based on branch name
 export IMAGE_NAME=tuerobotics/tue-env:`echo "$TRAVIS_BRANCH" | tr '[:upper:]' '[:lower:]' | sed -e 's:/:_:g'`

@@ -1,6 +1,6 @@
 #!/bin/bash
 # This script can only be ran after the install-package.sh script
-set -o errexit # Stop on errors
+set -o errexit #Stop on errors
 
 # Standard argument parsing, example: build-package --package=ros_robot
 for i in "$@"

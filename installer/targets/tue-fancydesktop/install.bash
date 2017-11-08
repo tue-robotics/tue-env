@@ -23,14 +23,11 @@ mkdir -p ~/.config/terminator
 [ -f ~/.config/terminator/config ] && cp ~/.config/terminator/config ~/.config/terminator/configbackup
 cp $TUE_DIR/installer/targets/tue-fancydesktop/configs/terminator/config ~/.config/terminator/config
 
-# Install Variety
-if ! grep -q -r --include \*.list "peterlevi" /etc/apt 
-then
-	sudo add-apt-repository ppa:peterlevi/ppa
-	sudo apt-get update
-    sudo apt-get install -y variety
-fi
 
-# Secondly fix variety config file
-cp ~/.config/variety/variety.conf ~/.config/variety/variety.conf.backup
+# copying variety config file
+if [ -f ~/.config/variety/variety.conf ]; then
+    cp ~/.config/variety/variety.conf ~/.config/variety/variety.conf.backup
+else
+    mkdir -p ~/.config/variety/
+fi
 cp $TUE_DIR/installer/targets/tue-fancydesktop/configs/variety/variety.conf ~/.config/variety/variety.conf

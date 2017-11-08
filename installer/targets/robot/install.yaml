@@ -1,2 +1,4 @@
 - type: target
   name: gitsu
+- type: target
+  name: networking

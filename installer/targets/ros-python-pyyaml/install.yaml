@@ -1,2 +1,2 @@
-- type: pip
-  name: pyyaml
+- type: system
+  name: python-yaml

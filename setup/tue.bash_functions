@@ -109,7 +109,7 @@ function tue-make-system
 
 function tue-make-dev
 {
-	case $(cat $_TUE_CATKIN_SYSTEM_DIR/devel/.built_by) in
+	case $(cat $_TUE_CATKIN_DEV_DIR/devel/.built_by) in
 	'catkin_make')
 		catkin_make --directory $_TUE_CATKIN_DEV_DIR -DCMAKE_BUILD_TYPE=RelWithDebInfo $@
 		;;
@@ -225,7 +225,7 @@ function _tue-repo-status
         if [ $? -eq 0 ]
         then
             # Is git
-            if echo "$res" | grep -q '\['   # Check if ahead of branch
+            if echo "$res" | grep -q -E 'behind|ahead' # Check if behind or ahead of branch
             then
                 status=$res
             else
@@ -242,18 +242,16 @@ function _tue-repo-status
 
         cd - &> /dev/null
         vctype=git
-    #else
-    #    show=false
     fi
 
     if [ -n "$vctype" ]
     then
         if [ -n "$status" ]; then
-            echo ""
+            echo -e ""
             echo -e "\033[38;5;1mM  \033[0m($vctype) \033[1m$name\033[0m"
-            echo "--------------------------------------------------"
+            echo -e "--------------------------------------------------"
             echo -e "$status"
-            echo "--------------------------------------------------"
+            echo -e "--------------------------------------------------"
         fi
     fi
 }
@@ -277,7 +275,6 @@ function _tue-dir-status
 function tue-status
 {
     _tue-dir-status $_TUE_CATKIN_SYSTEM_DIR/src
-    _tue-dir-status $TUE_ENV_DIR/pkgs
     _tue-repo-status $TUE_DIR $TUE_DIR
 }
 
@@ -306,12 +303,12 @@ function tue-git-status
 }
 
 # ----------------------------------------------------------------------------------------------------
-#                                              NOBLEO-REVERT
+#                                              TUE-REVERT
 # ----------------------------------------------------------------------------------------------------
 
 function tue-revert
 {
-	human_time="$*"
+    human_time="$*"
 
     fs=`ls $_TUE_CATKIN_SYSTEM_DIR/src`
     for pkg in $fs
@@ -346,7 +343,7 @@ function tue-revert
 }
 
 # ----------------------------------------------------------------------------------------------------
-#                                              NOBLEO-REVERT-UNDO
+#                                              TUE-REVERT-UNDO
 # ----------------------------------------------------------------------------------------------------
 
 function tue-revert-undo
@@ -374,7 +371,7 @@ function tue-revert-undo
 #                                              TUE-GET
 # ----------------------------------------------------------------------------------------------------
 
-function _tue_depends1
+function _tue_depends
 {
     local tue_dep_dir=$TUE_ENV_DIR/.env/dependencies
 
@@ -414,6 +411,10 @@ function tue-get
         remove         - Removes installed package
         list-installed - Lists all manually installed packages
 
+    Possible options:
+        --debug        - Shows more debugging information
+        --release      - Generate debian packages of every installed package
+
 """
         return 1
     fi
@@ -423,6 +424,13 @@ function tue-get
 
     cmd=$1
     shift
+
+    #Create btrfs snapshot if possible and usefull:
+    if [[ "$cmd" =~ ^(install|update|remove)$ ]] && $(df --print-type / | grep -q btrfs)
+    then
+        sudo mkdir -p /snap/root
+        sudo btrfs subvolume snapshot / /snap/root/$(date +%Y-%m-%d_%H:%M:%S)
+    fi
 
     if [[ $cmd == "install" ]]
     then
@@ -435,18 +443,6 @@ function tue-get
         $TUE_DIR/installer/scripts/tue-install $@
         error_code=$?
 
-        if [ $error_code -eq 0 ]
-        then
-            # Mark targets as installed
-            TUE_INSTALL_INSTALLED_DIR=$TUE_ENV_DIR/.env/installed
-            mkdir -p $TUE_INSTALL_INSTALLED_DIR
-
-            for target in $@
-            do
-                touch $TUE_INSTALL_INSTALLED_DIR/$1
-            done
-        fi
-
         [ $error_code -eq 0 ] && source ~/.bashrc
 
         return $error_code
@@ -455,6 +451,9 @@ function tue-get
         error_code=0
         for target in $@
         do
+            #Skip options
+            [[ $target = '--'* ]] && continue
+
             if [ ! -f $TUE_ENV_DIR/.env/dependencies/$target ]
             then
                 echo "[tue-get] Package '$target' is not installed."
@@ -534,13 +533,13 @@ function _tue-get
         cmd=${COMP_WORDS[1]}
         if [[ $cmd == "install" ]]
         then
-            COMPREPLY=( $(compgen -W "`ls $TUE_DIR/installer/targets`" -- $cur) )
+            COMPREPLY=( $(compgen -W "`ls $TUE_DIR/installer/targets` --debug" -- $cur) )
         elif [[ $cmd == "dep" ]]
         then
-            COMPREPLY=( $(compgen -W "`ls $TUE_ENV_DIR/.env/dependencies`" -- $cur) )
+            COMPREPLY=( $(compgen -W "`ls $TUE_ENV_DIR/.env/dependencies` --plain --verbose --all" -- $cur) )
         elif [[ $cmd == "update" ]]
         then
-            COMPREPLY=( $(compgen -W "`ls $TUE_ENV_DIR/.env/dependencies`" -- $cur) )
+            COMPREPLY=( $(compgen -W "`ls $TUE_ENV_DIR/.env/dependencies` --debug" -- $cur) )
         elif [[ $cmd == "remove" ]]
         then
             COMPREPLY=( $(compgen -W "`ls $TUE_ENV_DIR/.env/installed`" -- $cur) )
@@ -561,18 +560,43 @@ function tue-checkout
     then
         echo """Switches all packages to the given branch, if such a branch exists in that package. Usage:
 
-    tue-branch BRANCH-NAME
+    tue-checkout BRANCH-NAME [option]
+
+    options:
+    --only-pks: tue-env is not checkedout to the specified branch
 
 """
         return 1
     fi
 
-    local branch=$1
-
-    fs=`ls $_TUE_CATKIN_SYSTEM_DIR/src`
-    for pkg in $fs
+    while test $# -gt 0
     do
-        pkg_dir=$_TUE_CATKIN_SYSTEM_DIR/src/$pkg
+        case "$1" in
+            --only-pkgs) local NO_TUE_ENV="true"
+            ;;
+            --*) echo "unknown option $1"; exit 1;
+            ;;
+            *) local branch=$1
+            ;;
+        esac
+        shift
+    done
+
+    fs=`ls -d -1 $_TUE_CATKIN_SYSTEM_DIR/src/**`
+    if [ -z "$NO_TUE_ENV" ]
+    then
+        fs="$HOME/.tue $fs"
+    fi
+    for pkg_dir in $fs
+    do
+        pkg=${pkg_dir#$_TUE_CATKIN_SYSTEM_DIR/src/}
+        if [ -z "$NO_TUE_ENV" ]
+        then
+            if [[ $pkg =~ ".tue" ]]
+            then
+                pkg="tue-env"
+            fi
+        fi
 
         if [ -d $pkg_dir ]
         then
@@ -666,13 +690,13 @@ For example:
 
     cd ~/.tue
     git remote set-url $remote ${server}tue-robotics/tue-env
-    
+
     pkgs_dir=$TUE_ENV_DIR/repos/https_/github.com/tue-robotics
     # replace spaces with underscores
     pkgs_dir=${pkgs_dir// /_}
     # now, clean out anything that's not alphanumeric or an underscore
     pkgs_dir=${pkgs_dir//[^a-zA-Z0-9\/\.-]/_}
-    
+
     local fs=`ls $pkgs_dir`
     for pkg in $fs
     do
@@ -706,6 +730,16 @@ function tue-robocup-reset-github-origin
     tue-set-git-remote origin https://github.com/
 }
 
+function tue-robocup-set-timezone-robocup
+{
+    sudo timedatectl set-timezone America/Toronto
+}
+
+function tue-robocup-set-timezone-home
+{
+    sudo timedatectl set-timezone Europe/Amsterdam
+}
+
 function tue-robocup-install-package
 {
     local pkgs_dir=$TUE_ENV_DIR/repos/https_/github.com/tue-robotics
@@ -731,7 +765,7 @@ function tue-robocup-update
 
     cd ~/.tue
     git pull --ff-only
-    
+
     # Copy rsettings file
     if [ "$ROBOT_REAL" != "true" ]
     then
