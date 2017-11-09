@@ -116,7 +116,7 @@ function tue-install-target {
         if [ -f $install_file.yaml ]
         then
             tue-install-debug "Parsing $install_file.yaml"
-            local cmds=`$TUE_DIR/installer/scripts/parse-install-yaml $install_file.yaml`
+            local cmds=`$TUE_INSTALL_SCRIPTS_DIR/parse-install-yaml $install_file.yaml`
             if [ $? -eq 0 ]; then
                 for cmd in $cmds
                 do
@@ -390,79 +390,6 @@ function tue-install-pip
     fi
 	tue-install-debug "Adding $1 to pip list"
     TUE_INSTALL_PIPS="$1 $TUE_INSTALL_PIPS"
-}
-
-# # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # #
-# Looks like it is not used
-function tue-install-pkg
-{
-    type=$1
-    source=$2
-    sub_dir=$3
-    version=$4
-
-    if [ -z "$2" ]
-    then
-        tue-install-error "tue-install-pkg needs at least two arguments: source type (git, svn, ...) and source (url)"
-    fi
-
-    local pkgs_dir=$TUE_ENV_DIR/pkgs
-    mkdir -p $pkgs_dir
-
-    local repos_dir=$TUE_REPOS_DIR/$source
-    # replace spaces with underscores
-    repos_dir=${repos_dir// /_}
-    # now, clean out anything that's not alphanumeric or an underscore
-    repos_dir=${repos_dir//[^a-zA-Z0-9\/\.-]/_}
-
-    if [ "$type" = "git" ]
-    then
-        tue-install-git $source $repos_dir $version
-        echo "git clone $source" >> $INSTALL_DETAILS_FILE
-        [ "$version" ] && echo "# NOTE: check-out version $version" >> $INSTALL_DETAILS_FILE
-    elif [ "$type" = "svn" ]
-    then
-        tue-install-svn $source $repos_dir $version
-        if [ "$version" ]
-        then
-            echo "svn co $source -r $version" >> $INSTALL_DETAILS_FILE
-        else
-            echo "svn co $source" >> $INSTALL_DETAILS_FILE
-        fi
-    else
-        tue-install-error "Unknown install type: '${type}'"
-    fi
-
-    local pkg_name=$TUE_INSTALL_CURRENT_TARGET
-    local pkg_dir=$pkgs_dir/$pkg_name
-
-    if [ ! -d $repos_dir ]
-    then
-        tue-install-error "Checking out $source was not successful."
-    fi
-
-    if [ ! -d $repos_dir/$sub_dir ]
-    then
-        tue-install-error "Subdirectory '$sub_dir' does not exist for URL '$source'."
-    fi
-
-    if [ -L $pkg_dir ]
-    then
-        # Test if the current symbolic link points to the same repository dir. If not, give a warning
-        # because it means the source URL has changed
-        if [ ! $pkg_dir -ef $repos_dir/$sub_dir ]
-        then
-            tue-install-info "URL has changed to $source/$subdir"
-            rm $pkg_dir
-            ln -s $repos_dir/$sub_dir $pkg_dir
-        fi
-    elif [ ! -d $pkg_dir ]
-    then
-        # Create a symbolic link to the system workspace
-        ln -s $repos_dir/$sub_dir $pkg_dir
-    fi
-
-    TUE_INSTALL_PKG_DIR=$ros_pkg_dir
 }
 
 # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # #
