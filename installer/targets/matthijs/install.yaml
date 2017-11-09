@@ -16,3 +16,6 @@
 
 - type: target
   name: ros-swri_console
+
+- type: target
+  name: tue-save-map
