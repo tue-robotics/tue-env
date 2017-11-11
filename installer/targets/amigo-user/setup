@@ -99,11 +99,11 @@ function amigo-hear() {
 }
 alias hear='amigo-hear'
 
-alias amigo-high='rostopic pub /amigo/torso/references sensor_msgs/JointState "{header: {seq: 0, stamp: {secs: 0, nsecs: 0}, frame_id: ""}, name: ["torso_joint"], position: [0.35], velocity: [0], effort: [0]}"  --once'
+alias amigo-high='amigo-torso-move-joints 0.35'
 
-alias amigo-medium='rostopic pub /amigo/torso/references sensor_msgs/JointState "{header: {seq: 0, stamp: {secs: 0, nsecs: 0}, frame_id: ""}, name: ["torso_joint"], position: [0.2], velocity: [0], effort: [0]}"  --once'
-alias amigo-low='rostopic pub /amigo/torso/references sensor_msgs/JointState "{header: {seq: 0, stamp: {secs: 0, nsecs: 0}, frame_id: ""}, name: ["torso_joint"], position: [0.085], velocity: [0], effort: [0]}"  --once'
-alias amigo-case='rostopic pub /amigo/torso/references sensor_msgs/JointState "{header: {seq: 0, stamp: {secs: 0, nsecs: 0}, frame_id: ""}, name: ["torso_joint"], position: [0.12], velocity: [0], effort: [0]}"  --once'
+alias amigo-medium='amigo-torso-move-joints 0.2'
+alias amigo-low='amigo-torso-move-joints 0.95'
+alias amigo-case='amigo-torso-move-joints 0.13'
 
 alias amigo-head-straight='amigo-head-move 0.0 0.0'
 alias move-straight="rostopic pub -r 10 /cmd_vel geometry_msgs/Twist  '{linear:  {x: 0.1, y: 0.0, z: 0.0}, angular: {x: 0.0,y: 0.0,z: 0.0}}'"
@@ -137,7 +137,7 @@ function amigo-head-move {
         return
     fi
 
-    rostopic pub /amigo/neck/references sensor_msgs/JointState "{header: {seq: 0, stamp: {secs: 0, nsecs: 0}, frame_id: ''}, name: ['neck_pan_joint', 'neck_tilt_joint'], position: [$1, $2], velocity: [0], effort: [0]}"  --once
+    (rostopic pub /amigo/head_ref/action_server/goal head_ref/HeadReferenceActionGoal "{header: {seq: 0, stamp: {secs: 0, nsecs: 0}, frame_id: ''}, goal_id: {stamp: {secs: 0, nsecs: 0}, id: ''}, goal: {goal_type: 1, priority: 0, pan_vel: 0.0, tilt_vel: 0.0,  pan: $1, tilt: $2, end_time: 0.0}}"  --once  &> /dev/null & )
 }
 
 function amigo-torso-move-joints {
@@ -146,7 +146,11 @@ function amigo-torso-move-joints {
         return
     fi
 
-    ( rostopic pub /amigo/torso/references sensor_msgs/JointState "{header: {seq: 0, stamp: {secs: 0, nsecs: 0}, frame_id: ''}, name: ['torso_joint'], position: [$1], velocity: [0], effort: [0]}"  --once  &> /dev/null & )
+    (rostopic pub /amigo/body/joint_trajectory_action/goal control_msgs/FollowJointTrajectoryActionGoal "{header: {seq: 0, stamp: {secs: 0, nsecs: 0}, frame_id: ''},
+    goal_id: {stamp: {secs: 0, nsecs: 0}, id: ''},
+    goal: {
+        trajectory: {header: {seq: 0, stamp: {secs: 0, nsecs: 0}, frame_id: ''}, joint_names: ['torso_joint'],
+                    points: [{positions: [$1], velocities: [0], accelerations: [0]}]}}}" --once  &> /dev/null & )
 }
 
 # --------------------------------------------------------------------------------
@@ -157,7 +161,11 @@ function amigo-right-arm-move-joints {
         return
     fi
 
-    ( rostopic pub /amigo/right_arm/references sensor_msgs/JointState "{header: {seq: 0, stamp: {secs: 0, nsecs: 0}, frame_id: ''}, name: ['shoulder_yaw_joint_right', 'shoulder_pitch_joint_right', 'shoulder_roll_joint_right', 'elbow_pitch_joint_right', 'elbow_roll_joint_right', 'wrist_pitch_joint_right', 'wrist_yaw_joint_right'], position: [$1, $2, $3, $4, $5, $6, $7], velocity: [0], effort: [0]}"  --once  &> /dev/null & )
+    (rostopic pub /amigo/body/joint_trajectory_action/goal control_msgs/FollowJointTrajectoryActionGoal "{header: {seq: 0, stamp: {secs: 0, nsecs: 0}, frame_id: ''},
+    goal_id: {stamp: {secs: 0, nsecs: 0}, id: ''},
+    goal: {
+        trajectory: {header: {seq: 0, stamp: {secs: 0, nsecs: 0}, frame_id: ''}, joint_names: ['shoulder_yaw_joint_right', 'shoulder_pitch_joint_right', 'shoulder_roll_joint_right', 'elbow_pitch_joint_right', 'elbow_roll_joint_right', 'wrist_pitch_joint_right', 'wrist_yaw_joint_right'],
+                    points: [{positions: [$1, $2, $3, $4, $5, $6, $7], velocities: [0], accelerations: [0]}]}}}" --once  &> /dev/null & )
 }
 
 # --------------------------------------------------------------------------------
@@ -174,7 +182,11 @@ function amigo-left-arm-move-joints {
         return
     fi
 
-    ( rostopic pub /amigo/left_arm/references sensor_msgs/JointState "{header: {seq: 0, stamp: {secs: 0, nsecs: 0}, frame_id: ''}, name: ['shoulder_yaw_joint_left', 'shoulder_pitch_joint_left', 'shoulder_roll_joint_left', 'elbow_pitch_joint_left', 'elbow_roll_joint_left', 'wrist_pitch_joint_left', 'wrist_yaw_joint_left'], position: [$1, $2, $3, $4, $5, $6, $7], velocity: [0], effort: [0]}"  --once  &> /dev/null & )
+    (rostopic pub /amigo/body/joint_trajectory_action/goal control_msgs/FollowJointTrajectoryActionGoal "{header: {seq: 0, stamp: {secs: 0, nsecs: 0}, frame_id: ''},
+    goal_id: {stamp: {secs: 0, nsecs: 0}, id: ''},
+    goal: {
+        trajectory: {header: {seq: 0, stamp: {secs: 0, nsecs: 0}, frame_id: ''}, joint_names: ['shoulder_yaw_joint_left', 'shoulder_pitch_joint_left', 'shoulder_roll_joint_left', 'elbow_pitch_joint_left', 'elbow_roll_joint_left', 'wrist_pitch_joint_left', 'wrist_yaw_joint_left'],
+                    points: [{positions: [$1, $2, $3, $4, $5, $6, $7], velocities: [0], accelerations: [0]}]}}}" --once  &> /dev/null & )
 }
 
 # --------------------------------------------------------------------------------
