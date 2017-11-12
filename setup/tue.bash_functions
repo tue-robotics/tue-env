@@ -688,7 +688,7 @@ For example:
 
     local mem_pwd=$PWD
 
-    cd ~/.tue
+    cd $TUE_DIR
     git remote set-url $remote ${server}tue-robotics/tue-env
 
     pkgs_dir=$TUE_ENV_DIR/repos/https_/github.com/tue-robotics
