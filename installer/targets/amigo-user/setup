@@ -171,7 +171,7 @@ function amigo-right-arm-move-joints {
 # --------------------------------------------------------------------------------
 
 function amigo-right-arm-move-idle {
-    amigo-right-arm-move-joints -0.1 -0.35 0.2 1.2 0 0 0
+    amigo-right-arm-move-joints -0.1 -0.2 0.2 0.8 0.0 0.0 0.0
 }
 
 # --------------------------------------------------------------------------------
@@ -192,7 +192,7 @@ function amigo-left-arm-move-joints {
 # --------------------------------------------------------------------------------
 
 function amigo-left-arm-move-idle {
-    amigo-left-arm-move-joints -0.1 -0.35 0.2 1.2 0 0 0
+    amigo-left-arm-move-joints -0.1 -0.2 0.2 0.8 0.0 0.0 0.0
 }
 
 # --------------------------------------------------------------------------------
