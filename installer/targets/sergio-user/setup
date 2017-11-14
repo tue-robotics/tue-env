@@ -79,8 +79,8 @@ alias sergio-continui-gpsr='rosrun hmi_server continue_gui.py $TUE_SYSTEM_DIR/sr
 #
 ####################
 
-alias say='rostopic pub --once /sergio/text_to_speech/input std_msgs/String'
-function praat() {
+alias sergio-say='rostopic pub --once /sergio/text_to_speech/input std_msgs/String'
+function sergio-zeg() {
         rosservice call /sergio/text_to_speech/speak "{language: 'nl', voice: 'david', character: 'default', emotion: 'neutral', sentence: '$@', blocking_call: false}"
 }
 
@@ -89,7 +89,6 @@ function sergio-hear() {
     echo "Sending trigger: $msg"
     rostopic pub --once /sergio/hmi/string std_msgs/String "data: '$msg'";
 }
-alias hear='sergio-hear'
 
 alias sergio-head-straight='sergio-head-move 0.0 0.0'
 alias move-straight="rostopic pub -r 10 /cmd_vel geometry_msgs/Twist  '{linear:  {x: 0.1, y: 0.0, z: 0.0}, angular: {x: 0.0,y: 0.0,z: 0.0}}'"
@@ -136,7 +135,7 @@ function sergio-torso-move-joints {
 }
 
 function sergio-torso-move-idle {
-	sergio-torso-move-joints 0.9 1.9
+    sergio-torso-move-joints 0.9 1.9
 }
 
 function sergio-torso-laser-move {
