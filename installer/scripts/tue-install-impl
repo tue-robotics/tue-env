@@ -184,7 +184,7 @@ function tue-install-git
     if [ ! -d $2 ]; then
         tue-install-debug "git clone --recursive $1 $2"
         res=$(git clone --recursive $1 $2 2>&1)
-	TUE_INSTALL_GIT_PULL_Q+=$2
+        TUE_INSTALL_GIT_PULL_Q+=$2
     else
         # Check if we have already pulled the repo
         if [[ $TUE_INSTALL_GIT_PULL_Q =~ $2 ]]
@@ -359,7 +359,7 @@ function tue-install-system
     then
         tue-install-error "Invalid tue-install-system call: needs package as argument."
     fi
-	tue-install-debug "Adding $1 to apt list"
+    tue-install-debug "Adding $1 to apt list"
     TUE_INSTALL_SYSTEMS="$1 $TUE_INSTALL_SYSTEMS"
 }
 
@@ -376,7 +376,7 @@ function tue-install-ppa
     then
         tue-install-error "Invalid tue-install-ppa call: needs to start with ppa:"
     fi
-	tue-install-debug "Adding $1 to PPA list"
+    tue-install-debug "Adding $1 to PPA list"
     TUE_INSTALL_PPA="$1 $TUE_INSTALL_PPA"
 }
 
@@ -388,7 +388,7 @@ function tue-install-pip
     then
         tue-install-error "Invalid tue-install-pip call: needs package as argument."
     fi
-	tue-install-debug "Adding $1 to pip list"
+    tue-install-debug "Adding $1 to pip list"
     TUE_INSTALL_PIPS="$1 $TUE_INSTALL_PIPS"
 }
 
