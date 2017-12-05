@@ -17,7 +17,7 @@ export PATH=~/.tue/installer/targets/amigo-user/scripts:$PATH
 
 alias amigo-publish-ed='rosrun ed_gui_server ed_rviz_publisher /ed/gui/entities:=/amigo/ed/gui/entities ed/gui/query_meshes:=/amigo/ed/gui/query_meshes ed/rviz:=/amigo/world_model'
 
-alias amigo-publish-point-cloud='rosrun rgbd rgbd_to_ros /amigo/top_kinect/rgbd __ns:=amigo'
+alias amigo-publish-point-cloud='rosrun rgbd rgbd_to_pc /amigo/top_kinect/rgbd __ns:=amigo'
 
 ####################
 #
