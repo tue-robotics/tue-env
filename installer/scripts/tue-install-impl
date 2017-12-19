@@ -729,7 +729,7 @@ if [ -n "$TUE_INSTALL_PIPS" ]; then
     fi
 fi
 
-# Installing all system (apt-get) targets, which are collected during the install
+# Installing all snap targets, which are collected during the install
 if [ -n "$TUE_INSTALL_SNAPS" ]; then
 
     TUE_INSTALL_CURRENT_TARGET="SNAP"
