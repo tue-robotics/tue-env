@@ -1,0 +1,7 @@
+#!/bin/bash
+
+alias amigo-cmdgen-spr="mono ~/GPSRCmdGen/bin/Release/SPRTest.exe"
+
+alias amigo-cmdgen-gpsr="mono ~/GPSRCmdGen/bin/Release/GPSRCmdGen.exe"
+
+alias amigo-cmdgen-eegpsr="mono ~/GPSRCmdGen/bin/Release/EEGPSRCmdGen.exe"
