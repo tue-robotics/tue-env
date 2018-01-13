@@ -41,8 +41,8 @@ TUE_REPOS_DIR=$TUE_ENV_DIR/repos
 
 # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # #
 
-function randid {
-    </dev/urandom tr -dc '0123456789abcdef' | head -c16; echo ""
+function date_stamp {
+    echo $(date +%Y_%m_%d_%H_%M_%S)
 }
 
 # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # #
@@ -184,7 +184,7 @@ function tue-install-git
     if [ ! -d $2 ]; then
         tue-install-debug "git clone --recursive $1 $2"
         res=$(git clone --recursive $1 $2 2>&1)
-	TUE_INSTALL_GIT_PULL_Q+=$2
+        TUE_INSTALL_GIT_PULL_Q+=$2
     else
         # Check if we have already pulled the repo
         if [[ $TUE_INSTALL_GIT_PULL_Q =~ $2 ]]
@@ -359,7 +359,7 @@ function tue-install-system
     then
         tue-install-error "Invalid tue-install-system call: needs package as argument."
     fi
-	tue-install-debug "Adding $1 to apt list"
+    tue-install-debug "Adding $1 to apt list"
     TUE_INSTALL_SYSTEMS="$1 $TUE_INSTALL_SYSTEMS"
 }
 
@@ -376,7 +376,7 @@ function tue-install-ppa
     then
         tue-install-error "Invalid tue-install-ppa call: needs to start with ppa:"
     fi
-	tue-install-debug "Adding $1 to PPA list"
+    tue-install-debug "Adding $1 to PPA list"
     TUE_INSTALL_PPA="$1 $TUE_INSTALL_PPA"
 }
 
@@ -388,8 +388,20 @@ function tue-install-pip
     then
         tue-install-error "Invalid tue-install-pip call: needs package as argument."
     fi
-	tue-install-debug "Adding $1 to pip list"
+    tue-install-debug "Adding $1 to pip list"
     TUE_INSTALL_PIPS="$1 $TUE_INSTALL_PIPS"
+}
+
+# # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # #
+
+function tue-install-snap
+{
+    if [ -z "$1" ]
+    then
+        tue-install-error "Invalid tue-install-snap call: needs package as argument."
+    fi
+    tue-install-debug "Adding $1 to snap list"
+    TUE_INSTALL_SNAPS="$1 $TUE_INSTALL_SNAPS"
 }
 
 # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # #
@@ -541,7 +553,8 @@ function generate_setup_file
 #                                           MAIN LOOP
 # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # #
 
-INSTALL_DETAILS_FILE=/tmp/tue-get-details-`randid`
+stamp=$(date_stamp)
+INSTALL_DETAILS_FILE=/tmp/tue-get-details-$stamp
 > $INSTALL_DETAILS_FILE
 
 # CATKIN PACKAGES
@@ -550,17 +563,15 @@ ROS_PACKAGE_INSTALL_DIR=$TUE_SYSTEM_DIR/src
 TUE_INSTALL_TARGET_DIR=$TUE_INSTALL_TARGETS_DIR
 TUE_INSTALL_SCRIPTS_DIR=$TUE_DIR/installer/scripts
 
-TUE_INSTALL_STATE_DIR=/tmp/tue-installer/`randid`
+TUE_INSTALL_STATE_DIR=/tmp/tue-installer/$stamp
 mkdir -p $TUE_INSTALL_STATE_DIR
-
-TUE_INSTALL_TEMP_DIR=/tmp/tue-installer/`randid`
-mkdir -p $TUE_INSTALL_TEMP_DIR
 
 TUE_INSTALL_GIT_PULL_Q=()
 
 TUE_INSTALL_SYSTEMS=
 TUE_INSTALL_PPA=
 TUE_INSTALL_PIPS=
+TUE_INSTALL_SNAPS=
 
 TUE_INSTALL_WARNINGS=
 TUE_INSTALL_INFOS=
@@ -713,5 +724,36 @@ if [ -n "$TUE_INSTALL_PIPS" ]; then
         echo -e "Going to run the following command:\n"
         echo -e "yes | pip install --user $TUE_INSTALL_PIPS\n"
         yes | pip install --user $TUE_INSTALL_PIPS
+    fi
+fi
+
+# Installing all snap targets, which are collected during the install
+if [ -n "$TUE_INSTALL_SNAPS" ]; then
+
+    TUE_INSTALL_CURRENT_TARGET="SNAP"
+
+    echo -e "\nyes | sudo snap install --classic $TUE_INSTALL_SNAPS" >> $INSTALL_DETAILS_FILE
+
+    snaps_to_install=
+    snaps_installed=$(snap list)
+    for pkg in $TUE_INSTALL_SNAPS
+    do
+        if [[ ! $snaps_installed == *$pkg* ]] # Check if pkg is not already installed
+        then
+            snaps_to_install="$snaps_to_install $pkg"
+            tue-install-debug "snap pkg: $pkg is not yet installed"
+        else
+            tue-install-debug "snap pkg: $pkg is already installed"
+        fi
+    done
+
+    if [ -n "$snaps_to_install" ]
+    then
+        echo -e "Going to run the following command:\n"
+        for pkg in $snaps_to_install
+        do
+            echo -e "yes | sudo snap install --classic $pkg\n"
+            yes | sudo snap install --classic $pkg
+        done
     fi
 fi

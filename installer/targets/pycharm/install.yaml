@@ -1,5 +1,2 @@
-- type: ppa
-  name: ppa:mystic-mirage/pycharm
-
-- type: system
+- type: snap
   name: pycharm-community
