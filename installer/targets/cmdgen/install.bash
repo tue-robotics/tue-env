@@ -3,7 +3,7 @@
 if [ ! -d ~/src/GPSRCmdGen ]
 then
     tue-install-debug "GPSRCmdGen not yet installed"
-    echo "Installing GPSRCmdGen"
+    echo "Installing GPSRCmdGen to ~/src/GPSRCmdGen"
 
     echo "Installing dependency of GPSRCmdGen: mono-complete"
     sudo apt-get install mono-complete
@@ -13,6 +13,10 @@ then
     echo "Making GPSRCmdGen"
     cd ~/src/GPSRCmdGen
     make
+
+    tue-install-info "GPSRCmdGen is only pulled and maked once. In the future you have to do this yourself.
+               cd ~/src/GPSRCmdGen
+               make"
 else
     tue-install-debug "GPSRCmdGen already installed"
 fi
