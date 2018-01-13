@@ -107,6 +107,17 @@ function tue-make-system
 	esac
 }
 
+function _tue-make
+{
+    local cur=${COMP_WORDS[COMP_CWORD]}
+    local prev=${COMP_WORDS[COMP_CWORD-1]}
+
+    COMPREPLY=( $(compgen -W "`_list_subdirs $_TUE_CATKIN_SYSTEM_DIR/src`" -- $cur) )
+}
+
+complete -F _tue-make tue-make
+complete -F _tue-make tue-make-system
+
 function tue-make-dev
 {
 	case $(cat $_TUE_CATKIN_DEV_DIR/devel/.built_by) in
@@ -138,6 +149,16 @@ function tue-make-dev-isolated
 		;;
 	esac
 }
+
+function _tue-make-dev
+{
+    local cur=${COMP_WORDS[COMP_CWORD]}
+    local prev=${COMP_WORDS[COMP_CWORD-1]}
+
+    COMPREPLY=( $(compgen -W "`_list_subdirs $_TUE_CATKIN_DEV_DIR/src`" -- $cur) )
+}
+complete -F _tue-make-dev tue-make-dev
+complete -F _tue-make-dev tue-make-dev-isolated
 
 # ----------------------------------------------------------------------------------------------------
 #                                              TUE-DEV
@@ -688,7 +709,7 @@ For example:
 
     local mem_pwd=$PWD
 
-    cd ~/.tue
+    cd $TUE_DIR
     git remote set-url $remote ${server}tue-robotics/tue-env
 
     pkgs_dir=$TUE_ENV_DIR/repos/https_/github.com/tue-robotics
