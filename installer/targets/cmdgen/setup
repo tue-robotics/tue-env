@@ -1,0 +1,7 @@
+#!/bin/bash
+
+alias cmdgen-spr="mono ~/src/GPSRCmdGen/bin/Release/SPRTest.exe"
+
+alias cmdgen-gpsr="mono ~/src/GPSRCmdGen/bin/Release/GPSRCmdGen.exe"
+
+alias cmdgen-eegpsr="mono ~/src/GPSRCmdGen/bin/Release/EEGPSRCmdGen.exe"
