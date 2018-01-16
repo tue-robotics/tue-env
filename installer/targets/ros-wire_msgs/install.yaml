@@ -1,0 +1,5 @@
+- type: ros
+  source:
+    type: git
+    url: https://github.com/tue-robotics/wire.git
+    sub-dir: wire_msgs
