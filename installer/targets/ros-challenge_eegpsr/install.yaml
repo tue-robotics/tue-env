@@ -3,3 +3,6 @@
     type: git
     url: https://github.com/tue-robotics/tue_robocup.git
     sub-dir: challenge_eegpsr
+
+- type: target
+  name: cmdgen
