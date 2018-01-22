@@ -381,6 +381,8 @@ function tue-install-system
     TUE_INSTALL_SYSTEMS="$1 $TUE_INSTALL_SYSTEMS"
 }
 
+# # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # #
+
 function tue-install-system-now
 {
     tue-install-debug "tue-install-system-now $@"
@@ -388,25 +390,23 @@ function tue-install-system-now
     then
         tue-install-error "Invalid tue-install-system-now call: needs package as argument."
     fi
-    local install_required=false
 
+    pkgs_to_install=""
     for pkg in "$@"
     do
         # Check if pkg is not already installed dpkg -S does not cover previously removed packages
         # Based on https://stackoverflow.com/questions/1298066
         if ! dpkg-query -W -f='${Status}' $pkg 2>/dev/null | grep -q "ok installed"
         then
-            tue-install-debug "Package $pkg requires installation"
-            install_required=true
-        else
-            tue-install-debug "Package $pkg is already installed"
+            pkgs_to_install="$pkgs_to_install $pkg"
         fi
     done
 
-    if $install_required
+    if [ -n "$pkgs_to_install" ]
     then
-        echo "sudo apt-get install --assume-yes $@"
-        sudo apt-get install --assume-yes $@
+        echo -e "Going to run the following command:\n"
+        echo -e "sudo apt-get install --assume-yes $pkgs_to_install\n"
+        sudo apt-get install --assume-yes $pkgs_to_install
     fi
 }
 
@@ -707,7 +707,7 @@ if [ -n "$TUE_INSTALL_PPA" ]; then
     TUE_INSTALL_CURRENT_TARGET="PPA-ADD"
 
     echo -e "\nsudo add-apt-repository --yes $TUE_INSTALL_PPA" >> $INSTALL_DETAILS_FILE
-    PPA_ADDED=
+    PPA_ADDED=""
     for ppa in $TUE_INSTALL_PPA
     do
         if [ -z "$(grep -h "^deb.*${ppa#ppa:}" /etc/apt/sources.list.d/* 2>&1)" ]
@@ -732,7 +732,7 @@ if [ -n "$TUE_INSTALL_SYSTEMS" ]; then
 
     echo -e "\nsudo apt-get install --assume-yes $TUE_INSTALL_SYSTEMS" >> $INSTALL_DETAILS_FILE
 
-    pkgs_to_install=
+    pkgs_to_install=""
     for pkg in $TUE_INSTALL_SYSTEMS
     do
         # Check if pkg is not already installed dpkg -S does not cover previously removed packages
@@ -779,11 +779,11 @@ if [ -n "$TUE_INSTALL_SNAPS" ]; then
 
     TUE_INSTALL_CURRENT_TARGET="SNAP"
 
-    _make_sure_installed snapd
-
     echo -e "\nyes | sudo snap install --classic $TUE_INSTALL_SNAPS" >> $INSTALL_DETAILS_FILE
 
-    snaps_to_install=
+    _make_sure_installed snapd
+
+    snaps_to_install=""
     snaps_installed=$(snap list)
     for pkg in $TUE_INSTALL_SNAPS
     do
