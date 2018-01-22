@@ -649,6 +649,8 @@ do
     case "$1" in
         --debug) DEBUG=true
             ;;
+        --branch*) BRANCH=`echo $1 | sed -e 's/^[^=]*=//g'`
+            ;;
         --*) echo "unknown option $1"
             ;;
         *) targets="$targets $1"
