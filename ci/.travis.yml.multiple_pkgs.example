@@ -10,7 +10,7 @@ before_install:
   - wget https://raw.githubusercontent.com/tue-robotics/tue-env/master/ci/build-package.sh
   - wget https://raw.githubusercontent.com/tue-robotics/tue-env/master/ci/packages.sh
   # Determine packages modified in this commit
-  - source packages.sh
+  - source packages.sh # add all folders which need to be excluded as an argument
 
 script:
   - 'for PACKAGE in $PACKAGES;
