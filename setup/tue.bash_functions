@@ -434,7 +434,7 @@ function tue-get
 
     Possible options:
         --debug        - Shows more debugging information
-        --release      - Generate debian packages of every installed package
+        --branch=name  - Try to checkout this branch if exists
 
 """
         return 1
@@ -453,14 +453,14 @@ function tue-get
         sudo btrfs subvolume snapshot / /snap/root/$(date +%Y-%m-%d_%H:%M:%S)
     fi
 
+    if [[ "$cmd" =~ ^(install|remove)$ && -z "$1" ]]
+    then
+       echo "Usage: tue-get $cmd TARGET [TARGET2 ...]"
+       return 1
+    fi
+
     if [[ $cmd == "install" ]]
     then
-        if [ -z "$1" ]
-        then
-            echo "Usage: tue-get install TARGET [TARGET2 ...]"
-            return 1
-        fi
-
         $TUE_DIR/installer/scripts/tue-install $@
         error_code=$?
 
@@ -492,12 +492,6 @@ function tue-get
         return $error_code
     elif [[ $cmd == "remove" ]]
     then
-        if [ -z "$1" ]
-        then
-            echo "Usage: tue-get remove TARGET [TARGET2 ...]"
-            return 1
-        fi
-
         error=0
         for target in $@
         do
