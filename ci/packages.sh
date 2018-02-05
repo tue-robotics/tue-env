@@ -10,7 +10,7 @@ else
 fi
 
 dir_mod=$(git diff-tree --name-only HEAD $diff_tag | xargs ls -dl 2>/dev/null |  grep "^d" | grep -v "\." | awk '{print $NF}')
-if [ $dir_mod ]
+if [ "$dir_mod" ]
 then
     PACKAGES=$dir_mod
 else
