@@ -803,7 +803,7 @@ function tue-robocup-update
             cd $pkg_dir
             local current_url=`git config --get remote.origin.url`
 
-            if echo "$current_url" | grep -q "froboticssrv.local"
+            if echo "$current_url" | grep -q "roboticssrv.local"
             then
                 echo -n "$pkg: "
                 git pull --ff-only
