@@ -22,7 +22,7 @@ tue-make --pre-clean openpose_ros
 
 test with:
 
-export ROS_MASTER_URI=http://athome8:11311
+export ROS_MASTER_URI=http://athome8.local:11311
 rosrun openpose_ros openpose_ros_node _net_input_width:=368 _net_input_height:=368 _net_output_width:=368 _net_output_height:=368 _model_folder:=/home/amigo/openpose/models/ __ns:=amigo/pose_detector
 
 Make sure the hosts can be found ping from amigo1 to jetson and from jetson to amigo1 should work based on hostnames, not IP
@@ -34,4 +34,4 @@ sudo systemctl enable openpose_ros
 sudo systemctl start openpose_ros
 
 For use on amigo:
-tue-get install amigo4
+tue-get install amigo4.local
