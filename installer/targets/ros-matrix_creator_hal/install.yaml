@@ -2,3 +2,4 @@
   source:
     type: git
     url: https://github.com/tue-robotics/matrix_creator_ros.git
+    sub-dir: matrix_creator_hal
