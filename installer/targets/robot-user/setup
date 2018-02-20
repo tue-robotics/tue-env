@@ -38,7 +38,7 @@ function ROS_MASTER_NAME {
 PS1='[\[\033[01;34m\]\w\[\033[00m\]]$(__git_ps1)\n'\
 '$(ROS_MASTER_NAME)${debian_chroot:+($debian_chroot)}\[\033[01;32m\]\u@\h\[\033[00m\] \$ '
 
-alias scores='scp amigo@192.168.44.110:/home/amigo/database/per_challenge/scores.html /tmp/scores.html && google-chrome /tmp/scores.html'
+alias scores='scp amigo@athome10.local:/home/amigo/database/per_challenge/scores.html /tmp/scores.html && google-chrome /tmp/scores.html'
 
 function github-cache-credentials() {
     if [[ -z $1 ]]
@@ -77,16 +77,12 @@ function github-cache-credentials() {
 
 ####################
 #
-# ROS_IP
+# ROS_HOSTNAME
 #
 ####################
 
-# Set the ROS_IP if we are on the 192.168.*.* range and not on the real robot
-if [ ! $ROBOT_REAL ] ; then
-	if `hostname -I | grep -q 192.168.` ; then
-		export ROS_IP=`hostname -I | sed 's/.*\(192\.168\.[0-9]\+\.[0-9]\+\).*/\1/'`
-	fi
-fi
+# Append '.local' to hostname for local resolving of hostnames
+export ROS_HOSTNAME=`hostname`.local
 
 # DECLARE ALIAS FOR QUICK SSHf
 alias quickssh='echo "ControlMaster auto

@@ -1,2 +1,2 @@
 export ROSLAUNCH_SSH_UNKNOWN=1
-export ROS_MASTER_URI=http://sergio1:11311
+export ROS_MASTER_URI=http://sergio1.local:11311
