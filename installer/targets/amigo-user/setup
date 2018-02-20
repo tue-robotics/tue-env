@@ -2,7 +2,7 @@
 
 export ROBOT_BRINGUP_PATH=$TUE_SYSTEM_DIR/src/amigo_bringup
 
-alias amigo-get-and-view-pdf-from-amigo1.local-home='mkdir -p ~/amigo1.localpdf && cd ~/amigo1.localpdf && scp amigo1.local:~/*.pdf . && evince *.pdf'
+alias amigo-get-and-view-pdf-from-amigo1.local-home='mkdir -p ~/amigo1pdf && cd ~/amigo1pdf && scp amigo1.local:~/*.pdf . && evince *.pdf'
 alias amigo-core='export ROS_MASTER_URI=http://amigo1.local:11311'
 
 # ----------------------------------------------------------------------------
