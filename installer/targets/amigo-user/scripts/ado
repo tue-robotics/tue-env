@@ -7,8 +7,8 @@ HEIGHT=$(tput lines)
 
 if [ $# -eq 0 ]
 then
-    gnome-terminal -t "AMIGO 1" --geometry=${WIDTH}x${HEIGHT}+0+0 --hide-menubar ssh amigo@amigo1 & 
-    gnome-terminal -t "AMIGO 2" --geometry=${WIDTH}x${HEIGHT}-0+0 --hide-menubar ssh amigo@amigo2 &
+    gnome-terminal -t "AMIGO 1" --geometry=${WIDTH}x${HEIGHT}+0+0 --hide-menubar ssh amigo@amigo1.local & 
+    gnome-terminal -t "AMIGO 2" --geometry=${WIDTH}x${HEIGHT}-0+0 --hide-menubar ssh amigo@amigo2.local &
     exit
 fi
 
@@ -55,6 +55,6 @@ then
 fi
 
 # open terminals and execute commands
-gnome-terminal -t "AMIGO 1" --geometry=${WIDTH}x${HEIGHT}+0+0 --hide-menubar ssh amigo@amigo1 -t bash -ic "'echo \"**** AMIGO1 ****\";$cmd'" & 
-gnome-terminal -t "AMIGO 2" --geometry=${WIDTH}x${HEIGHT}-0+0 --hide-menubar ssh amigo@amigo2 -t bash -ic "'echo \"**** AMIGO2 ****\";$cmd'" &
+gnome-terminal -t "AMIGO 1" --geometry=${WIDTH}x${HEIGHT}+0+0 --hide-menubar ssh amigo@amigo1.local -t bash -ic "'echo \"**** AMIGO1 ****\";$cmd'" & 
+gnome-terminal -t "AMIGO 2" --geometry=${WIDTH}x${HEIGHT}-0+0 --hide-menubar ssh amigo@amigo2.local -t bash -ic "'echo \"**** AMIGO2 ****\";$cmd'" &
 
