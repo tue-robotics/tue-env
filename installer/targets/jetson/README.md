@@ -34,4 +34,4 @@ sudo systemctl enable openpose_ros
 sudo systemctl start openpose_ros
 
 For use on amigo:
-tue-get install amigo4.local
+tue-get install amigo4
