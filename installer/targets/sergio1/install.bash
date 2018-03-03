@@ -22,4 +22,8 @@ then
     sudo service chrony restart
 fi
 
-
+# UDEV rules
+if [ ! -f /etc/udev/rules.d/0-hokuyo.rules ]
+then
+    tue-install-cp udev-rules/* /etc/udev/rules.d/
+fi
