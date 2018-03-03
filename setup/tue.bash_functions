@@ -107,6 +107,17 @@ function tue-make-system
 	esac
 }
 
+function _tue-make
+{
+    local cur=${COMP_WORDS[COMP_CWORD]}
+    local prev=${COMP_WORDS[COMP_CWORD-1]}
+
+    COMPREPLY=( $(compgen -W "`_list_subdirs $_TUE_CATKIN_SYSTEM_DIR/src`" -- $cur) )
+}
+
+complete -F _tue-make tue-make
+complete -F _tue-make tue-make-system
+
 function tue-make-dev
 {
 	case $(cat $_TUE_CATKIN_DEV_DIR/devel/.built_by) in
@@ -138,6 +149,16 @@ function tue-make-dev-isolated
 		;;
 	esac
 }
+
+function _tue-make-dev
+{
+    local cur=${COMP_WORDS[COMP_CWORD]}
+    local prev=${COMP_WORDS[COMP_CWORD-1]}
+
+    COMPREPLY=( $(compgen -W "`_list_subdirs $_TUE_CATKIN_DEV_DIR/src`" -- $cur) )
+}
+complete -F _tue-make-dev tue-make-dev
+complete -F _tue-make-dev tue-make-dev-isolated
 
 # ----------------------------------------------------------------------------------------------------
 #                                              TUE-DEV
@@ -225,7 +246,7 @@ function _tue-repo-status
         if [ $? -eq 0 ]
         then
             # Is git
-            if echo "$res" | grep -q '\['   # Check if ahead of branch
+            if echo "$res" | grep -q -E 'behind|ahead' # Check if behind or ahead of branch
             then
                 status=$res
             else
@@ -242,18 +263,16 @@ function _tue-repo-status
 
         cd - &> /dev/null
         vctype=git
-    #else
-    #    show=false
     fi
 
     if [ -n "$vctype" ]
     then
         if [ -n "$status" ]; then
-            echo ""
+            echo -e ""
             echo -e "\033[38;5;1mM  \033[0m($vctype) \033[1m$name\033[0m"
-            echo "--------------------------------------------------"
+            echo -e "--------------------------------------------------"
             echo -e "$status"
-            echo "--------------------------------------------------"
+            echo -e "--------------------------------------------------"
         fi
     fi
 }
@@ -310,7 +329,7 @@ function tue-git-status
 
 function tue-revert
 {
-	human_time="$*"
+    human_time="$*"
 
     fs=`ls $_TUE_CATKIN_SYSTEM_DIR/src`
     for pkg in $fs
@@ -690,7 +709,7 @@ For example:
 
     local mem_pwd=$PWD
 
-    cd ~/.tue
+    cd $TUE_DIR
     git remote set-url $remote ${server}tue-robotics/tue-env
 
     pkgs_dir=$TUE_ENV_DIR/repos/https_/github.com/tue-robotics
@@ -724,7 +743,7 @@ For example:
 
 function tue-robocup-set-github-origin
 {
-    tue-set-git-remote origin amigo@192.168.44.10:
+    tue-set-git-remote origin amigo@roboticssrv.local:
 }
 
 function tue-robocup-reset-github-origin
@@ -734,7 +753,7 @@ function tue-robocup-reset-github-origin
 
 function tue-robocup-set-timezone-robocup
 {
-	sudo timedatectl set-timezone Asia/Tokyo
+    sudo timedatectl set-timezone America/Toronto
 }
 
 function tue-robocup-set-timezone-home
@@ -756,7 +775,7 @@ function tue-robocup-install-package
     # If directory already exists, return
     [ -d $pkg_dir ] && return
 
-    git clone amigo@192.168.44.10:tue-robotics/${1}.git $pkg_dir
+    git clone amigo@roboticssrv.local:tue-robotics/${1}.git $pkg_dir
 
     ln -s $pkg_dir $TUE_ENV_DIR/system/src/$1
 }
@@ -784,7 +803,7 @@ function tue-robocup-update
             cd $pkg_dir
             local current_url=`git config --get remote.origin.url`
 
-            if echo "$current_url" | grep -q "192.168.44.10"
+            if echo "$current_url" | grep -q "roboticssrv.local"
             then
                 echo -n "$pkg: "
                 git pull --ff-only

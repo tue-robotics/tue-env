@@ -1,3 +1,5 @@
 #!/bin/bash
 
+alias amigo-sync-ubuntu-ntp="sudo ntpdate ntp.ubuntu.com"
+
 alias amigo-restart="sudo systemctl restart amigo-start.service"

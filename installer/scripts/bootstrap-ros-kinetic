@@ -3,9 +3,15 @@
 # make sure git is installed
 hash git 2> /dev/null || sudo apt-get install --assume-yes git
 
+# Move old environments and installer
 if [[ -e ~/.tue && -z "$CI" ]]
 then
-	mv -f ~/.tue ~/.tue.$(date +%F_%R)
+    FILES=$(find ~/.tue/user/envs -maxdepth 1 -type f)
+    for env in $FILES
+    do
+        mv -f $(cat $env) $(cat $env).$(date +%F_%R)
+    done
+    mv -f ~/.tue ~/.tue.$(date +%F_%R)
 fi
 
 if [[ -z "$CI" ]]
