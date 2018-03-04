@@ -2,7 +2,7 @@
   name: amigo
 
 - type: target
-  name: chrony-client-pc
+  name: amigo-chrony-client-pc
 
 - type: target
   name: megatools
