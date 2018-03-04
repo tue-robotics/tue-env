@@ -10,7 +10,7 @@ fi
 # Hence: copy
 if ! cmp /etc/chrony/chrony.conf ~/.tue/installer/targets/sergio1/chrony.conf --quiet
 then
-    echo "Chrony config is probably not correct, will copy"
+    tue-install-info "Chrony config is probably not correct, will copy"
     
     # Backup old config
     sudo mv /etc/chrony/chrony.conf /etc/chrony/chrony.conf.backup

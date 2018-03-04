@@ -2,6 +2,9 @@
   name: sergio
 
 - type: target
+  name: sergio-chrony-client-pc
+
+- type: target
   name: megatools
 
 # Middleware
