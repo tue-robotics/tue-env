@@ -1,5 +1,5 @@
 - type: ros
   source:
       type: git
-      url: https://github.com/smart-robotics/orocos_kinematics_dynamics.git
+      url: https://github.com/orocos/orocos_kinematics_dynamics.git
       sub-dir: orocos_kdl
