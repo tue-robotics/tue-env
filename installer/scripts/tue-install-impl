@@ -11,31 +11,6 @@ mkdir -p $TUE_INSTALL_INSTALLED_DIR
 
 TUE_INSTALL_TARGETS_DIR=$TUE_DIR/installer/targets
 
-# # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # #
-
-function _make_sure_installed
-{
-    local pkgs_to_install=
-    for pkg in $@
-    do
-        if ! dpkg-query -W -f='${Status}' $pkg 2>/dev/null | grep -q "ok installed" #Handles uninstalled packages
-        then
-            pkgs_to_install="$pkgs_to_install $pkg"
-        fi
-    done
-
-    if [ -n "$pkgs_to_install" ]
-    then
-        echo "Going to install: $pkgs_to_install"
-        sudo apt-get install -y $pkgs_to_install
-    fi
-}
-
-# # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # #
-
-# Make sure tools used by this installer are installed
-_make_sure_installed python-yaml git subversion python-pip
-
 TUE_SYSTEM_DIR=$TUE_ENV_DIR/system
 TUE_REPOS_DIR=$TUE_ENV_DIR/repos
 
@@ -600,6 +575,9 @@ function generate_setup_file
 #                                           MAIN LOOP
 # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # #
 
+# Make sure tools used by this installer are installed
+tue-install-system-now python-yaml git subversion python-pip
+
 stamp=$(date_stamp)
 INSTALL_DETAILS_FILE=/tmp/tue-get-details-$stamp
 > $INSTALL_DETAILS_FILE
@@ -783,7 +761,7 @@ if [ -n "$TUE_INSTALL_SNAPS" ]; then
 
     echo -e "\nyes | sudo snap install --classic $TUE_INSTALL_SNAPS" >> $INSTALL_DETAILS_FILE
 
-    _make_sure_installed snapd
+    tue-install-system-now snapd
 
     snaps_to_install=""
     snaps_installed=$(snap list)
