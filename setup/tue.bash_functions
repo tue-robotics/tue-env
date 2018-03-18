@@ -543,27 +543,33 @@ function _tue-get
     local prev=${COMP_WORDS[COMP_CWORD-1]}
 
     if [ $COMP_CWORD -eq 1 ]; then
-        COMPREPLY=( $(compgen -W "dep install update remove list-installed" -- $cur) )
+        local IFS=$'\n'
+        options="'dep '\n'install '\n'update '\n'remove '\n'list-installed '"
+        COMPREPLY=( $(compgen -W "$(echo -e "$options")" -- $cur) )
     else
         cmd=${COMP_WORDS[1]}
         if [[ $cmd == "install" ]]
         then
-            COMPREPLY=( $(compgen -W "`ls $TUE_DIR/installer/targets` --debug" -- $cur) )
+            local IFS=$'\n'
+            COMPREPLY=( $(compgen -W "$(echo -e "$(ls $TUE_DIR/installer/targets | sed "s/.*/'& '/g")\n'--debug '\n'--branch='")" -- $cur) )
         elif [[ $cmd == "dep" ]]
         then
-            COMPREPLY=( $(compgen -W "`ls $TUE_ENV_DIR/.env/dependencies` --plain --verbose --all" -- $cur) )
+            local IFS=$'\n'
+            COMPREPLY=( $(compgen -W "$(echo -e "$(ls $TUE_ENV_DIR/.env/dependencies | sed "s/.*/'& '/g")\n'--plain '\n'--verbose '\n'--all '\n'--level='")" -- $cur) )
         elif [[ $cmd == "update" ]]
         then
-            COMPREPLY=( $(compgen -W "`ls $TUE_ENV_DIR/.env/dependencies` --debug" -- $cur) )
+            local IFS=$'\n'
+            COMPREPLY=( $(compgen -W "$(echo -e "$(ls $TUE_ENV_DIR/.env/dependencies | sed "s/.*/'& '/g")\n'--debug '\n'--branch='")" -- $cur) )
         elif [[ $cmd == "remove" ]]
         then
-            COMPREPLY=( $(compgen -W "`ls $TUE_ENV_DIR/.env/installed`" -- $cur) )
+            local IFS=$'\n'
+            COMPREPLY=( $(compgen -W "`ls $TUE_ENV_DIR/.env/installed | sed "s/.*/'& '/g"`" -- $cur) )
         else
             COMREPLY=""
         fi
     fi
 }
-complete -F _tue-get tue-get
+complete -o nospace -F _tue-get tue-get
 
 # ----------------------------------------------------------------------------------------------------
 #                                             TUE-CHECKOUT
