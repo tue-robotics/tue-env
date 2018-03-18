@@ -16,7 +16,7 @@ then
     exit
 fi
 
-sudo apt-get install libcap2-bin -y
+tue-install-system-now libcap2-bin
 
 sudo setcap cap_net_raw+ep $deployer cap_net_raw+ep $cdeployer cap_net_raw+ep $corbadeployer cap_net_raw+ep $luadeployer
 

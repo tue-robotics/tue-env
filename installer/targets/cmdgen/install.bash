@@ -6,7 +6,7 @@ then
     echo "Installing GPSRCmdGen to ~/src/GPSRCmdGen"
 
     echo "Installing dependency of GPSRCmdGen: mono-complete"
-    sudo apt-get install --assume-yes mono-complete
+    tue-install-system-now mono-complete
 
     tue-install-git http://github.com/kyordhel/GPSRCmdGen.git ~/src/GPSRCmdGen
 
