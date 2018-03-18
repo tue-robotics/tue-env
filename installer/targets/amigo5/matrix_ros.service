@@ -1,0 +1,10 @@
+[Unit]
+Description=Matrix ROS Node
+
+[Install]
+WantedBy=multi-user.target
+
+[Service]
+User=pi
+Restart=on-abort
+ExecStart=/bin/bash -c 'source /home/pi/.tue/setup.bash && export ROS_MASTER_URI=http://amigo1.local:11311 && rosrun matrix_creator_hal direction_of_arrival_node _buffer_length:=15 __ns:=amigo/ssl _average_energy_threshold:=4008222 _frame_id:=/amigo/matrix'

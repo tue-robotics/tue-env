@@ -1,7 +1,7 @@
 #!/bin/bash
 
 export ROBOT_BRINGUP_PATH=$TUE_SYSTEM_DIR/src/sergio_bringup
-alias sergio-core='export ROS_MASTER_URI=http://sergio1:11311'
+alias sergio-core='export ROS_MASTER_URI=http://sergio1.local:11311'
 
 # ----------------------------------------------------------------------------
 # - Add scripts directory to PATH
@@ -41,8 +41,8 @@ function sergio-audio-play
 # SSH
 #
 ####################
-alias sshsergio1='until ssh -qo ConnectTimeout=1 amigo@sergio1; do echo waiting for sergio1 to come online...; sleep 2; done'
-alias sshsergio2='until ssh -qo ConnectTimeout=1 amigo@sergio2; do echo waiting for sergio2 to come online...; sleep 2; done'
+alias sshsergio1='until ssh -qo ConnectTimeout=1 amigo@sergio1.local; do echo waiting for sergio1 to come online...; sleep 2; done'
+alias sshsergio2='until ssh -qo ConnectTimeout=1 amigo@sergio2.local; do echo waiting for sergio2 to come online...; sleep 2; done'
 
 #####################
 #
@@ -50,7 +50,7 @@ alias sshsergio2='until ssh -qo ConnectTimeout=1 amigo@sergio2; do echo waiting 
 #
 #####################
 alias diag='rosrun robot_monitor robot_monitor'
-alias sergio-dashboard='tue-dashboard sergio1 & sleep 1; disown; wmctrl -r ws://sergio1:9090 -b add,sticky'
+alias sergio-dashboard='tue-dashboard sergio1.local & sleep 1; disown; wmctrl -r ws://sergio1.local:9090 -b add,sticky'
 
 alias sergio-show-fitter='rosrun rgbd multitool --rgbd /sergio/ed/viz/fitter'
 alias sergio-show-kinect='rosrun rgbd multitool --rgbd /sergio/top_kinect/rgbd'
@@ -149,4 +149,4 @@ function sergio-torso-laser-move {
 
 alias sergio-case='sergio-torso-move-joints 0.45 1.5'
 
-alias sergio-copy-my-id="ssh-copy-id amigo@sergio1; ssh-copy-id amigo@sergio2"
+alias sergio-copy-my-id="ssh-copy-id amigo@sergio1.local; ssh-copy-id amigo@sergio2.local"
