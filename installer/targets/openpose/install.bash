@@ -5,22 +5,12 @@ function echo_and_run() { echo "$@" ; "$@" ; }
 
 function symlink() { if [ ! -h "$2" ] ; then sudo ln -fsv "$@"; fi; }
 
-function apt-if-required() {
-	for package in "$@"
-	do
-		if ! dpkg-query -l $package > /dev/null
-		then
-			echo_and_run sudo apt install --assume-yes $package
-		fi
-	done
-}
-
 if dpkg-query -l opencv* libopencv* > /dev/null 2>&1
 then
 	echo_and_run sudo apt purge opencv* libopencv* # Explicitly ask for confirmation
 fi
 
-apt-if-required ros-kinetic-opencv3 libopenblas-dev python-pip
+tue-install-system-now ros-kinetic-opencv3 libopenblas-dev python-pip
 
 
 symlink /opt/ros/kinetic/lib/libopencv_core3.so /usr/lib/libopencv_core.so
