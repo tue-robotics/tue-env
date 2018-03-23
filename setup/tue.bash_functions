@@ -621,17 +621,15 @@ function tue-checkout
 
         if [ -d $pkg_dir ]
         then
-            local memd=$PWD
-            cd $pkg_dir
-            test_branch=$(git branch -a 2> /dev/null | grep -q $branch)
+            test_branch=$(git -C $pkg_dir branch -a 2> /dev/null | grep -q $branch)
             if [ $? -eq 0 ]
             then
-                local current_branch=`git rev-parse --abbrev-ref HEAD`
+                local current_branch=`git -C $pkg_dir rev-parse --abbrev-ref HEAD`
                 if [[ "$current_branch" == "$branch" ]]
                 then
                     echo -e "\033[1m$pkg\033[0m: Already on branch $branch"
                 else
-                    res=$(git checkout $branch 2>&1)
+                    res=$(git -C $pkg_dir checkout $branch 2>&1)
                     if [ $? -eq 0 ]
                     then
                         echo -e "\033[1m$pkg\033[0m: checked-out $branch"
@@ -644,7 +642,6 @@ function tue-checkout
                     fi
                 fi
             fi
-            cd $memd
         fi
     done
 }

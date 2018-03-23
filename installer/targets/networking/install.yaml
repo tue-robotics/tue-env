@@ -6,3 +6,5 @@
   name: avahi-dnsconfd # Listens on the network for announced DNS servers and passes them to resolvconf
 - type: system
   name: nmap # General debugging utility typically not easy to install during network troubles
+- type: system
+  name: ssh # Used for logging into this computer

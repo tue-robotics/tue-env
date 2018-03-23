@@ -350,6 +350,53 @@ function tue-install-add-text
 
 # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # #
 
+function tue-apt-if-required
+{
+    if [ -z "$1" ]
+    then
+        tue-install-error "Invalid tue-apt-if-required call: needs package(s) as argument."
+    fi
+
+    pkgs_to_install=""
+    for pkg in $@ # Unquoted to seperate arguments based on spaces
+    do
+        # Check if pkg is not already installed dpkg -S does not cover previously removed packages
+        # Based on https://stackoverflow.com/questions/1298066
+        if ! dpkg-query -W -f='${Status}' $pkg 2>/dev/null | grep -q "ok installed"
+        then
+            pkgs_to_install="$pkgs_to_install $pkg"
+        else
+            tue-install-debug "$pkg is already installed"
+        fi
+    done
+
+    if [ -n "$pkgs_to_install" ]
+    then
+        echo -e "Going to run the following command:\n"
+        echo -e "sudo apt-get install --assume-yes $pkgs_to_install\n"
+
+        #Wait for apt-lock first (https://askubuntu.com/a/375031)
+        i=0
+        tput sc
+        while fuser /var/lib/dpkg/lock >/dev/null 2>&1 ; do
+            case $(($i % 4)) in
+                0 ) j="-" ;;
+                1 ) j="\\" ;;
+                2 ) j="|" ;;
+                3 ) j="/" ;;
+            esac
+            tput rc
+            echo -en "\r[$j] Waiting for other software managers to finish..."
+            sleep 0.5
+            ((i=i+1))
+        done
+
+        sudo apt-get install --assume-yes $pkgs_to_install
+    fi
+}
+
+# # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # #
+
 function tue-install-system
 {
     if [ -z "$1" ]
@@ -370,23 +417,7 @@ function tue-install-system-now
         tue-install-error "Invalid tue-install-system-now call: needs package as argument."
     fi
 
-    pkgs_to_install=""
-    for pkg in "$@"
-    do
-        # Check if pkg is not already installed dpkg -S does not cover previously removed packages
-        # Based on https://stackoverflow.com/questions/1298066
-        if ! dpkg-query -W -f='${Status}' $pkg 2>/dev/null | grep -q "ok installed"
-        then
-            pkgs_to_install="$pkgs_to_install $pkg"
-        fi
-    done
-
-    if [ -n "$pkgs_to_install" ]
-    then
-        echo -e "Going to run the following command:\n"
-        echo -e "sudo apt-get install --assume-yes $pkgs_to_install\n"
-        sudo apt-get install --assume-yes $pkgs_to_install
-    fi
+    tue-apt-if-required "$@"
 }
 
 # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # #
@@ -717,23 +748,8 @@ if [ -n "$TUE_INSTALL_SYSTEMS" ]; then
 
     echo -e "\nsudo apt-get install --assume-yes $TUE_INSTALL_SYSTEMS" >> $INSTALL_DETAILS_FILE
 
-    pkgs_to_install=""
-    for pkg in $TUE_INSTALL_SYSTEMS
-    do
-        # Check if pkg is not already installed dpkg -S does not cover previously removed packages
-        # Based on https://stackoverflow.com/questions/1298066
-        if ! dpkg-query -W -f='${Status}' $pkg 2>/dev/null | grep -q "ok installed"
-        then
-            pkgs_to_install="$pkgs_to_install $pkg"
-        fi
-    done
-
-    if [ -n "$pkgs_to_install" ]
-    then
-        echo -e "Going to run the following command:\n"
-        echo -e "sudo apt-get install --assume-yes $pkgs_to_install\n"
-        sudo apt-get install --assume-yes $pkgs_to_install
-    fi
+    tue-install-debug "tue-apt-if-required $TUE_INSTALL_SYSTEMS"
+    tue-apt-if-required "$TUE_INSTALL_SYSTEMS"
 fi
 
 # Installing all python (pip) targets, which are collected during the install
