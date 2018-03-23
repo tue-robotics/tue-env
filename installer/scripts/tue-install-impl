@@ -197,7 +197,7 @@ function tue-install-git
         tue-install-debug "cd $2 && git checkout $version"
 
         cres=$(git checkout $version 2>&1)
-        if [[ $cres == "Already on "* ]]
+        if [[ $cres == "Already on "* || $cres == "error: pathspec"* ]]
         then
             cres=
         fi
@@ -580,7 +580,7 @@ function generate_setup_file
     then
         return
     fi
-    
+
     TUE_SETUP_TARGETS=" $1$TUE_SETUP_TARGETS"
 
     # Check if the dependency file exists. If not, return
