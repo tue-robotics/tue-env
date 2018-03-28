@@ -29,5 +29,5 @@ if [ "$prev" != "$(git rev-list HEAD -n 1)" ]; then
     tue-install-debug "Making GPSRCmdGen"
     make
 else
-    tue-install-debug "Build already up-to-date"
+    tue-install-debug "GPSRCmdGen not updated, so not needed to make again"
 fi
