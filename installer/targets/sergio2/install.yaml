@@ -14,6 +14,9 @@
   name: ros-laser_filters
 
 - type: target
+  name: ros-dynamixel_controllers
+
+- type: target
   name: sergio-chrony-client-pc
 
 - type: target
