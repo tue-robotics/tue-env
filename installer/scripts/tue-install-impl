@@ -91,9 +91,13 @@ function tue-install-target {
     # If the target has a parent target, add target as a dependency to the parent target
     if [ -n "$parent_target" ]
     then
-        echo "$target" >> $TUE_INSTALL_DEPENDENCIES_DIR/$parent_target
-        echo "$parent_target" >> $TUE_INSTALL_DEPENDENCIES_ON_DIR/$target
-        sort $TUE_INSTALL_DEPENDENCIES_ON_DIR/$target -u -o $TUE_INSTALL_DEPENDENCIES_ON_DIR/$target
+        if [ "$parent_target" != "$target" ]
+        then
+            echo "$target" >> $TUE_INSTALL_DEPENDENCIES_DIR/$parent_target
+            echo "$parent_target" >> $TUE_INSTALL_DEPENDENCIES_ON_DIR/$target
+            sort $TUE_INSTALL_DEPENDENCIES_DIR/$parent_target -u -o $TUE_INSTALL_DEPENDENCIES_DIR/$parent_target
+            sort $TUE_INSTALL_DEPENDENCIES_ON_DIR/$target -u -o $TUE_INSTALL_DEPENDENCIES_ON_DIR/$target
+        fi
     fi
 
     if [ ! -f $TUE_INSTALL_STATE_DIR/$target ]; then
@@ -523,6 +527,8 @@ function generate_setup_file
     then
         return
     fi
+    
+    TUE_SETUP_TARGETS=" $1$TUE_SETUP_TARGETS"
 
     # Check if the dependency file exists. If not, return
     if [ ! -f $TUE_INSTALL_DEPENDENCIES_DIR/$1 ]
@@ -534,7 +540,8 @@ function generate_setup_file
     deps=`cat $TUE_INSTALL_DEPENDENCIES_DIR/$1`
     for dep in $deps
     do
-        if [ -f $TUE_INSTALL_TARGETS_DIR/$dep/setup ]
+        # You shouldn't depend on yourself
+        if [ "$1" != "$dep" ]
         then
             generate_setup_file $dep
         fi
@@ -545,8 +552,6 @@ function generate_setup_file
     then
         echo "source $tue_setup_file" >> $TUE_ENV_DIR/.env/setup/target_setup.bash
     fi
-
-    TUE_SETUP_TARGETS=" $1$TUE_SETUP_TARGETS"
 }
 
 # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # #
@@ -652,7 +657,7 @@ if [ -n "$TUE_INSTALL_WARNINGS" ]; then
 fi
 
 # Remove temp directories
-rm /tmp/tue-installer -rf
+rm -rf $TUE_INSTALL_STATE_DIR
 
 # Installing all the ppa repo's, which are collected during install
 if [ -n "$TUE_INSTALL_PPA" ]; then
