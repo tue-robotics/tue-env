@@ -11,18 +11,33 @@ function _show_dep
         return
     fi
 
-    local indent="$3"
+    local indent=$3
     local tmp=$4
+
+    if [ -z "$indent" ]
+    then
+        indent=0
+    fi
+
+    local indent_str=$(perl -E 'say "--" x '$indent)
 
     if [ -n "$2" ]
     then
-        tmp="$tmp${indent}$1\n"
+        tmp="$tmp$indent_str$1\n"
         if [[ "$1" == "$2" ]]
         then
             echo -e "$tmp"
             return
         fi
     else
+        if [ -n "$LEVEL" ]
+        then
+            if [[ $indent > $LEVEL ]]
+            then
+                return
+            fi
+        fi
+
         if [[ "$VERBOSE" = "true" ]]
         then
             #get package version
@@ -42,15 +57,15 @@ function _show_dep
             echo $1
         elif [[ "$VERBOSE" = "true" ]]
         then
-            echo ${indent}$1 $version
+            echo $indent_str$1 $version
         else
-            echo ${indent}$1
+            echo $indent_str$1
         fi
     fi
 
     for t in `cat $TUE_ENV_DIR/.env/dependencies/$1`
     do
-        _show_dep $t "$2" "--$indent" "$tmp"
+        _show_dep $t "$2" $(expr $indent + 1) "$tmp"
     done
 }
 
@@ -67,6 +82,8 @@ do
     Possible options:
         --plain        - Show flat output, usefull for parsing later
         --verbose      - Also show the versions of every package
+        --all          - Show the dependencies of all installed targets
+        --level        - Show the dependencies with a max depth(ignored, if TARGET_TO is provided)
 """; exit 0
             ;;
         --plain) PLAIN=true
@@ -74,6 +91,8 @@ do
         --verbose) VERBOSE=true
             ;;
         --all) ALL=true
+            ;;
+        --level*) LEVEL=`echo $1 | sed -e 's/^[^=]*=//g'`
             ;;
         --*) echo "unknown option $1"; exit 1;
             ;;

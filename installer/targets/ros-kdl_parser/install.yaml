@@ -1,4 +1,5 @@
 - type: ros
   source:
-    type: system
-    name: kdl-parser
+    type: git
+    url: https://github.com/ros/kdl_parser.git
+    sub-dir: kdl_parser
