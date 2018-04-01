@@ -3,4 +3,5 @@
       type: git
       url: https://github.com/orocos/orocos_kinematics_dynamics.git
       sub-dir: python_orocos_kdl
-      version: 6fe130a43293c84bc0a1cfcf2fe3e04c6b4d911a
+      # temp for getting everyone back to master instead of specific commit Matthijs 01-04-2018
+      version: master
