@@ -2,6 +2,24 @@
   name: sergio
 
 - type: target
+  name: audio
+
+- type: target
+  name: ros-kinect_driver
+
+- type: target
+  name: ros-urg_node
+
+- type: target
+  name: ros-laser_filters
+
+- type: target
+  name: ros-dynamixel_controllers
+
+- type: target
+  name: sergio-chrony-client-pc
+
+- type: target
   name: megatools
 
 # Middleware

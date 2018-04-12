@@ -11,12 +11,6 @@
   name: ros-sergio_hardware
 
 - type: target
-  name: audio
-
-- type: target
-  name: ros-kinect_driver
-
-- type: target
   name: ros-urg_node
 
 - type: target
