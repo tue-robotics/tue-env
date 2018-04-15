@@ -9,12 +9,12 @@ then
 fi
 
 # Check config file
-if ! cmp /etc/chrony/chrony.conf ~/.tue/installer/targets/chrony-client-pc/chrony.conf --quiet
+if ! cmp /etc/chrony/chrony.conf ~/.tue/installer/targets/amigo-chrony-client-pc/chrony.conf --quiet
 then
     echo "Chrony config is probably not correct, will copy"
     
     # Copy and backup old config
-    sudo install --backup=numbered --compare --verbose ~/.tue/installer/targets/chrony-client-pc/chrony.conf /etc/chrony/chrony.conf
+    sudo install --backup=numbered --compare --verbose ~/.tue/installer/targets/amigo-chrony-client-pc/chrony.conf /etc/chrony/chrony.conf
     
     # Restart chrony
     sudo service chrony restart
