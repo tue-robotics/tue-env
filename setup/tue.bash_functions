@@ -434,7 +434,7 @@ function tue-get
 
     Possible options:
         --debug        - Shows more debugging information
-        --release      - Generate debian packages of every installed package
+        --branch=name  - Try to checkout this branch if exists
 
 """
         return 1
@@ -453,14 +453,14 @@ function tue-get
         sudo btrfs subvolume snapshot / /snap/root/$(date +%Y-%m-%d_%H:%M:%S)
     fi
 
+    if [[ "$cmd" =~ ^(install|remove)$ && -z "$1" ]]
+    then
+       echo "Usage: tue-get $cmd TARGET [TARGET2 ...]"
+       return 1
+    fi
+
     if [[ $cmd == "install" ]]
     then
-        if [ -z "$1" ]
-        then
-            echo "Usage: tue-get install TARGET [TARGET2 ...]"
-            return 1
-        fi
-
         $TUE_DIR/installer/scripts/tue-install $@
         error_code=$?
 
@@ -492,12 +492,6 @@ function tue-get
         return $error_code
     elif [[ $cmd == "remove" ]]
     then
-        if [ -z "$1" ]
-        then
-            echo "Usage: tue-get remove TARGET [TARGET2 ...]"
-            return 1
-        fi
-
         error=0
         for target in $@
         do
@@ -549,27 +543,33 @@ function _tue-get
     local prev=${COMP_WORDS[COMP_CWORD-1]}
 
     if [ $COMP_CWORD -eq 1 ]; then
-        COMPREPLY=( $(compgen -W "dep install update remove list-installed" -- $cur) )
+        local IFS=$'\n'
+        options="'dep '\n'install '\n'update '\n'remove '\n'list-installed '"
+        COMPREPLY=( $(compgen -W "$(echo -e "$options")" -- $cur) )
     else
         cmd=${COMP_WORDS[1]}
         if [[ $cmd == "install" ]]
         then
-            COMPREPLY=( $(compgen -W "`ls $TUE_DIR/installer/targets` --debug" -- $cur) )
+            local IFS=$'\n'
+            COMPREPLY=( $(compgen -W "$(echo -e "$(ls $TUE_DIR/installer/targets | sed "s/.*/'& '/g")\n'--debug '\n'--branch='")" -- $cur) )
         elif [[ $cmd == "dep" ]]
         then
-            COMPREPLY=( $(compgen -W "`ls $TUE_ENV_DIR/.env/dependencies` --plain --verbose --all" -- $cur) )
+            local IFS=$'\n'
+            COMPREPLY=( $(compgen -W "$(echo -e "$(ls $TUE_ENV_DIR/.env/dependencies | sed "s/.*/'& '/g")\n'--plain '\n'--verbose '\n'--all '\n'--level='")" -- $cur) )
         elif [[ $cmd == "update" ]]
         then
-            COMPREPLY=( $(compgen -W "`ls $TUE_ENV_DIR/.env/dependencies` --debug" -- $cur) )
+            local IFS=$'\n'
+            COMPREPLY=( $(compgen -W "$(echo -e "$(ls $TUE_ENV_DIR/.env/dependencies | sed "s/.*/'& '/g")\n'--debug '\n'--branch='")" -- $cur) )
         elif [[ $cmd == "remove" ]]
         then
-            COMPREPLY=( $(compgen -W "`ls $TUE_ENV_DIR/.env/installed`" -- $cur) )
+            local IFS=$'\n'
+            COMPREPLY=( $(compgen -W "`ls $TUE_ENV_DIR/.env/installed | sed "s/.*/'& '/g"`" -- $cur) )
         else
             COMREPLY=""
         fi
     fi
 }
-complete -F _tue-get tue-get
+complete -o nospace -F _tue-get tue-get
 
 # ----------------------------------------------------------------------------------------------------
 #                                             TUE-CHECKOUT
@@ -621,17 +621,15 @@ function tue-checkout
 
         if [ -d $pkg_dir ]
         then
-            local memd=$PWD
-            cd $pkg_dir
-            test_branch=$(git branch -a 2> /dev/null | grep -q $branch)
+            test_branch=$(git -C $pkg_dir branch -a 2> /dev/null | grep -q $branch)
             if [ $? -eq 0 ]
             then
-                local current_branch=`git rev-parse --abbrev-ref HEAD`
+                local current_branch=`git -C $pkg_dir rev-parse --abbrev-ref HEAD`
                 if [[ "$current_branch" == "$branch" ]]
                 then
                     echo -e "\033[1m$pkg\033[0m: Already on branch $branch"
                 else
-                    res=$(git checkout $branch 2>&1)
+                    res=$(git -C $pkg_dir checkout $branch 2>&1)
                     if [ $? -eq 0 ]
                     then
                         echo -e "\033[1m$pkg\033[0m: checked-out $branch"
@@ -644,46 +642,9 @@ function tue-checkout
                     fi
                 fi
             fi
-            cd $memd
         fi
     done
 }
-
-# ----------------------------------------------------------------------------------------------------
-
-# ----------------------------------------------------------------------------------------------------
-
-# Change directory to a package
-function pcd
-{
-    if [ -z "$1" ]
-    then
-        cd $TUE_ENV_DIR/pkgs
-        return
-    fi
-
-    if [ ! -d "$TUE_ENV_DIR/pkgs/$1" ]
-    then
-        echo "[pcd] No such package: '$1'"
-        return 1
-    fi
-
-    cd $TUE_ENV_DIR/pkgs/$1
-}
-
-function _pcd
-{
-    local cur=${COMP_WORDS[COMP_CWORD]}
-    local prev=${COMP_WORDS[COMP_CWORD-1]}
-
-    if [ $COMP_CWORD -eq 1 ]
-    then
-        local pkgs=
-        [ -d $TUE_ENV_DIR/pkgs ] && pkgs=`_list_subdirs $TUE_ENV_DIR/pkgs`
-        COMPREPLY=( $(compgen -W "$pkgs" -- $cur) )
-    fi
-}
-complete -F _pcd pcd
 
 # ----------------------------------------------------------------------------------------------------
 

@@ -21,7 +21,7 @@ fi
 tue-install-git https://github.com/tue-robotics/GPSRCmdGen.git ~/src/GPSRCmdGen
 
 # install mono if not yet installed
-hash mono 2> /dev/null || sudo apt-get install --assume-yes mono-complete
+hash mono 2> /dev/null || tue-install-system-now mono-complete
 
 # make if needed
 cd ~/src/GPSRCmdGen

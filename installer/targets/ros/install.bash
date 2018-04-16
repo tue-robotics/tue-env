@@ -1,3 +1,5 @@
+#!/bin/bash
+
 if [ -z "$TUE_ROS_DISTRO" ]
 then
     echo "[tue ros install] TUE_ROS_DISTRO was not set"
@@ -7,16 +9,16 @@ fi
 if [ ! -d /opt/ros/$TUE_ROS_DISTRO ]
 then
 
-    sudo apt-get install lsb wget -y
-    
+    tue-install-system-now lsb wget
+
     sudo sh -c 'echo "deb http://packages.ros.org/ros/ubuntu $(lsb_release -sc) main" > /etc/apt/sources.list.d/ros-latest.list'
 
     wget http://packages.ros.org/ros.key -O - | sudo apt-key add -
 
-    sudo apt-get update
+    sudo apt-get update -qq
 
-    # Install basic ROS packages. All other packages will be installed using tue-rosdep
-    sudo apt-get install  --assume-yes ros-$TUE_ROS_DISTRO-ros-base cmake python-catkin-pkg python-empy python-nose python-setuptools libgtest-dev build-essential python-catkin-tools
+    # Install basic ROS packages.
+    tue-install-system-now ros-$TUE_ROS_DISTRO-ros build-essential python-catkin-tools
 
     sudo rosdep init || true # make sure it always succeeds, even if rosdep init was already called
 
@@ -31,7 +33,7 @@ TUE_DEV_DIR=$TUE_ENV_DIR/dev
 if [ ! -f $TUE_SYSTEM_DIR/devel/setup.bash ]
 then
     mkdir -p $TUE_SYSTEM_DIR/src
-    hash g++ 2> /dev/null || sudo apt-get install --assume-yes g++
+    hash g++ 2> /dev/null || tue-install-system-now g++
     cd $TUE_SYSTEM_DIR
     catkin init
     mkdir -p src
@@ -42,7 +44,7 @@ fi
 if [ ! -f $TUE_DEV_DIR/devel/setup.bash ]
 then
     mkdir -p $TUE_DEV_DIR/src
-    hash g++ 2> /dev/null || sudo apt-get install --assume-yes g++
+    hash g++ 2> /dev/null || tue-install-system-now g++
     cd $TUE_DEV_DIR
     catkin init
     mkdir -p src
