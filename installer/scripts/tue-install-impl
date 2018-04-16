@@ -11,31 +11,6 @@ mkdir -p $TUE_INSTALL_INSTALLED_DIR
 
 TUE_INSTALL_TARGETS_DIR=$TUE_DIR/installer/targets
 
-# # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # #
-
-function _make_sure_installed
-{
-    local pkgs_to_install=
-    for pkg in $@
-    do
-        if ! dpkg -s $pkg &> /dev/null
-        then
-            pkgs_to_install="$pkgs_to_install $pkg"
-        fi
-    done
-
-    if [ -n "$pkgs_to_install" ]
-    then
-        echo "Going to install: $pkgs_to_install"
-        sudo apt-get install -y $pkgs_to_install
-    fi
-}
-
-# # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # #
-
-# Make sure tools used by this installer are installed
-_make_sure_installed python-yaml git subversion python-pip
-
 TUE_SYSTEM_DIR=$TUE_ENV_DIR/system
 TUE_REPOS_DIR=$TUE_ENV_DIR/repos
 
@@ -151,11 +126,12 @@ function tue-install-target {
 
 function _show_update_message
 {
-    if [ -n "$2" ]
+    msg=$(echo $2)
+    if [ -n "$msg" ]
     then
         echo -e "\n    \033[1m$1\033[0m"
         echo "--------------------------------------------------"
-        echo -e "$2"
+        echo -e "$msg"
         echo "--------------------------------------------------"
         echo ""
     else
@@ -227,7 +203,25 @@ function tue-install-git
             cres=
         fi
 
-        res=$res$cres
+        res="$res $cres"
+        cd $mem_pwd
+    fi
+
+    if [ -n "$BRANCH" ]; #Cannot be combined with version-if because this one might not exist
+    then
+        mem_pwd=$PWD
+        cd $2
+
+        tue-install-debug "cd $2 && git checkout $BRANCH"
+
+        cres=$(git checkout $BRANCH 2>&1)
+        tue-install-debug "$cres"
+        if [[ $cres == "Already on "* || $cres == "error: pathspec"* ]]
+        then
+            cres=
+        fi
+
+        res="$res $cres"
         cd $mem_pwd
     fi
 
@@ -357,6 +351,53 @@ function tue-install-add-text
 
 # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # #
 
+function tue-apt-if-required
+{
+    if [ -z "$1" ]
+    then
+        tue-install-error "Invalid tue-apt-if-required call: needs package(s) as argument."
+    fi
+
+    pkgs_to_install=""
+    for pkg in $@ # Unquoted to seperate arguments based on spaces
+    do
+        # Check if pkg is not already installed dpkg -S does not cover previously removed packages
+        # Based on https://stackoverflow.com/questions/1298066
+        if ! dpkg-query -W -f='${Status}' $pkg 2>/dev/null | grep -q "ok installed"
+        then
+            pkgs_to_install="$pkgs_to_install $pkg"
+        else
+            tue-install-debug "$pkg is already installed"
+        fi
+    done
+
+    if [ -n "$pkgs_to_install" ]
+    then
+        echo -e "Going to run the following command:\n"
+        echo -e "sudo apt-get install --assume-yes $pkgs_to_install\n"
+
+        #Wait for apt-lock first (https://askubuntu.com/a/375031)
+        i=0
+        tput sc
+        while fuser /var/lib/dpkg/lock >/dev/null 2>&1 ; do
+            case $(($i % 4)) in
+                0 ) j="-" ;;
+                1 ) j="\\" ;;
+                2 ) j="|" ;;
+                3 ) j="/" ;;
+            esac
+            tput rc
+            echo -en "\r[$j] Waiting for other software managers to finish..."
+            sleep 0.5
+            ((i=i+1))
+        done
+
+        sudo apt-get install --assume-yes $pkgs_to_install
+    fi
+}
+
+# # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # #
+
 function tue-install-system
 {
     if [ -z "$1" ]
@@ -365,6 +406,19 @@ function tue-install-system
     fi
     tue-install-debug "Adding $1 to apt list"
     TUE_INSTALL_SYSTEMS="$1 $TUE_INSTALL_SYSTEMS"
+}
+
+# # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # #
+
+function tue-install-system-now
+{
+    tue-install-debug "tue-install-system-now $@"
+    if [ -z "$1" ]
+    then
+        tue-install-error "Invalid tue-install-system-now call: needs package as argument."
+    fi
+
+    tue-apt-if-required "$@"
 }
 
 # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # #
@@ -499,8 +553,8 @@ function tue-install-ros {
 
         if  [ -f $ros_pkg_dir/package.xml ]; then
             # Catkin
-
             deps=`$TUE_INSTALL_SCRIPTS_DIR/parse-ros-package-deps $ros_pkg_dir/package.xml`
+            tue-install-debug "Parsed package.xml \n $deps"
 
             for dep in $deps
             do
@@ -558,6 +612,9 @@ function generate_setup_file
 #                                           MAIN LOOP
 # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # #
 
+# Make sure tools used by this installer are installed
+tue-install-system-now python-yaml git subversion python-pip
+
 stamp=$(date_stamp)
 INSTALL_DETAILS_FILE=/tmp/tue-get-details-$stamp
 > $INSTALL_DETAILS_FILE
@@ -607,6 +664,8 @@ do
     case "$1" in
         --debug) DEBUG=true
             ;;
+        --branch*) BRANCH=`echo $1 | sed -e 's/^[^=]*=//g'`
+            ;;
         --*) echo "unknown option $1"
             ;;
         *) targets="$targets $1"
@@ -629,7 +688,7 @@ do
     if [ -d $TUE_INSTALL_TARGET_DIR/$target ]
     then
         # Mark as installed
-	tue-install-debug "[$target] marked as installed after a successful install"
+        tue-install-debug "[$target] marked as installed after a successful install"
         touch $TUE_INSTALL_INSTALLED_DIR/$target
     fi
 done
@@ -665,7 +724,7 @@ if [ -n "$TUE_INSTALL_PPA" ]; then
     TUE_INSTALL_CURRENT_TARGET="PPA-ADD"
 
     echo -e "\nsudo add-apt-repository --yes $TUE_INSTALL_PPA" >> $INSTALL_DETAILS_FILE
-    PPA_ADDED=
+    PPA_ADDED=""
     for ppa in $TUE_INSTALL_PPA
     do
         if [ -z "$(grep -h "^deb.*${ppa#ppa:}" /etc/apt/sources.list.d/* 2>&1)" ]
@@ -690,23 +749,8 @@ if [ -n "$TUE_INSTALL_SYSTEMS" ]; then
 
     echo -e "\nsudo apt-get install --assume-yes $TUE_INSTALL_SYSTEMS" >> $INSTALL_DETAILS_FILE
 
-    pkgs_to_install=
-    for pkg in $TUE_INSTALL_SYSTEMS
-    do
-        # Check if pkg is not already installed dpkg -S does not cover previously removed packages
-        # Based on https://stackoverflow.com/questions/1298066
-        if ! dpkg-query -W -f='${Status}' $pkg 2>/dev/null | grep -q "ok installed"
-        then
-            pkgs_to_install="$pkgs_to_install $pkg"
-        fi
-    done
-
-    if [ -n "$pkgs_to_install" ]
-    then
-        echo -e "Going to run the following command:\n"
-        echo -e "sudo apt-get install --assume-yes $pkgs_to_install\n"
-        sudo apt-get install --assume-yes $pkgs_to_install
-    fi
+    tue-install-debug "tue-apt-if-required $TUE_INSTALL_SYSTEMS"
+    tue-apt-if-required "$TUE_INSTALL_SYSTEMS"
 fi
 
 # Installing all python (pip) targets, which are collected during the install
@@ -739,7 +783,9 @@ if [ -n "$TUE_INSTALL_SNAPS" ]; then
 
     echo -e "\nyes | sudo snap install --classic $TUE_INSTALL_SNAPS" >> $INSTALL_DETAILS_FILE
 
-    snaps_to_install=
+    tue-install-system-now snapd
+
+    snaps_to_install=""
     snaps_installed=$(snap list)
     for pkg in $TUE_INSTALL_SNAPS
     do
