@@ -16,7 +16,7 @@ sudo cp dlib.so /usr/local/lib/python2.7/dist-packages
 
 #From http://serverfault.com/questions/201709/how-to-set-ld-library-path-in-ubuntu
 #To define this variable, simply use (on the shell prompt):
-export LD_LIBRARY_PATH="/usr/lib/openblas-base/"
+export LD_LIBRARY_PATH=/usr/lib/openblas-base/${LD_LIBRARY_PATH:+:${LD_LIBRARY_PATH}}
 
 #To make it permanent, you can edit the ldconfig files. First, create a new file such as:
 sudo touch /etc/ld.so.conf.d/libopenblas-base.conf

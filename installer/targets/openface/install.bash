@@ -3,12 +3,12 @@ if [ ! -d ~/openface ]; then
     mkdir ~/openface
     cd ~/openface
     git clone https://github.com/cmusatyalab/openface.git  ~/openface --recursive
-    sudo apt install python-numpy python-pandas python-scipy python-sklearn python-skimage
+    tue-install-system-now python-numpy python-pandas python-scipy python-sklearn python-skimage
 
     DIR="$( cd "$( dirname "${BASH_SOURCE[0]}" )" && pwd )"
-    bash $DIR/dlib.bash
+    source $DIR/dlib.bash
 
-    bash $DIR/torch.bash
+    source $DIR/torch.bash
 
     cd ~/openface
     sudo python2 setup.py install
