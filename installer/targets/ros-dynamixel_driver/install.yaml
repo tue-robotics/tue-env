@@ -2,4 +2,4 @@
   source:
     type: git
     url: https://github.com/tue-robotics/dynamixel_motor.git
-    sub-dir: dynamixel_controllers
+    sub-dir: dynamixel_driver
