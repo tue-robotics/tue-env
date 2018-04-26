@@ -20,6 +20,9 @@
   name: ros-laser_filters
 
 - type: target
+  name: ros-dynamixel_controllers
+
+- type: target
   name: ros-battery_manager
 
 - type: target
