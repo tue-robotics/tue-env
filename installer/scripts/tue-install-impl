@@ -126,12 +126,11 @@ function tue-install-target {
 
 function _show_update_message
 {
-    msg=$(echo $2)
-    if [ -n "$msg" ]
+    if [ -n "$(echo $2)" ]
     then
         echo -e "\n    \033[1m$1\033[0m"
         echo "--------------------------------------------------"
-        echo -e "$msg"
+        echo -e "$2"
         echo "--------------------------------------------------"
         echo ""
     else
