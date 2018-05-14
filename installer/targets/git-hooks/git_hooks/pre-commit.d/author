@@ -11,7 +11,7 @@ then
     return 1
 fi
 
-if [[ "${USER}" == "amigo" ]]
+if [[ "$ROBOT_REAL" == "true" ]]
 then
     # prompt for conformation
     exec < /dev/tty
