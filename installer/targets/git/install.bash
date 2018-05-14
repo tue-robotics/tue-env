@@ -9,6 +9,7 @@ if [ ! -f /usr/local/bin/git-extras ]; then
 	git config --global color.ui true
 fi
 
+tue-install-ppa ppa:git-core/ppa #Git 2.9 required for git-hooks
 tue-install-system git
 tue-install-system gitk
 tue-install-system git-gui
