@@ -62,7 +62,7 @@ then
     source $TUE_DIR/setup/tue.bash_aliases
 fi
 
-export TUE_BIN=~/.tue/bin
+export TUE_BIN=$TUE_DIR/bin
 export PATH=$TUE_BIN:/usr/lib/ccache:$PATH
 
 export TUE_ENV=$TUE_ENV
