@@ -9,7 +9,7 @@ then
     then
         sudo add-apt-repository ppa:webupd8team/sublime-text-3
         sudo apt-get update
-        ~/.tue/installer/targets/sublime3/sublime-package-control.py
+        $TUE_DIR/installer/targets/sublime3/sublime-package-control.py
     fi
 
 elif [[ $DISTRIB_CODENAME = xenial ]]
@@ -19,7 +19,7 @@ then
     then
         sudo add-apt-repository ppa:webupd8team/sublime-text-3
         sudo apt-get update
-        ~/.tue/installer/targets/sublime3/sublime-package-control.py
+        $TUE_DIR/installer/targets/sublime3/sublime-package-control.py
     fi
 
 else

@@ -34,7 +34,7 @@ alias sergio-trigger-command="robot-trigger-command sergio"
 
 function rsettings
 {
-    rsettings_file=~/.tue/.rsettings
+    rsettings_file=$TUE_DIR/.rsettings
 
     if [ ! -f $rsettings_file ]
     then

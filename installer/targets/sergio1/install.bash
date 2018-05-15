@@ -16,7 +16,7 @@ then
     sudo mv /etc/chrony/chrony.conf /etc/chrony/chrony.conf.backup
     
     # Copy new config
-    sudo cp ~/.tue/installer/targets/sergio1/chrony.conf /etc/chrony/chrony.conf
+    sudo cp $TUE_DIR/installer/targets/sergio1/chrony.conf /etc/chrony/chrony.conf
     
     # Restart chrony
     sudo service chrony restart
