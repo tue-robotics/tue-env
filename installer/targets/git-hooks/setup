@@ -1,5 +1,0 @@
-#!/bin/bash
-
-# enable the 'git hooks' command by adding it to the path
-DIR="$( cd "$( dirname "${BASH_SOURCE[0]}" )" && pwd )"
-PATH=$PATH:$DIR

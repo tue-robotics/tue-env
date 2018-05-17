@@ -1,0 +1,8 @@
+- type: ppa
+  name: ppa:git-core/ppa #Git 2.9 required for git-hooks
+- type: system
+  name: git
+- type: system
+  name: gitk
+- type: system
+  name: git-gui
