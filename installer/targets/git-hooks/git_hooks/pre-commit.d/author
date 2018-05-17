@@ -5,7 +5,7 @@ NAME=$(printf '%s\n' "${AUTHORINFO}" | sed -n 's/^\(.*\) <.*$/\1/p')
 EMAIL=$(printf '%s\n' "${AUTHORINFO}" | sed -n 's/^.* <\(.*\)> .*$/\1/p')
 
 echo "I'm going to commit with \"$NAME <$EMAIL>\""
-if [[ "${NAME}" == "amigo" ]]
+if [[ "${NAME,,}" == "amigo" ]]
 then
     echo "Please commit with a username, run \"git su <name>\" to switch users"
     return 1
