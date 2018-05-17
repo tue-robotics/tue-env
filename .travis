@@ -1,8 +1,0 @@
-sudo: true
-dist: trusty
-
-jobs:
-  include:
-    - stage: build docker image
-      script:
-      - echo "Doing nothing, just triggering a build"
