@@ -21,6 +21,6 @@ then
     if [[ ! $REPLY =~ ^[Yy]$ ]]
     then
         echo "You can change the user by running \"git su <name>\""
-        exit 1
+        return 1
     fi
 fi
