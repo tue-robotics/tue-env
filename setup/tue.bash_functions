@@ -606,7 +606,7 @@ function tue-checkout
     fs=`ls -d -1 $_TUE_CATKIN_SYSTEM_DIR/src/**`
     if [ -z "$NO_TUE_ENV" ]
     then
-        fs="$HOME/.tue $fs"
+        fs="$TUE_DIR $fs"
     fi
     for pkg_dir in $fs
     do
@@ -745,13 +745,13 @@ function tue-robocup-update
 {
     local mem_pwd=$PWD
 
-    cd ~/.tue
+    cd $TUE_DIR
     git pull --ff-only
 
     # Copy rsettings file
     if [ "$ROBOT_REAL" != "true" ]
     then
-        cp ~/.tue/installer/targets/tue-common/rsettings_file ~/.tue/.rsettings
+        cp $TUE_DIR/installer/targets/tue-common/rsettings_file $TUE_DIR/.rsettings
     fi
 
     local fs=`ls $_TUE_CATKIN_SYSTEM_DIR/src`

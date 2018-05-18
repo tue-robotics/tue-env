@@ -5,7 +5,7 @@ alias sergio-core='export ROS_MASTER_URI=http://sergio1.local:11311'
 
 # ----------------------------------------------------------------------------
 # - Add scripts directory to PATH
-export PATH=~/.tue/installer/targets/sergio-user/scripts:$PATH
+export PATH=$TUE_DIR/installer/targets/sergio-user/scripts:$PATH
 
 ####################
 #
