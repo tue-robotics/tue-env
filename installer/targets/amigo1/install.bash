@@ -8,7 +8,7 @@ fi
 
 # If clephas (the author) is not in the config, it's probably not the correct one
 # Hence: copy
-if ! cmp /etc/chrony/chrony.conf ~/.tue/installer/targets/amigo1/chrony.conf --quiet
+if ! cmp /etc/chrony/chrony.conf $TUE_DIR/installer/targets/amigo1/chrony.conf --quiet
 then
     tue-install-info "Chrony config is probably not correct, will copy"
     
@@ -16,7 +16,7 @@ then
     sudo mv /etc/chrony/chrony.conf /etc/chrony/chrony.conf.backup
     
     # Copy new config
-    sudo cp ~/.tue/installer/targets/amigo1/chrony.conf /etc/chrony/chrony.conf
+    sudo cp $TUE_DIR/installer/targets/amigo1/chrony.conf /etc/chrony/chrony.conf
     
     # Restart chrony
     sudo service chrony restart
