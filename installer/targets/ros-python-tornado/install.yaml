@@ -1,2 +1,2 @@
-- type: pip
-  name: tornado
+- type: system
+  name: python-tornado
