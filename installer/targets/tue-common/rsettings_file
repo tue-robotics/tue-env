@@ -2,9 +2,9 @@
 
 # Robot environment
 #export ROBOT_ENV=reo2016
-#export ROBOT_ENV=robotics_testlabs
+export ROBOT_ENV=robotics_testlabs
 #export ROBOT_ENV=rgo2017
-export ROBOT_ENV=rgo2018
+#export ROBOT_ENV=rgo2018
 #export ROBOT_ENV=rwc2017
 
 # Set Robot initial pose based on environment
