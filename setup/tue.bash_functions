@@ -651,6 +651,8 @@ function tue-checkout
 source $TUE_DIR/setup/tue-data.bash
 
 # ----------------------------------------------------------------------------------------------------
+#                                             TUE-ROBOCUP
+# ----------------------------------------------------------------------------------------------------
 
 function tue-set-git-remote
 {
@@ -700,6 +702,90 @@ For example:
     cd $mem_pwd
 }
 
+function _tue-add-git-remote
+{
+    local remote=$1
+    local server=$2
+
+    if [ -z $2 ]
+    then
+        echo "Usage: _tue-add-git-remote REMOTE SERVER
+
+For example:
+
+    _add-git-remote origin https://github.com
+        "
+        return 1
+    fi
+
+    if [ "$remote" == "origin" ]
+    then
+        echo "You are not allowed to change the remote: 'origin'"
+        return 1
+    fi
+
+    local github_url="$(git config --get remote.origin.url)"
+    local url_extension=${github_url#https://github.com/}
+    local pkg=${url_extension#tue-robotics/}
+
+    if [[ "$(git remote)" == *"$remote"* ]]
+    then
+        local current_url=$(git config --get remote.${remote}.url)
+        if [[ "$current_url" == "$server$url_extension" ]]
+        then
+            echo "[$pkg] remote '$remote' exists with the same url"
+            return 0
+        fi
+
+        git remote set-url $remote $server$url_extension
+        echo "[$pkg] url of remote '$remote' is changed
+    from: $current_url
+    to: $server$url_extension"
+    return 0
+    fi
+    git remote add $remote $server$url_extension
+
+    echo "[$pkg] remote '$remote' added with url: $server$url_extension"
+}
+
+function tue-add-git-remote
+{
+    local remote=$1
+    local server=$2
+
+    if [ -z $2 ]
+    then
+        echo "Usage: tue-add-git-remote REMOTE SERVER
+
+For example:
+
+    tue-set-git-remote origin https://github.com
+        "
+        return 1
+    fi
+
+    local mem_pwd=$PWD
+
+    cd $TUE_DIR
+    _tue-add-git-remote $remote $server
+
+    local pkgs_dir=$TUE_ENV_DIR/repos/https_/github.com/tue-robotics
+
+    local fs=`ls $pkgs_dir`
+    for pkg in $fs
+    do
+        local pkg_dir=$pkgs_dir/$pkg
+
+        if [ -d $pkg_dir ]
+        then
+            cd $pkg_dir
+            _tue-add-git-remote $remote $server
+        fi
+    done
+
+    cd $mem_pwd
+}
+
 # Temporarily for RoboCup
 
 function tue-robocup-set-github-origin
@@ -724,21 +810,31 @@ function tue-robocup-set-timezone-home
 
 function tue-robocup-install-package
 {
-    local pkgs_dir=$TUE_ENV_DIR/repos/https_/github.com/tue-robotics
-    # replace spaces with underscores
-    pkgs_dir=${pkgs_dir// /_}
-    # now, clean out anything that's not alphanumeric or an underscore
-    pkgs_dir=${pkgs_dir//[^a-zA-Z0-9\/\.-]/_}
+    local repos_dir=$TUE_ENV_DIR/repos/https_/github.com/tue-robotics
 
-    local pkg_dir=$pkgs_dir/${1}.git
-
+    local repo_dir=$repos_dir/${1}.git
 
     # If directory already exists, return
     [ -d $pkg_dir ] && return
 
-    git clone amigo@roboticssrv.local:tue-robotics/${1}.git $pkg_dir
+    git clone amigo@roboticssrv.local:tue-robotics/${1}.git $repo_dir
+    git remote rename origin roboticssrv
+    git remote add origin https://github.com/tue-robotics/${1}.git
 
-    ln -s $pkg_dir $TUE_ENV_DIR/system/src/$1
+    if [ -f "$repo_dir/package.xml" ]
+    then
+        ln -s $repo_dir $TUE_ENV_DIR/system/src/$1
+    else
+        local fs=`ls $repo_dir`
+        for pkg in $fs
+        do
+            local pkg_dir=$repo_dir/$pkg
+            if [ -f "$pkg_dir/package.xml" ]
+            then
+                ln -s $pkg_dir $TUE_ENV_DIR/system/src/$pkg
+            fi
+        done
+    fi
 }
 
 function tue-robocup-update
