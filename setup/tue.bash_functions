@@ -443,7 +443,7 @@ function tue-get
     local tue_dep_dir=$TUE_ENV_DIR/.env/dependencies
     local tue_installed_dir=$TUE_ENV_DIR/.env/installed
 
-    cmd=$1
+    local cmd=$1
     shift
 
     #Create btrfs snapshot if possible and usefull:
@@ -461,7 +461,7 @@ function tue-get
 
     if [[ $cmd == "install" ]]
     then
-        $TUE_DIR/installer/scripts/tue-install $@
+        $TUE_DIR/installer/scripts/tue-install $cmd $@
         error_code=$?
 
         [ $error_code -eq 0 ] && source ~/.bashrc
@@ -484,7 +484,7 @@ function tue-get
 
         if [ $error_code -eq 0 ]
         then
-            $TUE_DIR/installer/scripts/tue-install $@
+            $TUE_DIR/installer/scripts/tue-install $cmd $@
             error_code=$?
             [ $error_code -eq 0 ] && source ~/.bashrc
         fi
