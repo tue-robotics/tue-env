@@ -713,7 +713,7 @@ function _tue-add-git-remote
 
 For example:
 
-    _add-git-remote origin https://github.com
+    _add-git-remote origin https://github.com/
         "
         return 1
     fi
@@ -759,7 +759,7 @@ function tue-add-git-remote
 
 For example:
 
-    tue-set-git-remote origin https://github.com
+    tue-add-git-remote origin https://github.com/
         "
         return 1
     fi
@@ -849,6 +849,9 @@ function tue-robocup-install-package
             fi
         done
     fi
+
+    # mark as installed
+    touch $TUE_ENV_DIR/.env/installed/ros-${1}
 }
 
 function tue-robocup-update
