@@ -815,23 +815,37 @@ function tue-robocup-install-package
     local repo_dir=$repos_dir/${1}.git
 
     # If directory already exists, return
-    [ -d $pkg_dir ] && return
+    [ -d $repo_dir ] && return
 
-    git clone amigo@roboticssrv.local:tue-robotics/${1}.git $repo_dir
+    #git clone amigo@roboticssrv.local:tue-robotics/${1}.git $repo_dir
+    git clone amigo@localhost:tue-robotics/${1}.git $repo_dir
+
+    local mem_pwd=$PWD
+
+    cd $repo_dir
+
     git remote rename origin roboticssrv
     git remote add origin https://github.com/tue-robotics/${1}.git
 
+    cd $mem_pwd
+
     if [ -f "$repo_dir/package.xml" ]
     then
-        ln -s $repo_dir $TUE_ENV_DIR/system/src/$1
+        if [ ! -h $TUE_ENV_DIR/system/src/$1 ]
+        then
+            ln -s $repo_dir $TUE_ENV_DIR/system/src/$1
+        fi
     else
-        local fs=`ls $repo_dir`
+        local fs=$(ls -l | grep "^d" | awk '{print $9}')
         for pkg in $fs
         do
             local pkg_dir=$repo_dir/$pkg
             if [ -f "$pkg_dir/package.xml" ]
             then
-                ln -s $pkg_dir $TUE_ENV_DIR/system/src/$pkg
+                if [ ! -h $TUE_ENV_DIR/system/src/$pkg ]
+                then
+                    ln -s $pkg_dir $TUE_ENV_DIR/system/src/$pkg
+                fi
             fi
         done
     fi
