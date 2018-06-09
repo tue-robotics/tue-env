@@ -853,7 +853,8 @@ function tue-robocup-set-timezone-home
 
 function _ping_bool
 {
-    if [ ping -c 1 "$1" >/dev/null ]
+    ping -c 1 "$1" 1>/dev/null 2>/dev/null
+    if [ "$?" == "0" ]
     then
         return 0
     else
@@ -877,7 +878,7 @@ function tue-robocup-install-package
 
     # If there is internet, use it for first clone. Otherwise an error
     # will be raised during switching back to default branch of origin
-    local internet=$(_ping_bool "github.com")
+    local internet=$(echo _ping_bool github.com)
     if $internet
     then
         git clone https://github.com/tue-robotics/${1}.git $repo_dir
