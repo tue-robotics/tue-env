@@ -871,7 +871,7 @@ function tue-robocup-install-package
 
     local remote="roboticssrv"
     local server="amigo@roboticssrv.local:"
-    local branch="robocuo"
+    local branch="robocup"
 
     # If directory already exists, return
     [ -d $repo_dir ] && return
