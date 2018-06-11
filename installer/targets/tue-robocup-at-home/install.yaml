@@ -3,3 +3,5 @@
   name: ros-tue_robocup
 - type: target
   name: ros-robocup_knowledge
+- type: target
+  name: ros-vizbox
