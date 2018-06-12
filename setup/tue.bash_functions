@@ -720,7 +720,7 @@ function tue-add-git-remote
 
 For example:
 
-    tue-add-git-remote origin https://github.com/
+    tue-add-git-remote roboticssrv amigo@roboticssrv.local:
         "
         return 1
     fi
@@ -750,15 +750,40 @@ For example:
     cd $mem_pwd
 }
 
-function _tue-remote-checkout
+function _git_remote_checkout
 {
     if [ -z $2 ]
     then
-        echo "Usage: _tue-remote-checkout REMOTE BRANCH
+        echo "Usage: _git_remote_checkout REMOTE BRANCH
 
 For example:
 
-    _tue-remote-checkout roboticssrv robocup
+    _git_remote_checkout roboticssrv robocup
+        "
+        return 1
+    fi
+
+    local remote=$1
+    local branch=$2
+    local exists=$(git show-ref refs/heads/$branch)
+    if [ -n "$exists" ]
+    then
+        git checkout $branch
+        git branch -u $remote/$branch $branch
+    else
+        git checkout --track -b $branch $remote/$branch
+    fi
+}
+
+function tue-remote-checkout
+{
+    if [ -z $2 ]
+    then
+        echo "Usage: tue-remote-checkout REMOTE BRANCH
+
+For example:
+
+    tue-remote-checkout roboticssrv robocup
         "
         return 1
     fi
@@ -773,7 +798,8 @@ For example:
     cd $TUE_DIR
     echo -e "\033[1m[tue-env]\033[0m"
     git fetch $remote
-    git checkout $branch
+
+    _git_remote_checkout $remote $branch
 
     local fs=`ls $pkgs_dir`
     for pkg in $fs
@@ -785,7 +811,50 @@ For example:
             cd $pkg_dir
             echo -e "\033[1m[${pkg%.git}]\033[0m"
             git fetch $remote
-            git checkout $branch
+            _git_remote_checkout $remote $branch
+        fi
+    done
+
+    cd $mem_pwd
+}
+
+function tue-robocup-remote-checkout
+{
+    # same functionality as tue-remote-checkout, but no arguments needed
+    # doesn't perform a checkout, when current branch is already setup
+    # to the roboticssrv
+    local remote="roboticssrv"
+    local branch="robocup"
+
+    local pkgs_dir=$TUE_ENV_DIR/repos/https_/github.com/tue-robotics
+
+    local mem_pwd=$PWD
+
+    cd $TUE_DIR
+    echo -e "\033[1m[tue-env]\033[0m"
+    git fetch $remote
+
+    local current_remote=$(git for-each-ref --format='%(upstream:short)' $(git symbolic-ref -q HEAD) | awk -F/ '{print $1}')
+    if [ "$current_remote" != "$remote" ]
+    then
+        _git_remote_checkout $remote $branch
+    fi
+
+    local fs=`ls $pkgs_dir`
+    for pkg in $fs
+    do
+        local pkg_dir=$pkgs_dir/$pkg
+
+        if [ -d $pkg_dir ]
+        then
+            cd $pkg_dir
+            echo -e "\033[1m[${pkg%.git}]\033[0m"
+            git fetch $remote
+            local current_remote=$(git for-each-ref --format='%(upstream:short)' $(git symbolic-ref -q HEAD) | awk -F/ '{print $1}')
+            if [ "$current_remote" != "$remote" ]
+            then
+                _git_remote_checkout $remote $branch
+            fi
         fi
     done
 
@@ -800,8 +869,8 @@ function _tue-robocup-default-branch
 
     cd $TUE_DIR
     echo -e "\033[1m[tue-env]\033[0m"
-    default_branch=$(git symbolic-ref refs/remotes/origin/HEAD | sed 's@^refs/remotes/origin/@@')
-    git checkout $default_branch
+    local default_branch=$(git remote show origin | grep HEAD | awk '{print $3}')
+    _git_remote_checkout origin $default_branch
 
     local fs=`ls $pkgs_dir`
     for pkg in $fs
@@ -812,8 +881,8 @@ function _tue-robocup-default-branch
         then
             cd $pkg_dir
             echo -e "\033[1m[${pkg%.git}]\033[0m"
-            default_branch=$(git symbolic-ref refs/remotes/origin/HEAD | sed 's@^refs/remotes/origin/@@')
-            git checkout $default_branch
+            local default_branch=$(git remote show origin | grep HEAD | awk '{print $3}')
+            _git_remote_checkout origin $default_branch
         fi
     done
 
@@ -833,7 +902,7 @@ function tue-robocup-set-github
 function tue-robocup-set-roboticssrv
 {
     tue-add-git-remote roboticssrv amigo@roboticssrv.local:
-    _tue-remote-checkout roboticssrv robocup
+    tue-robocup-remote-checkout
     # allow robocup as branch in tue-status
     if [ ! -f $TUE_DIR/user/config/robocup ]
     then
@@ -876,27 +945,12 @@ function tue-robocup-install-package
     # If directory already exists, return
     [ -d $repo_dir ] && return
 
-    # If there is internet, use it for first clone. Otherwise an error
-    # will be raised during switching back to default branch of origin
-    local internet=$(echo _ping_bool github.com)
-    if $internet
-    then
-        git clone https://github.com/tue-robotics/${1}.git $repo_dir
-    else
-        git clone amigo@roboticssrv.local:tue-robotics/${1}.git $repo_dir
-    fi
+    git clone amigo@roboticssrv.local:tue-robotics/${1}.git $repo_dir
 
     cd $repo_dir
 
-    if $internet
-    then
-        _tue-add-git-remote $remote $server
-        git fetch $remote
-        git checkout $branch
-    else
-        git remote rename origin $remote
-        git remote add origin https://github.com/tue-robotics/${1}.git
-    fi
+    git remote rename origin $remote
+    git remote add origin https://github.com/tue-robotics/${1}.git
 
     cd $mem_pwd
 
@@ -956,10 +1010,6 @@ function tue-robocup-update
             fi
         fi
     done
-
-    if [ ! -d $TUE_ENV_DIR/system/src/robocup_knowledge ]; then
-        ln -s $TUE_ENV_DIR/repos/https_/github.com/tue-robotics/tue_robocup.git/robocup_knowledge $TUE_ENV_DIR/system/src/robocup_knowledge
-    fi
 
     cd $mem_pwd
 }
