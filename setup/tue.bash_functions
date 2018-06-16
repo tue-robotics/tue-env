@@ -762,7 +762,7 @@ function tue-robocup-update
         if [ -d $pkg_dir ]
         then
             cd $pkg_dir
-            local current_url=`git config --get remote.origin.url`
+            local current_url=`git config --get remote.roboticssrv.url`
 
             if echo "$current_url" | grep -q "roboticssrv.local"
             then
