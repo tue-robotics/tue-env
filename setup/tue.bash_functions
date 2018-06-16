@@ -889,6 +889,11 @@ function _tue-robocup-default-branch
     cd $mem_pwd
 }
 
+function tue-robocup-ssh-copy-id
+{
+    ssh-copy-id amigo@roboticssrv.local
+}
+
 function tue-robocup-set-github
 {
     _tue-robocup-default-branch
