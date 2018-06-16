@@ -8,7 +8,3 @@ if [ ! -f /usr/local/bin/git-extras ]; then
 	# enable color
 	git config --global color.ui true
 fi
-
-tue-install-system git
-tue-install-system gitk
-tue-install-system git-gui

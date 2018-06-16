@@ -1,2 +1,4 @@
 - type: target
+  name: git
+- type: target
   name: gitsu

@@ -1,1 +1,1 @@
-tue-install-cp rsettings_file ~/.tue/.rsettings
+tue-install-cp rsettings_file $TUE_DIR/.rsettings
