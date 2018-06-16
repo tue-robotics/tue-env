@@ -1,0 +1,4 @@
+#!/bin/bash
+for f in $BASH_SOURCE.d/*; do
+   source $f
+done

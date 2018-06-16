@@ -18,7 +18,7 @@ else
         fi
     fi
     # We don't have SIP or not the correct version
-    SIP_file=~/.tue/installer/targets/ros-python-sip/sip-$SIP_version.tar.gz
+    SIP_file=$TUE_DIR/installer/targets/ros-python-sip/sip-$SIP_version.tar.gz
     if [ ! -f "$SIP_file" ]
     then
         url="https://downloads.sourceforge.net/project/pyqt/sip/sip-$SIP_version/sip-$SIP_version.tar.gz"

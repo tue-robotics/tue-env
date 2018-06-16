@@ -661,6 +661,9 @@ then
 fi
 # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # #
 
+tue_cmd=$1
+shift
+
 # idiomatic parameter and option handling in sh
 targets=""
 while test $# -gt 0
@@ -689,7 +692,7 @@ do
     tue-install-debug "Main loop: installing $target"
     tue-install-target $target
 
-    if [ -d $TUE_INSTALL_TARGET_DIR/$target ]
+    if [[ -d $TUE_INSTALL_TARGET_DIR/$target && "$tue_cmd" == "install" ]]
     then
         # Mark as installed
         tue-install-debug "[$target] marked as installed after a successful install"

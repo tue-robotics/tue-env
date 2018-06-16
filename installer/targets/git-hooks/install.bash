@@ -1,6 +1,8 @@
 # install the global hooks
-if [ ! -d ~/.git_hooks ]
-then
-    echo "linking ~/.git_hooks"
-    ln -s ~/.tue/installer/targets/git-hooks/git_hooks ~/.git_hooks
+git config --global core.hooksPath $TUE_DIR/installer/targets/git-hooks/git_hooks/
+
+if dpkg --compare-versions $(git --version | awk '{print $3}') lt 2.9; then
+    tue-install-warning "Please perform a
+    sudo apt install git
+afterwards to upgrade the git version to allow git-hooks"
 fi
