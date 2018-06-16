@@ -221,6 +221,16 @@ complete -F _tue-dev tue-dev
 #                                             TUE-STATUS
 # ----------------------------------------------------------------------------------------------------
 
+function _robocup_branch_allowed
+{
+    local branch=$1
+    if [ "$branch" == "robocup" ] && [ -f $TUE_DIR/user/config/robocup ]
+    then
+        return 0
+    fi
+    return 1
+}
+
 function _tue-repo-status
 {
     local name=$1
@@ -254,7 +264,7 @@ function _tue-repo-status
             fi
 
             local current_branch=`git rev-parse --abbrev-ref HEAD`
-            if [ $current_branch != "master" ] && [ $current_branch != "develop" ] && [ $current_branch != "indigo-devel" ] && [ $current_branch != "kinetic-devel" ] && [ $current_branch != "toolchain-2.9" ]
+            if [ $current_branch != "master" ]  && [ $current_branch != "develop" ] && [ $current_branch != "indigo-devel" ] && [ $current_branch != "kinetic-devel" ] && [ $current_branch != "toolchain-2.9" ] && ! _robocup_branch_allowed $current_branch
             then
                 echo -e "\033[1m$name\033[0m is on branch '$current_branch'"
             fi
