@@ -702,6 +702,11 @@ For example:
 
 # Temporarily for RoboCup
 
+function tue-robocup-ssh-copy-id
+{
+    ssh-copy-id amigo@roboticssrv.local
+}
+
 function tue-robocup-set-github-origin
 {
     tue-set-git-remote origin amigo@roboticssrv.local:
