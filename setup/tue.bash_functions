@@ -915,7 +915,7 @@ function tue-robocup-set-roboticssrv
     fi
 }
 
-function tue-robocup-change-remote-to-gibhub
+function tue-robocup-change-remote-to-github
 {
 	# This changes the remote of the 'robocup' branch from 'roboticssrv' to 'origin'
 	# To get this script, first check out 'master' of .tue, pull the latest version that has this function and then use it :-) 
@@ -923,6 +923,7 @@ function tue-robocup-change-remote-to-gibhub
 	# $ git checkout master
 	# $ git pull
 	# $ tue-robocup-change-remote-to-gibhub
+	# After this, you local working copies may be behind what was fetched from origin, so run a $ tue-get update
 
 	# for packages that have a roboticssrv as a remote:
 	    # do a git fetch origin: git fetch
@@ -945,9 +946,14 @@ function tue-robocup-change-remote-to-gibhub
 
             if echo "$current_url" | grep -q "roboticssrv.local"
             then
-                echo -n "$pkg: "
-                git fetch  # This should fetch the robocup branch from origin (that was pushed from roboticssrv.local to origin i.e. github)
-                git branch -u origin/robocup robocup
+                if git ls-remote --heads origin robocup | grep -q "robocup"
+                then
+                    echo -n "$pkg: "
+                    git fetch  origin # This should fetch the robocup branch from origin (that was pushed from roboticssrv.local to origin i.e. github)
+                    git branch -u origin/robocup robocup
+                else
+                    echo -e "$pkg \033[0;33mhas no 'robocup' branch on origin\033[0m"
+                fi
             fi
         fi
     done
