@@ -915,6 +915,46 @@ function tue-robocup-set-roboticssrv
     fi
 }
 
+function tue-robocup-change-remote-to-gibhub
+{
+	# This changes the remote of the 'robocup' branch from 'roboticssrv' to 'origin'
+	# To get this script, first check out 'master' of .tue, pull the latest version that has this function and then use it :-) 
+	# $ cd ~/.tue
+	# $ git checkout master
+	# $ git pull
+	# $ tue-robocup-change-remote-to-gibhub
+
+	# for packages that have a roboticssrv as a remote:
+	    # do a git fetch origin: git fetch
+	    # Change remote of branch 'robocup' to  origin: git branch -u origin/robocup robocup
+
+	local mem_pwd=$PWD
+
+    cd $TUE_DIR
+    git pull --ff-only
+
+    local fs=`ls $_TUE_CATKIN_SYSTEM_DIR/src`
+    for pkg in $fs
+    do
+        local pkg_dir=$_TUE_CATKIN_SYSTEM_DIR/src/$pkg
+
+        if [ -d $pkg_dir ]
+        then
+            cd $pkg_dir
+            local current_url=`git config --get remote.roboticssrv.url`
+
+            if echo "$current_url" | grep -q "roboticssrv.local"
+            then
+                echo -n "$pkg: "
+                git fetch  # This should fetch the robocup branch from origin (that was pushed from roboticssrv.local to origin i.e. github)
+                git branch -u origin/robocup robocup
+            fi
+        fi
+    done
+
+    cd $mem_pwd
+}
+
 function tue-robocup-set-timezone-robocup
 {
     sudo timedatectl set-timezone America/Toronto
