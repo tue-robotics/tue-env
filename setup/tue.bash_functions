@@ -965,7 +965,7 @@ function tue-robocup-change-remote-to-github
 
 function tue-robocup-set-timezone-robocup
 {
-    sudo timedatectl set-timezone America/Toronto
+    sudo timedatectl set-timezone Australia/Sydney
 }
 
 function tue-robocup-set-timezone-home
