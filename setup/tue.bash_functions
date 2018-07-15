@@ -686,7 +686,7 @@ For example:
 
     if [ "$remote" == "origin" ]
     then
-        echo "You are not allowed to change the remote: 'origin'"
+        echo -e "\033[1mYou are not allowed to change the remote: 'origin'\033[0m"
         return 1
     fi
 
@@ -730,6 +730,12 @@ For example:
     local remote=$1
     local server=$2
 
+    if [ "$remote" == "origin" ]
+    then
+        echo -e "\033[1mYou are not allowed to change the remote: 'origin'\033[0m"
+        return 1
+    fi
+
     local mem_pwd=$PWD
 
     cd $TUE_DIR
@@ -746,6 +752,84 @@ For example:
         then
             cd $pkg_dir
             _tue-add-git-remote $remote $server
+        fi
+    done
+
+    cd $mem_pwd
+}
+
+function __tue-remove-git-remote
+{
+    local remote=$1
+
+    if [ -z $1 ]
+    then
+        echo "Usage: __tue-remove-git-remote REMOTE
+
+For example:
+
+    __tue-remove-git-remote roboticssrv
+        "
+        return 1
+    fi
+
+    if [ "$remote" == "origin" ]
+    then
+        echo -e "\033[1mYou are not allowed to remove the remote: 'origin'\033[0m"
+        return 1
+    fi
+
+    local github_url="$(git config --get remote.origin.url)"
+    local url_extension=${github_url#https://github.com/}
+    local pkg=${url_extension#tue-robotics/}
+
+    if [[ "$(git remote)" == *"$remote"* ]]
+    then
+        git remote remove $remote
+        echo -e "\033[1m[${pkg%.git}]\033[0m remote '$remote' is removed"
+        return 0
+    fi
+
+    echo -e "\033[1m[${pkg%.git}]\033[0m remote '$remote' doesn't exist"
+}
+
+function _tue-remove-git-remote
+{
+    if [ -z $1 ]
+    then
+        echo "Usage: _tue-remove-git-remote REMOTE
+
+For example:
+
+    _tue-remove-git-remote roboticssrv
+        "
+        return 1
+    fi
+
+    local remote=$1
+
+    if [ "$remote" == "origin" ]
+    then
+        echo -e "\033[1mYou are not allowed to remove the remote: 'origin'\033[0m"
+        return 1
+    fi
+
+    local mem_pwd=$PWD
+
+    cd $TUE_DIR
+    __tue-remove-git-remote $remote
+
+    local pkgs_dir=$TUE_ENV_DIR/repos/https_/github.com/tue-robotics
+
+    local fs=`ls $pkgs_dir`
+    for pkg in $fs
+    do
+        local pkg_dir=$pkgs_dir/$pkg
+
+        if [ -d $pkg_dir ]
+        then
+            cd $pkg_dir
+            __tue-remove-git-remote $remote
         fi
     done
 
@@ -950,11 +1034,11 @@ function tue-robocup-change-remote-to-github
             then
                 if git ls-remote --heads origin $TUE_ROBOCUP_BRANCH | grep -q $TUE_ROBOCUP_BRANCH
                 then
-                    echo -n "$pkg: "
+                    echo -n "\033[1m[$pkg]\033[0m: "
                     git fetch  origin # This should fetch the TUE_ROBOCUP_BRANCH branch from origin (that was pushed from roboticssrv.local to origin i.e. github)
                     git branch -u origin/$TUE_ROBOCUP_BRANCH $TUE_ROBOCUP_BRANCH
                 else
-                    echo -e "$pkg \033[0;33mhas no '$TUE_ROBOCUP_BRANCH' branch on origin\033[0m"
+                    echo -e "\033[1m[${pkg%.git}]\033[0mhas no '$TUE_ROBOCUP_BRANCH' branch on origin"
                 fi
             fi
         fi
