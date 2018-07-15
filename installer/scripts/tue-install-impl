@@ -181,7 +181,7 @@ function tue-install-git
 
             cd $mem_pwd
 
-            if [[ $res == "Already up-to-date"* ]]
+            if [[ $res == "Already up to date"* ]]
             then
                 res=
             fi
