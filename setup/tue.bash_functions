@@ -1075,36 +1075,13 @@ function tue-robocup-install-package
 
 function tue-robocup-update
 {
-    local mem_pwd=$PWD
-
-    cd $TUE_DIR
-    git pull --ff-only
+    _tue-repos-do "git pull --ff-only"
 
     # Copy rsettings file
     if [ "$ROBOT_REAL" != "true" ]
     then
         cp $TUE_DIR/installer/targets/tue-common/rsettings_file $TUE_DIR/.rsettings
     fi
-
-    local fs=`ls $_TUE_CATKIN_SYSTEM_DIR/src`
-    for pkg in $fs
-    do
-        local pkg_dir=$_TUE_CATKIN_SYSTEM_DIR/src/$pkg
-
-        if [ -d $pkg_dir ]
-        then
-            cd $pkg_dir
-            local current_url=`git config --get remote.origin.url`
-
-            if echo "$current_url" | grep -q "roboticssrv.local"
-            then
-                echo -n "$pkg: "
-                git pull --ff-only
-            fi
-        fi
-    done
-
-    cd $mem_pwd
 }
 
 function tue-robocup-set-apt-get-proxy
