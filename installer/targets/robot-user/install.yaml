@@ -1,5 +1,6 @@
 - type: target
-  name: networking
+  name: robot-user-robot-common
+
 # Tele-operation
 - type: target
   name: ros-tue_teleop_keyboard

@@ -1,4 +1,2 @@
 - type: target
-  name: gitsu
-- type: target
-  name: networking
+  name: robot-user-robot-common
