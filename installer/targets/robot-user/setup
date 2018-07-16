@@ -84,7 +84,7 @@ function github-cache-credentials() {
 # Append '.local' to hostname for local resolving of hostnames
 export ROS_HOSTNAME=`hostname`.local
 
-# DECLARE ALIAS FOR QUICK SSHf
+# DECLARE ALIAS FOR QUICK SSH
 alias quickssh='echo "ControlMaster auto
 ControlPath /tmp/%r@%h:%p
 ControlPersist yes" > ~/.ssh/config'
