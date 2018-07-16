@@ -975,6 +975,87 @@ function _tue-robocup-default-branch
     cd $mem_pwd
 }
 
+function _tue-robocup-change-remote
+{
+    if [ -z $2 ]
+    then
+        echo "Usage: _tue-robocup-change-remote BRANCH REMOTE
+
+For example:
+
+    _tue-robocup-change-remote robocup origin
+        "
+        return 1
+    fi
+
+    local branch=$1
+    local remote=$2
+    local branch_exists=$(git show-ref refs/heads/$branch)
+
+    local github_url="$(git config --get remote.origin.url)"
+    local url_extension=${github_url#https://github.com/}
+    local pkg=${url_extension#tue-robotics/}
+
+    if [ -n "$exists" ]
+    then
+        if [[ "$(git remote)" == *"$remote"* ]]
+        then
+            echo -n "\033[1m[${pkg%.git}]\033[0m "
+            git fetch  $remote
+            git branch -u $remote/$branch $branch
+        else
+            echo -e "\033[1m[${pkg%.git}]\033[0m has no remote: $remote"
+        fi
+    else
+        echo -e "\033[1m[${pkg%.git}]\033[0m has no local branch: $branch"
+    fi
+}
+
+function tue-robocup-change-remote
+{
+    # This changes the remote of the 'BRANCH' branch to 'REMOTE'
+    # After this, you local working copies may be behind what was fetched from REMOTE, so run a $ tue-get update
+
+    # for packages that have a REMOTE as a remote:
+        # do a git fetch origin: git fetch
+        # Change remote of branch 'BRANCH' to REMOTE: git branch -u REMOTE/BRANCH BRANCH
+
+    if [ -z $2 ]
+    then
+        echo "Usage: tue-robocup-change-remote BRANCH REMOTE
+
+For example:
+
+    tue-robocup-change-remote robocup origin
+        "
+        return 1
+    fi
+
+    local branch=$1
+    local remote=$2
+
+    local pkgs_dir=$TUE_ENV_DIR/repos/https_/github.com/tue-robotics
+
+    local mem_pwd=$PWD
+
+    cd $TUE_DIR
+    _tue-robocup-change-remote $branch $remote
+
+    local fs=`ls $pkgs_dir`
+    for pkg in $fs
+    do
+        local pkg_dir=$pkgs_dir/$pkg
+
+        if [ -d $pkg_dir ]
+        then
+            cd $pkg_dir
+            _tue-robocup-change-remote $branch $remote
+        fi
+    done
+
+    cd $mem_pwd
+}
+
 function tue-robocup-ssh-copy-id
 {
     ssh-copy-id amigo@roboticssrv.local
@@ -982,6 +1063,7 @@ function tue-robocup-ssh-copy-id
 
 function tue-robocup-set-github
 {
+    tue-robocup-change-remote $TUE_ROBOCUP_BRANCH origin
     _tue-robocup-default-branch
     # disallow TUE_ROBOCUP_BRANCH as branch in tue-status
     if [ -f $TUE_DIR/user/config/robocup ]
@@ -999,47 +1081,6 @@ function tue-robocup-set-roboticssrv
     then
         echo $TUE_ROBOCUP_BRANCH > $TUE_DIR/user/config/robocup
     fi
-}
-
-function tue-robocup-change-remote-to-github
-{
-    # This changes the remote of the 'TUE_ROBOCUP_BRANCH' branch from 'roboticssrv' to 'origin'
-    # After this, you local working copies may be behind what was fetched from origin, so run a $ tue-get update
-
-    # for packages that have a roboticssrv as a remote:
-        # do a git fetch origin: git fetch
-        # Change remote of branch 'TUE_ROBOCUP_BRANCH' to  origin: git branch -u origin/$TUE_ROBOCUP_BRANCH $TUE_ROBOCUP_BRANCH
-
-    local mem_pwd=$PWD
-
-    cd $TUE_DIR
-    git pull --ff-only
-
-    local fs=`ls $_TUE_CATKIN_SYSTEM_DIR/src`
-    for pkg in $fs
-    do
-        local pkg_dir=$_TUE_CATKIN_SYSTEM_DIR/src/$pkg
-
-        if [ -d $pkg_dir ]
-        then
-            cd $pkg_dir
-            local current_url=`git config --get remote.roboticssrv.url`
-
-            if echo "$current_url" | grep -q "roboticssrv.local"
-            then
-                if git ls-remote --heads origin $TUE_ROBOCUP_BRANCH | grep -q $TUE_ROBOCUP_BRANCH
-                then
-                    echo -n "\033[1m[$pkg]\033[0m: "
-                    git fetch  origin # This should fetch the TUE_ROBOCUP_BRANCH branch from origin (that was pushed from roboticssrv.local to origin i.e. github)
-                    git branch -u origin/$TUE_ROBOCUP_BRANCH $TUE_ROBOCUP_BRANCH
-                else
-                    echo -e "\033[1m[${pkg%.git}]\033[0mhas no '$TUE_ROBOCUP_BRANCH' branch on origin"
-                fi
-            fi
-        fi
-    done
-
-    cd $mem_pwd
 }
 
 function tue-robocup-set-timezone-robocup
