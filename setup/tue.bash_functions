@@ -793,11 +793,11 @@ For example:
     if [[ "$(git remote)" == *"$remote"* ]]
     then
         git remote remove $remote
-        echo -e "\033[1m[${pkg%.git}]\033[0m remote '$remote' is removed"
+        echo -e "remote '$remote' is removed"
         return 0
     fi
 
-    echo -e "\033[1m[${pkg%.git}]\033[0m remote '$remote' doesn't exist"
+    echo -e "remote '$remote' doesn't exist"
 }
 
 function _tue-remove-git-remote
