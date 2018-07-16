@@ -676,17 +676,17 @@ function _tue-repos-do
     echo -e "\033[1m[tue-env]\033[0m"
     eval "$@"
 
-    local pkgs_dir=$TUE_ENV_DIR/repos/https_/github.com/tue-robotics
+    local repos_dir=$TUE_ENV_DIR/repos/https_/github.com/tue-robotics
 
-    local fs=`ls $pkgs_dir`
-    for pkg in $fs
+    local fs=`ls $repos_dir`
+    for repo in $fs
     do
-        local pkg_dir=$pkgs_dir/$pkg
+        local repo_dir=$repos_dir/$repo
 
-        if [ -d $pkg_dir ]
+        if [ -d $repo_dir ]
         then
-            cd $pkg_dir
-            echo -e "\033[1m[${pkg%.git}]\033[0m"
+            cd $repo_dir
+            echo -e "\033[1m[${repo%.git}]\033[0m"
             eval "$@"
         fi
     done
