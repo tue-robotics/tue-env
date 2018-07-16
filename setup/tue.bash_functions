@@ -718,26 +718,25 @@ For example:
 
     local github_url="$(git config --get remote.origin.url)"
     local url_extension=${github_url#https://github.com/}
-    local pkg=${url_extension#tue-robotics/}
 
     if [[ "$(git remote)" == *"$remote"* ]]
     then
         local current_url=$(git config --get remote.${remote}.url)
         if [[ "$current_url" == "$server$url_extension" ]]
         then
-            echo -e "\033[1m[${pkg%.git}]\033[0m remote '$remote' exists with the same url"
+            echo -e "remote '$remote' exists with the same url"
             return 0
         fi
 
         git remote set-url $remote $server$url_extension
-        echo -e "\033[1m[${pkg%.git}]\033[0m url of remote '$remote' is changed
+        echo -e "url of remote '$remote' is changed
     from: $current_url
     to: $server$url_extension"
     return 0
     fi
     git remote add $remote $server$url_extension
 
-    echo -e "\033[1m[${pkg%.git}]\033[0m remote '$remote' added with url: $server$url_extension"
+    echo -e "remote '$remote' added with url: $server$url_extension"
 }
 
 function tue-add-git-remote
@@ -785,10 +784,6 @@ For example:
         echo -e "\033[1mYou are not allowed to remove the remote: 'origin'\033[0m"
         return 1
     fi
-
-    local github_url="$(git config --get remote.origin.url)"
-    local url_extension=${github_url#https://github.com/}
-    local pkg=${url_extension#tue-robotics/}
 
     if [[ "$(git remote)" == *"$remote"* ]]
     then
@@ -930,10 +925,6 @@ For example:
     local branch=$1
     local remote=$2
     local branch_exists=$(git show-ref refs/heads/$branch)
-
-    local github_url="$(git config --get remote.origin.url)"
-    local url_extension=${github_url#https://github.com/}
-    local pkg=${url_extension#tue-robotics/}
 
     if [ -n "$exists" ]
     then
