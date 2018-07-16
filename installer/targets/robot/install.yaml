@@ -1,2 +1,6 @@
 - type: target
-  name: robot-user-robot-common
+  name: ccache
+- type: target
+  name: gitsu
+- type: target
+  name: networking
