@@ -1028,7 +1028,7 @@ function tue-robocup-install-package
     # If directory already exists, return
     [ -d $repo_dir ] && return
 
-    git clone amigo@roboticssrv.local:tue-robotics/${1}.git $repo_dir
+    git clone ${server}tue-robotics/${1}.git $repo_dir
 
     cd $repo_dir
 
