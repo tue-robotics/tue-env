@@ -668,6 +668,32 @@ source $TUE_DIR/setup/tue-data.bash
 
 export TUE_ROBOCUP_BRANCH="robocup"
 
+function _tue-repos-do
+{
+    local mem_pwd=$PWD
+
+    cd $TUE_DIR
+    echo -e "\033[1m[tue-env]\033[0m"
+    eval "$@"
+
+    local pkgs_dir=$TUE_ENV_DIR/repos/https_/github.com/tue-robotics
+
+    local fs=`ls $pkgs_dir`
+    for pkg in $fs
+    do
+        local pkg_dir=$pkgs_dir/$pkg
+
+        if [ -d $pkg_dir ]
+        then
+            cd $pkg_dir
+            echo -e "\033[1m[${pkg%.git}]\033[0m"
+            eval "$@"
+        fi
+    done
+
+    cd $mem_pwd
+}
+
 function _tue-add-git-remote
 {
     local remote=$1
@@ -736,26 +762,7 @@ For example:
         return 1
     fi
 
-    local mem_pwd=$PWD
-
-    cd $TUE_DIR
-    _tue-add-git-remote $remote $server
-
-    local pkgs_dir=$TUE_ENV_DIR/repos/https_/github.com/tue-robotics
-
-    local fs=`ls $pkgs_dir`
-    for pkg in $fs
-    do
-        local pkg_dir=$pkgs_dir/$pkg
-
-        if [ -d $pkg_dir ]
-        then
-            cd $pkg_dir
-            _tue-add-git-remote $remote $server
-        fi
-    done
-
-    cd $mem_pwd
+    _tue-repos-do "_tue-add-git-remote $remote $server"
 }
 
 function __tue-remove-git-remote
@@ -814,26 +821,7 @@ For example:
         return 1
     fi
 
-    local mem_pwd=$PWD
-
-    cd $TUE_DIR
-    __tue-remove-git-remote $remote
-
-    local pkgs_dir=$TUE_ENV_DIR/repos/https_/github.com/tue-robotics
-
-    local fs=`ls $pkgs_dir`
-    for pkg in $fs
-    do
-        local pkg_dir=$pkgs_dir/$pkg
-
-        if [ -d $pkg_dir ]
-        then
-            cd $pkg_dir
-            __tue-remove-git-remote $remote
-        fi
-    done
-
-    cd $mem_pwd
+    _tue-repos-do "__tue-remove-git-remote $remote"
 }
 
 function _git_remote_checkout
@@ -877,31 +865,31 @@ For example:
     local remote=$1
     local branch=$2
 
-    local pkgs_dir=$TUE_ENV_DIR/repos/https_/github.com/tue-robotics
+    _tue-repos-do "git fetch $remote; _git_remote_checkout $remote $branch"
+}
 
-    local mem_pwd=$PWD
+function _tue-robocup-remote-checkout
+{
+    if [ -z $2 ]
+    then
+        echo "Usage: _tue-robocup-remote-checkout REMOTE BRANCH
 
-    cd $TUE_DIR
-    echo -e "\033[1m[tue-env]\033[0m"
+For example:
+
+    _tue-robocup-remote-checkout roboticssrv robocup
+        "
+        return 1
+    fi
+
+    local remote=$1
+    local branch=$2
+
     git fetch $remote
-
-    _git_remote_checkout $remote $branch
-
-    local fs=`ls $pkgs_dir`
-    for pkg in $fs
-    do
-        local pkg_dir=$pkgs_dir/$pkg
-
-        if [ -d $pkg_dir ]
-        then
-            cd $pkg_dir
-            echo -e "\033[1m[${pkg%.git}]\033[0m"
-            git fetch $remote
-            _git_remote_checkout $remote $branch
-        fi
-    done
-
-    cd $mem_pwd
+    local current_remote=$(git for-each-ref --format='%(upstream:short)' $(git symbolic-ref -q HEAD) | awk -F/ '{print $1}')
+    if [ "$current_remote" != "$remote" ]
+    then
+        _git_remote_checkout $remote $branch
+    fi
 }
 
 function tue-robocup-remote-checkout
@@ -912,67 +900,18 @@ function tue-robocup-remote-checkout
     local remote="roboticssrv"
     local branch=$TUE_ROBOCUP_BRANCH
 
-    local pkgs_dir=$TUE_ENV_DIR/repos/https_/github.com/tue-robotics
+    _tue-repos-do "_tue-robocup-remote-checkout $remote $branch"
+}
 
-    local mem_pwd=$PWD
-
-    cd $TUE_DIR
-    echo -e "\033[1m[tue-env]\033[0m"
-    git fetch $remote
-
-    local current_remote=$(git for-each-ref --format='%(upstream:short)' $(git symbolic-ref -q HEAD) | awk -F/ '{print $1}')
-    if [ "$current_remote" != "$remote" ]
-    then
-        _git_remote_checkout $remote $branch
-    fi
-
-    local fs=`ls $pkgs_dir`
-    for pkg in $fs
-    do
-        local pkg_dir=$pkgs_dir/$pkg
-
-        if [ -d $pkg_dir ]
-        then
-            cd $pkg_dir
-            echo -e "\033[1m[${pkg%.git}]\033[0m"
-            git fetch $remote
-            local current_remote=$(git for-each-ref --format='%(upstream:short)' $(git symbolic-ref -q HEAD) | awk -F/ '{print $1}')
-            if [ "$current_remote" != "$remote" ]
-            then
-                _git_remote_checkout $remote $branch
-            fi
-        fi
-    done
-
-    cd $mem_pwd
+function __tue-robocup-default-branch
+{
+    local default_branch=$(git remote show origin | grep HEAD | awk '{print $3}')
+    _git_remote_checkout origin $default_branch
 }
 
 function _tue-robocup-default-branch
 {
-    local pkgs_dir=$TUE_ENV_DIR/repos/https_/github.com/tue-robotics
-
-    local mem_pwd=$PWD
-
-    cd $TUE_DIR
-    echo -e "\033[1m[tue-env]\033[0m"
-    local default_branch=$(git remote show origin | grep HEAD | awk '{print $3}')
-    _git_remote_checkout origin $default_branch
-
-    local fs=`ls $pkgs_dir`
-    for pkg in $fs
-    do
-        local pkg_dir=$pkgs_dir/$pkg
-
-        if [ -d $pkg_dir ]
-        then
-            cd $pkg_dir
-            echo -e "\033[1m[${pkg%.git}]\033[0m"
-            local default_branch=$(git remote show origin | grep HEAD | awk '{print $3}')
-            _git_remote_checkout origin $default_branch
-        fi
-    done
-
-    cd $mem_pwd
+    _tue-repos-do "__tue-robocup-default-branch"
 }
 
 function _tue-robocup-change-remote
@@ -1034,26 +973,7 @@ For example:
     local branch=$1
     local remote=$2
 
-    local pkgs_dir=$TUE_ENV_DIR/repos/https_/github.com/tue-robotics
-
-    local mem_pwd=$PWD
-
-    cd $TUE_DIR
-    _tue-robocup-change-remote $branch $remote
-
-    local fs=`ls $pkgs_dir`
-    for pkg in $fs
-    do
-        local pkg_dir=$pkgs_dir/$pkg
-
-        if [ -d $pkg_dir ]
-        then
-            cd $pkg_dir
-            _tue-robocup-change-remote $branch $remote
-        fi
-    done
-
-    cd $mem_pwd
+    _tue-repos-do "_tue-robocup-change-remote $branch $remote"
 }
 
 function tue-robocup-ssh-copy-id
