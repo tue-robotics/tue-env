@@ -983,7 +983,7 @@ function tue-robocup-ssh-copy-id
 function tue-robocup-set-github
 {
     _tue-robocup-default-branch
-    # disallow robocup as branch in tue-status
+    # disallow TUE_ROBOCUP_BRANCH as branch in tue-status
     if [ -f $TUE_DIR/user/config/robocup ]
     then
         rm $TUE_DIR/user/config/robocup
@@ -994,7 +994,7 @@ function tue-robocup-set-roboticssrv
 {
     tue-add-git-remote roboticssrv amigo@roboticssrv.local:
     tue-robocup-remote-checkout
-    # allow robocup as branch in tue-status
+    # allow TUE_ROBOCUP_BRANCH as branch in tue-status
     if [ ! -f $TUE_DIR/user/config/robocup ]
     then
         echo $TUE_ROBOCUP_BRANCH > $TUE_DIR/user/config/robocup
@@ -1004,11 +1004,6 @@ function tue-robocup-set-roboticssrv
 function tue-robocup-change-remote-to-github
 {
     # This changes the remote of the 'TUE_ROBOCUP_BRANCH' branch from 'roboticssrv' to 'origin'
-    # To get this script, first check out 'master' of .tue, pull the latest version that has this function and then use it :-)
-    # $ cd ~/.tue
-    # $ git checkout master
-    # $ git pull
-    # $ tue-robocup-change-remote-to-gibhub
     # After this, you local working copies may be behind what was fetched from origin, so run a $ tue-get update
 
     # for packages that have a roboticssrv as a remote:
