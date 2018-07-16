@@ -66,12 +66,8 @@
   name: terminator
 - type: target
   name: vim
-- type: target
-  name: gitsu
 
 - type: system
   name: htop
-- type: system
-  name: ccache
 - type: system
   name: meld
