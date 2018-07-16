@@ -939,14 +939,13 @@ For example:
     then
         if [[ "$(git remote)" == *"$remote"* ]]
         then
-            echo -n "\033[1m[${pkg%.git}]\033[0m "
             git fetch  $remote
             git branch -u $remote/$branch $branch
         else
-            echo -e "\033[1m[${pkg%.git}]\033[0m has no remote: $remote"
+            echo -e "no remote: $remote"
         fi
     else
-        echo -e "\033[1m[${pkg%.git}]\033[0m has no local branch: $branch"
+        echo -e "no local branch: $branch"
     fi
 }
 
