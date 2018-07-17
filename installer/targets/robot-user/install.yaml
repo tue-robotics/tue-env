@@ -1,5 +1,10 @@
 - type: target
+  name: ccache
+- type: target
+  name: gitsu
+- type: target
   name: networking
+
 # Tele-operation
 - type: target
   name: ros-tue_teleop_keyboard

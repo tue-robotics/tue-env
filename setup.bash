@@ -63,7 +63,7 @@ then
 fi
 
 export TUE_BIN=$TUE_DIR/bin
-export PATH=$TUE_BIN:/usr/lib/ccache:$PATH
+export PATH=$TUE_BIN:$PATH
 
 export TUE_ENV=$TUE_ENV
 
