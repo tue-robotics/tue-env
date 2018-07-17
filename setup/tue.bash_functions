@@ -670,6 +670,10 @@ export TUE_ROBOCUP_BRANCH="robocup"
 
 function _tue-repos-do
 {
+    # Evaluates the command of the input for tue-env and all repo's of tue-robotics.
+    # The input can be multiple arguments, but if the input consists of multiple commands
+    # seperated by ';' or '&&' the input needs to be captured in a string.
+    
     local mem_pwd=$PWD
 
     cd $TUE_DIR
