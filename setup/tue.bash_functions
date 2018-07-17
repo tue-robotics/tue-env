@@ -928,14 +928,18 @@ For example:
 
     local branch=$1
     local remote=$2
-    local branch_exists=$(git show-ref refs/heads/$branch)
 
-    if [ -n "$exists" ]
+    if [ -n "$(git show-ref refs/heads/$branch)" ]
     then
         if [[ "$(git remote)" == *"$remote"* ]]
         then
             git fetch  $remote
-            git branch -u $remote/$branch $branch
+            if [[ "$(git branch -a)" == *"${remote}/${branch}"* ]]
+            then
+                git branch -u $remote/$branch $branch
+            else
+                echo -e "no branch: $branch on remote: $remote"
+            fi
         else
             echo -e "no remote: $remote"
         fi
