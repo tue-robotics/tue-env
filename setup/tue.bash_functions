@@ -224,7 +224,7 @@ complete -F _tue-dev tue-dev
 function _robocup_branch_allowed
 {
     local branch=$1
-    if [ "$branch" == "robocup" ] && [ -f $TUE_DIR/user/config/robocup ]
+    if [ -f $TUE_DIR/user/config/robocup ] && [ "$branch" == "$(cat $TUE_DIR/user/config/robocup)" ]
     then
         return 0
     fi
@@ -666,6 +666,38 @@ source $TUE_DIR/setup/tue-data.bash
 #                                             TUE-ROBOCUP
 # ----------------------------------------------------------------------------------------------------
 
+export TUE_ROBOCUP_BRANCH="robocup"
+
+function _tue-repos-do
+{
+    # Evaluates the command of the input for tue-env and all repo's of tue-robotics.
+    # The input can be multiple arguments, but if the input consists of multiple commands
+    # seperated by ';' or '&&' the input needs to be captured in a string.
+    
+    local mem_pwd=$PWD
+
+    cd $TUE_DIR
+    echo -e "\033[1m[tue-env]\033[0m"
+    eval "$@"
+
+    local repos_dir=$TUE_ENV_DIR/repos/https_/github.com/tue-robotics
+
+    local fs=`ls $repos_dir`
+    for repo in $fs
+    do
+        local repo_dir=$repos_dir/$repo
+
+        if [ -d $repo_dir ]
+        then
+            cd $repo_dir
+            echo -e "\033[1m[${repo%.git}]\033[0m"
+            eval "$@"
+        fi
+    done
+
+    cd $mem_pwd
+}
+
 function _tue-add-git-remote
 {
     local remote=$1
@@ -684,32 +716,31 @@ For example:
 
     if [ "$remote" == "origin" ]
     then
-        echo "You are not allowed to change the remote: 'origin'"
+        echo -e "\033[1mYou are not allowed to change the remote: 'origin'\033[0m"
         return 1
     fi
 
     local github_url="$(git config --get remote.origin.url)"
     local url_extension=${github_url#https://github.com/}
-    local pkg=${url_extension#tue-robotics/}
 
     if [[ "$(git remote)" == *"$remote"* ]]
     then
         local current_url=$(git config --get remote.${remote}.url)
         if [[ "$current_url" == "$server$url_extension" ]]
         then
-            echo -e "\033[1m[${pkg%.git}]\033[0m remote '$remote' exists with the same url"
+            echo -e "remote '$remote' exists with the same url"
             return 0
         fi
 
         git remote set-url $remote $server$url_extension
-        echo -e "\033[1m[${pkg%.git}]\033[0m url of remote '$remote' is changed
+        echo -e "url of remote '$remote' is changed
     from: $current_url
     to: $server$url_extension"
     return 0
     fi
     git remote add $remote $server$url_extension
 
-    echo -e "\033[1m[${pkg%.git}]\033[0m remote '$remote' added with url: $server$url_extension"
+    echo -e "remote '$remote' added with url: $server$url_extension"
 }
 
 function tue-add-git-remote
@@ -728,26 +759,68 @@ For example:
     local remote=$1
     local server=$2
 
-    local mem_pwd=$PWD
+    if [ "$remote" == "origin" ]
+    then
+        echo -e "\033[1mYou are not allowed to change the remote: 'origin'\033[0m"
+        return 1
+    fi
 
-    cd $TUE_DIR
-    _tue-add-git-remote $remote $server
+    _tue-repos-do "_tue-add-git-remote $remote $server"
+}
 
-    local pkgs_dir=$TUE_ENV_DIR/repos/https_/github.com/tue-robotics
+function __tue-remove-git-remote
+{
+    local remote=$1
 
-    local fs=`ls $pkgs_dir`
-    for pkg in $fs
-    do
-        local pkg_dir=$pkgs_dir/$pkg
+    if [ -z $1 ]
+    then
+        echo "Usage: __tue-remove-git-remote REMOTE
 
-        if [ -d $pkg_dir ]
-        then
-            cd $pkg_dir
-            _tue-add-git-remote $remote $server
-        fi
-    done
+For example:
 
-    cd $mem_pwd
+    __tue-remove-git-remote roboticssrv
+        "
+        return 1
+    fi
+
+    if [ "$remote" == "origin" ]
+    then
+        echo -e "\033[1mYou are not allowed to remove the remote: 'origin'\033[0m"
+        return 1
+    fi
+
+    if [[ "$(git remote)" == *"$remote"* ]]
+    then
+        git remote remove $remote
+        echo -e "remote '$remote' is removed"
+        return 0
+    fi
+
+    echo -e "remote '$remote' doesn't exist"
+}
+
+function _tue-remove-git-remote
+{
+    if [ -z $1 ]
+    then
+        echo "Usage: _tue-remove-git-remote REMOTE
+
+For example:
+
+    _tue-remove-git-remote roboticssrv
+        "
+        return 1
+    fi
+
+    local remote=$1
+
+    if [ "$remote" == "origin" ]
+    then
+        echo -e "\033[1mYou are not allowed to remove the remote: 'origin'\033[0m"
+        return 1
+    fi
+
+    _tue-repos-do "__tue-remove-git-remote $remote"
 }
 
 function _git_remote_checkout
@@ -791,31 +864,31 @@ For example:
     local remote=$1
     local branch=$2
 
-    local pkgs_dir=$TUE_ENV_DIR/repos/https_/github.com/tue-robotics
+    _tue-repos-do "git fetch $remote; _git_remote_checkout $remote $branch"
+}
 
-    local mem_pwd=$PWD
+function _tue-robocup-remote-checkout
+{
+    if [ -z $2 ]
+    then
+        echo "Usage: _tue-robocup-remote-checkout REMOTE BRANCH
 
-    cd $TUE_DIR
-    echo -e "\033[1m[tue-env]\033[0m"
+For example:
+
+    _tue-robocup-remote-checkout roboticssrv robocup
+        "
+        return 1
+    fi
+
+    local remote=$1
+    local branch=$2
+
     git fetch $remote
-
-    _git_remote_checkout $remote $branch
-
-    local fs=`ls $pkgs_dir`
-    for pkg in $fs
-    do
-        local pkg_dir=$pkgs_dir/$pkg
-
-        if [ -d $pkg_dir ]
-        then
-            cd $pkg_dir
-            echo -e "\033[1m[${pkg%.git}]\033[0m"
-            git fetch $remote
-            _git_remote_checkout $remote $branch
-        fi
-    done
-
-    cd $mem_pwd
+    local current_remote=$(git for-each-ref --format='%(upstream:short)' $(git symbolic-ref -q HEAD) | awk -F/ '{print $1}')
+    if [ "$current_remote" != "$remote" ]
+    then
+        _git_remote_checkout $remote $branch
+    fi
 }
 
 function tue-robocup-remote-checkout
@@ -824,69 +897,81 @@ function tue-robocup-remote-checkout
     # doesn't perform a checkout, when current branch is already setup
     # to the roboticssrv
     local remote="roboticssrv"
-    local branch="robocup"
+    local branch=$TUE_ROBOCUP_BRANCH
 
-    local pkgs_dir=$TUE_ENV_DIR/repos/https_/github.com/tue-robotics
+    _tue-repos-do "_tue-robocup-remote-checkout $remote $branch"
+}
 
-    local mem_pwd=$PWD
-
-    cd $TUE_DIR
-    echo -e "\033[1m[tue-env]\033[0m"
-    git fetch $remote
-
-    local current_remote=$(git for-each-ref --format='%(upstream:short)' $(git symbolic-ref -q HEAD) | awk -F/ '{print $1}')
-    if [ "$current_remote" != "$remote" ]
-    then
-        _git_remote_checkout $remote $branch
-    fi
-
-    local fs=`ls $pkgs_dir`
-    for pkg in $fs
-    do
-        local pkg_dir=$pkgs_dir/$pkg
-
-        if [ -d $pkg_dir ]
-        then
-            cd $pkg_dir
-            echo -e "\033[1m[${pkg%.git}]\033[0m"
-            git fetch $remote
-            local current_remote=$(git for-each-ref --format='%(upstream:short)' $(git symbolic-ref -q HEAD) | awk -F/ '{print $1}')
-            if [ "$current_remote" != "$remote" ]
-            then
-                _git_remote_checkout $remote $branch
-            fi
-        fi
-    done
-
-    cd $mem_pwd
+function __tue-robocup-default-branch
+{
+    local default_branch=$(git remote show origin | grep HEAD | awk '{print $3}')
+    _git_remote_checkout origin $default_branch
 }
 
 function _tue-robocup-default-branch
 {
-    local pkgs_dir=$TUE_ENV_DIR/repos/https_/github.com/tue-robotics
+    _tue-repos-do "__tue-robocup-default-branch"
+}
 
-    local mem_pwd=$PWD
+function _tue-robocup-change-remote
+{
+    if [ -z $2 ]
+    then
+        echo "Usage: _tue-robocup-change-remote BRANCH REMOTE
 
-    cd $TUE_DIR
-    echo -e "\033[1m[tue-env]\033[0m"
-    local default_branch=$(git remote show origin | grep HEAD | awk '{print $3}')
-    _git_remote_checkout origin $default_branch
+For example:
 
-    local fs=`ls $pkgs_dir`
-    for pkg in $fs
-    do
-        local pkg_dir=$pkgs_dir/$pkg
+    _tue-robocup-change-remote robocup origin
+        "
+        return 1
+    fi
 
-        if [ -d $pkg_dir ]
+    local branch=$1
+    local remote=$2
+
+    if [ -n "$(git show-ref refs/heads/$branch)" ]
+    then
+        if [[ "$(git remote)" == *"$remote"* ]]
         then
-            cd $pkg_dir
-            echo -e "\033[1m[${pkg%.git}]\033[0m"
-            local default_branch=$(git remote show origin | grep HEAD | awk '{print $3}')
-            _git_remote_checkout origin $default_branch
+            git fetch  $remote
+            if [[ "$(git branch -a)" == *"${remote}/${branch}"* ]]
+            then
+                git branch -u $remote/$branch $branch
+            else
+                echo -e "no branch: $branch on remote: $remote"
+            fi
+        else
+            echo -e "no remote: $remote"
         fi
-    done
+    else
+        echo -e "no local branch: $branch"
+    fi
+}
 
-    cd $mem_pwd
+function tue-robocup-change-remote
+{
+    # This changes the remote of the 'BRANCH' branch to 'REMOTE'
+    # After this, you local working copies may be behind what was fetched from REMOTE, so run a $ tue-get update
+
+    # for packages that have a REMOTE as a remote:
+        # do a git fetch origin: git fetch
+        # Change remote of branch 'BRANCH' to REMOTE: git branch -u REMOTE/BRANCH BRANCH
+
+    if [ -z $2 ]
+    then
+        echo "Usage: tue-robocup-change-remote BRANCH REMOTE
+
+For example:
+
+    tue-robocup-change-remote robocup origin
+        "
+        return 1
+    fi
+
+    local branch=$1
+    local remote=$2
+
+    _tue-repos-do "_tue-robocup-change-remote $branch $remote"
 }
 
 function tue-robocup-ssh-copy-id
@@ -896,8 +981,9 @@ function tue-robocup-ssh-copy-id
 
 function tue-robocup-set-github
 {
+    tue-robocup-change-remote $TUE_ROBOCUP_BRANCH origin
     _tue-robocup-default-branch
-    # disallow robocup as branch in tue-status
+    # disallow TUE_ROBOCUP_BRANCH as branch in tue-status
     if [ -f $TUE_DIR/user/config/robocup ]
     then
         rm $TUE_DIR/user/config/robocup
@@ -908,16 +994,16 @@ function tue-robocup-set-roboticssrv
 {
     tue-add-git-remote roboticssrv amigo@roboticssrv.local:
     tue-robocup-remote-checkout
-    # allow robocup as branch in tue-status
+    # allow TUE_ROBOCUP_BRANCH as branch in tue-status
     if [ ! -f $TUE_DIR/user/config/robocup ]
     then
-        touch $TUE_DIR/user/config/robocup
+        echo $TUE_ROBOCUP_BRANCH > $TUE_DIR/user/config/robocup
     fi
 }
 
 function tue-robocup-set-timezone-robocup
 {
-    sudo timedatectl set-timezone America/Toronto
+    sudo timedatectl set-timezone Australia/Sydney
 }
 
 function tue-robocup-set-timezone-home
@@ -945,12 +1031,12 @@ function tue-robocup-install-package
 
     local remote="roboticssrv"
     local server="amigo@roboticssrv.local:"
-    local branch="robocup"
+    local branch=$TUE_ROBOCUP_BRANCH
 
     # If directory already exists, return
     [ -d $repo_dir ] && return
 
-    git clone amigo@roboticssrv.local:tue-robotics/${1}.git $repo_dir
+    git clone ${server}tue-robotics/${1}.git $repo_dir
 
     cd $repo_dir
 
@@ -987,36 +1073,13 @@ function tue-robocup-install-package
 
 function tue-robocup-update
 {
-    local mem_pwd=$PWD
-
-    cd $TUE_DIR
-    git pull --ff-only
+    _tue-repos-do "git pull --ff-only"
 
     # Copy rsettings file
     if [ "$ROBOT_REAL" != "true" ]
     then
         cp $TUE_DIR/installer/targets/tue-common/rsettings_file $TUE_DIR/.rsettings
     fi
-
-    local fs=`ls $_TUE_CATKIN_SYSTEM_DIR/src`
-    for pkg in $fs
-    do
-        local pkg_dir=$_TUE_CATKIN_SYSTEM_DIR/src/$pkg
-
-        if [ -d $pkg_dir ]
-        then
-            cd $pkg_dir
-            local current_url=`git config --get remote.roboticssrv.url`
-
-            if echo "$current_url" | grep -q "roboticssrv.local"
-            then
-                echo -n "$pkg: "
-                git pull --ff-only
-            fi
-        fi
-    done
-
-    cd $mem_pwd
 }
 
 function tue-robocup-set-apt-get-proxy
