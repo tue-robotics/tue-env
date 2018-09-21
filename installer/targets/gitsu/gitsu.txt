@@ -7,7 +7,6 @@ loy.vanbeek@gmail.com : Loy van Beek
 m.j.j.baeten@gmail.com : Max Baeten
 sjoerdvddries@gmail.com : Sjoerd van den Dries
 t.t.g.clephas@alumnus.tue.nl : Tim Clephas
-tdejager89@gmail.com : Tim de Jager
 matthijs.vander.burgh@live.nl : Matthijs van der Burgh
 alexandrov.samuil@gmail.com : Sam Alexandrov
 kwinvdv@gmail.com : Kwin van der Veen
@@ -18,6 +17,6 @@ kevin.acnowlogia@gmail.com : Kevin Dang
 janslar@hotmail.com : Lars Janssen
 j.geijsberts@student.tue.nl : Josja Geijsberts
 a.t.hofkamp@tue.nl : Albert Hofkamp
-sumashwetha@gmail.com : Shwetha Macheri Ravishankar
 dorus_van_dinther@hotmail.com : Dorus van Dinther
 ar13pit@gmail.com : Arpit Aggarwal
+pepevandooren@hotmail.com : Peter van Dooren
