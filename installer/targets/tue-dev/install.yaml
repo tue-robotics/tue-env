@@ -45,7 +45,7 @@
 
 - type: target
   name: sergio-user
-  
+
 - type: target
   name: sergio-start
 
@@ -59,7 +59,7 @@
 
 # HSR commands
 - type: target
-  name: hsr-user
+  name: hero-user
 
 # Handy shit
 - type: target

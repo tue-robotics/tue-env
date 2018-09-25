@@ -1,5 +1,0 @@
-alias hsr-core='export ROS_MASTER_URI=http://hsrb.local:11311'
-
-alias hsr-rviz='rosrun rviz rviz  -d `rospack find hsrb_common_launch`/config/hsrb_display_simple.rviz'
-
-alias sshhsr='ssh hsr-user@hsrb.local'
