@@ -7,7 +7,7 @@ then
     wget https://hsr-user:jD3k4G2e@packages.hsr.io/tmc.key -O - | sudo apt-key add -
     wget http://packages.osrfoundation.org/gazebo.key -O - | sudo apt-key add -
     sudo apt-get update -qq
-    tue-install-debug "Added HSR sources to apt-get succesfull"
+    tue-install-debug "Added HSR sources to apt-get succesfully"
 else
     tue-install-debug "HSR sources already added to apt-get"
 fi
