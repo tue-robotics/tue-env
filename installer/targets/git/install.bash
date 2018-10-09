@@ -8,3 +8,5 @@ if [ ! -f /usr/local/bin/git-extras ]; then
 	# enable color
 	git config --global color.ui true
 fi
+
+git config --global --replace-all core.excludesFile $( dirname "${BASH_SOURCE[0]}")/gitignore
