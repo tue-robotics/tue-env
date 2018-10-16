@@ -43,7 +43,7 @@ Optionally fix your compilation errors and rerun only the last command
 \e[0m"
 
 # Name of the docker image
-IMAGE_NAME=tuerobotics/tue-env
+IMAGE_NAME=tueroboticsamigo/tue-env
 # Determine docker tag if the same branch exists there
 BRANCH_TAG=`echo "$BRANCH" | tr '[:upper:]' '[:lower:]' | sed -e 's:/:_:g'`
 
