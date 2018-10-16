@@ -1,0 +1,63 @@
+# Simulation
+- type: target
+  name: ros-tmc-desktop-full
+
+# Middleware
+- type: target
+  name: tue-middleware
+- type: target
+  name: ros-tue_mobile_ui
+
+# Visualization
+- type: target
+  name: ros-rviz
+
+# DATA
+- type: target
+  name: megasync
+
+# Diagnostics
+- type: ros
+  source:
+    type: system
+    name: viz
+
+- type: target
+  name: spot
+
+# -------------------- ROBOCUP --------------------
+
+- type: target
+  name: tue-robocup-at-home
+
+# -------------------- ROBOTS --------------------
+
+- type: target
+  name: ros-dashboard
+
+# HSR 
+- type: target
+  name: hero-user
+
+- type: target
+  name: hero-start
+
+# Console
+- type: target
+  name: ros-nl_robot_console
+
+# ED rviz plugin
+- type: target
+  name: ros-ed_rviz_plugins
+
+# Handy stuff
+- type: target
+  name: terminator
+- type: target
+  name: vim
+
+- type: system
+  name: htop
+- type: system
+  name: meld
+
