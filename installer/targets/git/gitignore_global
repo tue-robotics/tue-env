@@ -27,7 +27,7 @@ msg/_*.py
 .cproject
 
 # qcreator stuff
-CMakeLists.txt.user
+*CMakeLists.txt.user
 
 # vscode stuff
 .vscode/
@@ -39,7 +39,7 @@ qtcreator-*
 *.user
 
 # pycharm stuff
-.idea
+*.idea
 
 # CLion stuff
 cmake-build-debug
