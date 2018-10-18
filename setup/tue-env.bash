@@ -104,7 +104,6 @@ function tue-env
 
     elif [[ $cmd == "config" ]]
     then
-        mkdir -p user_setup.bash    
         vim $TUE_ENV_DIR/.env/setup/user_setup.bash
 
     elif [[ $cmd == "cd" ]]
