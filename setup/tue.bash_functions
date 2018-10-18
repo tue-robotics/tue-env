@@ -76,35 +76,35 @@ function tue-make
 
     if [ -n "$TUE_ROS_DISTRO" ] && [ -d $_TUE_CATKIN_SYSTEM_DIR ]
     then
-		case $(cat $_TUE_CATKIN_SYSTEM_DIR/devel/.built_by) in
-		'catkin_make')
-			catkin_make --directory $_TUE_CATKIN_SYSTEM_DIR -DCMAKE_BUILD_TYPE=RelWithDebInfo $@
-			;;
-		'catkin build')
-			catkin build --workspace $_TUE_CATKIN_SYSTEM_DIR $@
-			;;
-		'')
-			catkin init --workspace $_TUE_CATKIN_SYSTEM_DIR $@
-			catkin build --workspace $_TUE_CATKIN_SYSTEM_DIR $@
-			;;
-		esac
+        case $(cat $_TUE_CATKIN_SYSTEM_DIR/devel/.built_by) in
+        'catkin_make')
+            catkin_make --directory $_TUE_CATKIN_SYSTEM_DIR -DCMAKE_BUILD_TYPE=RelWithDebInfo $@
+            ;;
+        'catkin build')
+            catkin build --workspace $_TUE_CATKIN_SYSTEM_DIR $@
+            ;;
+        '')
+            catkin init --workspace $_TUE_CATKIN_SYSTEM_DIR $@
+            catkin build --workspace $_TUE_CATKIN_SYSTEM_DIR $@
+            ;;
+        esac
     fi
 }
 
 function tue-make-system
 {
-	case $(cat $_TUE_CATKIN_SYSTEM_DIR/devel/.built_by) in
-	'catkin_make')
-		catkin_make --directory $_TUE_CATKIN_SYSTEM_DIR -DCMAKE_BUILD_TYPE=RelWithDebInfo $@
-		;;
-	'catkin build')
-		catkin build --workspace $_TUE_CATKIN_SYSTEM_DIR $@
-		;;
-	'')
-		catkin init --workspace $_TUE_CATKIN_SYSTEM_DIR $@
-		catkin build --workspace $_TUE_CATKIN_SYSTEM_DIR $@
-		;;
-	esac
+    case $(cat $_TUE_CATKIN_SYSTEM_DIR/devel/.built_by) in
+    'catkin_make')
+        catkin_make --directory $_TUE_CATKIN_SYSTEM_DIR -DCMAKE_BUILD_TYPE=RelWithDebInfo $@
+        ;;
+    'catkin build')
+        catkin build --workspace $_TUE_CATKIN_SYSTEM_DIR $@
+        ;;
+    '')
+        catkin init --workspace $_TUE_CATKIN_SYSTEM_DIR $@
+        catkin build --workspace $_TUE_CATKIN_SYSTEM_DIR $@
+        ;;
+    esac
 }
 
 function _tue-make
@@ -120,34 +120,34 @@ complete -F _tue-make tue-make-system
 
 function tue-make-dev
 {
-	case $(cat $_TUE_CATKIN_DEV_DIR/devel/.built_by) in
-	'catkin_make')
-		catkin_make --directory $_TUE_CATKIN_DEV_DIR -DCMAKE_BUILD_TYPE=RelWithDebInfo $@
-		;;
-	'catkin build')
-		catkin build --workspace $_TUE_CATKIN_DEV_DIR $@
-		;;
-	'')
-		catkin init --workspace $_TUE_CATKIN_DEV_DIR $@
-		catkin build --workspace $_TUE_CATKIN_DEV_DIR $@
-		;;
-	esac
+    case $(cat $_TUE_CATKIN_DEV_DIR/devel/.built_by) in
+    'catkin_make')
+        catkin_make --directory $_TUE_CATKIN_DEV_DIR -DCMAKE_BUILD_TYPE=RelWithDebInfo $@
+        ;;
+    'catkin build')
+        catkin build --workspace $_TUE_CATKIN_DEV_DIR $@
+        ;;
+    '')
+        catkin init --workspace $_TUE_CATKIN_DEV_DIR $@
+        catkin build --workspace $_TUE_CATKIN_DEV_DIR $@
+        ;;
+    esac
 }
 
 function tue-make-dev-isolated
 {
-	case $(cat $_TUE_CATKIN_SYSTEM_DIR/devel/.built_by) in
-	'catkin_make')
-		catkin_make_isolated --directory $_TUE_CATKIN_DEV_DIR -DCMAKE_BUILD_TYPE=RelWithDebInfo $@
-		;;
-	'catkin build')
-		catkin build --workspace $_TUE_CATKIN_DEV_DIR $@
-		;;
-	'')
-		catkin init --workspace $_TUE_CATKIN_DEV_DIR $@
-		catkin build --workspace $_TUE_CATKIN_DEV_DIR $@
-		;;
-	esac
+    case $(cat $_TUE_CATKIN_SYSTEM_DIR/devel/.built_by) in
+    'catkin_make')
+        catkin_make_isolated --directory $_TUE_CATKIN_DEV_DIR -DCMAKE_BUILD_TYPE=RelWithDebInfo $@
+        ;;
+    'catkin build')
+        catkin build --workspace $_TUE_CATKIN_DEV_DIR $@
+        ;;
+    '')
+        catkin init --workspace $_TUE_CATKIN_DEV_DIR $@
+        catkin build --workspace $_TUE_CATKIN_DEV_DIR $@
+        ;;
+    esac
 }
 
 function _tue-make-dev
