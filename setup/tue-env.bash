@@ -71,7 +71,9 @@ function tue-env
             return 1
         fi
 
+        dir=`cat $TUE_DIR/user/envs/$1`
         rm $TUE_DIR/user/envs/$1
+        rm -rf $dir
     elif [[ $cmd == "switch" ]]
     then
         if [ -z "$1" ]
