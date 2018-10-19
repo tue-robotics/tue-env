@@ -40,8 +40,7 @@ function tue-env
 
         local dir=$PWD   # default directory is current directory
         [ -z "$2" ] || dir=$2
-
-        # TODO: make dir absolute
+        dir="$( realpath $dir )"
 
         if [ -f $TUE_DIR/user/envs/$1 ]
         then
