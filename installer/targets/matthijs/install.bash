@@ -20,5 +20,5 @@ done
 
 if ! grep -q 'xinput' ~/.profile;
 then
-    echo -e 'xinput set-prop 13 "Synaptics Palm Detection" 1 && xinput set-prop 13 "Synaptics Palm Dimensions" 20, 20' >> ~/.profile
+    echo -e 'xinput set-prop 13 "Synaptics Palm Detection" 1 && xinput set-prop 13 "Synaptics Palm Dimensions" 10, 20' >> ~/.profile
 fi
