@@ -17,3 +17,8 @@ do
         tue-install-debug "git config --global --replace-all $option $value"
         git config --global --replace-all $option $value
 done
+
+if ! grep -q 'xinput' ~/.profile;
+then
+    echo -e 'xinput set-prop 13 "Synaptics Palm Detection" 1 && xinput set-prop 13 "Synaptics Palm Dimensions" 9, 17' >> ~/.profile
+fi
