@@ -12,6 +12,7 @@ cd ~/torch
 bash install-deps
 ./install.sh
 
+# One time sourcing doesn't work. Why? Unknown.
 source ~/.bashrc
 source ~/.bashrc
 
