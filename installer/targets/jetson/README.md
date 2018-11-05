@@ -18,7 +18,7 @@ tue-make
 source ~/.bashrc
 roscd image_recognition_openpose
 ln -s ~/openpose 
-tue-make --pre-clean openpose_ros
+tue-make --pre-clean image_recognition_openpose
 
 test with:
 
