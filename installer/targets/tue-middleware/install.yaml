@@ -67,6 +67,3 @@
 
 - type: target
   name: ros-people_detector
-
-- type: target
-  name: ros-image_recognition_openface
