@@ -54,7 +54,7 @@ then
 	Great, now run these four commands yourself:
 	cd ~/openpose
 	bash ./ubuntu/install_caffe_and_openpose_if_cuda8.sh
-	roscd openpose_ros
+	roscd image_recognition_openpose
 	ln -s ~/openpose
 
 	"
