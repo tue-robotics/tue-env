@@ -1,5 +1,5 @@
 [Unit]
-Description=Openpose ROS Node
+Description=image_recognition_openpose Node
 
 [Install]
 WantedBy=multi-user.target
