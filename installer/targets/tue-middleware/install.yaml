@@ -19,10 +19,6 @@
 - type: target
   name: ros-tue_manipulation
 
-# AR tracking
-- type: target
-  name: ros-ar_track_alvar
-
 # SLAM
 - type: target
   name: ros-gmapping
