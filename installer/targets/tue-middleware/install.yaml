@@ -63,7 +63,4 @@
   name: ros-action_server
 
 - type: target
-  name: ros-tensorflow_ros
-
-- type: target
   name: ros-people_detector
