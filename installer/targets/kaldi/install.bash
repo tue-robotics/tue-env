@@ -18,7 +18,7 @@ then
     # If the kaldi_speech is pointing to the wrong Remote, correct it
     if [ "$REMOTE" != "$KALDI_REPO" ]
     then
-        tue-install-debug "Updated kaldi_speech remote to $KALDI_REPO from $REMOTE"
+        tue-install-debug "Updated kaldi_speech remote from $REMOTE to $KALDI_REPO"
         git remote set-url origin "$KALDI_REPO"
     fi
 
