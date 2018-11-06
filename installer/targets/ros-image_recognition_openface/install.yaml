@@ -2,6 +2,6 @@
   source:
     type: git
     url: https://github.com/tue-robotics/image_recognition.git
-    sub-dir: openface_ros
+    sub-dir: image_recognition_openface
 - type: target
   name: openface
