@@ -83,7 +83,7 @@ options:
             dir_moved=$dir.$(date +%F_%R)
             rm $TUE_DIR/user/envs/$1
             mv $dir $dir_moved
-            echo """Removed environment '$1'
+            echo """[tue-env] Removed environment '$1'
 Moved environment directory of '$1' to '$dir_moved'"""
         else
             dir=`cat $TUE_DIR/user/envs/$2`
