@@ -60,18 +60,18 @@ function tue-env
     then
         if [ -z "$1" ]
         then
-            echo "Usage: tue-env remove [options] ENVIRONMENT
+            echo """Usage: tue-env remove [options] ENVIRONMENT
 options:
     --purge
-        Using this would completely remove the selected ENVIRONMENT if it exists"
+        Using this would completely remove the selected ENVIRONMENT if it exists"""
             return 1
         fi
 
-        if [ [ ! -f $TUE_DIR/user/envs/$1 ] && [ "$1" != "--purge" ] ]
+        if [ ! -f $TUE_DIR/user/envs/$1 -a "$1" != "--purge" ]
         then
             echo "[tue-env] No such environment: '$1'."
             return 1
-        elif [ [ "$1" == "--purge" ] && [ [ -z "$2" ] || [ ! -f $TUE_DIR/user/envs/$2 ] ] ]
+        elif [ "$1" == "--purge" ] && [ -z "$2" -o ! -f $TUE_DIR/user/envs/$2 ]
         then
             echo "[tue-env] No such environment: '$2' to purge."
             return 1
