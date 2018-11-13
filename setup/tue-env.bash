@@ -89,7 +89,7 @@ Moved environment directory of '$1' to '$dir_moved'"""
             dir=`cat $TUE_DIR/user/envs/$2`
             rm $TUE_DIR/user/envs/$2
             rm -rf $dir
-            echo """Removed environment '$2'
+            echo """[tue-env] Removed environment '$2'
 Purged environment directory of '$2'"""
         fi
 
