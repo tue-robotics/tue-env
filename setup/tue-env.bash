@@ -60,19 +60,34 @@ function tue-env
     then
         if [ -z "$1" ]
         then
-            echo "Usage: tue-env remove ENVIRONMENT"
+            echo "Usage: tue-env remove [options] ENVIRONMENT
+options:
+    --purge
+        Using this would completely remove the selected ENVIRONMENT if it exists"
             return 1
         fi
 
-        if [ ! -f $TUE_DIR/user/envs/$1 ]
+        if [ [ ! -f $TUE_DIR/user/envs/$1 ] && [ "$1" != "--purge" ] ]
         then
             echo "[tue-env] No such environment: '$1'."
             return 1
+        elif [ [ "$1" == "--purge" ] && [ [ -z "$2" ] || [ ! -f $TUE_DIR/user/envs/$2 ] ] ]
+        then
+            echo "[tue-env] No such environment: '$2' to purge."
+            return 1
         fi
 
-        dir=`cat $TUE_DIR/user/envs/$1`
-        rm $TUE_DIR/user/envs/$1
-        rm -rf $dir
+        if [ "$1" != "--purge" ]
+        then
+            dir=`cat $TUE_DIR/user/envs/$1`
+            rm $TUE_DIR/user/envs/$1
+            mv $dir $dir.$(date +%F_%R)
+        else
+            dir=`cat $TUE_DIR/user/envs/$2`
+            rm $TUE_DIR/user/envs/$2
+            rm -rf $dir
+        fi
+
     elif [[ $cmd == "switch" ]]
     then
         if [ -z "$1" ]
