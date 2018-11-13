@@ -80,12 +80,17 @@ options:
         if [ "$1" != "--purge" ]
         then
             dir=`cat $TUE_DIR/user/envs/$1`
+            dir_moved=$dir.$(date +%F_%R)
             rm $TUE_DIR/user/envs/$1
-            mv $dir $dir.$(date +%F_%R)
+            mv $dir $dir_moved
+            echo """Removed environment '$1'
+Moved environment directory of '$1' to '$dir_moved'"""
         else
             dir=`cat $TUE_DIR/user/envs/$2`
             rm $TUE_DIR/user/envs/$2
             rm -rf $dir
+            echo """Removed environment '$2'
+Purged environment directory of '$2'"""
         fi
 
     elif [[ $cmd == "switch" ]]
