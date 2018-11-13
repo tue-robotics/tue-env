@@ -19,10 +19,6 @@
 - type: target
   name: ros-tue_manipulation
 
-# AR tracking
-- type: target
-  name: ros-ar_track_alvar
-
 # SLAM
 - type: target
   name: ros-gmapping
@@ -30,15 +26,16 @@
 # World model
 - type: target
   name: ros-ed
-- type: target
 
+- type: target
   name: ros-ed_perception
-- type: target
 
+- type: target
   name: ros-ed_perception_models
-- type: target
 
+- type: target
   name: ros-ed_gui_server
+
 - type: target
   name: ros-ed_localization
 
@@ -62,10 +59,4 @@
   name: ros-action_server
 
 - type: target
-  name: ros-tensorflow_ros
-
-- type: target
-
   name: ros-people_detector
-- type: target
-  name: ros-openface_ros
