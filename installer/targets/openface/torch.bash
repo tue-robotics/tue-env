@@ -11,6 +11,9 @@ git clone https://github.com/torch/distro.git ~/torch --recursive
 cd ~/torch
 bash install-deps
 ./install.sh
+
+# One time sourcing doesn't work. Why? Unknown.
+source ~/.bashrc
 source ~/.bashrc
 
 luarocks install dpnn

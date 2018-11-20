@@ -29,5 +29,4 @@ if [ ! -d ~/openface ]; then
         echo "openface is not properly installed"
     fi
 
-    luarocks install dpnn
 fi
