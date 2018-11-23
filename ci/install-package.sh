@@ -75,7 +75,7 @@ echo -e "\e[35m\e[1m ROS_DISTRO=$ROS_DISTRO\e[0m"
 
 # Install the package
 echo -e "\e[35m\e[1m tue-get install ros-$PACKAGE --branch=$BRANCH\e[0m"
-docker exec tue-env bash -c 'export CI="true"; source /home/amigo/.bashrc; tue-get install ros-"$PACKAGE" --branch="$BRANCH"'
+docker exec tue-env bash -c 'source /home/amigo/.bashrc; tue-get install ros-"$PACKAGE" --branch="$BRANCH"'
 
 # Set the package to the right commit
 echo -e "\e[35m\e[1m Reset package to this commit \e[0m"
