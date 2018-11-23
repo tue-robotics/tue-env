@@ -85,5 +85,5 @@ then
     docker exec tue-env bash -c 'export CI="true"; source /home/amigo/.bashrc; cd ~/ros/"$ROS_DISTRO"/system/src/"$PACKAGE" && git reset --hard "$COMMIT"'
 else
     echo -e "\e[35m\e[1m cd ~/ros/$ROS_DISTRO/system/src/$PACKAGE && git fetch origin pull/$PULL_REQUEST/head:PULLREQUEST && git checkout PULLREQUEST \e[0m"
-    docker exec tue-env bash -c 'export CI="true"; source /home/amigo/.bashrc; cd ~/ros/"$ROS_DISTRO"/system/src/"$PACKAGE" && git fetch origin pull/"$PULL_REQUEST"/head:PULLREQUEST && git checkout PULLREQUEST'
+    docker exec tue-env bash -c 'source /home/amigo/.bashrc; cd ~/ros/"$ROS_DISTRO"/system/src/"$PACKAGE" && git fetch origin pull/"$PULL_REQUEST"/head:PULLREQUEST && git checkout PULLREQUEST'
 fi
