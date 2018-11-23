@@ -25,7 +25,7 @@ docker exec tue-env bash -c 'export CI="true"; source /home/amigo/.bashrc; cd ~/
 
 # Run unit tests
 echo -e "\e[35m\e[1m Run unit test on this package (catkin run_test --this --no-deps) \e[0m"
-docker exec tue-env bash -c 'export CI="true"; source /home/amigo/.bashrc; cd ~/ros/"$ROS_DISTRO"/system/src/"$PACKAGE" && catkin run_tests --this --no-status --no-deps'
+docker exec tue-env bash -c 'source /home/amigo/.bashrc; cd ~/ros/"$ROS_DISTRO"/system/src/"$PACKAGE" && catkin run_tests --this --no-status --no-deps'
 
 # Check results of unit tests
 echo -e "\e[35m\e[1m Check results of unit test on this package (catkin_test_results build/$PACKAGE) \e[0m"
