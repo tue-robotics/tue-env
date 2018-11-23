@@ -71,7 +71,7 @@ docker exec tue-env bash -c "sudo apt-get update -qq"
 # Use docker environment variables in all exec commands instead of script variables
 # Catch the ROS_DISTRO of the docker container
 ROS_DISTRO=$(docker exec tue-env bash -c 'export CI="true"; source /home/amigo/.bashrc; echo "$ROS_DISTRO"')
-echo -e "\e[35m\e[1m ROS_DISTRO=$ROS_DISTRO\e[0m"
+echo -e "\e[35m\e[1m ROS_DISTRO = $ROS_DISTRO\e[0m"
 
 # Install the package
 echo -e "\e[35m\e[1m tue-get install ros-$PACKAGE --branch=$BRANCH\e[0m"
