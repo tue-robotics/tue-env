@@ -776,10 +776,11 @@ if [ -n "$TUE_INSTALL_PIPS" ]; then
 
     if [[ ! $(pip --version | awk '{print $2}') == '9.'* ]]; then
         tue-install-debug "pip not yet version >=9, but `pip --version | awk '{print $2}'`"
-        pip install --user --upgrade pip
+        sudo -H pip install --upgrade pip
     else
         tue-install-debug "Already pip>=9\n"
     fi
+        
 
     # Just install the packages because checking for installation is not faster
     if [ -n "$TUE_INSTALL_PIPS" ]
