@@ -787,7 +787,6 @@ if [ -n "$TUE_INSTALL_PIPS" ]; then
     else
         tue-install-debug "Already pip>=9\n"
     fi
-        
 
     # Just install the packages because checking for installation is not faster
     echo -e "Going to run the following command:\n"
