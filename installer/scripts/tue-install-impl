@@ -775,7 +775,7 @@ if [ -n "$TUE_INSTALL_PIPS" ]; then
     echo -e "\nyes | pip install --user $TUE_INSTALL_PIPS" >> $INSTALL_DETAILS_FILE
 
     if [[ ! $(pip --version | awk '{print $2}') == '9.'* ]]; then
-        tue-install-debug "pip not yet version >=9"
+        tue-install-debug "pip not yet version >=9, but `pip --version | awk '{print $2}'`"
         pip install --user --upgrade pip
     else
         tue-install-debug "Already pip>=9\n"
