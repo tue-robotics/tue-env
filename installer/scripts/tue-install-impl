@@ -22,6 +22,12 @@ function date_stamp {
 
 # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # #
 
+function version_gt() {
+    test "$(printf '%s\n' "$@" | sort -V | head -n 1)" != "$1";
+}
+
+# # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # #
+
 function tue-install-error {
     echo -e "\033[38;5;1m
 Error while installing target '$TUE_INSTALL_CURRENT_TARGET':
@@ -774,20 +780,18 @@ if [ -n "$TUE_INSTALL_PIPS" ]; then
 
     echo -e "\nyes | pip install --user $TUE_INSTALL_PIPS" >> $INSTALL_DETAILS_FILE
 
-    if [[ ! $(pip --version | awk '{print $2}') == '9.'* ]]; then
-        tue-install-debug "pip not yet version >=9"
-        pip install --user --upgrade pip
+    pip_version=$(pip --version | awk '{print $2}')
+    if version_gt "9" "$pip_version"; then
+        tue-install-debug "pip not yet version >=9, but $pip_version"
+        sudo -H pip install --upgrade pip
     else
         tue-install-debug "Already pip>=9\n"
     fi
 
     # Just install the packages because checking for installation is not faster
-    if [ -n "$TUE_INSTALL_PIPS" ]
-    then
-        echo -e "Going to run the following command:\n"
-        echo -e "yes | pip install --user $TUE_INSTALL_PIPS\n"
-        yes | pip install --user $TUE_INSTALL_PIPS
-    fi
+    echo -e "Going to run the following command:\n"
+    echo -e "yes | pip install --user $TUE_INSTALL_PIPS\n"
+    yes | pip install --user $TUE_INSTALL_PIPS
 fi
 
 # Installing all snap targets, which are collected during the install
