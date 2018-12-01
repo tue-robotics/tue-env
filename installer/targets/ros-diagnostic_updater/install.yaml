@@ -1,5 +1,4 @@
 - type: ros
   source:
-    type: git
-    url: https://github.com/tue-robotics/diagnostics.git
-    sub-dir: diagnostic_updater
+    type: system
+    name: diagnostic-updater
