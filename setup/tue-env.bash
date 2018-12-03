@@ -56,6 +56,7 @@ function tue-env
 
         echo "$dir" > $TUE_DIR/user/envs/$1
         mkdir -p $dir/.env
+
     elif [[ $cmd == "remove" ]]
     then
         if [ -z "$1" ]
@@ -65,32 +66,51 @@ options:
     --purge
         Using this would completely remove the selected ENVIRONMENT if it exists"""
             return 1
-        fi
-
-        if [ ! -f $TUE_DIR/user/envs/$1 -a "$1" != "--purge" ]
-        then
-            echo "[tue-env] No such environment: '$1'."
-            return 1
-        elif [ "$1" == "--purge" ] && [ -z "$2" -o ! -f $TUE_DIR/user/envs/$2 ]
-        then
-            echo "[tue-env] No such environment: '$2' to purge."
-            return 1
-        fi
-
-        if [ "$1" != "--purge" ]
-        then
-            dir=$(cat $TUE_DIR/user/envs/$1)
-            dir_moved=$dir.$(date +%F_%R)
-            rm $TUE_DIR/user/envs/$1
-            mv $dir $dir_moved
-            echo """[tue-env] Removed environment '$1'
-Moved environment directory of '$1' to '$dir_moved'"""
         else
-            dir=$(cat $TUE_DIR/user/envs/$2)
-            rm $TUE_DIR/user/envs/$2
+            # Set purge to be false by default
+            PURGE=false
+            env=""
+            while test $# -gt 0
+            do
+                case "$1" in
+                    --purge)
+                        PURGE=true
+                        ;;
+                    --*)
+                        echo "[tue-env] Unknown option $1"
+                        ;;
+                    *)
+                        # Read only the first passed environment name and ignore
+                        # the rest
+                        if [ -z $env ]
+                        then
+                            env=$1
+                        fi
+                        ;;
+                esac
+                shift
+            done
+        fi
+
+        if [ ! -f $TUE_DIR/user/envs/$env ]
+        then
+            echo "[tue-env] No such environment: '$env'."
+            return 1
+        fi
+
+        dir=$(cat $TUE_DIR/user/envs/$env)
+        rm $TUE_DIR/user/envs/$env
+
+        if [ $PURGE == "false" ]
+        then
+            dir_moved=$dir.$(date +%F_%R)
+            mv $dir $dir_moved
+            echo """[tue-env] Removed environment '$env'
+Moved environment directory of '$env' to '$dir_moved'"""
+        else
             rm -rf $dir
-            echo """[tue-env] Removed environment '$2'
-Purged environment directory of '$2'"""
+            echo """[tue-env] Removed environment '$env'
+Purged environment directory of '$env'"""
         fi
 
     elif [[ $cmd == "switch" ]]
