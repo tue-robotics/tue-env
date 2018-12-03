@@ -13,7 +13,7 @@ function tue-env
     Possible commands:
 
         init           - Initializes new environment
-        remove         - Removes an existing enviroment (no data is lost)
+        remove         - Removes an existing enviroment
         switch         - Switch to a different environment
         config         - Configures current environment
         set-default    - Set default environment
@@ -79,14 +79,14 @@ options:
 
         if [ "$1" != "--purge" ]
         then
-            dir=`cat $TUE_DIR/user/envs/$1`
+            dir=$(cat $TUE_DIR/user/envs/$1)
             dir_moved=$dir.$(date +%F_%R)
             rm $TUE_DIR/user/envs/$1
             mv $dir $dir_moved
             echo """[tue-env] Removed environment '$1'
 Moved environment directory of '$1' to '$dir_moved'"""
         else
-            dir=`cat $TUE_DIR/user/envs/$2`
+            dir=$(cat $TUE_DIR/user/envs/$2)
             rm $TUE_DIR/user/envs/$2
             rm -rf $dir
             echo """[tue-env] Removed environment '$2'
@@ -108,8 +108,8 @@ Purged environment directory of '$2'"""
         fi
 
         export TUE_ENV=$1
-        export TUE_ENV_DIR=`cat $TUE_DIR/user/envs/$1`
-        
+        export TUE_ENV_DIR=$(cat $TUE_DIR/user/envs/$1)
+
         source ~/.bashrc
 
     elif [[ $cmd == "set-default" ]]
@@ -132,14 +132,14 @@ Purged environment directory of '$2'"""
         local env=$1
         [ -n "$env" ] || env=$TUE_ENV
 
-        local dir=`cat $TUE_DIR/user/envs/$env`
+        local dir=$(cat $TUE_DIR/user/envs/$env)
         cd $dir
 
     elif [[ $cmd == "list" ]]
     then
         [ -d $TUE_DIR/user/envs ] || return 0
 
-        for env in `ls $TUE_DIR/user/envs`
+        for env in $(ls $TUE_DIR/user/envs)
         do
             echo $env
         done
@@ -168,8 +168,8 @@ function _tue-env
             if [ $COMP_CWORD -eq 2 ]
             then
                 local envs=
-                [ -d $TUE_DIR/user/envs ] && envs=`ls $TUE_DIR/user/envs`
-                COMPREPLY=( $(compgen -W "$envs" -- $cur) )        
+                [ -d $TUE_DIR/user/envs ] && envs=$(ls $TUE_DIR/user/envs)
+                COMPREPLY=( $(compgen -W "$envs" -- $cur) )
             fi
         fi
     fi
