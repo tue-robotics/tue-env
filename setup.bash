@@ -14,6 +14,7 @@ function _tue-check-env-vars
 }
 export -f _tue-check-env-vars
 
+# ------------------------------------------
 if [ -z "$TUE_ENV" ]
 then
     if [ ! -f $TUE_DIR/user/config/default_env ]
@@ -67,6 +68,15 @@ export PATH=$TUE_BIN:$PATH
 
 export TUE_ENV=$TUE_ENV
 
-# Make sure ROS can find cmake modules of non-ROS packages
-#export CMAKE_PREFIX_PATH=$TUE_ENV_DIR/cmake:$CMAKE_PREFIX_PATH
+# Export so QtCreator can build packages
 export CURRENT_CMAKE_BUILD_DIR="$(catkin locate --workspace $TUE_SYSTEM_DIR --build)"
+
+# ------------------------------------------
+# pip bash completion
+_pip_completion()
+{
+    COMPREPLY=( $( COMP_WORDS="${COMP_WORDS[*]}" \
+                   COMP_CWORD=$COMP_CWORD \
+                   PIP_AUTO_COMPLETE=1 $1 ) )
+}
+complete -o default -F _pip_completion pip
