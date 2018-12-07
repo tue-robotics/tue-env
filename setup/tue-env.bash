@@ -13,7 +13,7 @@ function tue-env
     Possible commands:
 
         init           - Initializes new environment
-        remove         - Removes an existing enviroment (no data is lost)
+        remove         - Removes an existing enviroment
         switch         - Switch to a different environment
         config         - Configures current environment
         set-default    - Set default environment
@@ -40,8 +40,7 @@ function tue-env
 
         local dir=$PWD   # default directory is current directory
         [ -z "$2" ] || dir=$2
-
-        # TODO: make dir absolute
+        dir="$( realpath $dir )"
 
         if [ -f $TUE_DIR/user/envs/$1 ]
         then
@@ -57,21 +56,63 @@ function tue-env
 
         echo "$dir" > $TUE_DIR/user/envs/$1
         mkdir -p $dir/.env
+
     elif [[ $cmd == "remove" ]]
     then
         if [ -z "$1" ]
         then
-            echo "Usage: tue-env remove ENVIRONMENT"
+            echo """Usage: tue-env remove [options] ENVIRONMENT
+options:
+    --purge
+        Using this would completely remove the selected ENVIRONMENT if it exists"""
             return 1
+        else
+            # Set purge to be false by default
+            PURGE=false
+            env=""
+            while test $# -gt 0
+            do
+                case "$1" in
+                    --purge)
+                        PURGE=true
+                        ;;
+                    --*)
+                        echo "[tue-env] Unknown option $1"
+                        ;;
+                    *)
+                        # Read only the first passed environment name and ignore
+                        # the rest
+                        if [ -z $env ]
+                        then
+                            env=$1
+                        fi
+                        ;;
+                esac
+                shift
+            done
         fi
 
-        if [ ! -f $TUE_DIR/user/envs/$1 ]
+        if [ ! -f $TUE_DIR/user/envs/$env ]
         then
-            echo "[tue-env] No such environment: '$1'."
+            echo "[tue-env] No such environment: '$env'."
             return 1
         fi
 
-        rm $TUE_DIR/user/envs/$1
+        dir=$(cat $TUE_DIR/user/envs/$env)
+        rm $TUE_DIR/user/envs/$env
+
+        if [ $PURGE == "false" ]
+        then
+            dir_moved=$dir.$(date +%F_%R)
+            mv $dir $dir_moved
+            echo """[tue-env] Removed environment '$env'
+Moved environment directory of '$env' to '$dir_moved'"""
+        else
+            rm -rf $dir
+            echo """[tue-env] Removed environment '$env'
+Purged environment directory of '$env'"""
+        fi
+
     elif [[ $cmd == "switch" ]]
     then
         if [ -z "$1" ]
@@ -87,8 +128,8 @@ function tue-env
         fi
 
         export TUE_ENV=$1
-        export TUE_ENV_DIR=`cat $TUE_DIR/user/envs/$1`
-        
+        export TUE_ENV_DIR=$(cat $TUE_DIR/user/envs/$1)
+
         source ~/.bashrc
 
     elif [[ $cmd == "set-default" ]]
@@ -104,7 +145,6 @@ function tue-env
 
     elif [[ $cmd == "config" ]]
     then
-        mkdir -p user_setup.bash    
         vim $TUE_ENV_DIR/.env/setup/user_setup.bash
 
     elif [[ $cmd == "cd" ]]
@@ -112,14 +152,14 @@ function tue-env
         local env=$1
         [ -n "$env" ] || env=$TUE_ENV
 
-        local dir=`cat $TUE_DIR/user/envs/$env`
+        local dir=$(cat $TUE_DIR/user/envs/$env)
         cd $dir
 
     elif [[ $cmd == "list" ]]
     then
         [ -d $TUE_DIR/user/envs ] || return 0
 
-        for env in `ls $TUE_DIR/user/envs`
+        for env in $(ls $TUE_DIR/user/envs)
         do
             echo $env
         done
@@ -148,8 +188,8 @@ function _tue-env
             if [ $COMP_CWORD -eq 2 ]
             then
                 local envs=
-                [ -d $TUE_DIR/user/envs ] && envs=`ls $TUE_DIR/user/envs`
-                COMPREPLY=( $(compgen -W "$envs" -- $cur) )        
+                [ -d $TUE_DIR/user/envs ] && envs=$(ls $TUE_DIR/user/envs)
+                COMPREPLY=( $(compgen -W "$envs" -- $cur) )
             fi
         fi
     fi
