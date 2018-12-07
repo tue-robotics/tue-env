@@ -22,7 +22,13 @@ then
 
     sudo rosdep init || true # make sure it always succeeds, even if rosdep init was already called
 
+fi
+
+if [ ! -f /tmp/rosdep_update ]
+then
+    tue-install-debug "Updating rosdep"
     rosdep update
+    touch /tmp/rosdep_update
 fi
 
 source /opt/ros/$TUE_ROS_DISTRO/setup.bash
