@@ -57,11 +57,6 @@ then
     source $TUE_ENV_DIR/.env/setup/target_setup.bash
 fi
 
-if [ -f $TUE_DIR/setup/tue.bash_aliases ]
-then
-    source $TUE_DIR/setup/tue.bash_aliases
-fi
-
 export TUE_BIN=$TUE_DIR/bin
 export PATH=$TUE_BIN:$PATH
 
