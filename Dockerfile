@@ -28,7 +28,7 @@ ENV CI=true
 ENV LANG=C.UTF-8
 
 # Run the standard installation script for kinetic
-RUN  /home/amigo/.tue/installer/scripts/bootstrap-ros-kinetic
+RUN  /home/amigo/.tue/installer/scripts/bootstrap.bash kinetic
 
 # Already install ros since we will use this anyway
 RUN bash -c 'source /home/amigo/.bashrc && tue-get install ros'
