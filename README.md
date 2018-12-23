@@ -42,7 +42,7 @@ commands/instructions that cannot be specified in the YAML file. Lastly, the
 `setup` file is sourced in the bash environment by `setup.bash` of tue-env.
 
 ### Naming conventions
-Name of the target must start with `ros-` only if it will be compiled/installed by ROS.
+Name of the target must start with `ros-` only if it will be compiled/installed by ROS or it is installed by reading the dependencies from a catkin `package.xml`
 
 ### Writing `install.yaml`
 | Symbol | Convention                             |
