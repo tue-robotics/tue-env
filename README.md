@@ -45,9 +45,17 @@ commands/instructions that cannot be specified in the YAML file. Lastly, the
 Name of the target must start with `ros-` only if it will be compiled/installed by ROS.
 
 ### Writing `install.yaml`
-The following combinations are possible:
-1. ROS package install
-  a. From source
+| Symbol | Convention                             |
+|--------|----------------------------------------|
+| []     | Alternate options                      |
+| <>     | Input argument required with the field |
+
+Some fields are mentioned to be optional.
+
+Taking the above into account, the following combinations for `install.yaml` are possible:
+
+#### ROS package install
+1. From source
 ```yaml
 - type: ros [ros-rosbuild]
   source:
@@ -56,7 +64,7 @@ The following combinations are possible:
     sub-dir: <Sub directory of the repository> (Optional field)
     version: <Version to be installed> (Optional field)
 ```
-  b. From system
+2. From system
 ```yaml
 - type: ros
   source:
@@ -64,7 +72,7 @@ The following combinations are possible:
     name: <Package name>
 ```
 
-2. Target / System / PIP / PPA / Snap
+#### Target / System / PIP / PPA / Snap
 ```yaml
 - type: [target/system/pip/ppa/snap]
   name: <Name of the candidate>
