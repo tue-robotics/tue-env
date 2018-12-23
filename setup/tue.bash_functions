@@ -20,60 +20,11 @@ function _list_subdirs
 }
 
 # ----------------------------------------------------------------------------------------------------
-#                                           TUE-CREATE
-# ----------------------------------------------------------------------------------------------------
-
-function tue-create
-{
-    if [ -z "$1" ]
-    then
-        echo "Usage: tue-create TYPE [ ARG1 ARG2 ... ]"
-        return 1
-    fi
-
-    creation_type=$1
-
-    # remove the first argument (which contained the creation type)
-    shift
-
-    if [ -f $TUE_DIR/create/$creation_type/create.bash ]
-    then
-        source $TUE_DIR/create/$creation_type/create.bash
-    elif [ $TUE_DIR/create/$creation_type/create ]
-    then
-        $TUE_DIR/create/$creation_type/create $@
-    else
-        echo "tue-create: invalid creation type: '$creation_type'."
-        return 1
-    fi
-}
-
-function _tue-create
-{
-    local cur=${COMP_WORDS[COMP_CWORD]}
-    local prev=${COMP_WORDS[COMP_CWORD-1]}
-
-    if [ $COMP_CWORD -eq 1 ]; then
-        COMPREPLY=( $(compgen -W "`_list_subdirs $TUE_DIR/create`" -- $cur) )
-    fi
-}
-complete -F _tue-create tue-create
-
-# ----------------------------------------------------------------------------------------------------
 #                                            TUE-MAKE
 # ----------------------------------------------------------------------------------------------------
 
 function tue-make
 {
-    # compile non-ros packages if needed
-    if [ -d $TUE_ENV_DIR/pkgs ]
-    then
-        $TUE_DIR/make/pre-configure.bash
-        $TUE_DIR/make/configure.bash
-        $TUE_DIR/make/make.bash
-        $TUE_DIR/make/post-make.bash
-    fi
-
     if [ -n "$TUE_ROS_DISTRO" ] && [ -d $_TUE_CATKIN_SYSTEM_DIR ]
     then
 		case $(cat $_TUE_CATKIN_SYSTEM_DIR/devel/.built_by) in
