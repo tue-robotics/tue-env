@@ -26,15 +26,6 @@ function _list_subdirs
 
 function tue-make
 {
-    # compile non-ros packages if needed
-    if [ -d $TUE_ENV_DIR/pkgs ]
-    then
-        $TUE_DIR/make/pre-configure.bash
-        $TUE_DIR/make/configure.bash
-        $TUE_DIR/make/make.bash
-        $TUE_DIR/make/post-make.bash
-    fi
-
     if [ -n "$TUE_ROS_DISTRO" ] && [ -d $_TUE_CATKIN_SYSTEM_DIR ]
     then
 		case $(cat $_TUE_CATKIN_SYSTEM_DIR/devel/.built_by) in
