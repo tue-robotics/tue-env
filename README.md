@@ -46,4 +46,28 @@ Name of the target must start with `ros-` only if it will be compiled/installed 
 
 ### Writing `install.yaml`
 The following combinations are possible:
+1. ROS package install
+  a. From source
+```yaml
+- type: ros [ros-rosbuild]
+  source:
+    type: git [svn]
+    url: <Repository URL>
+    sub-dir: <Sub directory of the repository> (Optional field)
+    version: <Version to be installed> (Optional field)
+```
+  b. From system
+```yaml
+- type: ros
+  source:
+    type: system
+    name: <Package name>
+```
+
+2. Target / System / PIP / PPA / Snap
+```yaml
+- type: [target/system/pip/ppa/snap]
+  name: <Name of the candidate>
+```
+
 
