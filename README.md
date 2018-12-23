@@ -31,7 +31,7 @@ echo -e "export TUE_ENV=$TUE_ENV\nsource ~/.tue/setup.bash" >> ~/.bashrc
 ```
 
 ## Create a new target
-A target must consist of the following three files:
+A target can consist of the following three files:
 1. `install.yaml`
 2. `install.bash`
 3. `setup`
