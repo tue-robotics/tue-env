@@ -45,7 +45,7 @@ export LC_ALL="C.UTF-8"
 
 # -----------------------------------------
 # Load all the bash functions
-source $TUE_DIR/setup/tue.bash_functions
+source $TUE_DIR/setup/tue-functions.bash
 
 if [ -f $TUE_ENV_DIR/.env/setup/user_setup.bash ]
 then
