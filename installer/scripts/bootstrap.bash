@@ -24,7 +24,18 @@ fi
 source ~/.tue/setup.bash
 
 # Set ROS version
-TUE_ROS_DISTRO=kinetic
+case $1 in
+    kinetic)
+        TUE_ROS_DISTRO=kinetic
+        ;;
+    melodic)
+        TUE_ROS_DISTRO=melodic
+        ;;
+    *)
+        echo "[bootstrap] Unknown ROS distribution"
+        exit 1
+        ;;
+esac
 
 # Create ros environment directory
 mkdir -p ~/ros/$TUE_ROS_DISTRO
