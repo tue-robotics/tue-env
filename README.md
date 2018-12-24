@@ -57,7 +57,7 @@ Taking the above into account, the following combinations for `install.yaml` are
 #### ROS package install
 1. From source
 ```yaml
-- type: ros [ros-rosbuild]
+- type: ros
   source:
     type: git [svn]
     url: <Repository URL>
