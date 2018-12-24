@@ -9,7 +9,7 @@ case $1 in
         TUE_ROS_DISTRO=melodic
         ;;
     *)
-        echo "[bootstrap] Unknown ROS distribution"
+        echo "[bootstrap] Unknown ROS distribution $1"
         exit 1
         ;;
 esac
