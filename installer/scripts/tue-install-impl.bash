@@ -101,7 +101,7 @@ function tue-install-target {
         if [ -f $install_file.yaml ]
         then
             tue-install-debug "Parsing $install_file.yaml"
-            local cmds=`$TUE_INSTALL_SCRIPTS_DIR/parse-install-yaml $install_file.yaml`
+            local cmds=`$TUE_INSTALL_SCRIPTS_DIR/parse-install-yaml.py $install_file.yaml`
             if [ $? -eq 0 ]; then
                 for cmd in $cmds
                 do
@@ -565,7 +565,7 @@ function tue-install-ros {
 
         if  [ -f $ros_pkg_dir/package.xml ]; then
             # Catkin
-            deps=`$TUE_INSTALL_SCRIPTS_DIR/parse-ros-package-deps $ros_pkg_dir/package.xml`
+            deps=`$TUE_INSTALL_SCRIPTS_DIR/parse-ros-package-deps.py $ros_pkg_dir/package.xml`
             tue-install-debug "Parsed package.xml \n$deps"
 
             for dep in $deps
