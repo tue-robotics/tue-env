@@ -101,7 +101,7 @@ function tue-install-target {
         if [ -f $install_file.yaml ]
         then
             tue-install-debug "Parsing $install_file.yaml"
-            local cmds=`$TUE_INSTALL_SCRIPTS_DIR/parse-install-yaml $install_file.yaml`
+            local cmds=`$TUE_INSTALL_SCRIPTS_DIR/parse-install-yaml.py $install_file.yaml`
             if [ $? -eq 0 ]; then
                 for cmd in $cmds
                 do
@@ -565,7 +565,7 @@ function tue-install-ros {
 
         if  [ -f $ros_pkg_dir/package.xml ]; then
             # Catkin
-            deps=`$TUE_INSTALL_SCRIPTS_DIR/parse-ros-package-deps $ros_pkg_dir/package.xml`
+            deps=`$TUE_INSTALL_SCRIPTS_DIR/parse-ros-package-deps.py $ros_pkg_dir/package.xml`
             tue-install-debug "Parsed package.xml \n$deps"
 
             for dep in $deps
@@ -629,7 +629,7 @@ tue-install-system-now python-yaml git subversion python-pip
 
 stamp=$(date_stamp)
 INSTALL_DETAILS_FILE=/tmp/tue-get-details-$stamp
-> $INSTALL_DETAILS_FILE
+touch $INSTALL_DETAILS_FILE
 
 # CATKIN PACKAGES
 ROS_PACKAGE_INSTALL_DIR=$TUE_SYSTEM_DIR/src

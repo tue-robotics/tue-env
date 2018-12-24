@@ -424,7 +424,7 @@ function tue-get
 
     if [[ $cmd == "install" ]]
     then
-        $TUE_DIR/installer/scripts/tue-install $cmd $@
+        $TUE_DIR/installer/scripts/tue-install.bash $cmd $@
         error_code=$?
 
         [ $error_code -eq 0 ] && source ~/.bashrc
@@ -447,7 +447,7 @@ function tue-get
 
         if [ $error_code -eq 0 ]
         then
-            $TUE_DIR/installer/scripts/tue-install $cmd $@
+            $TUE_DIR/installer/scripts/tue-install.bash $cmd $@
             error_code=$?
             [ $error_code -eq 0 ] && source ~/.bashrc
         fi
@@ -493,7 +493,7 @@ function tue-get
         fi
     elif [[ $cmd == "dep" ]]
     then
-        $TUE_DIR/installer/scripts/tue-get-dep $@
+        $TUE_DIR/installer/scripts/tue-get-dep.bash $@
     else
         echo "[tue-get] Unknown command: '$cmd'"
         return 1
