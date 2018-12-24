@@ -18,14 +18,15 @@ esac
 hash git 2> /dev/null || sudo apt-get install --assume-yes git
 
 # Move old environments and installer
-if [[ -e ~/.tue && -z "$CI" ]]
+if [[ -d ~/.tue && -z "$CI" ]]
 then
     FILES=$(find ~/.tue/user/envs -maxdepth 1 -type f)
+    date_now=$(date +%F_%R)
     for env in $FILES
     do
-        mv -f $(cat $env) $(cat $env).$(date +%F_%R)
+        mv -f $(cat $env) $(cat $env).$date_now
     done
-    mv -f ~/.tue ~/.tue.$(date +%F_%R)
+    mv -f ~/.tue ~/.tue.$date_now
 fi
 
 if [[ -z "$CI" ]]
