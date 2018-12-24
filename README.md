@@ -18,16 +18,12 @@ The list of packages can be seen [here](installer/targets).
 ```bash
 tue-get install <TARGET_NAME>
 ```
-For example, so install a default developement installation for working with 
+For example, to install a default developement installation for working with 
 TU/e robots, run the following command:
 ```bash
 tue-get install tue-dev
 ```
-So automatically source the installer and corresponding workspaces run the following
-command in a shell.
-```bash
-echo -e "export TUE_ENV=$TUE_ENV\nsource ~/.tue/setup.bash" >> ~/.bashrc
-```
+Upon executing the installation instructions mentioned in the previous section, `~/.tue/setup.bash` is automatically added in `.bashrc`. Sourcing `.bashrc` would make `tue-env` available to the bash session.
 
 ## Create a new target
 A target can consist of the following three files:
