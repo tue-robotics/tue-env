@@ -143,6 +143,7 @@ Purged environment directory of '$env'"""
 
         mkdir -p $TUE_DIR/user/config
         echo "$1" > $TUE_DIR/user/config/default_env
+        echo "[tue-env] Default environment set to $1"
 
     elif [[ $cmd == "config" ]]
     then
