@@ -629,7 +629,7 @@ tue-install-system-now python-yaml git subversion python-pip
 
 stamp=$(date_stamp)
 INSTALL_DETAILS_FILE=/tmp/tue-get-details-$stamp
-> $INSTALL_DETAILS_FILE
+touch $INSTALL_DETAILS_FILE
 
 # CATKIN PACKAGES
 ROS_PACKAGE_INSTALL_DIR=$TUE_SYSTEM_DIR/src
