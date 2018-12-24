@@ -1,5 +1,19 @@
 #!/bin/bash
 
+# Set ROS version
+case $1 in
+    kinetic)
+        TUE_ROS_DISTRO=kinetic
+        ;;
+    melodic)
+        TUE_ROS_DISTRO=melodic
+        ;;
+    *)
+        echo "[bootstrap] Unknown ROS distribution"
+        exit 1
+        ;;
+esac
+
 # make sure git is installed
 hash git 2> /dev/null || sudo apt-get install --assume-yes git
 
@@ -22,20 +36,6 @@ fi
 
 # Source the installer commands
 source ~/.tue/setup.bash
-
-# Set ROS version
-case $1 in
-    kinetic)
-        TUE_ROS_DISTRO=kinetic
-        ;;
-    melodic)
-        TUE_ROS_DISTRO=melodic
-        ;;
-    *)
-        echo "[bootstrap] Unknown ROS distribution"
-        exit 1
-        ;;
-esac
 
 # Create ros environment directory
 mkdir -p ~/ros/$TUE_ROS_DISTRO
