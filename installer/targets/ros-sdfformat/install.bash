@@ -11,4 +11,4 @@ else
     tue-install-debug "Gazebo source has already been added"
 fi
 
-tue-install-system-now libsdformat4-dev
+tue-install-system libsdformat4-dev
