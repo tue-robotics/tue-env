@@ -3,7 +3,7 @@ Package manager that can be used to install (ROS) dependencies
 
 ## Installation
 
-#### Ubuntu 16.04
+#### Ubuntu 16.04/18.04
 ```bash
 source <(wget -O - https://raw.githubusercontent.com/tue-robotics/tue-env/master/installer/scripts/bootstrap.bash)
 tue-get install tue-dev #or
