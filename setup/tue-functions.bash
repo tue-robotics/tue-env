@@ -379,6 +379,25 @@ function randid
     </dev/urandom tr -dc '0123456789abcdef' | head -c16; echo ""
 }
 
+function __show_file
+{
+	if [ ! -z $2 ]
+	then
+		echo -e "\033[1m[$1] $2\033[0m"
+		echo "--------------------------------------------------"
+		if hash pygmentize 2> /dev/null
+		then
+			pygmentize -g $TUE_DIR/installer/targets/$1/$2
+		else
+			cat $TUE_DIR/installer/targets/$1/$2
+		fi
+		echo "--------------------------------------------------"
+	else
+		echo -e "__show_file requires target_name and relative file_path in target"
+		return 1
+	fi
+}
+
 function tue-get
 {
     if [ -z "$1" ]
@@ -394,6 +413,7 @@ function tue-get
         update         - Updates currently installed packages
         remove         - Removes installed package
         list-installed - Lists all manually installed packages
+        show           - Show the contents of (a) package(s)
 
     Possible options:
         --debug        - Shows more debugging information
@@ -479,9 +499,9 @@ function tue-get
 
         echo ""
         if [ -n "$2" ]; then
-            echo "The packages were removed from the 'installed list' but still need to be deleted from your workspace."
+            echo "[tue-get] The packages were removed from the 'installed list' but still need to be deleted from your workspace."
         else
-            echo "The package was removed from the 'installed list' but still needs to be deleted from your workspace."
+            echo "[tue-get] The package was removed from the 'installed list' but still needs to be deleted from your workspace."
         fi
     elif [[ $cmd == "list-installed" ]]
     then
@@ -491,6 +511,63 @@ function tue-get
         else
             ls $TUE_ENV_DIR/.env/installed
         fi
+    elif [[ $cmd == "show" ]]
+    then
+		if [ -z "$1" ]
+		then
+			echo "[tue-get](show) Provide at least one target name"
+			return 1
+		fi
+		local firsttarget=true
+		for target in $@
+		do
+			if [[ $firsttarget == false ]]
+			then
+				echo ""
+			fi
+			if [ ! -d $TUE_DIR/installer/targets/$target ]
+			then
+				echo "[tue-get](show) '$target' is not a valid target"
+				firsttarget=false
+				continue
+			fi
+
+			local firstfile="true"
+			local files=($(find $TUE_DIR/installer/targets/$target -type f))
+			
+			# First show the common target files
+			local main_target_files="install.yaml install.bash setup"
+			for file in $main_target_files
+			do
+				for key in ${!files[@]}
+				do
+					if [ ${files[$key]} == $TUE_DIR/installer/targets/$target/$file ]
+					then
+						if [[ $firstfile == false ]]
+						then
+							echo ""
+						fi
+						__show_file $target $file
+						firstfile=false
+						unset files[$key]
+						files=(${files[@]})
+						break
+					fi
+				done
+			done
+			
+			# Show all remaining files
+			for file in ${files[@]}
+			do
+				if [[ $firstfile == false ]]
+				then
+					echo ""
+				fi
+				__show_file $target ${file#*$TUE_DIR/installer/targets/$target/}
+				firstfile=false
+			done
+			firsttarget=false
+		done
     elif [[ $cmd == "dep" ]]
     then
         $TUE_DIR/installer/scripts/tue-get-dep.bash $@
@@ -507,7 +584,7 @@ function _tue-get
 
     if [ $COMP_CWORD -eq 1 ]; then
         local IFS=$'\n'
-        options="'dep '\n'install '\n'update '\n'remove '\n'list-installed '"
+        options="'dep '\n'install '\n'update '\n'remove '\n'list-installed '\n'show '"
         COMPREPLY=( $(compgen -W "$(echo -e "$options")" -- $cur) )
     else
         cmd=${COMP_WORDS[1]}
@@ -527,6 +604,10 @@ function _tue-get
         then
             local IFS=$'\n'
             COMPREPLY=( $(compgen -W "`ls $TUE_ENV_DIR/.env/installed | sed "s/.*/'& '/g"`" -- $cur) )
+        elif [[ $cmd == "show" ]]
+        then
+			local IFS=$'\n'
+            COMPREPLY=( $(compgen -W "`ls $TUE_DIR/installer/targets | sed "s/.*/'& '/g"`" -- $cur) )
         else
             COMREPLY=""
         fi
