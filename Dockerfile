@@ -27,8 +27,8 @@ RUN sudo chown -R amigo:amigo /home/amigo/.tue/
 ENV CI=true
 ENV LANG=C.UTF-8
 
-# Run the standard installation script for kinetic
-RUN  /home/amigo/.tue/installer/scripts/bootstrap.bash kinetic
+# Run the standard installation script
+RUN /home/amigo/.tue/installer/scripts/bootstrap.bash
 
 # Already install ros since we will use this anyway
 RUN bash -c 'source /home/amigo/.bashrc && tue-get install ros'

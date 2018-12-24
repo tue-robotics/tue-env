@@ -1,21 +1,32 @@
 #!/bin/bash
 
+# Make sure git is installed
+hash git 2> /dev/null || sudo apt-get install --assume-yes git
+# Make sure lsb-release is installed
+hash lsb_release 2> /dev/null || sudo apt-get install --assume-yes lsb-release
+
+# Check if OS is Ubuntu
+source /etc/lsb-release
+
+if [ "$DISTRIB_ID" != "Ubuntu" ]
+then
+    echo "[bootstrap] Unsupported OS $DISTRIB_ID. Use Ubuntu."
+    exit 1
+fi
+
 # Set ROS version
-case $1 in
-    kinetic)
+case $DISTRIB_RELEASE in
+    "16.04")
         TUE_ROS_DISTRO=kinetic
         ;;
-    melodic)
+    "18.04")
         TUE_ROS_DISTRO=melodic
         ;;
     *)
-        echo "[bootstrap] Unknown ROS distribution $1"
+        echo "[bootstrap] Ubuntu $DISTRIB_RELEASE is unsupported. Use either 16.04 or 18.04"
         exit 1
         ;;
 esac
-
-# make sure git is installed
-hash git 2> /dev/null || sudo apt-get install --assume-yes git
 
 # Move old environments and installer
 if [[ -d ~/.tue && -z "$CI" ]]
@@ -37,7 +48,6 @@ fi
 
 # Source the installer commands
 source ~/.tue/setup.bash
-echo "[bootstrap] Loading tue-env"
 
 # Create ros environment directory
 mkdir -p ~/ros/$TUE_ROS_DISTRO
