@@ -38,6 +38,7 @@ fi
 
 # Source the installer commands
 source ~/.tue/setup.bash
+echo "[bootstrap] Loading tue-env"
 
 # Create ros environment directory
 mkdir -p ~/ros/$TUE_ROS_DISTRO
