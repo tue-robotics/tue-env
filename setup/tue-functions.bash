@@ -606,7 +606,7 @@ function _tue-get
             COMPREPLY=( $(compgen -W "`ls $TUE_ENV_DIR/.env/installed | sed "s/.*/'& '/g"`" -- $cur) )
         elif [[ $cmd == "show" ]]
         then
-			local IFS=$'\n'
+            local IFS=$'\n'
             COMPREPLY=( $(compgen -W "`ls $TUE_DIR/installer/targets | sed "s/.*/'& '/g"`" -- $cur) )
         else
             COMREPLY=""
