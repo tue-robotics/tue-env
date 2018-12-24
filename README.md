@@ -5,7 +5,7 @@ Package manager that can be used to install (ROS) dependencies
 
 #### Ubuntu 16.04
 ```bash
-wget -O - https://raw.githubusercontent.com/tue-robotics/tue-env/ar13pit-patch/fix-names-scripts-targets/installer/scripts/bootstrap.bash | bash -s kinetic
+wget -O - https://raw.githubusercontent.com/tue-robotics/tue-env/ar13pit-patch/fix-names-scripts-targets/installer/scripts/bootstrap.bash | bash -s kinetic && source ~/.bashrc
 tue-get install tue-dev #or
 tue-get install tue-dev-full #tue-dev plus extra tools
 source ~/.bashrc
