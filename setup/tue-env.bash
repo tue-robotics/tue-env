@@ -56,6 +56,7 @@ function tue-env
 
         echo "$dir" > $TUE_DIR/user/envs/$1
         mkdir -p $dir/.env
+        echo "[tue-env] Created new environment $1"
 
     elif [[ $cmd == "remove" ]]
     then
