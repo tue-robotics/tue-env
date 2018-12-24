@@ -43,7 +43,7 @@ fi
 if [[ -z "$CI" ]]
 then
     # Update installer
-    git clone -b ar13pit-patch/fix-names-scripts-targets https://github.com/tue-robotics/tue-env.git ~/.tue
+    git clone https://github.com/tue-robotics/tue-env.git ~/.tue
 fi
 
 # Source the installer commands
