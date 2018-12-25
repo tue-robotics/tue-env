@@ -25,7 +25,7 @@ tue-get install tue-dev
 ```
 Upon executing the installation instructions mentioned in the previous section, `~/.tue/setup.bash` is automatically added in `.bashrc`. Sourcing `.bashrc` would make `tue-env` available to the bash session.
 
-## Create a new target
+## Guidelines on creating a new target
 A target can consist of the following three files:
 1. `install.yaml`
 2. `install.bash`
@@ -73,4 +73,13 @@ Taking the above into account, the following combinations for `install.yaml` are
   name: <Name of the candidate>
 ```
 
+### `tue-install` functions for `install.bash`
+The following functions provided with `tue-env` must be preferred over any
+generally used methods of installing packages:
+| Function Name            | Description                               |
+|--------------------------|-------------------------------------------|
+| `tue-install-system-now` | To install ubuntu packages with `apt-get` |
+| `tue-install-ppa`        | To add PPA with `apt-add-repository`      |
+| `tue-install-pip`        | To install a python pip package           |
+| `tue-install-snap`       | To install a snap                         |
 
