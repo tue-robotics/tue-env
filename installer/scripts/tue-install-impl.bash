@@ -292,69 +292,6 @@ function tue-install-cp
 
 # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # #
 
-# Reads SOURCE_FILE and looks in TARGET_FILE for the first and last line of SOURCE_FILE. If these
-# are not found, SOURCE_FILE is appended to TARGET_FILE. Otherwise, the appearance of the first and
-# last line of SOURCE_FILE in TARGET_FILE, and everything in between, is replaced by the contents
-# of SOURCE_FILE.
-# This is useful for adding text blocks to files and allowing to change only that part of the file
-# on a next update. It is advised to start and end SOURCE_FILE with unique tags, e.g.:
-#
-#    # BEGIN TU/E BLOCK
-#    .... some text ...
-#    # END TU/E BLOCK
-#
-function tue-install-add-text
-{
-    if [ -z "$2" ]
-    then
-        tue-install-error "Invalid tue-install-add-text call. Usage: tue-install-add-text SOURCE_FILE TARGET_FILE"
-    fi
-
-    local source_file=$TUE_INSTALL_CURRENT_TARGET_DIR/$1
-    local target_file=$2
-
-    local root_required=true
-    if namei -l $target_file | grep -q $USER
-    then
-        root_required=false
-    fi
-
-    if [ ! -f $source_file ]
-    then
-        tue-install-error "tue-install-add-text: No such file: $source_file"
-    fi
-
-    if [ ! -f $target_file ]
-    then
-        tue-install-error "tue-install-add-text: No such file: $target_file"
-    fi
-
-    local begin_tag=$(head -n 1 $source_file)
-    local end_tag=$(tail -n 1 $source_file)
-    local text=$(cat $source_file)
-
-    if ! grep -q "$begin_tag" $target_file
-    then
-        if $root_required
-        then
-            echo -e "$text" | sudo tee --append $target_file
-        else
-            echo -e "$text" | tee --append $target_file
-        fi
-    else
-        if $root_required
-        then
-            sed -e "/^$end_tag/r $source_file" -e "/^$begin_tag/,/^$end_tag/d" $target_file | sudo tee $target_file.tmp
-            sudo mv $target_file.tmp $target_file
-        else
-            sed -e "/^$end_tag/r $source_file" -e "/^$begin_tag/,/^$end_tag/d" $target_file | tee $target_file.tmp
-            mv $target_file.tmp $target_file
-        fi
-    fi
-}
-
-# # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # #
-
 function tue-install-system
 {
     if [ -z "$1" ]
