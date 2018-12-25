@@ -457,13 +457,14 @@ function tue-install-snap
 
 # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # #
 
-function tue-install-ros {
-    type=$1
-    source=$2
+function tue-install-ros
+{
+    install_type=$1
+    src=$2
     sub_dir=$3
     version=$4
 
-    tue-install-debug "Installing ros package: type = $type, source = $source"
+    tue-install-debug "Installing ros package: type = $install_type, source = $src"
 
     [ -n "$TUE_ROS_DISTRO" ] || tue-install-error "Environment variable 'TUE_ROS_DISTRO' is not set."
 
@@ -472,16 +473,16 @@ function tue-install-ros {
     # First of all, make sure ROS itself is installed
     tue-install-target ros
 
-    if [ "$type" = "system" ]; then
-        tue-install-debug "tue-install-system ros-$TUE_ROS_DISTRO-$source"
+    if [ "$install_type" = "system" ]; then
+        tue-install-debug "tue-install-system ros-$TUE_ROS_DISTRO-$src"
 
         # all HSR system targets from Toyota need extra apt sources
-        if [[ $source == *"hsrb"* ||  "$source" == *"tmc"* ]]
+        if [[ $src == *"hsrb"* ||  "$src" == *"tmc"* ]]
         then
             tue-install-target hsr-setup
         fi
 
-        tue-install-system ros-$TUE_ROS_DISTRO-$source
+        tue-install-system ros-$TUE_ROS_DISTRO-$src
         return
     fi
 
@@ -494,7 +495,7 @@ function tue-install-ros {
     mkdir -p $ROS_PACKAGE_INSTALL_DIR
 
     local ros_pkg_dir=$ROS_PACKAGE_INSTALL_DIR/$ros_pkg_name
-    local repos_dir=$TUE_REPOS_DIR/$source
+    local repos_dir=$TUE_REPOS_DIR/$src
     # replace spaces with underscores
     repos_dir=${repos_dir// /_}
     # now, clean out anything that's not alphanumeric or an underscore
@@ -512,17 +513,17 @@ function tue-install-ros {
     fi
     tue-install-debug "repos_dir = $repos_dir"
 
-    if [ "$type" = "git" ]; then
-        tue-install-git $source $repos_dir $version
-        tue-install-debug "git clone $source"
-        echo "git clone $source" >> $INSTALL_DETAILS_FILE
+    if [ "$install_type" = "git" ]; then
+        tue-install-git $src $repos_dir $version
+        tue-install-debug "git clone $src"
+        echo "git clone $src" >> $INSTALL_DETAILS_FILE
         [ "$version" ] && echo "# NOTE: check-out version $version" >> $INSTALL_DETAILS_FILE
-    elif [ "$type" = "svn" ]; then
-        tue-install-svn $source $repos_dir $version
+    elif [ "$install_type" = "svn" ]; then
+        tue-install-svn $src $repos_dir $version
         if [ "$version" ]; then
-            echo "svn co $source -r $version" >> $INSTALL_DETAILS_FILE
+            echo "svn co $src -r $version" >> $INSTALL_DETAILS_FILE
         else
-            echo "svn co $source" >> $INSTALL_DETAILS_FILE
+            echo "svn co $src" >> $INSTALL_DETAILS_FILE
         fi
     else
         tue-install-error "Unknown ros install type: '${type}'"
@@ -532,7 +533,7 @@ function tue-install-ros {
 
         if [ ! -d $repos_dir/$sub_dir ]
         then
-            tue-install-error "Subdirectory '$sub_dir' does not exist for URL '$source'."
+            tue-install-error "Subdirectory '$sub_dir' does not exist for URL '$src'."
         fi
 
         if [ -L $ros_pkg_dir ]
@@ -541,7 +542,7 @@ function tue-install-ros {
             # because it means the source URL has changed
             if [ ! $ros_pkg_dir -ef $repos_dir/$sub_dir ]
             then
-                tue-install-info "URL has changed to $source/$subdir"
+                tue-install-info "URL has changed to $src/$subdir"
                 rm $ros_pkg_dir
                 ln -s $repos_dir/$sub_dir $ros_pkg_dir
             fi
@@ -566,7 +567,7 @@ function tue-install-ros {
         fi
 
     else
-        tue-install-error "Checking out $source was not successful."
+        tue-install-error "Checking out $src was not successful."
     fi
 
     TUE_INSTALL_PKG_DIR=$ros_pkg_dir
