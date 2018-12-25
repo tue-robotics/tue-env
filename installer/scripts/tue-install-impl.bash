@@ -1,5 +1,4 @@
 #!/bin/bash
-#_tue-check-env-vars || return 1
 
 TUE_INSTALL_DEPENDENCIES_DIR=$TUE_ENV_DIR/.env/dependencies
 TUE_INSTALL_DEPENDENCIES_ON_DIR=$TUE_ENV_DIR/.env/dependencies-on
