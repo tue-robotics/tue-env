@@ -108,4 +108,3 @@ installed).
 A general remark about the order of preference of package repositories:
 
 system > ppa > git > svn > pip > snap
-
