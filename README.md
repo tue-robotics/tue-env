@@ -36,6 +36,10 @@ instructions in it are executed. Then `install.bash` is executed. This must have
 commands/instructions that cannot be specified in the YAML file. Lastly, the
 `setup` file is sourced in the bash environment by `setup.bash` of tue-env.
 
+Any target dependencies that can be specified in `install.yaml` as other targets
+or installable packages must be specified there. They should not be moved to
+`install.bash`as`tue-env` has many controls in place to parse the YAML file.
+
 ### Naming conventions
 Name of the target must start with `ros-` only if it will be compiled/installed by ROS or it is installed by reading the dependencies from a catkin `package.xml`
 
@@ -79,8 +83,18 @@ generally used methods of installing packages:
 
 | Function Name            | Description                               |
 |--------------------------|-------------------------------------------|
-| `tue-install-system-now` | To install ubuntu packages with `apt-get` |
-| `tue-install-ppa`        | To add PPA with `apt-add-repository`      |
+| `tue-install-git`        | To install a git repository               |
 | `tue-install-pip`        | To install a python pip package           |
+| `tue-install-ppa`        | To add PPA with `apt-add-repository`      |
 | `tue-install-snap`       | To install a snap                         |
+| `tue-install-svn`        | To install a svn repository               |
+| `tue-install-system-now` | To install ubuntu packages with `apt-get` |
+
+The input arguments for each of the above mentioned commands can be found by
+simply executing the command in a bash session (provided tue-env is correctly
+installed).
+
+A general remark about the order of preference of package repositories:
+
+system > ppa > git > svn > pip > snap
 
