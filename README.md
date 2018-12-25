@@ -76,6 +76,7 @@ Taking the above into account, the following combinations for `install.yaml` are
 ### `tue-install` functions for `install.bash`
 The following functions provided with `tue-env` must be preferred over any
 generally used methods of installing packages:
+
 | Function Name            | Description                               |
 |--------------------------|-------------------------------------------|
 | `tue-install-system-now` | To install ubuntu packages with `apt-get` |
