@@ -3,13 +3,13 @@ _tue-check-env-vars || return 1
 
 # Update installer
 if [ ! -d $TUE_DIR ]
-then 
+then
     git clone https://github.com/tue-robotics/tue-env.git $TUE_DIR
 elif [[ -z "$CI" ]] #Do not update with continuous integration
 then
     mem_pwd=$PWD
     cd $TUE_DIR
-    echo -en "Updating tue-get... "    
+    echo -en "Updating tue-get... "
     git pull --ff-only --prune
 
     error_code=$?
