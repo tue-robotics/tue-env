@@ -582,7 +582,7 @@ function generate_setup_file
     then
         return
     fi
-    
+
     TUE_SETUP_TARGETS=" $1$TUE_SETUP_TARGETS"
 
     # Check if the dependency file exists. If not, return

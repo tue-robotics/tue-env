@@ -27,35 +27,35 @@ function tue-make
 {
     if [ -n "$TUE_ROS_DISTRO" ] && [ -d $_TUE_CATKIN_SYSTEM_DIR ]
     then
-		case $(cat $_TUE_CATKIN_SYSTEM_DIR/devel/.built_by) in
-		'catkin_make')
-			catkin_make --directory $_TUE_CATKIN_SYSTEM_DIR -DCMAKE_BUILD_TYPE=RelWithDebInfo $@
-			;;
-		'catkin build')
-			catkin build --workspace $_TUE_CATKIN_SYSTEM_DIR $@
-			;;
-		'')
-			catkin init --workspace $_TUE_CATKIN_SYSTEM_DIR $@
-			catkin build --workspace $_TUE_CATKIN_SYSTEM_DIR $@
-			;;
-		esac
+        case $(cat $_TUE_CATKIN_SYSTEM_DIR/devel/.built_by) in
+        'catkin_make')
+            catkin_make --directory $_TUE_CATKIN_SYSTEM_DIR -DCMAKE_BUILD_TYPE=RelWithDebInfo $@
+            ;;
+        'catkin build')
+            catkin build --workspace $_TUE_CATKIN_SYSTEM_DIR $@
+            ;;
+        '')
+            catkin init --workspace $_TUE_CATKIN_SYSTEM_DIR $@
+            catkin build --workspace $_TUE_CATKIN_SYSTEM_DIR $@
+            ;;
+        esac
     fi
 }
 
 function tue-make-system
 {
-	case $(cat $_TUE_CATKIN_SYSTEM_DIR/devel/.built_by) in
-	'catkin_make')
-		catkin_make --directory $_TUE_CATKIN_SYSTEM_DIR -DCMAKE_BUILD_TYPE=RelWithDebInfo $@
-		;;
-	'catkin build')
-		catkin build --workspace $_TUE_CATKIN_SYSTEM_DIR $@
-		;;
-	'')
-		catkin init --workspace $_TUE_CATKIN_SYSTEM_DIR $@
-		catkin build --workspace $_TUE_CATKIN_SYSTEM_DIR $@
-		;;
-	esac
+    case $(cat $_TUE_CATKIN_SYSTEM_DIR/devel/.built_by) in
+    'catkin_make')
+        catkin_make --directory $_TUE_CATKIN_SYSTEM_DIR -DCMAKE_BUILD_TYPE=RelWithDebInfo $@
+        ;;
+    'catkin build')
+        catkin build --workspace $_TUE_CATKIN_SYSTEM_DIR $@
+        ;;
+    '')
+        catkin init --workspace $_TUE_CATKIN_SYSTEM_DIR $@
+        catkin build --workspace $_TUE_CATKIN_SYSTEM_DIR $@
+        ;;
+    esac
 }
 
 function _tue-make
@@ -71,34 +71,34 @@ complete -F _tue-make tue-make-system
 
 function tue-make-dev
 {
-	case $(cat $_TUE_CATKIN_DEV_DIR/devel/.built_by) in
-	'catkin_make')
-		catkin_make --directory $_TUE_CATKIN_DEV_DIR -DCMAKE_BUILD_TYPE=RelWithDebInfo $@
-		;;
-	'catkin build')
-		catkin build --workspace $_TUE_CATKIN_DEV_DIR $@
-		;;
-	'')
-		catkin init --workspace $_TUE_CATKIN_DEV_DIR $@
-		catkin build --workspace $_TUE_CATKIN_DEV_DIR $@
-		;;
-	esac
+    case $(cat $_TUE_CATKIN_DEV_DIR/devel/.built_by) in
+    'catkin_make')
+        catkin_make --directory $_TUE_CATKIN_DEV_DIR -DCMAKE_BUILD_TYPE=RelWithDebInfo $@
+        ;;
+    'catkin build')
+        catkin build --workspace $_TUE_CATKIN_DEV_DIR $@
+        ;;
+    '')
+        catkin init --workspace $_TUE_CATKIN_DEV_DIR $@
+        catkin build --workspace $_TUE_CATKIN_DEV_DIR $@
+        ;;
+    esac
 }
 
 function tue-make-dev-isolated
 {
-	case $(cat $_TUE_CATKIN_SYSTEM_DIR/devel/.built_by) in
-	'catkin_make')
-		catkin_make_isolated --directory $_TUE_CATKIN_DEV_DIR -DCMAKE_BUILD_TYPE=RelWithDebInfo $@
-		;;
-	'catkin build')
-		catkin build --workspace $_TUE_CATKIN_DEV_DIR $@
-		;;
-	'')
-		catkin init --workspace $_TUE_CATKIN_DEV_DIR $@
-		catkin build --workspace $_TUE_CATKIN_DEV_DIR $@
-		;;
-	esac
+    case $(cat $_TUE_CATKIN_SYSTEM_DIR/devel/.built_by) in
+    'catkin_make')
+        catkin_make_isolated --directory $_TUE_CATKIN_DEV_DIR -DCMAKE_BUILD_TYPE=RelWithDebInfo $@
+        ;;
+    'catkin build')
+        catkin build --workspace $_TUE_CATKIN_DEV_DIR $@
+        ;;
+    '')
+        catkin init --workspace $_TUE_CATKIN_DEV_DIR $@
+        catkin build --workspace $_TUE_CATKIN_DEV_DIR $@
+        ;;
+    esac
 }
 
 function _tue-make-dev
@@ -355,47 +355,23 @@ function tue-revert-undo
 #                                              TUE-GET
 # ----------------------------------------------------------------------------------------------------
 
-function _tue_depends
+function _show_file
 {
-    local tue_dep_dir=$TUE_ENV_DIR/.env/dependencies
-
-    if [ -z "$1" ]
+    if [ ! -z $2 ]
     then
-        echo "Usage: tue-depends PACKAGE"
+        echo -e "\033[1m[$1] $2\033[0m"
+        echo "--------------------------------------------------"
+        if hash pygmentize 2> /dev/null
+        then
+            pygmentize -g $TUE_DIR/installer/targets/$1/$2
+        else
+            cat $TUE_DIR/installer/targets/$1/$2
+        fi
+        echo "--------------------------------------------------"
+    else
+        echo -e "_show_file requires target_name and relative file_path in target"
         return 1
     fi
-
-    if [ ! -f $tue_dep_dir/$1 ]
-    then
-        echo "Package '$1' not installed"
-        return 1
-    fi
-
-    cat $tue_dep_dir/$1
-}
-
-function randid
-{
-    </dev/urandom tr -dc '0123456789abcdef' | head -c16; echo ""
-}
-
-function __show_file
-{
-	if [ ! -z $2 ]
-	then
-		echo -e "\033[1m[$1] $2\033[0m"
-		echo "--------------------------------------------------"
-		if hash pygmentize 2> /dev/null
-		then
-			pygmentize -g $TUE_DIR/installer/targets/$1/$2
-		else
-			cat $TUE_DIR/installer/targets/$1/$2
-		fi
-		echo "--------------------------------------------------"
-	else
-		echo -e "__show_file requires target_name and relative file_path in target"
-		return 1
-	fi
 }
 
 function tue-get
@@ -513,61 +489,61 @@ function tue-get
         fi
     elif [[ $cmd == "show" ]]
     then
-		if [ -z "$1" ]
-		then
-			echo "[tue-get](show) Provide at least one target name"
-			return 1
-		fi
-		local firsttarget=true
-		for target in $@
-		do
-			if [[ $firsttarget == false ]]
-			then
-				echo ""
-			fi
-			if [ ! -d $TUE_DIR/installer/targets/$target ]
-			then
-				echo "[tue-get](show) '$target' is not a valid target"
-				firsttarget=false
-				continue
-			fi
+        if [ -z "$1" ]
+        then
+            echo "[tue-get](show) Provide at least one target name"
+            return 1
+        fi
+        local firsttarget=true
+        for target in $@
+        do
+            if [[ $firsttarget == false ]]
+            then
+                echo ""
+            fi
+            if [ ! -d $TUE_DIR/installer/targets/$target ]
+            then
+                echo "[tue-get](show) '$target' is not a valid target"
+                firsttarget=false
+                continue
+            fi
 
-			local firstfile="true"
-			local files=($(find $TUE_DIR/installer/targets/$target -type f))
-			
-			# First show the common target files
-			local main_target_files="install.yaml install.bash setup"
-			for file in $main_target_files
-			do
-				for key in ${!files[@]}
-				do
-					if [ ${files[$key]} == $TUE_DIR/installer/targets/$target/$file ]
-					then
-						if [[ $firstfile == false ]]
-						then
-							echo ""
-						fi
-						__show_file $target $file
-						firstfile=false
-						unset files[$key]
-						files=(${files[@]})
-						break
-					fi
-				done
-			done
-			
-			# Show all remaining files
-			for file in ${files[@]}
-			do
-				if [[ $firstfile == false ]]
-				then
-					echo ""
-				fi
-				__show_file $target ${file#*$TUE_DIR/installer/targets/$target/}
-				firstfile=false
-			done
-			firsttarget=false
-		done
+            local firstfile="true"
+            local files=($(find $TUE_DIR/installer/targets/$target -type f))
+
+            # First show the common target files
+            local main_target_files="install.yaml install.bash setup"
+            for file in $main_target_files
+            do
+                for key in ${!files[@]}
+                do
+                    if [ ${files[$key]} == $TUE_DIR/installer/targets/$target/$file ]
+                    then
+                        if [[ $firstfile == false ]]
+                        then
+                            echo ""
+                        fi
+                        _show_file $target $file
+                        firstfile=false
+                        unset files[$key]
+                        files=(${files[@]})
+                        break
+                    fi
+                done
+            done
+
+            # Show all remaining files
+            for file in ${files[@]}
+            do
+                if [[ $firstfile == false ]]
+                then
+                    echo ""
+                fi
+                _show_file $target ${file#*$TUE_DIR/installer/targets/$target/}
+                firstfile=false
+            done
+            firsttarget=false
+        done
     elif [[ $cmd == "dep" ]]
     then
         $TUE_DIR/installer/scripts/tue-get-dep.bash $@
@@ -705,7 +681,7 @@ function _tue-repos-do
     # Evaluates the command of the input for tue-env and all repo's of tue-robotics.
     # The input can be multiple arguments, but if the input consists of multiple commands
     # seperated by ';' or '&&' the input needs to be captured in a string.
-    
+
     local mem_pwd=$PWD
 
     cd $TUE_DIR
