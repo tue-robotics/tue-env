@@ -477,7 +477,7 @@ function tue-install-ros
         tue-install-debug "tue-install-system ros-$TUE_ROS_DISTRO-$src"
 
         # all HSR system targets from Toyota need extra apt sources
-        if [[ $src == *"hsrb"* ||  "$src" == *"tmc"* ]]
+        if [[ $src == *"hsr"* ||  "$src" == *"tmc"* ]]
         then
             tue-install-target hsr-setup
         fi
