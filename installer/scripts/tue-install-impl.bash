@@ -824,6 +824,3 @@ if [ -n "$TUE_INSTALL_SNAPS" ]; then
         done
     fi
 fi
-
-[ "$TUE_INSTALL_ROS_PACKAGE_SOURCE" == true ] && tue-make
-
