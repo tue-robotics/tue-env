@@ -95,7 +95,7 @@ function tue-install-target {
 
         # Empty the target's dependency file
         tue-install-debug "Emptying $TUE_INSTALL_DEPENDENCIES_DIR/$target"
-        > $TUE_INSTALL_DEPENDENCIES_DIR/$target
+        truncate -s 0 $TUE_INSTALL_DEPENDENCIES_DIR/$target
 
         if [ -f $install_file.yaml ]
         then
