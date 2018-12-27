@@ -1,4 +1,4 @@
 - type: system
   name: ruby
-- type: system
+- type: target
   name: ruby-dev
