@@ -8,11 +8,13 @@ Package manager that can be used to install (ROS) dependencies
 source <(wget -O - https://raw.githubusercontent.com/tue-robotics/tue-env/master/installer/scripts/bootstrap.bash)
 tue-get install tue-dev #or
 tue-get install tue-dev-full #tue-dev plus extra tools
+tue-make
+source .bashrc
 ```
 
 ## Usage
 
-With `tue-get` you can install various targets which mostly are ros packages. 
+With `tue-get` you can install various targets which mostly are ros packages.
 The list of packages can be seen [here](installer/targets).
 
 ```bash
@@ -23,6 +25,12 @@ TU/e robots, run the following command:
 ```bash
 tue-get install tue-dev
 ```
+
+**Note:** Any ROS package which has a source installation must be built. In the
+current implementation of `tue-get` this doesn't happen automatically. However
+we provide an alias to `catkin build` as `tue-make` which would build the
+`tue-env` workspace.
+
 Upon executing the installation instructions mentioned in the previous section, `~/.tue/setup.bash` is automatically added in `.bashrc`. Sourcing `.bashrc` would make `tue-env` available to the bash session.
 
 ## Guidelines on creating a new target
@@ -81,15 +89,16 @@ Taking the above into account, the following combinations for `install.yaml` are
 The following functions provided with `tue-env` must be preferred over any
 generally used methods of installing packages:
 
-| Function Name            | Description                                     |
-|--------------------------|-------------------------------------------------|
-| `tue-install-cp`         | Analogous to `cp` but takes `sudo` into account |
-| `tue-install-git`        | To install a git repository                     |
-| `tue-install-pip`        | To install a python pip package                 |
-| `tue-install-ppa`        | To add PPA with `apt-add-repository`            |
-| `tue-install-snap`       | To install a snap                               |
-| `tue-install-svn`        | To install a svn repository                     |
-| `tue-install-system-now` | To install debian packages with `apt-get`       |
+| Function Name            | Description                                                  |
+|--------------------------|--------------------------------------------------------------|
+| `tue-install-add-text`   | To add/replace text in a file with `sudo` taken into account |
+| `tue-install-cp`         | Analogous to `cp` but takes `sudo` into account              |
+| `tue-install-git`        | To install a git repository                                  |
+| `tue-install-pip`        | To install a python pip package                              |
+| `tue-install-ppa`        | To add PPA with `apt-add-repository`                         |
+| `tue-install-snap`       | To install a snap                                            |
+| `tue-install-svn`        | To install a svn repository                                  |
+| `tue-install-system-now` | To install debian packages with `apt-get`                    |
 
 The input arguments for each of the above mentioned commands can be found by
 simply executing the command in a bash session (provided tue-env is correctly
