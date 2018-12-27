@@ -577,8 +577,6 @@ function tue-install-ros
     fi
 
     TUE_INSTALL_PKG_DIR=$ros_pkg_dir
-    TUE_INSTALL_ROS_PACKAGE_SOURCE=true
-
 }
 
 # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # #
@@ -646,7 +644,6 @@ TUE_INSTALL_SNAPS=
 
 TUE_INSTALL_WARNINGS=
 TUE_INSTALL_INFOS=
-TUE_INSTALL_ROS_PACKAGE_SOURCE=
 
 if [ -d "/usr/local/cuda/" ]
 then
