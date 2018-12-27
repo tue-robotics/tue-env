@@ -69,7 +69,8 @@ function tue-install-target {
     # Check if valid target received as input
     if [ ! -d $TUE_INSTALL_TARGET_DIR/$target ]
     then
-        tue-install-error "Target '$target' does not exist."
+        tue-install-debug "Target '$target' does not exist."
+        return 1
     fi
 
     local parent_target=$TUE_INSTALL_CURRENT_TARGET
@@ -561,7 +562,9 @@ function tue-install-ros
 
             for dep in $deps
             do
-                tue-install-target ros-$dep || tue-install-target $dep
+                # Preference given to target name starting with ros-
+                tue-install-target ros-$dep || tue-install-target $dep || \
+                    tue-install-error "Target '$dep' does not exist."
             done
 
         else
