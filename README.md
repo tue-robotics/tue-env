@@ -89,7 +89,7 @@ generally used methods of installing packages:
 | `tue-install-ppa`        | To add PPA with `apt-add-repository`            |
 | `tue-install-snap`       | To install a snap                               |
 | `tue-install-svn`        | To install a svn repository                     |
-| `tue-install-system-now` | To install ubuntu packages with `apt-get`       |
+| `tue-install-system-now` | To install debian packages with `apt-get`       |
 
 The input arguments for each of the above mentioned commands can be found by
 simply executing the command in a bash session (provided tue-env is correctly
