@@ -49,7 +49,7 @@ or installable packages must be specified there. They should not be moved to
 `install.bash`as`tue-env` has many controls in place to parse the YAML file.
 
 ### Naming conventions
-Name of the target must start with `ros-` only if it will be compiled/installed by ROS or it is installed by reading the dependencies from a catkin `package.xml`
+Name of the target must start with `ros-` only if it will be compiled/installed by ROS.
 
 ### Writing `install.yaml`
 | Symbol | Convention                             |
