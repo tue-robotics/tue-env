@@ -529,7 +529,8 @@ function tue-install-ros
             echo "svn co $src" >> $INSTALL_DETAILS_FILE
         fi
     else
-        tue-install-error "Unknown ros install type: '${type}'"
+        tue-install-error "Unknown ros install type: '${install_type}'"
+        return 1
     fi
 
     if [ -d $repos_dir ]; then
@@ -576,6 +577,8 @@ function tue-install-ros
     fi
 
     TUE_INSTALL_PKG_DIR=$ros_pkg_dir
+    TUE_INSTALL_ROS_PACKAGE_SOURCE=true
+
 }
 
 # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # #
@@ -643,6 +646,7 @@ TUE_INSTALL_SNAPS=
 
 TUE_INSTALL_WARNINGS=
 TUE_INSTALL_INFOS=
+TUE_INSTALL_ROS_PACKAGE_SOURCE=
 
 if [ -d "/usr/local/cuda/" ]
 then
@@ -820,3 +824,6 @@ if [ -n "$TUE_INSTALL_SNAPS" ]; then
         done
     fi
 fi
+
+[ "$TUE_INSTALL_ROS_PACKAGE_SOURCE" == true ] && tue-make
+
