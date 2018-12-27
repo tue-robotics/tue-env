@@ -81,14 +81,15 @@ Taking the above into account, the following combinations for `install.yaml` are
 The following functions provided with `tue-env` must be preferred over any
 generally used methods of installing packages:
 
-| Function Name            | Description                               |
-|--------------------------|-------------------------------------------|
-| `tue-install-git`        | To install a git repository               |
-| `tue-install-pip`        | To install a python pip package           |
-| `tue-install-ppa`        | To add PPA with `apt-add-repository`      |
-| `tue-install-snap`       | To install a snap                         |
-| `tue-install-svn`        | To install a svn repository               |
-| `tue-install-system-now` | To install ubuntu packages with `apt-get` |
+| Function Name            | Description                                     |
+|--------------------------|-------------------------------------------------|
+| `tue-install-cp`         | Analogous to `cp` but takes `sudo` into account |
+| `tue-install-git`        | To install a git repository                     |
+| `tue-install-pip`        | To install a python pip package                 |
+| `tue-install-ppa`        | To add PPA with `apt-add-repository`            |
+| `tue-install-snap`       | To install a snap                               |
+| `tue-install-svn`        | To install a svn repository                     |
+| `tue-install-system-now` | To install ubuntu packages with `apt-get`       |
 
 The input arguments for each of the above mentioned commands can be found by
 simply executing the command in a bash session (provided tue-env is correctly
