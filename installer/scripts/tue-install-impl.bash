@@ -66,6 +66,12 @@ function tue-install-target {
 
     tue-install-debug "Installing $target"
 
+    # Check if valid target received as input
+    if [ ! -d $TUE_INSTALL_TARGET_DIR/$target ]
+    then
+        tue-install-error "Target '$target' does not exist."
+    fi
+
     local parent_target=$TUE_INSTALL_CURRENT_TARGET
 
     # If the target has a parent target, add target as a dependency to the parent target
@@ -83,10 +89,6 @@ function tue-install-target {
     if [ ! -f $TUE_INSTALL_STATE_DIR/$target ]; then
         tue-install-debug "File $TUE_INSTALL_STATE_DIR/$target does not exist, going to installation procedure"
 
-        if [ ! -d $TUE_INSTALL_TARGET_DIR/$target ]
-        then
-            tue-install-error "Target '$target' does not exist."
-        fi
 
         local install_file=$TUE_INSTALL_TARGET_DIR/$target/install
 
@@ -559,7 +561,7 @@ function tue-install-ros
 
             for dep in $deps
             do
-                tue-install-target ros-$dep
+                tue-install-target ros-$dep || tue-install-target $dep
             done
 
         else
