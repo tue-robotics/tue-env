@@ -1,5 +1,5 @@
 - type: ros
   source:
     type: git
-    url: https://github.com/ros-drivers/audio_common.git
+    url: https://github.com/tue-robotics/audio_common.git
     sub-dir: audio_capture
