@@ -15,19 +15,22 @@ TUE_REPOS_DIR=$TUE_ENV_DIR/repos
 
 # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # #
 
-function date_stamp {
+function date_stamp
+{
     echo $(date +%Y_%m_%d_%H_%M_%S)
 }
 
 # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # #
 
-function version_gt() {
+function version_gt()
+{
     test "$(printf '%s\n' "$@" | sort -V | head -n 1)" != "$1";
 }
 
 # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # #
 
-function tue-install-error {
+function tue-install-error
+{
     echo -e "\033[38;5;1m
 Error while installing target '$TUE_INSTALL_CURRENT_TARGET':
 
@@ -38,21 +41,24 @@ Error while installing target '$TUE_INSTALL_CURRENT_TARGET':
 
 # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # #
 
-function tue-install-warning {
+function tue-install-warning
+{
     echo -e "\033[33;5;1m[$TUE_INSTALL_CURRENT_TARGET] WARNING: $1\033[0m"
     TUE_INSTALL_WARNINGS="    [$TUE_INSTALL_CURRENT_TARGET] $1\n${TUE_INSTALL_WARNINGS}"
 }
 
 # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # #
 
-function tue-install-info {
+function tue-install-info
+{
     echo -e "\e[0;36m[$TUE_INSTALL_CURRENT_TARGET] INFO: $1\033[0m"
     TUE_INSTALL_INFOS="    [$TUE_INSTALL_CURRENT_TARGET] $1\n${TUE_INSTALL_INFOS}"
 }
 
 # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # #
 
-function tue-install-debug {
+function tue-install-debug
+{
     if [ "$DEBUG" = "true" ]; then
         echo -e "\e[0;34m[$TUE_INSTALL_CURRENT_TARGET] DEBUG: $1\033[0m"
     fi
@@ -61,7 +67,8 @@ function tue-install-debug {
 
 # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # #
 
-function tue-install-target {
+function tue-install-target
+{
     local target=$1
 
     tue-install-debug "Installing $target"
