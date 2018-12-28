@@ -1,2 +1,5 @@
 - type: target
   name: kaldi
+
+- type: target
+  name: ros-audio_capture
