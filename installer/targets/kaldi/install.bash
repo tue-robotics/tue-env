@@ -33,7 +33,7 @@ tue-install-git "$KALDI_REPO" "$KALDI_HOME"
 cd "$KALDI_HOME"
 if [ "$prev" != "$(git rev-list HEAD -n 1)" ]; then
     tue-install-debug "Building kaldi_speech"
-    ./install.bash --build
+    ./install.bash --build || tue-install-error "Kaldi build error."
 else
     tue-install-debug "kaldi_speech not updated, so not rebuilding"
 fi
