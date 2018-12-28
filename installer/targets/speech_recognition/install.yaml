@@ -3,3 +3,6 @@
 
 - type: target
   name: ros-audio_capture
+
+- type: target
+  name: ros-grammar_parser
