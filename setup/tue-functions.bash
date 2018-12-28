@@ -20,91 +20,42 @@ function _list_subdirs
 }
 
 # ----------------------------------------------------------------------------------------------------
-#                                           TUE-CREATE
-# ----------------------------------------------------------------------------------------------------
-
-function tue-create
-{
-    if [ -z "$1" ]
-    then
-        echo "Usage: tue-create TYPE [ ARG1 ARG2 ... ]"
-        return 1
-    fi
-
-    creation_type=$1
-
-    # remove the first argument (which contained the creation type)
-    shift
-
-    if [ -f $TUE_DIR/create/$creation_type/create.bash ]
-    then
-        source $TUE_DIR/create/$creation_type/create.bash
-    elif [ $TUE_DIR/create/$creation_type/create ]
-    then
-        $TUE_DIR/create/$creation_type/create $@
-    else
-        echo "tue-create: invalid creation type: '$creation_type'."
-        return 1
-    fi
-}
-
-function _tue-create
-{
-    local cur=${COMP_WORDS[COMP_CWORD]}
-    local prev=${COMP_WORDS[COMP_CWORD-1]}
-
-    if [ $COMP_CWORD -eq 1 ]; then
-        COMPREPLY=( $(compgen -W "`_list_subdirs $TUE_DIR/create`" -- $cur) )
-    fi
-}
-complete -F _tue-create tue-create
-
-# ----------------------------------------------------------------------------------------------------
 #                                            TUE-MAKE
 # ----------------------------------------------------------------------------------------------------
 
 function tue-make
 {
-    # compile non-ros packages if needed
-    if [ -d $TUE_ENV_DIR/pkgs ]
-    then
-        $TUE_DIR/make/pre-configure.bash
-        $TUE_DIR/make/configure.bash
-        $TUE_DIR/make/make.bash
-        $TUE_DIR/make/post-make.bash
-    fi
-
     if [ -n "$TUE_ROS_DISTRO" ] && [ -d $_TUE_CATKIN_SYSTEM_DIR ]
     then
-		case $(cat $_TUE_CATKIN_SYSTEM_DIR/devel/.built_by) in
-		'catkin_make')
-			catkin_make --directory $_TUE_CATKIN_SYSTEM_DIR -DCMAKE_BUILD_TYPE=RelWithDebInfo $@
-			;;
-		'catkin build')
-			catkin build --workspace $_TUE_CATKIN_SYSTEM_DIR $@
-			;;
-		'')
-			catkin init --workspace $_TUE_CATKIN_SYSTEM_DIR $@
-			catkin build --workspace $_TUE_CATKIN_SYSTEM_DIR $@
-			;;
-		esac
+        case $(cat $_TUE_CATKIN_SYSTEM_DIR/devel/.built_by) in
+        'catkin_make')
+            catkin_make --directory $_TUE_CATKIN_SYSTEM_DIR -DCMAKE_BUILD_TYPE=RelWithDebInfo $@
+            ;;
+        'catkin build')
+            catkin build --workspace $_TUE_CATKIN_SYSTEM_DIR $@
+            ;;
+        '')
+            catkin init --workspace $_TUE_CATKIN_SYSTEM_DIR $@
+            catkin build --workspace $_TUE_CATKIN_SYSTEM_DIR $@
+            ;;
+        esac
     fi
 }
 
 function tue-make-system
 {
-	case $(cat $_TUE_CATKIN_SYSTEM_DIR/devel/.built_by) in
-	'catkin_make')
-		catkin_make --directory $_TUE_CATKIN_SYSTEM_DIR -DCMAKE_BUILD_TYPE=RelWithDebInfo $@
-		;;
-	'catkin build')
-		catkin build --workspace $_TUE_CATKIN_SYSTEM_DIR $@
-		;;
-	'')
-		catkin init --workspace $_TUE_CATKIN_SYSTEM_DIR $@
-		catkin build --workspace $_TUE_CATKIN_SYSTEM_DIR $@
-		;;
-	esac
+    case $(cat $_TUE_CATKIN_SYSTEM_DIR/devel/.built_by) in
+    'catkin_make')
+        catkin_make --directory $_TUE_CATKIN_SYSTEM_DIR -DCMAKE_BUILD_TYPE=RelWithDebInfo $@
+        ;;
+    'catkin build')
+        catkin build --workspace $_TUE_CATKIN_SYSTEM_DIR $@
+        ;;
+    '')
+        catkin init --workspace $_TUE_CATKIN_SYSTEM_DIR $@
+        catkin build --workspace $_TUE_CATKIN_SYSTEM_DIR $@
+        ;;
+    esac
 }
 
 function _tue-make
@@ -120,34 +71,34 @@ complete -F _tue-make tue-make-system
 
 function tue-make-dev
 {
-	case $(cat $_TUE_CATKIN_DEV_DIR/devel/.built_by) in
-	'catkin_make')
-		catkin_make --directory $_TUE_CATKIN_DEV_DIR -DCMAKE_BUILD_TYPE=RelWithDebInfo $@
-		;;
-	'catkin build')
-		catkin build --workspace $_TUE_CATKIN_DEV_DIR $@
-		;;
-	'')
-		catkin init --workspace $_TUE_CATKIN_DEV_DIR $@
-		catkin build --workspace $_TUE_CATKIN_DEV_DIR $@
-		;;
-	esac
+    case $(cat $_TUE_CATKIN_DEV_DIR/devel/.built_by) in
+    'catkin_make')
+        catkin_make --directory $_TUE_CATKIN_DEV_DIR -DCMAKE_BUILD_TYPE=RelWithDebInfo $@
+        ;;
+    'catkin build')
+        catkin build --workspace $_TUE_CATKIN_DEV_DIR $@
+        ;;
+    '')
+        catkin init --workspace $_TUE_CATKIN_DEV_DIR $@
+        catkin build --workspace $_TUE_CATKIN_DEV_DIR $@
+        ;;
+    esac
 }
 
 function tue-make-dev-isolated
 {
-	case $(cat $_TUE_CATKIN_SYSTEM_DIR/devel/.built_by) in
-	'catkin_make')
-		catkin_make_isolated --directory $_TUE_CATKIN_DEV_DIR -DCMAKE_BUILD_TYPE=RelWithDebInfo $@
-		;;
-	'catkin build')
-		catkin build --workspace $_TUE_CATKIN_DEV_DIR $@
-		;;
-	'')
-		catkin init --workspace $_TUE_CATKIN_DEV_DIR $@
-		catkin build --workspace $_TUE_CATKIN_DEV_DIR $@
-		;;
-	esac
+    case $(cat $_TUE_CATKIN_SYSTEM_DIR/devel/.built_by) in
+    'catkin_make')
+        catkin_make_isolated --directory $_TUE_CATKIN_DEV_DIR -DCMAKE_BUILD_TYPE=RelWithDebInfo $@
+        ;;
+    'catkin build')
+        catkin build --workspace $_TUE_CATKIN_DEV_DIR $@
+        ;;
+    '')
+        catkin init --workspace $_TUE_CATKIN_DEV_DIR $@
+        catkin build --workspace $_TUE_CATKIN_DEV_DIR $@
+        ;;
+    esac
 }
 
 function _tue-make-dev
@@ -404,28 +355,23 @@ function tue-revert-undo
 #                                              TUE-GET
 # ----------------------------------------------------------------------------------------------------
 
-function _tue_depends
+function _show_file
 {
-    local tue_dep_dir=$TUE_ENV_DIR/.env/dependencies
-
-    if [ -z "$1" ]
+    if [ ! -z $2 ]
     then
-        echo "Usage: tue-depends PACKAGE"
+        echo -e "\033[1m[$1] $2\033[0m"
+        echo "--------------------------------------------------"
+        if hash pygmentize 2> /dev/null
+        then
+            pygmentize -g $TUE_DIR/installer/targets/$1/$2
+        else
+            cat $TUE_DIR/installer/targets/$1/$2
+        fi
+        echo "--------------------------------------------------"
+    else
+        echo -e "_show_file requires target_name and relative file_path in target"
         return 1
     fi
-
-    if [ ! -f $tue_dep_dir/$1 ]
-    then
-        echo "Package '$1' not installed"
-        return 1
-    fi
-
-    cat $tue_dep_dir/$1
-}
-
-function randid
-{
-    </dev/urandom tr -dc '0123456789abcdef' | head -c16; echo ""
 }
 
 function tue-get
@@ -443,6 +389,7 @@ function tue-get
         update         - Updates currently installed packages
         remove         - Removes installed package
         list-installed - Lists all manually installed packages
+        show           - Show the contents of (a) package(s)
 
     Possible options:
         --debug        - Shows more debugging information
@@ -473,7 +420,7 @@ function tue-get
 
     if [[ $cmd == "install" ]]
     then
-        $TUE_DIR/installer/scripts/tue-install $cmd $@
+        $TUE_DIR/installer/scripts/tue-install.bash $cmd $@
         error_code=$?
 
         [ $error_code -eq 0 ] && source ~/.bashrc
@@ -496,7 +443,7 @@ function tue-get
 
         if [ $error_code -eq 0 ]
         then
-            $TUE_DIR/installer/scripts/tue-install $cmd $@
+            $TUE_DIR/installer/scripts/tue-install.bash $cmd $@
             error_code=$?
             [ $error_code -eq 0 ] && source ~/.bashrc
         fi
@@ -528,9 +475,9 @@ function tue-get
 
         echo ""
         if [ -n "$2" ]; then
-            echo "The packages were removed from the 'installed list' but still need to be deleted from your workspace."
+            echo "[tue-get] The packages were removed from the 'installed list' but still need to be deleted from your workspace."
         else
-            echo "The package was removed from the 'installed list' but still needs to be deleted from your workspace."
+            echo "[tue-get] The package was removed from the 'installed list' but still needs to be deleted from your workspace."
         fi
     elif [[ $cmd == "list-installed" ]]
     then
@@ -540,9 +487,66 @@ function tue-get
         else
             ls $TUE_ENV_DIR/.env/installed
         fi
+    elif [[ $cmd == "show" ]]
+    then
+        if [ -z "$1" ]
+        then
+            echo "[tue-get](show) Provide at least one target name"
+            return 1
+        fi
+        local firsttarget=true
+        for target in $@
+        do
+            if [[ $firsttarget == false ]]
+            then
+                echo ""
+            fi
+            if [ ! -d $TUE_DIR/installer/targets/$target ]
+            then
+                echo "[tue-get](show) '$target' is not a valid target"
+                firsttarget=false
+                continue
+            fi
+
+            local firstfile="true"
+            local files=($(find $TUE_DIR/installer/targets/$target -type f))
+
+            # First show the common target files
+            local main_target_files="install.yaml install.bash setup"
+            for file in $main_target_files
+            do
+                for key in ${!files[@]}
+                do
+                    if [ ${files[$key]} == $TUE_DIR/installer/targets/$target/$file ]
+                    then
+                        if [[ $firstfile == false ]]
+                        then
+                            echo ""
+                        fi
+                        _show_file $target $file
+                        firstfile=false
+                        unset files[$key]
+                        files=(${files[@]})
+                        break
+                    fi
+                done
+            done
+
+            # Show all remaining files
+            for file in ${files[@]}
+            do
+                if [[ $firstfile == false ]]
+                then
+                    echo ""
+                fi
+                _show_file $target ${file#*$TUE_DIR/installer/targets/$target/}
+                firstfile=false
+            done
+            firsttarget=false
+        done
     elif [[ $cmd == "dep" ]]
     then
-        $TUE_DIR/installer/scripts/tue-get-dep $@
+        $TUE_DIR/installer/scripts/tue-get-dep.bash $@
     else
         echo "[tue-get] Unknown command: '$cmd'"
         return 1
@@ -556,7 +560,7 @@ function _tue-get
 
     if [ $COMP_CWORD -eq 1 ]; then
         local IFS=$'\n'
-        options="'dep '\n'install '\n'update '\n'remove '\n'list-installed '"
+        options="'dep '\n'install '\n'update '\n'remove '\n'list-installed '\n'show '"
         COMPREPLY=( $(compgen -W "$(echo -e "$options")" -- $cur) )
     else
         cmd=${COMP_WORDS[1]}
@@ -576,6 +580,10 @@ function _tue-get
         then
             local IFS=$'\n'
             COMPREPLY=( $(compgen -W "`ls $TUE_ENV_DIR/.env/installed | sed "s/.*/'& '/g"`" -- $cur) )
+        elif [[ $cmd == "show" ]]
+        then
+            local IFS=$'\n'
+            COMPREPLY=( $(compgen -W "`ls $TUE_DIR/installer/targets | sed "s/.*/'& '/g"`" -- $cur) )
         else
             COMREPLY=""
         fi
@@ -673,7 +681,7 @@ function _tue-repos-do
     # Evaluates the command of the input for tue-env and all repo's of tue-robotics.
     # The input can be multiple arguments, but if the input consists of multiple commands
     # seperated by ';' or '&&' the input needs to be captured in a string.
-    
+
     local mem_pwd=$PWD
 
     cd $TUE_DIR

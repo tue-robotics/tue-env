@@ -45,7 +45,7 @@ export LC_ALL="C.UTF-8"
 
 # -----------------------------------------
 # Load all the bash functions
-source $TUE_DIR/setup/tue.bash_functions
+source $TUE_DIR/setup/tue-functions.bash
 
 if [ -f $TUE_ENV_DIR/.env/setup/user_setup.bash ]
 then
@@ -57,16 +57,7 @@ then
     source $TUE_ENV_DIR/.env/setup/target_setup.bash
 fi
 
-if [ -f $TUE_DIR/setup/tue.bash_aliases ]
-then
-    source $TUE_DIR/setup/tue.bash_aliases
-fi
-
 export TUE_BIN=$TUE_DIR/bin
 export PATH=$TUE_BIN:$PATH
 
 export TUE_ENV=$TUE_ENV
-
-# Make sure ROS can find cmake modules of non-ROS packages
-#export CMAKE_PREFIX_PATH=$TUE_ENV_DIR/cmake:$CMAKE_PREFIX_PATH
-export CURRENT_CMAKE_BUILD_DIR="$(catkin locate --workspace $TUE_SYSTEM_DIR --build)"
