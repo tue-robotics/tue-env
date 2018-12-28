@@ -1,5 +1,4 @@
 #!/bin/bash
-#_tue-check-env-vars || return 1
 
 TUE_INSTALL_DEPENDENCIES_DIR=$TUE_ENV_DIR/.env/dependencies
 TUE_INSTALL_DEPENDENCIES_ON_DIR=$TUE_ENV_DIR/.env/dependencies-on
@@ -16,19 +15,22 @@ TUE_REPOS_DIR=$TUE_ENV_DIR/repos
 
 # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # #
 
-function date_stamp {
+function date_stamp
+{
     echo $(date +%Y_%m_%d_%H_%M_%S)
 }
 
 # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # #
 
-function version_gt() {
+function version_gt()
+{
     test "$(printf '%s\n' "$@" | sort -V | head -n 1)" != "$1";
 }
 
 # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # #
 
-function tue-install-error {
+function tue-install-error
+{
     echo -e "\033[38;5;1m
 Error while installing target '$TUE_INSTALL_CURRENT_TARGET':
 
@@ -39,21 +41,24 @@ Error while installing target '$TUE_INSTALL_CURRENT_TARGET':
 
 # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # #
 
-function tue-install-warning {
+function tue-install-warning
+{
     echo -e "\033[33;5;1m[$TUE_INSTALL_CURRENT_TARGET] WARNING: $1\033[0m"
     TUE_INSTALL_WARNINGS="    [$TUE_INSTALL_CURRENT_TARGET] $1\n${TUE_INSTALL_WARNINGS}"
 }
 
 # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # #
 
-function tue-install-info {
+function tue-install-info
+{
     echo -e "\e[0;36m[$TUE_INSTALL_CURRENT_TARGET] INFO: $1\033[0m"
     TUE_INSTALL_INFOS="    [$TUE_INSTALL_CURRENT_TARGET] $1\n${TUE_INSTALL_INFOS}"
 }
 
 # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # #
 
-function tue-install-debug {
+function tue-install-debug
+{
     if [ "$DEBUG" = "true" ]; then
         echo -e "\e[0;34m[$TUE_INSTALL_CURRENT_TARGET] DEBUG: $1\033[0m"
     fi
@@ -62,10 +67,18 @@ function tue-install-debug {
 
 # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # #
 
-function tue-install-target {
+function tue-install-target
+{
     local target=$1
 
     tue-install-debug "Installing $target"
+
+    # Check if valid target received as input
+    if [ ! -d $TUE_INSTALL_TARGET_DIR/$target ]
+    then
+        tue-install-debug "Target '$target' does not exist."
+        return 1
+    fi
 
     local parent_target=$TUE_INSTALL_CURRENT_TARGET
 
@@ -84,10 +97,6 @@ function tue-install-target {
     if [ ! -f $TUE_INSTALL_STATE_DIR/$target ]; then
         tue-install-debug "File $TUE_INSTALL_STATE_DIR/$target does not exist, going to installation procedure"
 
-        if [ ! -d $TUE_INSTALL_TARGET_DIR/$target ]
-        then
-            tue-install-error "Target '$target' does not exist."
-        fi
 
         local install_file=$TUE_INSTALL_TARGET_DIR/$target/install
 
@@ -96,12 +105,12 @@ function tue-install-target {
 
         # Empty the target's dependency file
         tue-install-debug "Emptying $TUE_INSTALL_DEPENDENCIES_DIR/$target"
-        > $TUE_INSTALL_DEPENDENCIES_DIR/$target
+        truncate -s 0 $TUE_INSTALL_DEPENDENCIES_DIR/$target
 
         if [ -f $install_file.yaml ]
         then
             tue-install-debug "Parsing $install_file.yaml"
-            local cmds=`$TUE_INSTALL_SCRIPTS_DIR/parse-install-yaml $install_file.yaml`
+            local cmds=`$TUE_INSTALL_SCRIPTS_DIR/parse-install-yaml.py $install_file.yaml`
             if [ $? -eq 0 ]; then
                 for cmd in $cmds
                 do
@@ -356,53 +365,6 @@ function tue-install-add-text
 
 # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # #
 
-function tue-apt-if-required
-{
-    if [ -z "$1" ]
-    then
-        tue-install-error "Invalid tue-apt-if-required call: needs package(s) as argument."
-    fi
-
-    pkgs_to_install=""
-    for pkg in $@ # Unquoted to seperate arguments based on spaces
-    do
-        # Check if pkg is not already installed dpkg -S does not cover previously removed packages
-        # Based on https://stackoverflow.com/questions/1298066
-        if ! dpkg-query -W -f='${Status}' $pkg 2>/dev/null | grep -q "ok installed"
-        then
-            pkgs_to_install="$pkgs_to_install $pkg"
-        else
-            tue-install-debug "$pkg is already installed"
-        fi
-    done
-
-    if [ -n "$pkgs_to_install" ]
-    then
-        echo -e "Going to run the following command:\n"
-        echo -e "sudo apt-get install --assume-yes $pkgs_to_install\n"
-
-        #Wait for apt-lock first (https://askubuntu.com/a/375031)
-        i=0
-        tput sc
-        while fuser /var/lib/dpkg/lock >/dev/null 2>&1 ; do
-            case $(($i % 4)) in
-                0 ) j="-" ;;
-                1 ) j="\\" ;;
-                2 ) j="|" ;;
-                3 ) j="/" ;;
-            esac
-            tput rc
-            echo -en "\r[$j] Waiting for other software managers to finish..."
-            sleep 0.5
-            ((i=i+1))
-        done
-
-        sudo apt-get install --assume-yes $pkgs_to_install
-    fi
-}
-
-# # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # #
-
 function tue-install-system
 {
     if [ -z "$1" ]
@@ -423,7 +385,43 @@ function tue-install-system-now
         tue-install-error "Invalid tue-install-system-now call: needs package as argument."
     fi
 
-    tue-apt-if-required "$@"
+    pkgs_to_install=""
+    for pkg in $@ # Unquoted to seperate arguments based on spaces
+    do
+        # Check if pkg is not already installed dpkg -S does not cover previously removed packages
+        # Based on https://stackoverflow.com/questions/1298066
+        if ! dpkg-query -W -f='${Status}' $pkg 2>/dev/null | grep -q "ok installed"
+        then
+            pkgs_to_install="$pkgs_to_install $pkg"
+        else
+            tue-install-debug "$pkg is already installed"
+        fi
+    done
+
+    if [ -n "$pkgs_to_install" ]
+    then
+        echo -e "Going to run the following command:\n"
+        echo -e "sudo apt-get install --assume-yes $pkgs_to_install\n"
+
+        # Wait for apt-lock first (https://askubuntu.com/a/375031)
+        i=0
+        tput sc
+        while fuser /var/lib/dpkg/lock >/dev/null 2>&1
+        do
+            case $(($i % 4)) in
+                0 ) j="-" ;;
+                1 ) j="\\" ;;
+                2 ) j="|" ;;
+                3 ) j="/" ;;
+            esac
+            tput rc
+            echo -en "\r[$j] Waiting for other software managers to finish..."
+            sleep 0.5
+            ((i=i+1))
+        done
+
+        sudo apt-get install --assume-yes $pkgs_to_install
+    fi
 }
 
 # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # #
@@ -469,13 +467,14 @@ function tue-install-snap
 
 # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # #
 
-function tue-install-ros {
-    type=$1
-    source=$2
+function tue-install-ros
+{
+    install_type=$1
+    src=$2
     sub_dir=$3
     version=$4
 
-    tue-install-debug "Installing ros package: type = $type, source = $source"
+    tue-install-debug "Installing ros package: type = $install_type, source = $src"
 
     [ -n "$TUE_ROS_DISTRO" ] || tue-install-error "Environment variable 'TUE_ROS_DISTRO' is not set."
 
@@ -484,16 +483,16 @@ function tue-install-ros {
     # First of all, make sure ROS itself is installed
     tue-install-target ros
 
-    if [ "$type" = "system" ]; then
-        tue-install-debug "tue-install-system ros-$TUE_ROS_DISTRO-$source"
+    if [ "$install_type" = "system" ]; then
+        tue-install-debug "tue-install-system ros-$TUE_ROS_DISTRO-$src"
 
         # all HSR system targets from Toyota need extra apt sources
-        if [[ $source == *"hsrb"* ||  "$source" == *"tmc"* ]]
+        if [[ $src == *"hsr"* ||  "$src" == *"tmc"* ]]
         then
             tue-install-target hsr-setup
         fi
 
-        tue-install-system ros-$TUE_ROS_DISTRO-$source
+        tue-install-system ros-$TUE_ROS_DISTRO-$src
         return
     fi
 
@@ -506,7 +505,7 @@ function tue-install-ros {
     mkdir -p $ROS_PACKAGE_INSTALL_DIR
 
     local ros_pkg_dir=$ROS_PACKAGE_INSTALL_DIR/$ros_pkg_name
-    local repos_dir=$TUE_REPOS_DIR/$source
+    local repos_dir=$TUE_REPOS_DIR/$src
     # replace spaces with underscores
     repos_dir=${repos_dir// /_}
     # now, clean out anything that's not alphanumeric or an underscore
@@ -524,27 +523,28 @@ function tue-install-ros {
     fi
     tue-install-debug "repos_dir = $repos_dir"
 
-    if [ "$type" = "git" ]; then
-        tue-install-git $source $repos_dir $version
-        tue-install-debug "git clone $source"
-        echo "git clone $source" >> $INSTALL_DETAILS_FILE
+    if [ "$install_type" = "git" ]; then
+        tue-install-git $src $repos_dir $version
+        tue-install-debug "git clone $src"
+        echo "git clone $src" >> $INSTALL_DETAILS_FILE
         [ "$version" ] && echo "# NOTE: check-out version $version" >> $INSTALL_DETAILS_FILE
-    elif [ "$type" = "svn" ]; then
-        tue-install-svn $source $repos_dir $version
+    elif [ "$install_type" = "svn" ]; then
+        tue-install-svn $src $repos_dir $version
         if [ "$version" ]; then
-            echo "svn co $source -r $version" >> $INSTALL_DETAILS_FILE
+            echo "svn co $src -r $version" >> $INSTALL_DETAILS_FILE
         else
-            echo "svn co $source" >> $INSTALL_DETAILS_FILE
+            echo "svn co $src" >> $INSTALL_DETAILS_FILE
         fi
     else
-        tue-install-error "Unknown ros install type: '${type}'"
+        tue-install-error "Unknown ros install type: '${install_type}'"
+        return 1
     fi
 
     if [ -d $repos_dir ]; then
 
         if [ ! -d $repos_dir/$sub_dir ]
         then
-            tue-install-error "Subdirectory '$sub_dir' does not exist for URL '$source'."
+            tue-install-error "Subdirectory '$sub_dir' does not exist for URL '$src'."
         fi
 
         if [ -L $ros_pkg_dir ]
@@ -553,7 +553,7 @@ function tue-install-ros {
             # because it means the source URL has changed
             if [ ! $ros_pkg_dir -ef $repos_dir/$sub_dir ]
             then
-                tue-install-info "URL has changed to $source/$subdir"
+                tue-install-info "URL has changed to $src/$subdir"
                 rm $ros_pkg_dir
                 ln -s $repos_dir/$sub_dir $ros_pkg_dir
             fi
@@ -565,12 +565,14 @@ function tue-install-ros {
 
         if  [ -f $ros_pkg_dir/package.xml ]; then
             # Catkin
-            deps=`$TUE_INSTALL_SCRIPTS_DIR/parse-ros-package-deps $ros_pkg_dir/package.xml`
+            deps=`$TUE_INSTALL_SCRIPTS_DIR/parse-ros-package-deps.py $ros_pkg_dir/package.xml`
             tue-install-debug "Parsed package.xml \n$deps"
 
             for dep in $deps
             do
-                tue-install-target ros-$dep
+                # Preference given to target name starting with ros-
+                tue-install-target ros-$dep || tue-install-target $dep || \
+                    tue-install-error "Target '$dep' does not exist."
             done
 
         else
@@ -578,7 +580,7 @@ function tue-install-ros {
         fi
 
     else
-        tue-install-error "Checking out $source was not successful."
+        tue-install-error "Checking out $src was not successful."
     fi
 
     TUE_INSTALL_PKG_DIR=$ros_pkg_dir
@@ -593,7 +595,7 @@ function generate_setup_file
     then
         return
     fi
-    
+
     TUE_SETUP_TARGETS=" $1$TUE_SETUP_TARGETS"
 
     # Check if the dependency file exists. If not, return
@@ -629,7 +631,7 @@ tue-install-system-now python-yaml git subversion python-pip
 
 stamp=$(date_stamp)
 INSTALL_DETAILS_FILE=/tmp/tue-get-details-$stamp
-> $INSTALL_DETAILS_FILE
+touch $INSTALL_DETAILS_FILE
 
 # CATKIN PACKAGES
 ROS_PACKAGE_INSTALL_DIR=$TUE_SYSTEM_DIR/src
@@ -769,8 +771,8 @@ if [ -n "$TUE_INSTALL_SYSTEMS" ]; then
 
     echo -e "\nsudo apt-get install --assume-yes $TUE_INSTALL_SYSTEMS" >> $INSTALL_DETAILS_FILE
 
-    tue-install-debug "tue-apt-if-required $TUE_INSTALL_SYSTEMS"
-    tue-apt-if-required "$TUE_INSTALL_SYSTEMS"
+    tue-install-debug "tue-install-system-now $TUE_INSTALL_SYSTEMS"
+    tue-install-system-now "$TUE_INSTALL_SYSTEMS"
 fi
 
 # Installing all python (pip) targets, which are collected during the install

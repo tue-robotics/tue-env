@@ -1,1 +1,4 @@
 alias qtcreator='/opt/Qt/Tools/QtCreator/bin/qtcreator.sh'
+
+# Make sure packages can be build by QT
+export CURRENT_CMAKE_BUILD_DIR="$(catkin locate --workspace $TUE_SYSTEM_DIR --build)"
