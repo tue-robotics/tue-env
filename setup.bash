@@ -43,9 +43,9 @@ fi
 # Load all the bash functions
 source $TUE_DIR/setup/tue-functions.bash
 
-if [ -f $TUE_DIR/setup/misc.bash ]
+if [ -f $TUE_DIR/setup/tue-misc.bash ]
 then
-    source $TUE_DIR/setup/misc.bash
+    source $TUE_DIR/setup/tue-misc.bash
 fi
 
 if [ -f $TUE_ENV_DIR/.env/setup/user_setup.bash ]
