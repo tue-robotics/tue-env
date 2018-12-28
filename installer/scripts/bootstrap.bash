@@ -42,8 +42,8 @@ fi
 
 if [[ -z "$CI" ]]
 then
-    # Update installer
-    git clone https://github.com/tue-robotics/tue-env.git ~/.tue
+    # Clone installer repository using SSH/HTTPS
+    git clone git@github.com:tue-robotics/tue-env.git ~/.tue 2> /dev/null || https://github.com/tue-robotics/tue-env.git ~/.tue
 fi
 
 # Source the installer commands
