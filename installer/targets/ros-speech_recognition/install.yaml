@@ -6,3 +6,8 @@
 
 - type: target
   name: ros-grammar_parser
+
+- type: ros
+  source:
+      type: git
+      url: https://github.com/tue-robotics/speech_recognition.git
