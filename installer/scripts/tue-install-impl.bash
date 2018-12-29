@@ -172,12 +172,37 @@ function tue-install-svn
 
 # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # #
 
+function _make-ssh-url-git
+{
+    local url=$1
+    # Reset global variable holding repo SSH url
+    git_repo_ssh_url=
+
+    # Check if url has https else exit
+    echo $url | grep -q "https://" || return 1
+
+    # Check if url is a git repository
+    echo $url | grep -q ".git" || return 1
+
+    local web_address=${url#https://}
+    local domain_name=${web_address%%/*}
+    local repo_address=${web_address#*/}
+
+    git_repo_ssh_url=git@$domain_name:$repo_address
+}
+
+# # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # #
+
 function tue-install-git
 {
+    # Generate SSH url
+    _make-ssh-url-git $1
+
     tue-install-debug "tue-install-git $@"
     if [ ! -d $2 ]; then
         tue-install-debug "git clone --recursive $1 $2"
-        res=$(git clone --recursive $1 $2 2>&1)
+        # If cloning with SSH fails use HTTPS
+        res=$(git clone --recursive $git_repo_ssh_url $2 2> /dev/null || git clone --recursive $1 $2 2>&1)
         TUE_INSTALL_GIT_PULL_Q+=$2
     else
         # Check if we have already pulled the repo
