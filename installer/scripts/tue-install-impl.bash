@@ -195,14 +195,23 @@ function _make-ssh-url-git
 
 function tue-install-git
 {
-    # Generate SSH url
-    _make-ssh-url-git $1
-
     tue-install-debug "tue-install-git $@"
-    if [ ! -d $2 ]; then
+    if [ ! -d $2 ]
+    then
         tue-install-debug "git clone --recursive $1 $2"
-        # If cloning with SSH fails use HTTPS
-        res=$(git clone --recursive $git_repo_ssh_url $2 2> /dev/null || git clone --recursive $1 $2 2>&1)
+
+        # Try using SSH url if variable is set else use default formulation
+        if [ "$USE_SSH" == "true" ]
+        then
+            # Generate SSH url
+            _make-ssh-url-git $1
+
+            # If cloning with SSH fails use HTTPS
+            res=$(git clone --recursive $git_repo_ssh_url $2 2> /dev/null || git clone --recursive $1 $2 2>&1)
+        else
+            res=$(git clone --recursive $1 $2 2>&1)
+        fi
+
         TUE_INSTALL_GIT_PULL_Q+=$2
     else
         # Check if we have already pulled the repo
@@ -712,6 +721,8 @@ do
         --debug) DEBUG=true
             ;;
         --branch*) BRANCH=`echo $1 | sed -e 's/^[^=]*=//g'`
+            ;;
+        --use-ssh) USE_SSH=true
             ;;
         --*) echo "unknown option $1"
             ;;

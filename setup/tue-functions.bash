@@ -394,6 +394,7 @@ function tue-get
     Possible options:
         --debug        - Shows more debugging information
         --branch=name  - Try to checkout this branch if exists
+        --use-ssh      - Use SSH urls for git repositories
 
 """
         return 1
