@@ -1,0 +1,11 @@
+- type: target
+  name: kaldi
+
+- type: target
+  name: ros-grammar_parser
+
+- type: target
+  name: ros-audio_capture
+
+- type: target
+  name: ros-speech_recognition
