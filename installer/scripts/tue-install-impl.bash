@@ -172,29 +172,51 @@ function tue-install-svn
 
 # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # #
 
+function _try_branch
+{
+    tue-install-debug "_try_branch $1 $2"
+    if [ -z "$2" ]
+    then
+        tue-install-error "Invalid _try_branch: needs two arguments (repo and branch)."
+    fi
+
+    tue-install-debug "git -C $1 checkout $2"
+    _try_branch_res=$(git -C "$1" checkout "$2" 2>&1)
+    tue-install-debug "$_try_branch_res"
+    if [[ $_try_branch_res == "Already on "* || $_try_branch_res == "error: pathspec"* ]]
+    then
+        _try_branch_res=
+    fi
+}
+
+# # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # #
+
 function tue-install-git
 {
     tue-install-debug "tue-install-git $@"
+    local repo=$1
+    local targetdir=$2
+    local version=$3
+
     if [ ! -d $2 ]; then
-        tue-install-debug "git clone --recursive $1 $2"
-        res=$(git clone --recursive $1 $2 2>&1)
-        TUE_INSTALL_GIT_PULL_Q+=$2
+        tue-install-debug "git clone --recursive $repo $targetdir"
+        res=$(git clone --recursive $repo $targetdir 2>&1)
+        TUE_INSTALL_GIT_PULL_Q+=$targetdir
     else
         # Check if we have already pulled the repo
-        if [[ $TUE_INSTALL_GIT_PULL_Q =~ $2 ]]
+        if [[ $TUE_INSTALL_GIT_PULL_Q =~ $targetdir ]]
         then
             tue-install-debug "Repo previously pulled, skipping"
             # We have already pulled this repo, skip it
             res=
         else
-            local mem_pwd=$PWD
-            cd $2
-            tue-install-debug "cd $2 && git pull --ff-only --prune"
-            res=$(git pull --ff-only --prune 2>&1)
-            tue-install-debug "$res"
-            TUE_INSTALL_GIT_PULL_Q+=$2
+            tue-install-debug "git -C $targetdir pull --ff-only --prune"
 
-            cd $mem_pwd
+            res=$(git -C $targetdir pull --ff-only --prune 2>&1)
+
+            tue-install-debug "$res"
+
+            TUE_INSTALL_GIT_PULL_Q+=$targetdir
 
             if [[ $res == "Already up to date"* ]]
             then
@@ -203,40 +225,18 @@ function tue-install-git
         fi
     fi
 
-    local version=$3
+    tue-install-debug "Desired version: $version"
     if [ -n "$version" ];
     then
-        mem_pwd=$PWD
-        cd $2
-
-        tue-install-debug "cd $2 && git checkout $version"
-
-        cres=$(git checkout $version 2>&1)
-        if [[ $cres == "Already on "* ]]
-        then
-            cres=
-        fi
-
-        res="$res $cres"
-        cd $mem_pwd
+        _try_branch $targetdir $version
+        res="$res $_try_branch_res"
     fi
 
+    tue-install-debug "Desired branch: $BRANCH"
     if [ -n "$BRANCH" ]; #Cannot be combined with version-if because this one might not exist
     then
-        mem_pwd=$PWD
-        cd $2
-
-        tue-install-debug "cd $2 && git checkout $BRANCH"
-
-        cres=$(git checkout $BRANCH 2>&1)
-        tue-install-debug "$cres"
-        if [[ $cres == "Already on "* || $cres == "error: pathspec"* ]]
-        then
-            cres=
-        fi
-
-        res="$res $cres"
-        cd $mem_pwd
+        _try_branch $targetdir "$BRANCH"
+        res="$res $_try_branch_res"
     fi
 
     _show_update_message $TUE_INSTALL_CURRENT_TARGET "$res"
