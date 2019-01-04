@@ -31,7 +31,9 @@ def main():
 
         try:
             install_type = install_item["type"]
-            if install_type == "ros":
+            if install_type == "empty":
+                return 0
+            elif install_type == "ros":
                 source_type = install_item["source"]["type"]
                 if source_type == "svn" or source_type == "git":
                     if "sub-dir" in install_item["source"]:
