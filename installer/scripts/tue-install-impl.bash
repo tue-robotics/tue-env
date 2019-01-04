@@ -110,7 +110,8 @@ function tue-install-target
         if [ -f $install_file.yaml ]
         then
             tue-install-debug "Parsing $install_file.yaml"
-            local cmds=`$TUE_INSTALL_SCRIPTS_DIR/parse-install-yaml.py $install_file.yaml`
+            # Do not use 'local cmds=' because it does not preserve command output status ($?)
+            cmds=$($TUE_INSTALL_SCRIPTS_DIR/parse-install-yaml.py $install_file.yaml)
             if [ $? -eq 0 ]; then
                 for cmd in $cmds
                 do
