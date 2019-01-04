@@ -284,7 +284,7 @@ function tue-install-cp
 
     # Check if user is allowed to write on target destination
     local root_required=true
-    if namei -l "$2" | grep -q `whoami`
+    if namei -l "$2" | grep -q $(whoami)
     then
         root_required=false
     fi
@@ -326,7 +326,7 @@ function tue-install-add-text
     local target_file=$2
 
     local root_required=true
-    if namei -l $target_file | grep -q `whoami`
+    if namei -l $target_file | grep -q $(whoami)
     then
         root_required=false
     fi
