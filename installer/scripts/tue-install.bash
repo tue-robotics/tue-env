@@ -5,15 +5,15 @@ _tue-check-env-vars || return 1
 if [ ! -d $TUE_DIR ]
 then
     git clone https://github.com/tue-robotics/tue-env.git $TUE_DIR
-elif [[ -z "$CI" ]] #Do not update with continuous integration
+elif [[ -n "$CI" ]] #Do not update with continuous integration but do fetch to refresh available branches
 then
-    mem_pwd=$PWD
-    cd $TUE_DIR
+    echo -en "Fetching tue-get... "
+    git -C $TUE_DIR fetch
+else
     echo -en "Updating tue-get... "
-    git pull --ff-only --prune
+    git -C $TUE_DIR pull --ff-only --prune
 
     error_code=$?
-    cd $mem_pwd
 
     if [ ! $error_code -eq 0 ]
     then
