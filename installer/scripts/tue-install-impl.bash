@@ -106,6 +106,7 @@ function tue-install-target
         # Empty the target's dependency file
         tue-install-debug "Emptying $TUE_INSTALL_DEPENDENCIES_DIR/$target"
         truncate -s 0 $TUE_INSTALL_DEPENDENCIES_DIR/$target
+        local target_processed=false
 
         if [ -f $install_file.yaml ]
         then
@@ -117,6 +118,7 @@ function tue-install-target
                 do
                     tue-install-debug "Running following command: $cmd"
                     ${cmd//^/ }
+                    target_processed=true
                 done
             else
                 tue-install-error "Invalid install.yaml: $cmd"
@@ -127,9 +129,16 @@ function tue-install-target
         then
             tue-install-debug "Sourcing $install_file.bash"
             source $install_file.bash
+            target_processed=true
+        fi
+
+        if [ "$target_processed" = false ]
+        then
+            tue-install-warning "Target $target does not contain a valid install.yaml/bash file"
         fi
 
         touch $TUE_INSTALL_STATE_DIR/$target
+
     fi
 
     TUE_INSTALL_CURRENT_TARGET=$parent_target
