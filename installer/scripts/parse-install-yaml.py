@@ -43,7 +43,7 @@ def main():
                     if "version" in install_item["source"]:
                        command += " {0}".format(install_item["source"]["version"])
                 elif source_type == "system":
-                    command = "tue-install-ros system {0}".format(install_item["source"]["name"])                
+                    command = "tue-install-ros system {0}".format(install_item["source"]["name"])
             elif install_type == "target":
                 command = "tue-install-target {0}".format(install_item["name"])
             elif install_type == "system":
@@ -54,6 +54,8 @@ def main():
                 command = "tue-install-ppa {0}".format(install_item["name"])
             elif install_type == "snap":
                 command = "tue-install-snap {0}".format(install_item["name"])
+            elif install_type == "dpkg":
+                command = "tue-install-dpkg {0}".format(install_item["name"])
             else:
                return show_error("Unknown install type: '{0}'".format(install_type))
 
@@ -62,7 +64,7 @@ def main():
 
         if not command:
             return show_error("invalid install file")
-        
+
         command = command.replace(" ", "^")
 
         commands += command + " "

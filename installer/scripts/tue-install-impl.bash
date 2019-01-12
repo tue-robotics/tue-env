@@ -423,6 +423,7 @@ function tue-install-system-now
         done
 
         sudo apt-get install --assume-yes $pkgs_to_install
+        tue-install-debug "Installed $pkgs_to_install ($?)"
     fi
 }
 
@@ -465,6 +466,20 @@ function tue-install-snap
     fi
     tue-install-debug "Adding $1 to snap list"
     TUE_INSTALL_SNAPS="$1 $TUE_INSTALL_SNAPS"
+}
+
+# # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # #
+
+function tue-install-dpkg
+{
+    if [ -z "$1" ]
+    then
+        tue-install-error "Invalid tue-install-dpkg call: needs package as argument."
+    fi
+    tue-install-debug "Installing dpkg $1"
+    sudo dpkg --install $1
+    tue-install-debug "sudo apt-get --fix-broken --assume-yes install"
+    sudo apt-get --fix-broken --assume-yes install
 }
 
 # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # #
