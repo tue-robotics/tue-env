@@ -14,3 +14,10 @@ then
     echo "Disabling ipv6 in /etc/avahi/avahi-daemon.conf"
     sudo sed -i 's/use-ipv6=yes/use-ipv6=no/g' /etc/avahi/avahi-daemon.conf
 fi
+
+# Generate ssh keys when not on CI and file does not exist yet
+if [[ "$CI" != "true" && ! -f ~/.ssh/id_rsa ]]
+  then
+    tue-install-debug "Generating ssh keys"
+    ssh-keygen -t rsa -N "" -f ~/.ssh/id_rsa
+fi
