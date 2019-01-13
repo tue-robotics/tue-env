@@ -4,11 +4,11 @@ if [ -z $GAZEBO_MODEL_PATH ]
 then
     export GAZEBO_MODEL_PATH=$model_path
 else
-    export GAZEBO_MODEL_PATH=$GAZEBO_MODEL_PATH:$model_path
+    export GAZEBO_MODEL_PATH=$model_path:$GAZEBO_MODEL_PATH
 fi
 if [ -z $GAZEBO_RESOURCE_PATH ]
 then
     export GAZEBO_RESOURCE_PATH=$model_path
 else
-    export GAZEBO_RESOURCE_PATH=$GAZEBO_RESOURCE_PATH:$model_path
+    export GAZEBO_RESOURCE_PATH=$model_path:$GAZEBO_RESOURCE_PATH
 fi
