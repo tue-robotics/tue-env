@@ -1,9 +1,0 @@
-# Handy shit
-- type: target
-  name: sublime3
-- type: target
-  name: chrome
-- type: system
-  name: geany
-- type: system
-  name: gedit
