@@ -502,7 +502,7 @@ function tue-get
             then
                 echo ""
             fi
-            if [ ! -d $TUE_DIR/installer/targets/$target ]
+            if [ ! -d $TUE_ENV_TARGETS_DIR/$target ]
             then
                 echo "[tue-get](show) '$target' is not a valid target"
                 firsttarget=false
