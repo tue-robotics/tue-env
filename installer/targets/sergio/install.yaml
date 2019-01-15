@@ -1,8 +1,0 @@
-- type: target
-  name: robot
-
-- type: target
-  name: ros-sergio_bringup
-
-- type: target
-  name: sergio-user
