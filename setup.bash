@@ -8,7 +8,7 @@ source $TUE_DIR/setup/tue-env.bash
 function _tue-check-env-vars
 {
     [ -n "$TUE_DIR" ] && [ -n "$TUE_ENV" ] && [ -n "$TUE_ENV_DIR" ] \
-       && [ -n "$TUE_BIN" ] && return 0   
+       && [ -n "$TUE_BIN" ] && [ -n "$TUE_ENV_TARGETS_DIR" ] && return 0
     echo "[tue] Not all needed environment variables are set."
     return 1
 }
@@ -39,15 +39,6 @@ then
     return 1
 fi
 
-# -----------------------------------------
-# Load all the bash functions
-source $TUE_DIR/setup/tue-functions.bash
-
-if [ -f $TUE_DIR/setup/tue-misc.bash ]
-then
-    source $TUE_DIR/setup/tue-misc.bash
-fi
-
 if [ -f $TUE_ENV_DIR/.env/setup/user_setup.bash ]
 then
     source $TUE_ENV_DIR/.env/setup/user_setup.bash
@@ -56,6 +47,15 @@ fi
 if [ -f $TUE_ENV_DIR/.env/setup/target_setup.bash ]
 then
     source $TUE_ENV_DIR/.env/setup/target_setup.bash
+fi
+
+# -----------------------------------------
+# Load all the bash functions
+source $TUE_DIR/setup/tue-functions.bash
+
+if [ -f $TUE_DIR/setup/tue-misc.bash ]
+then
+    source $TUE_DIR/setup/tue-misc.bash
 fi
 
 export TUE_BIN=$TUE_DIR/bin

@@ -8,7 +8,7 @@ mkdir -p $TUE_INSTALL_DEPENDENCIES_DIR
 mkdir -p $TUE_INSTALL_DEPENDENCIES_ON_DIR
 mkdir -p $TUE_INSTALL_INSTALLED_DIR
 
-TUE_INSTALL_TARGETS_DIR=$TUE_DIR/installer/targets
+TUE_INSTALL_TARGETS_DIR=$TUE_ENV_TARGETS_DIR
 
 TUE_SYSTEM_DIR=$TUE_ENV_DIR/system
 TUE_REPOS_DIR=$TUE_ENV_DIR/repos
@@ -74,7 +74,7 @@ function tue-install-target
     tue-install-debug "Installing $target"
 
     # Check if valid target received as input
-    if [ ! -d $TUE_INSTALL_TARGET_DIR/$target ]
+    if [ ! -d $TUE_INSTALL_TARGETS_DIR/$target ]
     then
         tue-install-debug "Target '$target' does not exist."
         return 1
@@ -98,9 +98,9 @@ function tue-install-target
         tue-install-debug "File $TUE_INSTALL_STATE_DIR/$target does not exist, going to installation procedure"
 
 
-        local install_file=$TUE_INSTALL_TARGET_DIR/$target/install
+        local install_file=$TUE_INSTALL_TARGETS_DIR/$target/install
 
-        TUE_INSTALL_CURRENT_TARGET_DIR=$TUE_INSTALL_TARGET_DIR/$target
+        TUE_INSTALL_CURRENT_TARGET_DIR=$TUE_INSTALL_TARGETS_DIR/$target
         TUE_INSTALL_CURRENT_TARGET=$target
 
         # Empty the target's dependency file
@@ -132,7 +132,7 @@ function tue-install-target
     fi
 
     TUE_INSTALL_CURRENT_TARGET=$parent_target
-    TUE_INSTALL_CURRENT_TARGET_DIR=$TUE_INSTALL_TARGET_DIR/$parent_target
+    TUE_INSTALL_CURRENT_TARGET_DIR=$TUE_INSTALL_TARGETS_DIR/$parent_target
 
     tue-install-debug "Finished installing $target"
 }
@@ -674,8 +674,7 @@ touch $INSTALL_DETAILS_FILE
 # CATKIN PACKAGES
 ROS_PACKAGE_INSTALL_DIR=$TUE_SYSTEM_DIR/src
 
-TUE_INSTALL_TARGET_DIR=$TUE_INSTALL_TARGETS_DIR
-TUE_INSTALL_SCRIPTS_DIR=$TUE_DIR/installer/scripts
+TUE_INSTALL_SCRIPTS_DIR=$TUE_DIR/installer
 
 TUE_INSTALL_STATE_DIR=/tmp/tue-installer/$stamp
 mkdir -p $TUE_INSTALL_STATE_DIR
@@ -745,7 +744,7 @@ do
     tue-install-debug "Main loop: installing $target"
     tue-install-target $target
 
-    if [[ -d $TUE_INSTALL_TARGET_DIR/$target && "$tue_cmd" == "install" ]]
+    if [[ -d $TUE_INSTALL_TARGETS_DIR/$target && "$tue_cmd" == "install" ]]
     then
         # Mark as installed
         tue-install-debug "[$target] marked as installed after a successful install"
