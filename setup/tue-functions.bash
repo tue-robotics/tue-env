@@ -565,7 +565,7 @@ function _tue-get
 
     if [ $COMP_CWORD -eq 1 ]; then
         local IFS=$'\n'
-        options="'dep '\n'install '\n'update '\n'remove '\n'list-installed '\n'show '\n 'targets '"
+        options="'dep '\n'install '\n'update '\n'remove '\n'list-installed '\n'show '\n'targets '"
         COMPREPLY=( $(compgen -W "$(echo -e "$options")" -- $cur) )
     else
         cmd=${COMP_WORDS[1]}
