@@ -30,4 +30,4 @@ else
 fi
 
 # Run installer
-source $TUE_DIR/installer/scripts/tue-install-impl.bash $@
+source $TUE_DIR/installer/tue-install-impl.bash $@

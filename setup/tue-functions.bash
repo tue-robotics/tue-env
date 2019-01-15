@@ -363,9 +363,9 @@ function _show_file
         echo "--------------------------------------------------"
         if hash pygmentize 2> /dev/null
         then
-            pygmentize -g $TUE_DIR/installer/targets/$1/$2
+            pygmentize -g $TUE_ENV_TARGETS_DIR/$1/$2
         else
-            cat $TUE_DIR/installer/targets/$1/$2
+            cat $TUE_ENV_TARGETS_DIR/$1/$2
         fi
         echo "--------------------------------------------------"
     else
@@ -390,6 +390,7 @@ function tue-get
         remove         - Removes installed package
         list-installed - Lists all manually installed packages
         show           - Show the contents of (a) package(s)
+        targets        - Change directory to the targets directory
 
     Possible options:
         --debug        - Shows more debugging information
@@ -420,7 +421,7 @@ function tue-get
 
     if [[ $cmd == "install" ]]
     then
-        $TUE_DIR/installer/scripts/tue-install.bash $cmd $@
+        $TUE_DIR/installer/tue-install.bash $cmd $@
         error_code=$?
 
         [ $error_code -eq 0 ] && source ~/.bashrc
@@ -443,7 +444,7 @@ function tue-get
 
         if [ $error_code -eq 0 ]
         then
-            $TUE_DIR/installer/scripts/tue-install.bash $cmd $@
+            $TUE_DIR/installer/tue-install.bash $cmd $@
             error_code=$?
             [ $error_code -eq 0 ] && source ~/.bashrc
         fi
@@ -509,7 +510,7 @@ function tue-get
             fi
 
             local firstfile="true"
-            local files=($(find $TUE_DIR/installer/targets/$target -type f))
+            local files=($(find $TUE_ENV_TARGETS_DIR/$target -type f))
 
             # First show the common target files
             local main_target_files="install.yaml install.bash setup"
@@ -517,7 +518,7 @@ function tue-get
             do
                 for key in ${!files[@]}
                 do
-                    if [ ${files[$key]} == $TUE_DIR/installer/targets/$target/$file ]
+                    if [ ${files[$key]} == $TUE_ENV_TARGETS_DIR/$target/$file ]
                     then
                         if [[ $firstfile == false ]]
                         then
@@ -539,14 +540,18 @@ function tue-get
                 then
                     echo ""
                 fi
-                _show_file $target ${file#*$TUE_DIR/installer/targets/$target/}
+                _show_file $target ${file#*$TUE_ENV_TARGETS_DIR/$target/}
                 firstfile=false
             done
             firsttarget=false
         done
+    elif [[ $cmd == "targets" ]]
+    then
+        cd $TUE_ENV_TARGETS_DIR
+
     elif [[ $cmd == "dep" ]]
     then
-        $TUE_DIR/installer/scripts/tue-get-dep.bash $@
+        $TUE_DIR/installer/tue-get-dep.bash $@
     else
         echo "[tue-get] Unknown command: '$cmd'"
         return 1
@@ -560,14 +565,14 @@ function _tue-get
 
     if [ $COMP_CWORD -eq 1 ]; then
         local IFS=$'\n'
-        options="'dep '\n'install '\n'update '\n'remove '\n'list-installed '\n'show '"
+        options="'dep '\n'install '\n'update '\n'remove '\n'list-installed '\n'show '\n 'targets '"
         COMPREPLY=( $(compgen -W "$(echo -e "$options")" -- $cur) )
     else
         cmd=${COMP_WORDS[1]}
         if [[ $cmd == "install" ]]
         then
             local IFS=$'\n'
-            COMPREPLY=( $(compgen -W "$(echo -e "$(ls $TUE_DIR/installer/targets | sed "s/.*/'& '/g")\n'--debug '\n'--branch='")" -- $cur) )
+            COMPREPLY=( $(compgen -W "$(echo -e "$(ls $TUE_ENV_TARGETS_DIR | sed "s/.*/'& '/g")\n'--debug '\n'--branch='")" -- $cur) )
         elif [[ $cmd == "dep" ]]
         then
             local IFS=$'\n'
@@ -583,7 +588,7 @@ function _tue-get
         elif [[ $cmd == "show" ]]
         then
             local IFS=$'\n'
-            COMPREPLY=( $(compgen -W "`ls $TUE_DIR/installer/targets | sed "s/.*/'& '/g"`" -- $cur) )
+            COMPREPLY=( $(compgen -W "`ls $TUE_ENV_TARGETS_DIR | sed "s/.*/'& '/g"`" -- $cur) )
         else
             COMREPLY=""
         fi

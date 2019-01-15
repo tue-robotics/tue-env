@@ -28,7 +28,7 @@ ENV CI=true
 ENV LANG=C.UTF-8
 
 # Run the standard installation script
-RUN /home/amigo/.tue/installer/scripts/bootstrap.bash
+RUN /home/amigo/.tue/installer/bootstrap.bash
 
 # Already install ros since we will use this anyway
 RUN bash -c 'source /home/amigo/.bashrc && tue-get install ros'

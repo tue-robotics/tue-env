@@ -168,6 +168,7 @@ Purged environment directory of '$env'"""
     elif [[ $cmd == "list-current" ]]
     then
         echo $TUE_ENV
+
     else
         echo "[tue-env] Unknown command: '$cmd'"
         return 1
