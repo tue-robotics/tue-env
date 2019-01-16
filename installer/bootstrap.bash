@@ -52,16 +52,12 @@ source ~/.tue/setup.bash
 # Create ros environment directory
 mkdir -p ~/ros/$TUE_ROS_DISTRO
 
-# Initialize ros environment directory
+# Initialize ros environment directory incl. targets
 tue-env init ros-$TUE_ROS_DISTRO ~/ros/$TUE_ROS_DISTRO https://github.com/tue-robotics/tue-env-targets
 
 # Set the correct ROS version for this environment
 mkdir -p ~/ros/$TUE_ROS_DISTRO/.env/setup
 echo "export TUE_ROS_DISTRO=$TUE_ROS_DISTRO" > ~/ros/$TUE_ROS_DISTRO/.env/setup/user_setup.bash
-
-# Download targets
-git clone https://github.com/tue-robotics/tue-env-targets.git  ~/ros/$TUE_ROS_DISTRO/.env/targets
-echo "export TUE_ENV_TARGETS_DIR=~/ros/$TUE_ROS_DISTRO/.env/targets" >> ~/ros/$TUE_ROS_DISTRO/.env/setup/user_setup.bash
 
 # Add loading of TU/e tools (tue-env, tue-get, etc) to bashrc
 if ! grep -q '~/.tue/setup.bash' ~/.bashrc;
