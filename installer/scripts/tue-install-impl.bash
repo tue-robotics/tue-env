@@ -275,31 +275,34 @@ function tue-install-cp
         tue-install-error "Invalid tue-install-cp call: needs two arguments (source and target)."
     fi
 
-    file="$TUE_INSTALL_CURRENT_TARGET_DIR/$1"
+    files="$TUE_INSTALL_CURRENT_TARGET_DIR/$1"
 
-    if [ ! -f "$file" ]
-    then
-        tue-install-error "Invalid tue-install-cp call: file '$1' does not exist."
-    fi
-
-    # Check if user is allowed to write on target destination
-    local root_required=true
-    if namei -l "$2" | grep -q $(whoami)
-    then
-        root_required=false
-    fi
-
-    if ! cmp --quiet "$file" "$2"
-    then
-        tue-install-debug "File $file and $2 are different, copying..."
-        if "$root_required"
+    for file in $files
+    do
+        if [ ! -f "$file" ]
         then
-            tue-install-debug "Using elevated privileges (sudo)"
-            sudo mkdir --parents --verbose "$(dirname "$2")" && sudo cp --verbose "$file" "$2"
-        else
-            mkdir --parents --verbose "$(dirname "$2")" && cp --verbose "$file" "$2"
+            tue-install-error "Invalid tue-install-cp call: file '$1' does not exist."
         fi
-    fi
+
+        # Check if user is allowed to write on target destination
+        local root_required=true
+        if namei -l "$2" | grep -q $(whoami)
+        then
+            root_required=false
+        fi
+
+        if ! cmp --quiet "$file" "$2"
+        then
+            tue-install-debug "File $file and $2 are different, copying..."
+            if "$root_required"
+            then
+                tue-install-debug "Using elevated privileges (sudo)"
+                sudo mkdir --parents --verbose "$(dirname "$2")" && sudo cp --verbose "$file" "$2"
+            else
+                mkdir --parents --verbose "$(dirname "$2")" && cp --verbose "$file" "$2"
+            fi
+        fi
+    done
 }
 
 # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # #
