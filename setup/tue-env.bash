@@ -34,7 +34,7 @@ function tue-env
     then
         if [ -z "$1" ]
         then
-            echo "Usage: tue-env init NAME [ DIRECTORY ]"
+            echo "Usage: tue-env init NAME [ DIRECTORY ] [ TARGETS GIT URL ]"
             return 1
         fi
 
@@ -57,6 +57,11 @@ function tue-env
         echo "$dir" > $TUE_DIR/user/envs/$1
         mkdir -p $dir/.env
         echo "[tue-env] Created new environment $1"
+
+        if [ -n "$3" ]
+        then
+            $(tue-env init-targets $3)
+        fi
 
     elif [[ $cmd == "remove" ]]
     then
@@ -145,6 +150,16 @@ Purged environment directory of '$env'"""
         echo "$1" > $TUE_DIR/user/config/default_env
         echo "[tue-env] Default environment set to $1"
 
+    elif [[ $cmd == "init-targets" ]]
+    then
+        if [ -z "$1" ]
+        then
+            echo "Usage: tue-env init-targets TARGETS_GIT_URL"
+            return 1
+        fi
+
+        echo "tue-env init-targets $1"
+
     elif [[ $cmd == "config" ]]
     then
         vim $TUE_ENV_DIR/.env/setup/user_setup.bash
@@ -183,7 +198,7 @@ function _tue-env
     local prev=${COMP_WORDS[COMP_CWORD-1]}
 
     if [ $COMP_CWORD -eq 1 ]; then
-        COMPREPLY=( $(compgen -W "init list switch list-current remove cd set-default config" -- $cur) )
+        COMPREPLY=( $(compgen -W "init list switch list-current remove cd set-default config init-targets" -- $cur) )
     else
         cmd=${COMP_WORDS[1]}
         if [[ $cmd == "switch" ]] || [[ $cmd == "remove" ]] || [[ $cmd == "cd" ]] || [[ $cmd == "set-default" ]]

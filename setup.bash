@@ -39,6 +39,14 @@ then
     return 1
 fi
 
+export TUE_ENV_TARGETS_DIR=$TUE_ENV_DIR/.env/targets
+
+if [ ! -d $TUE_ENV_TARGETS_DIR ]
+then
+    echo "[tue] Targets directory '$TUE_ENV_TARGETS_DIR' (environment '$TUE_ENV') does not exist"
+    return 1
+fi
+
 if [ -f $TUE_ENV_DIR/.env/setup/user_setup.bash ]
 then
     source $TUE_ENV_DIR/.env/setup/user_setup.bash
@@ -60,5 +68,3 @@ fi
 
 export TUE_BIN=$TUE_DIR/bin
 export PATH=$TUE_BIN:$PATH
-
-export TUE_ENV=$TUE_ENV
