@@ -58,11 +58,9 @@ function tue-env
         mkdir -p $dir/.env
         echo "[tue-env] Created new environment $1"
 
-        source $TUE_DIR/setup.bash
-
         if [ -n "$3" ]
         then
-            tue-env init-targets $3
+            tue-env init-targets $1 $3
         fi
 
     elif [[ $cmd == "remove" ]]
@@ -154,22 +152,26 @@ Purged environment directory of '$env'"""
 
     elif [[ $cmd == "init-targets" ]]
     then
-        if [ -z "$1" ]
+        if [ -z "$2" ]
         then
-            echo "Usage: tue-env init-targets TARGETS_GIT_URL"
+            echo "Usage: tue-env init-targets ENVIRONMENT TARGETS_GIT_URL"
             return 1
         fi
 
-        local url=$1
-        echo "tue-env init-targets $1"
+        local env=$1
+        local url=$2
+        echo "tue-env init-targets $name $url"
 
-        if [ ! -d $TUE_ENV_TARGETS_DIR ]
+        local tue_env_dir=$(cat $TUE_DIR/user/envs/$env)
+        local tue_env_targets_dir=$tue_env_dir/.env/targets
+
+        if [ ! -d $tue_env_targets_dir ]
         then
-            git clone $url $TUE_ENV_TARGETS_DIR
+            git clone $url $tue_env_targets_dir
         else
-            local targets_dir_moved=$TUE_ENV_TARGETS_DIR.$(date +%F_%R)
-            mv -f $TUE_ENV_TARGETS_DIR $targets_dir_moved
-            git clone $url $TUE_ENV_TARGETS_DIR
+            local targets_dir_moved=$tue_env_targets_dir.$(date +%F_%R)
+            mv -f $tue_env_targets_dir $targets_dir_moved
+            git clone $url $tue_env_targets_dir
             echo "Moved old targets to $targets_dir_moved"
         fi
 
