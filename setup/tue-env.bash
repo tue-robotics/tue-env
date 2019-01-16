@@ -58,9 +58,11 @@ function tue-env
         mkdir -p $dir/.env
         echo "[tue-env] Created new environment $1"
 
+        source $TUE_DIR/setup.bash
+
         if [ -n "$3" ]
         then
-            $(tue-env init-targets $3)
+            tue-env init-targets $3
         fi
 
     elif [[ $cmd == "remove" ]]
@@ -136,7 +138,7 @@ Purged environment directory of '$env'"""
         export TUE_ENV=$1
         export TUE_ENV_DIR=$(cat $TUE_DIR/user/envs/$1)
 
-        source ~/.bashrc
+        source $TUE_DIR/setup.bash
 
     elif [[ $cmd == "set-default" ]]
     then
