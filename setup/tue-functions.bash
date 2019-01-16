@@ -1091,7 +1091,11 @@ function tue-robocup-update
     # Copy rsettings file
     if [ "$ROBOT_REAL" != "true" ]
     then
-        cp $TUE_DIR/installer/targets/tue-common/rsettings_file $TUE_DIR/.rsettings
+        rsettings_file=$TUE_ENV_TARGETS_DIR/tue-common/rsettings_file
+        if [ -f $rsettings_file]
+        then
+            cp $rsettings_file $TUE_DIR/.rsettings
+        fi
     fi
 }
 
