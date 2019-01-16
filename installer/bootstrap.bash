@@ -53,7 +53,7 @@ source ~/.tue/setup.bash
 mkdir -p ~/ros/$TUE_ROS_DISTRO
 
 # Initialize ros environment directory
-tue-env init ros-$TUE_ROS_DISTRO ~/ros/$TUE_ROS_DISTRO
+tue-env init ros-$TUE_ROS_DISTRO ~/ros/$TUE_ROS_DISTRO https://github.com/tue-robotics/tue-env-targets
 
 # Set the correct ROS version for this environment
 mkdir -p ~/ros/$TUE_ROS_DISTRO/.env/setup
