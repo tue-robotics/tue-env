@@ -165,8 +165,8 @@ Purged environment directory of '$env'"""
         then
             git clone $url $TUE_ENV_TARGETS_DIR
         else
-            dir_moved=$TUE_ENV_TARGETS_DIR.$(date +%F_%R)
-            mv $dir $dir_moved
+            local targets_dir_moved=$TUE_ENV_TARGETS_DIR.$(date +%F_%R)
+            mv $TUE_ENV_TARGETS_DIR $targets_dir_moved
             git clone $url $TUE_ENV_TARGETS_DIR
         fi
 
