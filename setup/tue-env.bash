@@ -158,7 +158,17 @@ Purged environment directory of '$env'"""
             return 1
         fi
 
+        local url=$1
         echo "tue-env init-targets $1"
+
+        if [ ! -d $TUE_ENV_TARGETS_DIR ]
+        then
+            git clone $url $TUE_ENV_TARGETS_DIR
+        else
+            dir_moved=$TUE_ENV_TARGETS_DIR.$(date +%F_%R)
+            mv $dir $dir_moved
+            git clone $url $TUE_ENV_TARGETS_DIR
+        fi
 
     elif [[ $cmd == "config" ]]
     then
