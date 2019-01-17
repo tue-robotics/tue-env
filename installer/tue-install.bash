@@ -32,11 +32,6 @@ fi
 if [ ! -d $TUE_ENV_TARGETS_DIR ]
 then
     git clone https://github.com/tue-robotics/tue-env-targets.git $TUE_ENV_TARGETS_DIR
-elif [[ -n "$CI" ]] #Do not update with continuous integration but do fetch to refresh available branches
-then
-    echo -en "Fetching tue-env-targets... "
-    git -C $TUE_ENV_TARGETS_DIR fetch
-    git -C $TUE_ENV_TARGETS_DIR checkout ${TRAVIS_PULL_REQUEST_BRANCH:-$TRAVIS_BRANCH}
 else
     echo -en "Updating tue-env-targets... "
     git -C $TUE_ENV_TARGETS_DIR pull --ff-only --prune
@@ -53,6 +48,26 @@ else
         if [[ ! $REPLY =~ ^[Yy]$ ]]
         then
             exit 1
+        fi
+    fi
+fi
+
+if [[ -n "$CI" ]] #Do not update with continuous integration but do fetch to refresh available branches
+then
+    branch=${TRAVIS_PULL_REQUEST_BRANCH:-$TRAVIS_BRANCH}
+    if [ -n $branch ]
+    then
+        test_branch=$(git -C $TUE_ENV_TARGETS_DIR branch -a 2> /dev/null | grep -q $branch)
+        if [ $? -eq 0 ]
+        then
+            local current_branch=`git -C $TUE_ENV_TARGETS_DIR rev-parse --abbrev-ref HEAD`
+            if [[ "$current_branch" == "$branch" ]]
+            then
+                echo "[tue-env-tarrgets] Already on branch $branch"
+            else
+                git -C $pkg_dir checkout $branch 2>&1
+                echo "[tue-env-targets] Switchted to branch $branch"
+            fi
         fi
     fi
 fi
