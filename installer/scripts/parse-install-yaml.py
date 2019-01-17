@@ -54,6 +54,8 @@ def main():
                 command = "tue-install-ppa {0}".format(install_item["name"])
             elif install_type == "snap":
                 command = "tue-install-snap {0}".format(install_item["name"])
+            elif install_type == "dpkg":
+                command = "tue-install-dpkg {0}".format(install_item["name"])
             else:
                return show_error("Unknown install type: '{0}'".format(install_type))
 

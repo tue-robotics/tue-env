@@ -14,15 +14,16 @@ else
         if [[ "$SIP_installed" == "$SIP_version" ]]
         then
             # SIP is correct version, so don't need to install anything
+            tue-install-debug "Correct SIP version($SIP_version) is installed"
             return
         fi
     fi
     # We don't have SIP or not the correct version
-    SIP_file=$TUE_DIR/installer/targets/ros-python-sip/sip-$SIP_version.tar.gz
+    SIP_file=$(dirname "${BASH_SOURCE[0]}")/sip-$SIP_version.tar.gz
     if [ ! -f "$SIP_file" ]
     then
         url="https://downloads.sourceforge.net/project/pyqt/sip/sip-$SIP_version/sip-$SIP_version.tar.gz"
-        tue-install-error "Download $url and place it in ~/.tue/installer/targets/ros-python-sip/"
+        tue-install-error "Download $url and place it in $(dirname "${BASH_SOURCE[0]}")/"
         return -1
     fi
     
