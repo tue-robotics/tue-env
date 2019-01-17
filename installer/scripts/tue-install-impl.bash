@@ -272,7 +272,7 @@ function tue-install-cp
 {
     if [ -z "$2" ]
     then
-        tue-install-error "Invalid tue-install-cp call: needs two arguments (source and target)."
+        tue-install-error "Invalid tue-install-cp call: needs two arguments (source and target). The source must be relative to the target directory"
     fi
 
     local source_files="$TUE_INSTALL_CURRENT_TARGET_DIR/$1"
@@ -298,7 +298,7 @@ function tue-install-cp
     do
         if [ ! -f "$file" ]
         then
-            tue-install-error "Invalid tue-install-cp call: file '$1' does not exist."
+            tue-install-error "Invalid tue-install-cp call: file '$file' does not exist."
         fi
 
         if [ -d "$2" ]
