@@ -1,9 +1,6 @@
 #! /usr/bin/env bash
 export TUE_DIR="$( cd "$( dirname "${BASH_SOURCE[0]}" )" && pwd )"
 
-# Load tue-env tool
-source $TUE_DIR/setup/tue-env.bash
-
 # ------------------------------------------
 # Helper function for checking if all env vars are set
 function _tue-check-env-vars
