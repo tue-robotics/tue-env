@@ -4,7 +4,8 @@ _tue-check-env-vars || return 1
 # Update installer
 if [ ! -d $TUE_DIR ]
 then
-    git clone https://github.com/tue-robotics/tue-env.git $TUE_DIR
+    echo "[tue-get] 'TUE_DIR' $TUE_DIR doesn't exist"
+    exit 1
 elif [[ -n "$CI" ]] #Do not update with continuous integration but do fetch to refresh available branches
 then
     echo -en "Fetching tue-get... "
@@ -31,7 +32,8 @@ fi
 
 if [ ! -d $TUE_ENV_TARGETS_DIR ]
 then
-    git clone https://github.com/tue-robotics/tue-env-targets.git $TUE_ENV_TARGETS_DIR
+    echo "[tue-get] 'TUE_ENV_TARGETS_DIR' %TUE_ENV_TARGETS_DIR doesn't exist"
+    exit 1
 else
     echo -en "Updating tue-env-targets... "
     git -C $TUE_ENV_TARGETS_DIR pull --ff-only --prune
