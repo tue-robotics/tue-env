@@ -1,3 +1,4 @@
+#! /usr/bin/env bash
 export TUE_DIR="$( cd "$( dirname "${BASH_SOURCE[0]}" )" && pwd )"
 
 # Load tue-env tool
@@ -22,7 +23,7 @@ then
         return
     fi
 
-    export TUE_ENV=`cat $TUE_DIR/user/config/default_env`
+    export TUE_ENV=$(cat $TUE_DIR/user/config/default_env)
 
     if [ ! -f $TUE_DIR/user/envs/$TUE_ENV ]
     then
@@ -31,7 +32,7 @@ then
     fi
 fi
 
-export TUE_ENV_DIR=`cat $TUE_DIR/user/envs/$TUE_ENV`
+export TUE_ENV_DIR=$(cat $TUE_DIR/user/envs/$TUE_ENV)
 
 if [ ! -d $TUE_ENV_DIR ]
 then
@@ -67,4 +68,5 @@ then
 fi
 
 export TUE_BIN=$TUE_DIR/bin
-export PATH=$TUE_BIN:$PATH
+export PATH=$TUE_BIN${PATH:+:${PATH}}
+
