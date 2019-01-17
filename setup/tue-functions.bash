@@ -391,7 +391,6 @@ function tue-get
         remove         - Removes installed package
         list-installed - Lists all manually installed packages
         show           - Show the contents of (a) package(s)
-        targets        - Change directory to the targets directory
 
     Possible options:
         --debug        - Shows more debugging information
@@ -546,9 +545,6 @@ function tue-get
             done
             firsttarget=false
         done
-    elif [[ $cmd == "targets" ]]
-    then
-        cd $TUE_ENV_TARGETS_DIR
 
     elif [[ $cmd == "dep" ]]
     then
@@ -566,7 +562,7 @@ function _tue-get
 
     if [ $COMP_CWORD -eq 1 ]; then
         local IFS=$'\n'
-        options="'dep '\n'install '\n'update '\n'remove '\n'list-installed '\n'show '\n'targets '"
+        options="'dep '\n'install '\n'update '\n'remove '\n'list-installed '\n'show '"
         COMPREPLY=( $(compgen -W "$(echo -e "$options")" -- $cur) )
     else
         cmd=${COMP_WORDS[1]}
