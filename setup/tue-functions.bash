@@ -610,7 +610,7 @@ function tue-checkout
     tue-checkout BRANCH-NAME [option]
 
     options:
-    --only-pks: tue-env is not checkedout to the specified branch
+    --only-pks: tue-env is not checked-out to the specified branch
 
 """
         return 1
@@ -632,7 +632,7 @@ function tue-checkout
     fs=`ls -d -1 $_TUE_CATKIN_SYSTEM_DIR/src/**`
     if [ -z "$NO_TUE_ENV" ]
     then
-        fs="$TUE_DIR $fs"
+        fs="$TUE_DIR $TUE_ENV_TARGETS_DIR $fs"
     fi
     for pkg_dir in $fs
     do
@@ -642,6 +642,9 @@ function tue-checkout
             if [[ $pkg =~ ".tue" ]]
             then
                 pkg="tue-env"
+            elif [[ $pkg =~ "targets" ]]
+            then
+                pkg="tue-env-targets"
             fi
         fi
 
