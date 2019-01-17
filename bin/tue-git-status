@@ -1,0 +1,27 @@
+#! /usr/bin/env bash
+
+function tue-git-status
+{
+    local mem_pwd=$PWD
+    local output=""
+
+    fs=`ls $_TUE_CATKIN_SYSTEM_DIR/src`
+    for pkg in $fs
+    do
+        pkg_dir=$_TUE_CATKIN_SYSTEM_DIR/src/$pkg
+
+        if [ -d $pkg_dir ]
+        then
+            cd $pkg_dir
+            branch=$(git rev-parse --abbrev-ref HEAD 2>&1)
+            if [ $? -eq 0 ]
+            then
+                hash=$(git rev-parse --short HEAD)
+                printf "\e[0;36m%-20s\033[0m %-15s %s\n" "$branch" "$hash" "$pkg"
+            fi
+        fi
+    done
+    cd $mem_pwd
+}
+
+tue-git-status $@

@@ -1,0 +1,202 @@
+#! /usr/bin/env bash
+
+function _show_file
+{
+    if [ ! -z $2 ]
+    then
+        echo -e "\033[1m[$1] $2\033[0m"
+        echo "--------------------------------------------------"
+        if hash pygmentize 2> /dev/null
+        then
+            pygmentize -g $TUE_ENV_TARGETS_DIR/$1/$2
+        else
+            cat $TUE_ENV_TARGETS_DIR/$1/$2
+        fi
+        echo "--------------------------------------------------"
+    else
+        echo -e "_show_file requires target_name and relative file_path in target"
+        return 1
+    fi
+}
+
+function tue-get
+{
+    if [ -z "$1" ]
+    then
+        echo """tue-get is a tool for installing and removing packages.
+
+    Usage: tue-get COMMAND [ARG1 ARG2 ...]
+
+    Possible commands:
+
+        dep            - Shows target dependencies
+        install        - Installs a package
+        update         - Updates currently installed packages
+        remove         - Removes installed package
+        list-installed - Lists all manually installed packages
+        show           - Show the contents of (a) package(s)
+
+    Possible options:
+        --debug        - Shows more debugging information
+        --branch=name  - Try to checkout this branch if exists
+
+"""
+        return 1
+    fi
+
+    local tue_dep_dir=$TUE_ENV_DIR/.env/dependencies
+    local tue_installed_dir=$TUE_ENV_DIR/.env/installed
+
+    local cmd=$1
+    shift
+
+    #Create btrfs snapshot if possible and usefull:
+    if [[ "$cmd" =~ ^(install|update|remove)$ ]] && $(df --print-type / | grep -q btrfs)
+    then
+        sudo mkdir -p /snap/root
+        sudo btrfs subvolume snapshot / /snap/root/$(date +%Y-%m-%d_%H:%M:%S)
+    fi
+
+    if [[ "$cmd" =~ ^(install|remove)$ && -z "$1" ]]
+    then
+       echo "Usage: tue-get $cmd TARGET [TARGET2 ...]"
+       return 1
+    fi
+
+    if [[ $cmd == "install" ]]
+    then
+        $TUE_DIR/installer/tue-install.bash $cmd $@
+        error_code=$?
+
+        [ $error_code -eq 0 ] && source ~/.bashrc
+
+        return $error_code
+    elif [[ $cmd == "update" ]]
+    then
+        error_code=0
+        for target in $@
+        do
+            #Skip options
+            [[ $target = '--'* ]] && continue
+
+            if [ ! -f $TUE_ENV_DIR/.env/dependencies/$target ]
+            then
+                echo "[tue-get] Package '$target' is not installed."
+                error_code=1
+            fi
+        done
+
+        if [ $error_code -eq 0 ]
+        then
+            $TUE_DIR/installer/tue-install.bash $cmd $@
+            error_code=$?
+            [ $error_code -eq 0 ] && source ~/.bashrc
+        fi
+
+        return $error_code
+    elif [[ $cmd == "remove" ]]
+    then
+        error=0
+        for target in $@
+        do
+            if [ ! -f $tue_installed_dir/$target ]
+            then
+                echo "[tue-get] Package '$target' is not installed."
+                error=1
+            fi
+        done
+
+        if [ $error -gt 0 ];
+        then
+            echo ""
+            echo "[tue-get] No packages where removed."
+            return $error;
+        fi
+
+        for target in $@
+        do
+            rm $tue_installed_dir/$target
+        done
+
+        echo ""
+        if [ -n "$2" ]; then
+            echo "[tue-get] The packages were removed from the 'installed list' but still need to be deleted from your workspace."
+        else
+            echo "[tue-get] The package was removed from the 'installed list' but still needs to be deleted from your workspace."
+        fi
+    elif [[ $cmd == "list-installed" ]]
+    then
+        if [[ "$1" == "-a" ]]
+        then
+            ls $tue_dep_dir
+        else
+            ls $TUE_ENV_DIR/.env/installed
+        fi
+    elif [[ $cmd == "show" ]]
+    then
+        if [ -z "$1" ]
+        then
+            echo "[tue-get](show) Provide at least one target name"
+            return 1
+        fi
+        local firsttarget=true
+        for target in $@
+        do
+            if [[ $firsttarget == false ]]
+            then
+                echo ""
+            fi
+            if [ ! -d $TUE_ENV_TARGETS_DIR/$target ]
+            then
+                echo "[tue-get](show) '$target' is not a valid target"
+                firsttarget=false
+                continue
+            fi
+
+            local firstfile="true"
+            local files=($(find $TUE_ENV_TARGETS_DIR/$target -type f))
+
+            # First show the common target files
+            local main_target_files="install.yaml install.bash setup"
+            for file in $main_target_files
+            do
+                for key in ${!files[@]}
+                do
+                    if [ ${files[$key]} == $TUE_ENV_TARGETS_DIR/$target/$file ]
+                    then
+                        if [[ $firstfile == false ]]
+                        then
+                            echo ""
+                        fi
+                        _show_file $target $file
+                        firstfile=false
+                        unset files[$key]
+                        files=(${files[@]})
+                        break
+                    fi
+                done
+            done
+
+            # Show all remaining files
+            for file in ${files[@]}
+            do
+                if [[ $firstfile == false ]]
+                then
+                    echo ""
+                fi
+                _show_file $target ${file#*$TUE_ENV_TARGETS_DIR/$target/}
+                firstfile=false
+            done
+            firsttarget=false
+        done
+
+    elif [[ $cmd == "dep" ]]
+    then
+        $TUE_DIR/installer/tue-get-dep.bash $@
+    else
+        echo "[tue-get] Unknown command: '$cmd'"
+        return 1
+    fi
+}
+
+tue-get $@

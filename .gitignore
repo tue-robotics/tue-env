@@ -1,4 +1,5 @@
 env
 .rsettings
-bin/*dashboard
+bin/*dashboard*
+!/bin
 user/

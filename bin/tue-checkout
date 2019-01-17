@@ -1,0 +1,77 @@
+#! /usr/bin/env bash
+
+function tue-checkout
+{
+    if [ -z "$1" ]
+    then
+        echo """Switches all packages to the given branch, if such a branch exists in that package. Usage:
+
+    tue-checkout BRANCH-NAME [option]
+
+    options:
+    --only-pks: tue-env is not checked-out to the specified branch
+
+"""
+        return 1
+    fi
+
+    while test $# -gt 0
+    do
+        case "$1" in
+            --only-pkgs) local NO_TUE_ENV="true"
+            ;;
+            --*) echo "unknown option $1"; exit 1;
+            ;;
+            *) local branch=$1
+            ;;
+        esac
+        shift
+    done
+
+    fs=`ls -d -1 $_TUE_CATKIN_SYSTEM_DIR/src/**`
+    if [ -z "$NO_TUE_ENV" ]
+    then
+        fs="$TUE_DIR $TUE_ENV_TARGETS_DIR $fs"
+    fi
+    for pkg_dir in $fs
+    do
+        pkg=${pkg_dir#$_TUE_CATKIN_SYSTEM_DIR/src/}
+        if [ -z "$NO_TUE_ENV" ]
+        then
+            if [[ $pkg =~ ".tue" ]]
+            then
+                pkg="tue-env"
+            elif [[ $pkg =~ "targets" ]]
+            then
+                pkg="tue-env-targets"
+            fi
+        fi
+
+        if [ -d $pkg_dir ]
+        then
+            test_branch=$(git -C $pkg_dir branch -a 2> /dev/null | grep -q $branch)
+            if [ $? -eq 0 ]
+            then
+                local current_branch=`git -C $pkg_dir rev-parse --abbrev-ref HEAD`
+                if [[ "$current_branch" == "$branch" ]]
+                then
+                    echo -e "\033[1m$pkg\033[0m: Already on branch $branch"
+                else
+                    res=$(git -C $pkg_dir checkout $branch 2>&1)
+                    if [ $? -eq 0 ]
+                    then
+                        echo -e "\033[1m$pkg\033[0m: checked-out $branch"
+                    else
+                        echo ""
+                        echo -e "    \033[1m$pkg\033[0m"
+                        echo "--------------------------------------------------"
+                        echo -e "\033[38;5;1m$res\033[0m"
+                        echo "--------------------------------------------------"
+                    fi
+                fi
+            fi
+        fi
+    done
+}
+
+tue-checkout $@

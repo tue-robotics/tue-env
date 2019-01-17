@@ -1,0 +1,24 @@
+#! /usr/bin/env bash
+
+function tue-revert-undo
+{
+    fs=`ls $_TUE_CATKIN_SYSTEM_DIR/src`
+    for pkg in $fs
+    do
+        pkg_dir=$_TUE_CATKIN_SYSTEM_DIR/src/$pkg
+
+        if [ -d $pkg_dir ]
+        then
+            cd $pkg_dir
+            if [ -f .do_not_commit_this ]
+            then
+                echo $pkg
+                git checkout `cat .do_not_commit_this`
+                rm .do_not_commit_this
+            fi
+        fi
+    done
+    tue-git-status
+}
+
+tue-revert-undo $@

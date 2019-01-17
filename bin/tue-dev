@@ -1,0 +1,28 @@
+#! /usr/bin/env bash
+
+function tue-dev
+{
+    if [ -z "$1" ]
+    then
+        _list_subdirs $_TUE_CATKIN_DEV_DIR/src
+        return 0
+    fi
+
+    for pkg in $@
+    do
+        if [ ! -d $_TUE_CATKIN_SYSTEM_DIR/src/$pkg ]
+        then
+            echo "[tue-dev] '$pkg' does not exist in the system workspace."
+        elif [ -d $_TUE_CATKIN_DEV_DIR/src/$pkg ]
+        then
+            echo "[tue-dev] '$pkg' is already in the dev workspace."
+        else
+            ln -s $_TUE_CATKIN_SYSTEM_DIR/src/$pkg $_TUE_CATKIN_DEV_DIR/src/$pkg
+        fi
+    done
+
+    # Call rospack such that the linked directories are indexed
+    local tmp=`rospack profile`
+}
+
+tue-dev $@

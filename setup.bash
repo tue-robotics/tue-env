@@ -70,3 +70,15 @@ fi
 export TUE_BIN=$TUE_DIR/bin
 export PATH=$TUE_BIN${PATH:+:${PATH}}
 
+# -----------------------------------------
+# Load all the functions in bin folder
+
+dirs=$(ls -d -1 $TUE_BIN/**)
+for dir in $dirs
+do
+    if [ -f $dir/setup.bash ]
+    then
+        source $dir/setup.bash
+    fi
+done
+

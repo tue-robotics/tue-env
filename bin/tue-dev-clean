@@ -1,0 +1,22 @@
+#! /usr/bin/env bash
+
+function tue-dev-clean
+{
+    for f in `_list_subdirs $_TUE_CATKIN_DEV_DIR/src`
+    do
+        # Test if f is a symbolic link
+        if [[ -L $_TUE_CATKIN_DEV_DIR/src/$f ]]
+        then
+            echo "Cleaned '$f'"
+            rm $_TUE_CATKIN_DEV_DIR/src/$f
+        fi
+    done
+
+    rm -rf $_TUE_CATKIN_DEV_DIR/devel/share
+    rm -rf $_TUE_CATKIN_DEV_DIR/devel/etc
+    rm -rf $_TUE_CATKIN_DEV_DIR/devel/include
+    rm -rf $_TUE_CATKIN_DEV_DIR/devel/lib
+    rm -rf $_TUE_CATKIN_DEV_DIR/build
+}
+
+tue-dev $@

@@ -1,0 +1,19 @@
+#! /usr/bin/env bash
+
+function tue-make-system
+{
+    case $(cat $_TUE_CATKIN_SYSTEM_DIR/devel/.built_by) in
+    'catkin_make')
+        catkin_make --directory $_TUE_CATKIN_SYSTEM_DIR -DCMAKE_BUILD_TYPE=RelWithDebInfo $@
+        ;;
+    'catkin build')
+        catkin build --workspace $_TUE_CATKIN_SYSTEM_DIR $@
+        ;;
+    '')
+        catkin init --workspace $_TUE_CATKIN_SYSTEM_DIR $@
+        catkin build --workspace $_TUE_CATKIN_SYSTEM_DIR $@
+        ;;
+    esac
+}
+
+tue-make-system $@

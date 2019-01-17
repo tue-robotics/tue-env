@@ -1,0 +1,92 @@
+#! /usr/bin/env bash
+
+function _robocup_branch_allowed
+{
+    local branch=$1
+    if [ -f $TUE_DIR/user/config/robocup ] && [ "$branch" == "$(cat $TUE_DIR/user/config/robocup)" ]
+    then
+        return 0
+    fi
+    return 1
+}
+
+function _tue-repo-status
+{
+    local name=$1
+    local pkg_dir=$2
+
+    if [ ! -d $pkg_dir ]
+    then
+        return
+    fi
+
+    local status=
+    local vctype=
+
+    if [ -d $pkg_dir/.svn ]
+    then
+        status=`svn status $pkg_dir`
+        vctype=svn
+    else
+        # Try git
+
+        cd $pkg_dir
+        res=$(git status . --short --branch 2>&1)
+        if [ $? -eq 0 ]
+        then
+            # Is git
+            if echo "$res" | grep -q -E 'behind|ahead' # Check if behind or ahead of branch
+            then
+                status=$res
+            else
+                status=`git status . --short`
+            fi
+
+            local current_branch=`git rev-parse --abbrev-ref HEAD`
+            if [ $current_branch != "master" ]  && [ $current_branch != "develop" ] && [ $current_branch != "indigo-devel" ] && [ $current_branch != "kinetic-devel" ] && [ $current_branch != "toolchain-2.9" ] && ! _robocup_branch_allowed $current_branch
+            then
+                echo -e "\033[1m$name\033[0m is on branch '$current_branch'"
+            fi
+
+        fi
+
+        cd - &> /dev/null
+        vctype=git
+    fi
+
+    if [ -n "$vctype" ]
+    then
+        if [ -n "$status" ]; then
+            echo -e ""
+            echo -e "\033[38;5;1mM  \033[0m($vctype) \033[1m$name\033[0m"
+            echo -e "--------------------------------------------------"
+            echo -e "$status"
+            echo -e "--------------------------------------------------"
+        fi
+    fi
+}
+
+# ----------------------------------------------------------------------------------------------------
+
+function _tue-dir-status
+{
+    [ -d "$1" ] || return
+
+    local fs=`ls $1`
+    for f in $fs
+    do
+        pkg_dir=$1/$f
+        _tue-repo-status $f $pkg_dir
+    done
+}
+
+# ----------------------------------------------------------------------------------------------------
+
+function tue-status
+{
+    _tue-dir-status $_TUE_CATKIN_SYSTEM_DIR/src
+    _tue-repo-status tue-env $TUE_DIR
+    _tue-repo-status tue-env-targets $TUE_ENV_TARGETS_DIR
+}
+
+tue-status $@
