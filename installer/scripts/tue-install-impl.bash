@@ -272,32 +272,55 @@ function tue-install-cp
 {
     if [ -z "$2" ]
     then
-        tue-install-error "Invalid tue-install-cp call: needs two arguments (source and target)."
+        tue-install-error "Invalid tue-install-cp call: needs two arguments (source and target). The source must be relative to the installer target directory"
     fi
 
-    file=$TUE_INSTALL_CURRENT_TARGET_DIR/$1
-
-    if [ ! -f $file ]
-    then
-        tue-install-error "Invalid tue-install-cp call: file '$1' does not exist."
-    fi
+    local source_files="$TUE_INSTALL_CURRENT_TARGET_DIR/$1"
 
     # Check if user is allowed to write on target destination
     local root_required=true
-    if namei -l $2 | grep -q $USER
+    if namei -l "$2" | grep -q $(whoami)
     then
         root_required=false
     fi
 
-    if ! cmp --quiet $file $2
+    local cp_target=
+    local cp_target_parent_dir=
+
+    if [ -d "$2" ]
     then
-        if $root_required
-        then
-            sudo cp --verbose $file $2
-        else
-            cp --verbose $file $2
-        fi
+        cp_target_parent_dir="${2%%/}"
+    else
+        cp_target_parent_dir="$(dirname "$2")"
     fi
+
+    for file in $source_files
+    do
+        if [ ! -f "$file" ]
+        then
+            tue-install-error "Invalid tue-install-cp call: file '$file' does not exist."
+        fi
+
+        if [ -d "$2" ]
+        then
+            cp_target="$cp_target_parent_dir"/$(basename "$file")
+        else
+            cp_target="$2"
+        fi
+
+        if ! cmp --quiet "$file" "$cp_target"
+        then
+            tue-install-debug "File $file and $cp_target are different, copying..."
+            if "$root_required"
+            then
+                tue-install-debug "Using elevated privileges (sudo)"
+                sudo mkdir --parents --verbose "$cp_target_parent_dir" && sudo cp --verbose "$file" "$cp_target"
+            else
+                mkdir --parents --verbose "$cp_target_parent_dir" && cp --verbose "$file" "$cp_target"
+            fi
+        fi
+
+    done
 }
 
 # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # #
@@ -324,7 +347,7 @@ function tue-install-add-text
     local target_file=$2
 
     local root_required=true
-    if namei -l $target_file | grep -q $USER
+    if namei -l $target_file | grep -q $(whoami)
     then
         root_required=false
     fi
@@ -421,6 +444,7 @@ function tue-install-system-now
         done
 
         sudo apt-get install --assume-yes $pkgs_to_install
+        tue-install-debug "Installed $pkgs_to_install ($?)"
     fi
 }
 
@@ -463,6 +487,20 @@ function tue-install-snap
     fi
     tue-install-debug "Adding $1 to snap list"
     TUE_INSTALL_SNAPS="$1 $TUE_INSTALL_SNAPS"
+}
+
+# # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # #
+
+function tue-install-dpkg
+{
+    if [ -z "$1" ]
+    then
+        tue-install-error "Invalid tue-install-dpkg call: needs package as argument."
+    fi
+    tue-install-debug "Installing dpkg $1"
+    sudo dpkg --install $1
+    tue-install-debug "sudo apt-get --fix-broken --assume-yes install"
+    sudo apt-get --fix-broken --assume-yes install
 }
 
 # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # #
