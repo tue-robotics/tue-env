@@ -18,6 +18,7 @@ function tue-env
         config         - Configures current environment
         set-default    - Set default environment
         init-targets   - (Re-)Initialize the target list
+        targets        - Changes directory to targets directory
         list           - List all possible environments
         list-current   - Shows current environment
         cd             - Changes directory to environment directory
@@ -175,17 +176,42 @@ Purged environment directory of '$env'"""
         git clone $url $tue_env_targets_dir
         echo "[tue-env] cloned targets from $url"
 
+    elif [[ $cmd == "targets" ]]
+    then
+        local env=$1
+        [ -n "$env" ] || env=$TUE_ENV
+
+        if [ -n "$env" ]
+        then
+            local tue_env_dir=$(cat $TUE_DIR/user/envs/$env)
+            cd $tue_env_dir/.env/targets
+        fi
+
     elif [[ $cmd == "config" ]]
     then
-        vim $TUE_ENV_DIR/.env/setup/user_setup.bash
+        local env=$1
+        [ -n "$env" ] || env=$TUE_ENV
+
+        if [ -n "$env" ]
+        then
+            local tue_env_dir=$(cat $TUE_DIR/user/envs/$env)
+            vim $tue_env_dir/.env/setup/user_setup.bash
+        else
+            echo "[tue-env](config) no enviroment set or provided"
+        fi
 
     elif [[ $cmd == "cd" ]]
     then
         local env=$1
         [ -n "$env" ] || env=$TUE_ENV
 
-        local dir=$(cat $TUE_DIR/user/envs/$env)
-        cd $dir
+        if [ -n "$env" ]
+        then
+            local dir=$(cat $TUE_DIR/user/envs/$env)
+            cd $dir
+        else
+            echo "[tue-env](cd) no enviroment set or provided"
+        fi
 
     elif [[ $cmd == "list" ]]
     then
@@ -195,9 +221,15 @@ Purged environment directory of '$env'"""
         do
             echo $env
         done
+
     elif [[ $cmd == "list-current" ]]
     then
-        echo $TUE_ENV
+        if [ -n $TUE_ENV ]
+        then
+            echo $TUE_ENV
+        else
+            echo "[tue-env] no enviroment set"
+        fi
 
     else
         echo "[tue-env] Unknown command: '$cmd'"
@@ -213,10 +245,10 @@ function _tue-env
     local prev=${COMP_WORDS[COMP_CWORD-1]}
 
     if [ $COMP_CWORD -eq 1 ]; then
-        COMPREPLY=( $(compgen -W "init list switch list-current remove cd set-default config init-targets" -- $cur) )
+        COMPREPLY=( $(compgen -W "init list switch list-current remove cd set-default config init-targets targets" -- $cur) )
     else
         cmd=${COMP_WORDS[1]}
-        if [[ $cmd == "switch" ]] || [[ $cmd == "remove" ]] || [[ $cmd == "cd" ]] || [[ $cmd == "set-default" ]]
+        if [[ $cmd == "switch" ]] || [[ $cmd == "remove" ]] || [[ $cmd == "cd" ]] || [[ $cmd == "set-default" ]] || [[ $cmd == "init-targets" ]] || [[ $cmd == "targets" ]]
         then
             if [ $COMP_CWORD -eq 2 ]
             then
