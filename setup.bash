@@ -1,5 +1,5 @@
 #! /usr/bin/env bash
-export TUE_DIR="$( dirname "${BASH_SOURCE[0]}" )"
+export TUE_DIR="$( cd "$( dirname "${BASH_SOURCE[0]}" )" && pwd )"
 
 # ------------------------------------------
 # Helper function for checking if all env vars are set
