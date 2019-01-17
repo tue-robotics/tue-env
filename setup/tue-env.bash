@@ -160,20 +160,19 @@ Purged environment directory of '$env'"""
 
         local env=$1
         local url=$2
-        echo "tue-env init-targets $name $url"
 
         local tue_env_dir=$(cat $TUE_DIR/user/envs/$env)
         local tue_env_targets_dir=$tue_env_dir/.env/targets
 
-        if [ ! -d $tue_env_targets_dir ]
+        if [ -d $tue_env_targets_dir ]
         then
-            git clone $url $tue_env_targets_dir
-        else
             local targets_dir_moved=$tue_env_targets_dir.$(date +%F_%R)
             mv -f $tue_env_targets_dir $targets_dir_moved
-            git clone $url $tue_env_targets_dir
-            echo "Moved old targets to $targets_dir_moved"
+            echo "[tue-env] Moved old targets to $targets_dir_moved"
         fi
+
+        git clone $url $tue_env_targets_dir
+        echo "[tue-env] cloned targets from $url"
 
     elif [[ $cmd == "config" ]]
     then
