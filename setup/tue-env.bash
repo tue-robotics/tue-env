@@ -17,6 +17,7 @@ function tue-env
         switch         - Switch to a different environment
         config         - Configures current environment
         set-default    - Set default environment
+        init-targets   - (Re-)Initialize the target list
         list           - List all possible environments
         list-current   - Shows current environment
         cd             - Changes directory to environment directory
