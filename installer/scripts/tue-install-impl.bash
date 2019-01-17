@@ -291,17 +291,37 @@ function tue-install-cp
             root_required=false
         fi
 
-        if ! cmp --quiet "$file" "$2"
+        if [ -d "$2" ]
         then
-            tue-install-debug "File $file and $2 are different, copying..."
-            if "$root_required"
+            cp_target="$2/"$(basename "$file")
+
+            if ! cmp --quiet "$file" "$cp_target"
             then
-                tue-install-debug "Using elevated privileges (sudo)"
-                sudo mkdir --parents --verbose "$(dirname "$2")" && sudo cp --verbose "$file" "$2"
-            else
-                mkdir --parents --verbose "$(dirname "$2")" && cp --verbose "$file" "$2"
+                tue-install-debug "File $file and $cp_target are different, copying..."
+                if "$root_required"
+                then
+                    tue-install-debug "Using elevated privileges (sudo)"
+                    sudo mkdir --parents --verbose "$2" && sudo cp --verbose "$file" "$cp_target"
+                else
+                    mkdir --parents --verbose "$2" && cp --verbose "$file" "$cp_target"
+                fi
+            fi
+        else
+            cp_target="$2"
+
+            if ! cmp --quiet "$file" "$cp_target"
+            then
+                tue-install-debug "File $file and $cp_target are different, copying..."
+                if "$root_required"
+                then
+                    tue-install-debug "Using elevated privileges (sudo)"
+                    sudo mkdir --parents --verbose "$(dirname "$2")" && sudo cp --verbose "$file" "$cp_target"
+                else
+                    mkdir --parents --verbose "$(dirname "$2")" && cp --verbose "$file" "$cp_target"
+                fi
             fi
         fi
+
     done
 }
 
