@@ -258,7 +258,7 @@ function tue-status
 {
     _tue-dir-status $_TUE_CATKIN_SYSTEM_DIR/src
     _tue-repo-status tue-env $TUE_DIR
-    _tue-repo-status tue-env-target $TUE_ENV_TARGETS_DIR
+    _tue-repo-status tue-env-targets $TUE_ENV_TARGETS_DIR
 }
 
 # ----------------------------------------------------------------------------------------------------
