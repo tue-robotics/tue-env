@@ -272,15 +272,10 @@ function tue-install-cp
 {
     if [ -z "$2" ]
     then
-        tue-install-error "Invalid tue-install-cp call: needs two arguments (source and target)."
+        tue-install-error "Invalid tue-install-cp call: needs two arguments (source and target). The source must be relative to the installer target directory"
     fi
 
-    file="$TUE_INSTALL_CURRENT_TARGET_DIR/$1"
-
-    if [ ! -f "$file" ]
-    then
-        tue-install-error "Invalid tue-install-cp call: file '$1' does not exist."
-    fi
+    local source_files="$TUE_INSTALL_CURRENT_TARGET_DIR/$1"
 
     # Check if user is allowed to write on target destination
     local root_required=true
@@ -289,17 +284,43 @@ function tue-install-cp
         root_required=false
     fi
 
-    if ! cmp --quiet "$file" "$2"
+    local cp_target=
+    local cp_target_parent_dir=
+
+    if [ -d "$2" ]
     then
-        tue-install-debug "File $file and $2 are different, copying..."
-        if "$root_required"
-        then
-            tue-install-debug "Using elevated privileges (sudo)"
-            sudo mkdir --parents --verbose "$(dirname "$2")" && sudo cp --verbose "$file" "$2"
-        else
-            mkdir --parents --verbose "$(dirname "$2")" && cp --verbose "$file" "$2"
-        fi
+        cp_target_parent_dir="${2%%/}"
+    else
+        cp_target_parent_dir="$(dirname "$2")"
     fi
+
+    for file in $source_files
+    do
+        if [ ! -f "$file" ]
+        then
+            tue-install-error "Invalid tue-install-cp call: file '$file' does not exist."
+        fi
+
+        if [ -d "$2" ]
+        then
+            cp_target="$cp_target_parent_dir"/$(basename "$file")
+        else
+            cp_target="$2"
+        fi
+
+        if ! cmp --quiet "$file" "$cp_target"
+        then
+            tue-install-debug "File $file and $cp_target are different, copying..."
+            if "$root_required"
+            then
+                tue-install-debug "Using elevated privileges (sudo)"
+                sudo mkdir --parents --verbose "$cp_target_parent_dir" && sudo cp --verbose "$file" "$cp_target"
+            else
+                mkdir --parents --verbose "$cp_target_parent_dir" && cp --verbose "$file" "$cp_target"
+            fi
+        fi
+
+    done
 }
 
 # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # #
