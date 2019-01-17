@@ -154,14 +154,25 @@ Purged environment directory of '$env'"""
 
     elif [[ $cmd == "init-targets" ]]
     then
-        if [ -z "$2" ]
+        if [ -z "$1" ] || ([ -z "$TUE_ENV" ] && [ -z "$2" ])
         then
-            echo "Usage: tue-env init-targets ENVIRONMENT TARGETS_GIT_URL"
+            echo "Usage: tue-env init-targets [ENVIRONMENT] TARGETS_GIT_URL"
             return 1
         fi
 
         local env=$1
         local url=$2
+        if [ -z "$url" ]
+        then
+            env=$TUE_ENV
+            if [ -z "$env" ]
+            then
+                # This shouldn't be possible logical, should have exited after printing usage
+                echo "[tue-env](init-targets) no enviroment set or provided"
+                return 1
+            fi
+            url=$1
+        fi
 
         local tue_env_dir=$(cat $TUE_DIR/user/envs/$env)
         local tue_env_targets_dir=$tue_env_dir/.env/targets
@@ -170,11 +181,11 @@ Purged environment directory of '$env'"""
         then
             local targets_dir_moved=$tue_env_targets_dir.$(date +%F_%R)
             mv -f $tue_env_targets_dir $targets_dir_moved
-            echo "[tue-env] Moved old targets to $targets_dir_moved"
+            echo "[tue-env] Moved old targets of environment '$env' to $targets_dir_moved"
         fi
 
         git clone $url $tue_env_targets_dir
-        echo "[tue-env] cloned targets from $url"
+        echo "[tue-env] cloned targets of environment '$env' from $url"
 
     elif [[ $cmd == "targets" ]]
     then
@@ -198,6 +209,7 @@ Purged environment directory of '$env'"""
             vim $tue_env_dir/.env/setup/user_setup.bash
         else
             echo "[tue-env](config) no enviroment set or provided"
+            return 1
         fi
 
     elif [[ $cmd == "cd" ]]
@@ -211,6 +223,7 @@ Purged environment directory of '$env'"""
             cd $dir
         else
             echo "[tue-env](cd) no enviroment set or provided"
+            return 1
         fi
 
     elif [[ $cmd == "list" ]]
