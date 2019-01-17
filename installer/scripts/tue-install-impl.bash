@@ -275,50 +275,48 @@ function tue-install-cp
         tue-install-error "Invalid tue-install-cp call: needs two arguments (source and target)."
     fi
 
-    files="$TUE_INSTALL_CURRENT_TARGET_DIR/$1"
+    local source_files="$TUE_INSTALL_CURRENT_TARGET_DIR/$1"
 
-    for file in $files
+    # Check if user is allowed to write on target destination
+    local root_required=true
+    if namei -l "$2" | grep -q $(whoami)
+    then
+        root_required=false
+    fi
+
+    local cp_target=
+    local cp_target_parent_dir=
+
+    if [ -d "$2" ]
+    then
+        cp_target_parent_dir="${2%%/}"
+    else
+        cp_target_parent_dir="$(dirname "$2")"
+    fi
+
+    for file in $source_files
     do
         if [ ! -f "$file" ]
         then
             tue-install-error "Invalid tue-install-cp call: file '$1' does not exist."
         fi
 
-        # Check if user is allowed to write on target destination
-        local root_required=true
-        if namei -l "$2" | grep -q $(whoami)
-        then
-            root_required=false
-        fi
-
         if [ -d "$2" ]
         then
-            cp_target="${2%%/}/"$(basename "$file")
-
-            if ! cmp --quiet "$file" "$cp_target"
-            then
-                tue-install-debug "File $file and $cp_target are different, copying..."
-                if "$root_required"
-                then
-                    tue-install-debug "Using elevated privileges (sudo)"
-                    sudo mkdir --parents --verbose "$2" && sudo cp --verbose "$file" "$cp_target"
-                else
-                    mkdir --parents --verbose "$2" && cp --verbose "$file" "$cp_target"
-                fi
-            fi
+            cp_target="$cp_target_parent_dir"/$(basename "$file")
         else
             cp_target="$2"
+        fi
 
-            if ! cmp --quiet "$file" "$cp_target"
+        if ! cmp --quiet "$file" "$cp_target"
+        then
+            tue-install-debug "File $file and $cp_target are different, copying..."
+            if "$root_required"
             then
-                tue-install-debug "File $file and $cp_target are different, copying..."
-                if "$root_required"
-                then
-                    tue-install-debug "Using elevated privileges (sudo)"
-                    sudo mkdir --parents --verbose "$(dirname "$2")" && sudo cp --verbose "$file" "$cp_target"
-                else
-                    mkdir --parents --verbose "$(dirname "$2")" && cp --verbose "$file" "$cp_target"
-                fi
+                tue-install-debug "Using elevated privileges (sudo)"
+                sudo mkdir --parents --verbose "$cp_target_parent_dir" && sudo cp --verbose "$file" "$cp_target"
+            else
+                mkdir --parents --verbose "$cp_target_parent_dir" && cp --verbose "$file" "$cp_target"
             fi
         fi
 
