@@ -293,7 +293,7 @@ function tue-install-cp
 
         if [ -d "$2" ]
         then
-            cp_target="$2/"$(basename "$file")
+            cp_target="${2%%/}/"$(basename "$file")
 
             if ! cmp --quiet "$file" "$cp_target"
             then
