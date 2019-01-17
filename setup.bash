@@ -12,6 +12,22 @@ function _tue-check-env-vars
 }
 export -f _tue-check-env-vars
 
+export TUE_BIN=$TUE_DIR/bin
+export PATH=$TUE_BIN${PATH:+:${PATH}}
+
+# -----------------------------------------
+# Load all the functions in bin folder
+
+dirs=$(ls -d -1 $TUE_BIN/**)
+for dir in $dirs
+do
+    if [ -f $dir/setup.bash ]
+    then
+        source $dir/setup.bash
+    fi
+done
+
+
 if [ -z "$TUE_ENV" ]
 then
     if [ ! -f $TUE_DIR/user/config/default_env ]
@@ -63,19 +79,3 @@ if [ -f $TUE_DIR/setup/tue-misc.bash ]
 then
     source $TUE_DIR/setup/tue-misc.bash
 fi
-
-export TUE_BIN=$TUE_DIR/bin
-export PATH=$TUE_BIN${PATH:+:${PATH}}
-
-# -----------------------------------------
-# Load all the functions in bin folder
-
-dirs=$(ls -d -1 $TUE_BIN/**)
-for dir in $dirs
-do
-    if [ -f $dir/setup.bash ]
-    then
-        source $dir/setup.bash
-    fi
-done
-
