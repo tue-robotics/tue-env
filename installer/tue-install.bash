@@ -32,7 +32,11 @@ fi
 
 if [ ! -d $TUE_ENV_TARGETS_DIR ]
 then
-    echo "[tue-get] 'TUE_ENV_TARGETS_DIR' %TUE_ENV_TARGETS_DIR doesn't exist"
+    echo "[tue-get] 'TUE_ENV_TARGETS_DIR' $TUE_ENV_TARGETS_DIR doesn't exist"
+    echo """To setup the default tue-env targets repository do,
+
+tue-env init-targets https://github.com/tue-robotics/tue-env-targets.git
+"""
     exit 1
 else
     echo -en "Updating tue-env-targets... "
