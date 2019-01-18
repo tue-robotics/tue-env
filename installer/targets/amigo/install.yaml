@@ -1,8 +1,0 @@
-- type: target
-  name: robot
-
-- type: target
-  name: ros-amigo_bringup
-
-- type: target
-  name: amigo-user
