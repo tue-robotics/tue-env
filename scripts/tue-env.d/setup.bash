@@ -1,5 +1,12 @@
 #! /usr/bin/env bash
 
+# This needed because without the dot, the script is run in a child process.
+# But we don't want to run it with a dot all the time.
+function tue-env
+{
+    . tue-env $@
+}
+
 function _tue-env
 {
     local cur=${COMP_WORDS[COMP_CWORD]}
