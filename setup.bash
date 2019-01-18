@@ -15,10 +15,13 @@ export -f _tue-check-env-vars
 export TUE_BIN=$TUE_DIR/bin
 export PATH=$TUE_BIN${PATH:+:${PATH}}
 
+export TUE_SCRIPTS=$TUE_DIR/scripts
+export PATH=$TUE_SCRIPTS${PATH:+:${PATH}}
+
 # -----------------------------------------
 # Load all the functions in bin folder
 
-dirs=$(ls -d -1 $TUE_BIN/**)
+dirs=$(ls -d -1 $TUE_SCRIPTS/**)
 for dir in $dirs
 do
     if [ -f $dir/setup.bash ]
