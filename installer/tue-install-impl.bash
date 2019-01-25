@@ -742,7 +742,7 @@ fi
 for target in $targets
 do
     tue-install-debug "Main loop: installing $target"
-    tue-install-target $target
+    tue-install-target $target || tue-install-error "Installed target: '$target' doesn't exist anymore"; return 1
 
     if [[ -d $TUE_INSTALL_TARGETS_DIR/$target && "$tue_cmd" == "install" ]]
     then
