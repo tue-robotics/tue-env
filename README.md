@@ -4,18 +4,28 @@ Package manager that can be used to install (ROS) dependencies
 ## Installation
 
 #### Ubuntu 16.04/18.04
+Standard tue-env installation with targets from [tue-env-targets](https://github.com/tue-robotics/tue-env-targets)
+
 ```bash
-source <(wget -O - https://raw.githubusercontent.com/tue-robotics/tue-env/master/installer/scripts/bootstrap.bash)
+source <(wget -O - https://raw.githubusercontent.com/tue-robotics/tue-env/master/installer/bootstrap.bash)
 tue-get install tue-dev #or
 tue-get install tue-dev-full #tue-dev plus extra tools
 tue-make
 source ~/.bashrc
 ```
 
+#### Customization
+A customized targets repository can be setup with this package manager (currently only one git repository is supported). If `tue-env` is already installed, to setup the targets repository run:
+```bash
+tue-env init-targets [ENVIRONMENT] <targets_repo_git_url>
+```
+else first setup `tue-env` by manually following the procedure in the bootstrap
+script.
+
 ## Usage
 
 With `tue-get` you can install various targets which mostly are ros packages.
-The list of packages can be seen [here](installer/targets).
+The list of packages can be seen [here](https://github.com/tue-robotics/tue-env-targets).
 
 ```bash
 tue-get install <TARGET_NAME>
