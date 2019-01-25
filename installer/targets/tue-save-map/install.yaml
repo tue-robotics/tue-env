@@ -1,8 +1,0 @@
-- type: target
-  name: ros-map_server
-  
-- type: target
-  name: gimp
-
-- type: target
-  name: imagemagick

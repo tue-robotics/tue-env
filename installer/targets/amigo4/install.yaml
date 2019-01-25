@@ -1,8 +1,0 @@
-- type: target
-  name: amigo-chrony-client-pc
-
-- type: target
-  name: ros-image_recognition_openpose
-
-#- type: target
-#  name: openpose #Lets leave this manual for now
