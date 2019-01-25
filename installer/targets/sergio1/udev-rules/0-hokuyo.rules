@@ -1,1 +1,0 @@
-ATTRS{manufacturer}=="Hokuyo Data Flex for USB", SYMLINK+="sensors/hokuyo_busid_%b"
