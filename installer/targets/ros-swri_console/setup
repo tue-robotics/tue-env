@@ -1,3 +1,0 @@
-#!/bin/bash
-
-alias swri="rosrun swri_console swri_console"
