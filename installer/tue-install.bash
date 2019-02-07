@@ -60,7 +60,7 @@ fi
 
 if [[ -n "$CI" ]] #Do not update with continuous integration but do fetch to refresh available branches
 then
-    if [ -n $BRANCH]
+    if [ -n $BRANCH ]
     then
         test_branch=$(git -C $TUE_ENV_TARGETS_DIR branch -a 2> /dev/null | grep -q $BRANCH)
         if [ $? -eq 0 ]
