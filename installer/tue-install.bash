@@ -59,22 +59,25 @@ else
 fi
 
 # If the same branch as the PR exists on tue-env-targets, switch to it
+# The variable BRANCH is set as an environment variable in the docker container
+# by the script ci/install-package.sh. Its value is
+# ${TRAVIS_PULL_REQUEST_BRANCH:-$TRAVIS_BRANCH} while the docker container
+# itself has no knowledge of these TRAVIS variables
 if [[ -n "$CI" ]]
 then
-    branch=${TRAVIS_PULL_REQUEST_BRANCH:-$TRAVIS_BRANCH}
-    echo "CI branch: $branch"
-    if [ -n $branch ]
+    echo "CI branch: $BRANCH"
+    if [ -n $BRANCH ]
     then
-        test_branch=$(git -C $TUE_ENV_TARGETS_DIR branch -a 2> /dev/null | grep $branch || echo "does not exist")
+        test_branch=$(git -C $TUE_ENV_TARGETS_DIR branch -a 2> /dev/null | grep $BRANCH || echo "does not exist")
         if [ ! "$test_branch" == "does not exist" ]
         then
             local current_branch=$(git -C $TUE_ENV_TARGETS_DIR rev-parse --abbrev-ref HEAD)
-            if [[ "$current_branch" == "$branch" ]]
+            if [[ "$current_branch" == "$BRANCH" ]]
             then
-                echo "[tue-env-targets] Already on branch $branch"
+                echo "[tue-env-targets] Already on branch $BRANCH"
             else
-                git -C $pkg_dir checkout $branch 2>&1
-                echo "[tue-env-targets] Switchted to branch $branch"
+                git -C $pkg_dir checkout $BRANCH 2>&1
+                echo "[tue-env-targets] Switchted to branch $BRANCH"
             fi
         fi
     fi
