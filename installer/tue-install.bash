@@ -60,19 +60,18 @@ fi
 
 if [[ -n "$CI" ]] #Do not update with continuous integration but do fetch to refresh available branches
 then
-    branch=${TRAVIS_PULL_REQUEST_BRANCH:-$TRAVIS_BRANCH}
-    if [ -n $branch ]
+    if [ -n $BRANCH]
     then
-        test_branch=$(git -C $TUE_ENV_TARGETS_DIR branch -a 2> /dev/null | grep -q $branch)
+        test_branch=$(git -C $TUE_ENV_TARGETS_DIR branch -a 2> /dev/null | grep -q $BRANCH)
         if [ $? -eq 0 ]
         then
             local current_branch=`git -C $TUE_ENV_TARGETS_DIR rev-parse --abbrev-ref HEAD`
-            if [[ "$current_branch" == "$branch" ]]
+            if [[ "$current_branch" == "$BRANCH" ]]
             then
-                echo "[tue-env-tarrgets] Already on branch $branch"
+                echo "[tue-env-tarrgets] Already on branch $BRANCH"
             else
-                git -C $pkg_dir checkout $branch 2>&1
-                echo "[tue-env-targets] Switchted to branch $branch"
+                git -C $pkg_dir checkout $BRANCH 2>&1
+                echo "[tue-env-targets] Switchted to branch $BRANCH"
             fi
         fi
     fi
