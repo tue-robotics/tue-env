@@ -58,18 +58,20 @@ else
     fi
 fi
 
-if [[ -n "$CI" ]] #Do not update with continuous integration but do fetch to refresh available branches
+# If the same branch as the PR exists on tue-env-targets, switch to it
+if [[ -n "$CI" ]]
 then
     branch=${TRAVIS_PULL_REQUEST_BRANCH:-$TRAVIS_BRANCH}
+    echo "CI branch: $branch"
     if [ -n $branch ]
     then
-        test_branch=$(git -C $TUE_ENV_TARGETS_DIR branch -a 2> /dev/null | grep -q $branch)
-        if [ $? -eq 0 ]
+        test_branch=$(git -C $TUE_ENV_TARGETS_DIR branch -a 2> /dev/null | grep $branch || echo "does not exist")
+        if [ ! "$test_branch" == "does not exist" ]
         then
-            local current_branch=`git -C $TUE_ENV_TARGETS_DIR rev-parse --abbrev-ref HEAD`
+            local current_branch=$(git -C $TUE_ENV_TARGETS_DIR rev-parse --abbrev-ref HEAD)
             if [[ "$current_branch" == "$branch" ]]
             then
-                echo "[tue-env-tarrgets] Already on branch $branch"
+                echo "[tue-env-targets] Already on branch $branch"
             else
                 git -C $pkg_dir checkout $branch 2>&1
                 echo "[tue-env-targets] Switchted to branch $branch"
