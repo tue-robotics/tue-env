@@ -8,10 +8,10 @@ then
     exit 1
 elif [[ -n "$CI" ]] #Do not update with continuous integration but do fetch to refresh available branches
 then
-    echo -en "Fetching tue-get... "
+    echo -en "[tue-get] Fetching tue-get... "
     git -C $TUE_DIR fetch
 else
-    echo -en "Updating tue-get... "
+    echo -en "[tue-get] Updating tue-get... "
     git -C $TUE_DIR pull --ff-only --prune
 
     error_code=$?
@@ -39,7 +39,7 @@ tue-env init-targets https://github.com/tue-robotics/tue-env-targets.git
 """
     exit 1
 else
-    echo -en "Updating tue-env-targets... "
+    echo -en "[tue-env-targets] Updating targets... "
     git -C $TUE_ENV_TARGETS_DIR pull --ff-only --prune
 
     error_code=$?
@@ -58,14 +58,19 @@ else
     fi
 fi
 
-if [[ -n "$CI" ]] #Do not update with continuous integration but do fetch to refresh available branches
+if [[ -n "$CI" ]] #With continuous integration try to switch the targets repo to the PR branch
 then
+    current_branch=$(git -C $TUE_ENV_TARGETS_DIR rev-parse --abbrev-ref HEAD)
+
+    # BRANCH is an environment variable set by ci/install-package.sh in the
+    # Docker container. The container has no knowledge about TRAVIS environment
+    # variable. BRANCH=${TRAVIS_PULL_REQUEST_BRANCH:-$TRAVIS_BRANCH}
     if [ -n $BRANCH ]
     then
+        echo "[tue-env-targets] Trying to switch to branch $BRANCH..."
         test_branch=$(git -C $TUE_ENV_TARGETS_DIR branch -a 2> /dev/null | grep -q $BRANCH)
         if [ $? -eq 0 ]
         then
-            current_branch=$(git -C $TUE_ENV_TARGETS_DIR rev-parse --abbrev-ref HEAD)
             if [[ "$current_branch" == "$BRANCH" ]]
             then
                 echo "[tue-env-targets] Already on branch $BRANCH"
@@ -73,6 +78,8 @@ then
                 git -C $TUE_ENV_TARGETS_DIR checkout $BRANCH 2>&1
                 echo "[tue-env-targets] Switchted to branch $BRANCH"
             fi
+        else
+            echo "[tue-env-targets] Branch '$BRANCH' does not exist. In current branch $current_branch"
         fi
     fi
 fi
