@@ -65,12 +65,12 @@ then
         test_branch=$(git -C $TUE_ENV_TARGETS_DIR branch -a 2> /dev/null | grep -q $BRANCH)
         if [ $? -eq 0 ]
         then
-            local current_branch=`git -C $TUE_ENV_TARGETS_DIR rev-parse --abbrev-ref HEAD`
+            current_branch=`git -C $TUE_ENV_TARGETS_DIR rev-parse --abbrev-ref HEAD`
             if [[ "$current_branch" == "$BRANCH" ]]
             then
-                echo "[tue-env-tarrgets] Already on branch $BRANCH"
+                echo "[tue-env-targets] Already on branch $BRANCH"
             else
-                git -C $pkg_dir checkout $BRANCH 2>&1
+                git -C $TUE_ENV_TARGETS_DIR checkout $BRANCH 2>&1
                 echo "[tue-env-targets] Switchted to branch $BRANCH"
             fi
         fi
