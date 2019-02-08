@@ -65,7 +65,7 @@ then
         test_branch=$(git -C $TUE_ENV_TARGETS_DIR branch -a 2> /dev/null | grep -q $BRANCH)
         if [ $? -eq 0 ]
         then
-            current_branch=`git -C $TUE_ENV_TARGETS_DIR rev-parse --abbrev-ref HEAD`
+            current_branch=$(git -C $TUE_ENV_TARGETS_DIR rev-parse --abbrev-ref HEAD)
             if [[ "$current_branch" == "$BRANCH" ]]
             then
                 echo "[tue-env-targets] Already on branch $BRANCH"
