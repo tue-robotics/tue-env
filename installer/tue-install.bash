@@ -8,10 +8,10 @@ then
     exit 1
 elif [[ -n "$CI" ]] #Do not update with continuous integration but do fetch to refresh available branches
 then
-    echo -en "Fetching tue-get... "
+    echo -e "[tue-get] Fetching tue-get... "
     git -C $TUE_DIR fetch
 else
-    echo -en "Updating tue-get... "
+    echo -en "[tue-get] Updating tue-get... "
     git -C $TUE_DIR pull --ff-only --prune
 
     error_code=$?
@@ -39,12 +39,12 @@ tue-env init-targets https://github.com/tue-robotics/tue-env-targets.git
 """
     exit 1
 else
-    echo -en "Updating tue-env-targets... "
+    echo -en "[tue-env-targets] Updating targets... "
     git -C $TUE_ENV_TARGETS_DIR pull --ff-only --prune
 
     error_code=$?
 
-    if [ ! $error_code -eq 0 ]
+    if [ ! $error_code -eq 0 ] && [ -z "$CI" ]
     then
         # prompt for conformation
         exec < /dev/tty
@@ -58,24 +58,28 @@ else
     fi
 fi
 
-# If the same branch as the PR exists on tue-env-targets, switch to it
-if [[ -n "$CI" ]]
+if [[ -n "$CI" ]] #With continuous integration try to switch the targets repo to the PR branch
 then
-    branch=${TRAVIS_PULL_REQUEST_BRANCH:-$TRAVIS_BRANCH}
-    echo "CI branch: $branch"
-    if [ -n $branch ]
+    current_branch=$(git -C $TUE_ENV_TARGETS_DIR rev-parse --abbrev-ref HEAD)
+
+    # BRANCH is an environment variable set by ci/install-package.sh in the
+    # Docker container. The container has no knowledge about TRAVIS environment
+    # variable. BRANCH=${TRAVIS_PULL_REQUEST_BRANCH:-$TRAVIS_BRANCH}
+    if [ -n $BRANCH ]
     then
-        test_branch=$(git -C $TUE_ENV_TARGETS_DIR branch -a 2> /dev/null | grep $branch || echo "does not exist")
-        if [ ! "$test_branch" == "does not exist" ]
+        echo -en "[tue-env-targets] Trying to switch to branch $BRANCH..."
+        test_branch=$(git -C $TUE_ENV_TARGETS_DIR branch -a 2> /dev/null | grep -q $BRANCH)
+        if [ $? -eq 0 ]
         then
-            local current_branch=$(git -C $TUE_ENV_TARGETS_DIR rev-parse --abbrev-ref HEAD)
-            if [[ "$current_branch" == "$branch" ]]
+            if [[ "$current_branch" == "$BRANCH" ]]
             then
-                echo "[tue-env-targets] Already on branch $branch"
+                echo -e "[tue-env-targets] Already on branch $BRANCH"
             else
-                git -C $pkg_dir checkout $branch 2>&1
-                echo "[tue-env-targets] Switchted to branch $branch"
+                git -C $TUE_ENV_TARGETS_DIR checkout $BRANCH 2>&1
+                echo -e "[tue-env-targets] Switchted to branch $BRANCH"
             fi
+        else
+            echo -e "[tue-env-targets] Branch '$BRANCH' does not exist. Current branch is $current_branch"
         fi
     fi
 fi
