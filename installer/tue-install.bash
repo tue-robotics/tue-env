@@ -44,7 +44,7 @@ else
 
     error_code=$?
 
-    if [ ! $error_code -eq 0 ]
+    if [ ! $error_code -eq 0 ] && [ -z "$CI" ]
     then
         # prompt for conformation
         exec < /dev/tty
