@@ -8,7 +8,7 @@ then
     exit 1
 elif [[ -n "$CI" ]] #Do not update with continuous integration but do fetch to refresh available branches
 then
-    echo -en "[tue-get] Fetching tue-get... "
+    echo -e "[tue-get] Fetching tue-get... "
     git -C $TUE_DIR fetch
 else
     echo -en "[tue-get] Updating tue-get... "
@@ -67,19 +67,19 @@ then
     # variable. BRANCH=${TRAVIS_PULL_REQUEST_BRANCH:-$TRAVIS_BRANCH}
     if [ -n $BRANCH ]
     then
-        echo "[tue-env-targets] Trying to switch to branch $BRANCH..."
+        echo -en "[tue-env-targets] Trying to switch to branch $BRANCH..."
         test_branch=$(git -C $TUE_ENV_TARGETS_DIR branch -a 2> /dev/null | grep -q $BRANCH)
         if [ $? -eq 0 ]
         then
             if [[ "$current_branch" == "$BRANCH" ]]
             then
-                echo "[tue-env-targets] Already on branch $BRANCH"
+                echo -e "[tue-env-targets] Already on branch $BRANCH"
             else
                 git -C $TUE_ENV_TARGETS_DIR checkout $BRANCH 2>&1
-                echo "[tue-env-targets] Switchted to branch $BRANCH"
+                echo -e "[tue-env-targets] Switchted to branch $BRANCH"
             fi
         else
-            echo "[tue-env-targets] Branch '$BRANCH' does not exist. In current branch $current_branch"
+            echo -e "[tue-env-targets] Branch '$BRANCH' does not exist. Current branch is $current_branch"
         fi
     fi
 fi
