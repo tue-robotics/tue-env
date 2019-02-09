@@ -198,7 +198,10 @@ function tue-install-git
     local targetdir=$2
     local version=$3
 
-    if [ ! -d $2 ]; then
+    # Change url to https/ssh
+    repo=$(_github_https_or_ssh $repo)
+
+    if [ ! -d $targetdir ]; then
         tue-install-debug "git clone --recursive $repo $targetdir"
         res=$(git clone --recursive $repo $targetdir 2>&1)
         TUE_INSTALL_GIT_PULL_Q+=$targetdir
@@ -210,6 +213,18 @@ function tue-install-git
             # We have already pulled this repo, skip it
             res=
         else
+            # Switch url of origin to use https/ssh if different
+            # Get current remote url
+            local current_url=$(git -C $targetdir config --get remote.origin.url)
+
+            # If different, switch url
+            if [ ! "$current_url" == "$repo" ]
+            then
+                tue-install-debug "git -C $targetdir remote set-url origin $repo"
+                git -C $targetdir remote set-url origin $repo
+                tue-install-info "URL has switched to $repo"
+            fi
+
             tue-install-debug "git -C $targetdir pull --ff-only --prune"
 
             res=$(git -C $targetdir pull --ff-only --prune 2>&1)
