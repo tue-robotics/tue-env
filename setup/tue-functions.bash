@@ -679,7 +679,7 @@ source $TUE_DIR/setup/tue-data.bash
 #                                             TUE-ROBOCUP
 # ----------------------------------------------------------------------------------------------------
 
-export TUE_ROBOCUP_BRANCH="robocup"
+export TUE_ROBOCUP_BRANCH="rgo2019"
 
 function _tue-repos-do
 {
