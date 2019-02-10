@@ -1,21 +1,4 @@
 # ----------------------------------------------------------------------------------------------------
-#                                        ADDITIONAL TOOLS
-# ----------------------------------------------------------------------------------------------------
-
-function _set_export_option {
-
-    # _set_export_option KEY VALUE FILE
-    # Add the following line: 'export KEY=VALUE' to FILE
-    # Or changes the VALUE to current value if line already in FILE.
-
-    key=${1//\//\\/}
-    value=${2//\//\\/}
-    sed -i \
-        -e '/^#\?\(\s*'"export ${key}"'\s*=\s*\).*/{s//\1'"${value}"'/;:a;n;ba;q}' \
-        -e '$a'"export ${key}"'='"${value}" $3
-}
-
-# ----------------------------------------------------------------------------------------------------
 #                                              TUE-ENV
 # ----------------------------------------------------------------------------------------------------
 
@@ -39,7 +22,6 @@ function tue-env
         list           - List all possible environments
         list-current   - Shows current environment
         cd             - Changes directory to environment directory
-        clone-with     - Sets the use of SSH or HTTPS in the current environment
 """
         return 1
     fi
@@ -219,16 +201,10 @@ Purged environment directory of '$env'"""
     elif [[ $cmd == "config" ]]
     then
         local env=$1
+        shift
         [ -n "$env" ] || env=$TUE_ENV
 
-        if [ -n "$env" ]
-        then
-            local tue_env_dir=$(cat $TUE_DIR/user/envs/$env)
-            vim $tue_env_dir/.env/setup/user_setup.bash
-        else
-            echo "[tue-env](config) no enviroment set or provided"
-            return 1
-        fi
+        ./tue-env-config.bash $env $@
 
     elif [[ $cmd == "cd" ]]
     then
@@ -262,37 +238,6 @@ Purged environment directory of '$env'"""
             echo "[tue-env] no enviroment set"
         fi
 
-    elif [[ $cmd == "clone-with" ]]
-    then
-        if [ -z "$1" ]
-        then
-            echo "[tue-env](clone-with) possible arguments (ssh | https)"
-            return 1
-        fi
-
-        local env=$TUE_ENV
-        if [ -z "$env" ]
-        then
-            echo "[tue-env](clone-with) current enviroment not set"
-            return 1
-        fi
-
-        local tue_env_dir=$(cat $TUE_DIR/user/envs/$env)
-
-        local option="TUE_USE_SSH"
-        local value=
-
-        if [ "$1" == "ssh" ]
-        then
-            value="true"
-        else
-            value="false"
-        fi
-
-        echo "[tue-env](clone-with) repository cloning setup with '$1' for environment '$env'"
-        _set_export_option "$option" "$value" $tue_env_dir/.env/setup/user_setup.bash
-        source $tue_env_dir/.env/setup/user_setup.bash
-
     else
         echo "[tue-env] Unknown command: '$cmd'"
         return 1
@@ -317,6 +262,19 @@ function _tue-env
                 local envs=
                 [ -d $TUE_DIR/user/envs ] && envs=$(ls $TUE_DIR/user/envs)
                 COMPREPLY=( $(compgen -W "$envs" -- $cur) )
+            fi
+        elif [[ $cmd == "config" ]]
+        then
+            if [ $COMP_CWORD -eq 2 ]
+            then
+                local envs=
+                [ -d $TUE_DIR/user/envs ] && envs=$(ls $TUE_DIR/user/envs)
+                COMPREPLY=( $(compgen -W "$envs" -- $cur) )
+
+                if [ $COMP_CWORD -eq 3 ]
+                then
+                    COMPREPLY=( $(compgen -W "use-ssh use-https" -- $cur) )
+                fi
             fi
         fi
     fi
