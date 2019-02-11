@@ -210,10 +210,10 @@ function _tue-repo-status
             then
                 status=$res
             else
-                status=`git -C $pkg_dir  status . --short`
+                status=$(git -C $pkg_dir status . --short)
             fi
 
-            local current_branch=`git -C $pkg_dir  rev-parse --abbrev-ref HEAD`
+            local current_branch=$(git -C $pkg_dir rev-parse --abbrev-ref HEAD)
             case $current_branch in
                 master|develop|indigo-devel|hydro-devel|jade-devel|kinetic-devel|toolchain-2.9) ;;
                 *) _robocup_branch_allowed $current_branch || echo -e "\033[1m$name\033[0m is on branch '$current_branch'";;
@@ -245,7 +245,7 @@ function _tue-dir-status
     for f in $fs
     do
         pkg_dir=$1/$f
-        _tue-repo-status $f $pkg_dir
+        _tue-repo-status "$f" "$pkg_dir"
     done
 }
 
@@ -254,8 +254,8 @@ function _tue-dir-status
 function tue-status
 {
     _tue-dir-status $_TUE_CATKIN_SYSTEM_DIR/src
-    _tue-repo-status tue-env $TUE_DIR
-    _tue-repo-status tue-env-targets $TUE_ENV_TARGETS_DIR
+    _tue-repo-status "tue-env" "$TUE_DIR"
+    _tue-repo-status "tue-env-targets" "$TUE_ENV_TARGETS_DIR"
 }
 
 # ----------------------------------------------------------------------------------------------------
