@@ -4,7 +4,7 @@ FROM ubuntu:16.04
 ENV DEBIAN_FRONTEND=noninteractive
 
 # Install commands used in our scripts and standard present on a clean ubuntu installation
-RUN apt-get update -qq && apt-get install -qq --assume-yes --no-install-recommends sudo apt-utils git wget curl lsb-release ca-certificates
+RUN apt-get update -qq && apt-get install -qq --assume-yes --no-install-recommends sudo apt-utils git wget curl lsb-release ca-certificates apt-transport-https
 
 # Add amigo user
 RUN adduser --disabled-password --gecos "" amigo
