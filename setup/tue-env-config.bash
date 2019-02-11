@@ -79,7 +79,7 @@ else
                         tue-env-$1 ;;
                     * )
                         echo -e '[tue-env](config) Unknown config command: $1'
-                        return 1 ;;
+                        break ;;
                 esac"
             shift
         done
