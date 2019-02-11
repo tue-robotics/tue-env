@@ -273,9 +273,9 @@ function _tue-env
             fi
             if [ $COMP_CWORD -eq 3 ]
             then
-                functions=$(compgen -A function | grep "tue-env-")
+                functions=$(grep 'function' /home/amigo/.tue/setup/tue-env-config-functions.bash | awk '{print $2}' | grep "tue-env-")
                 functions=${functions//tue-env-/}
-                COMPREPLY=( $(compgen -W "use-ssh use-https" -- $cur) )
+                COMPREPLY=( $(compgen -W "$functions" -- $cur) )
             fi
         fi
     fi
