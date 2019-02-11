@@ -88,6 +88,18 @@ Taking the above into account, the following combinations for `install.yaml` are
     type: system
     name: <Package name>
 ```
+3. Depending on ROS distro
+```yaml
+- type: ros
+  kinetic:
+    source:
+      type: system
+      name: <Package name>
+  default:
+    source:
+      type: git
+      url: <Repository URL>
+```
 
 #### Target / System / PIP / PPA / Snap / DPKG / Empty
 ```yaml
