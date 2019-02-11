@@ -1,5 +1,0 @@
-export GAZEBO_PLUGIN_PATH=~/ros/$TUE_ROS_DISTRO/system/devel/lib:$GAZEBO_PLUGIN_PATH
-
-export GAZEBO_MODEL_PATH=~/ros/$TUE_ROS_DISTRO/system/src/tue_gazebo_models/database:$GAZEBO_MODEL_PATH
-
-export GAZEBO_RESOURCE_PATH=~/ros/$TUE_ROS_DISTRO/system/src/tue_gazebo_models/database:$GAZEBO_RESOURCE_PATH

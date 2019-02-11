@@ -1,9 +1,0 @@
-[Unit]
-Description=image_recognition_openpose Node
-
-[Install]
-WantedBy=multi-user.target
-
-[Service]
-Restart=on-abort
-ExecStart=/usr/bin/sudo -H -u ubuntu bash -c 'source /home/ubuntu/.tue/setup.bash && amigo-core && rosrun image_recognition_openpose image_recognition_openpose_node _net_input_width:=368 _net_input_height:=368 _net_output_width:=368 _net_output_height:=368 _model_folder:=/home/ubuntu/openpose/models/ __ns:=amigo/openpose'

@@ -1,7 +1,0 @@
-- type: ros
-  source:
-      type: git
-      url: https://github.com/orocos/orocos_kinematics_dynamics.git
-      sub-dir: python_orocos_kdl
-      # temp for getting everyone back to master instead of specific commit Matthijs 01-04-2018
-      version: master
