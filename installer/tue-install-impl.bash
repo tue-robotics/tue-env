@@ -744,13 +744,20 @@ fi
 for target in $targets
 do
     tue-install-debug "Main loop: installing $target"
-    tue-install-target $target || tue-install-error "Installed target: '$target' doesn't exist anymore"; return 1
+    tue-install-target $target
+    if [ ! $? -eq 0 ]
+    then
+        tue-install-error "Installed target: '$target' doesn't exist (anymore)"
+        return 1
+    fi
 
     if [[ -d $TUE_INSTALL_TARGETS_DIR/$target && "$tue_cmd" == "install" ]]
     then
         # Mark as installed
         tue-install-debug "[$target] marked as installed after a successful install"
         touch $TUE_INSTALL_INSTALLED_DIR/$target
+    else
+        tue-install-debug "[$target] succesfully updated"
     fi
 done
 
