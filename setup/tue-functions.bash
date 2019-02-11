@@ -301,7 +301,7 @@ function tue-revert
                 git -C $pkg_dir  checkout -q $new_hash
                 newbranch=$(git -C $pkg_dir  rev-parse --abbrev-ref HEAD 2>&1)
                 newtime=$(git -C $pkg_dir  show -s --format=%ci)
-                echo $branch > .do_not_commit_this
+                echo $branch > "$pkg_dir/.do_not_commit_this"
                 printf "\e[0;36m%-20s\033[0m %-15s \e[1m%s\033[0m %s\n" "$newbranch based on $branch" "$new_hash" "$newtime" "$pkg"
             fi
         else
@@ -320,11 +320,11 @@ function tue-revert-undo
     do
         pkg=$(basename $pkg_dir)
 
-        if [ -f .do_not_commit_this ]
+        if [ -f "$pkg_dir/.do_not_commit_this" ]
         then
             echo $pkg
-            git -C $pkg_dir  checkout `cat .do_not_commit_this`
-            rm .do_not_commit_this
+            git -C $pkg_dir  checkout `cat $pkg_dir/.do_not_commit_this`
+            rm "$pkg_dir/.do_not_commit_this"
         fi
     done
     tue-git-status
