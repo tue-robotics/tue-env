@@ -167,6 +167,7 @@ function _show_update_message
 
 function tue-install-svn
 {
+    tue-install-system-now subversion
     if [ ! -d $2 ]; then
         res=$(svn co $1 $2 --trust-server-cert --non-interactive 2>&1)
     else
@@ -675,7 +676,7 @@ function generate_setup_file
 # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # #
 
 # Make sure tools used by this installer are installed
-tue-install-system-now python-yaml git subversion python-pip
+tue-install-system-now python-yaml git python-pip
 
 stamp=$(date_stamp)
 INSTALL_DETAILS_FILE=/tmp/tue-get-details-$stamp
@@ -798,9 +799,10 @@ if [ -n "$TUE_INSTALL_PPA" ]; then
     do
         if [ -z "$(grep -h "^deb.*${ppa#ppa:}" /etc/apt/sources.list.d/* 2>&1)" ]
         then
-            PPA_ADDED=true
+            tue-install-system-now software-properties-common
             tue-install-info "Adding ppa: $ppa"
             sudo add-apt-repository --yes $ppa
+            PPA_ADDED=true
         else
             tue-install-debug "$ppa is already added previously"
         fi
