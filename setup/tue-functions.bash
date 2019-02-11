@@ -323,7 +323,7 @@ function tue-revert-undo
         if [ -f "$pkg_dir/.do_not_commit_this" ]
         then
             echo $pkg
-            git -C $pkg_dir  checkout `cat $pkg_dir/.do_not_commit_this`
+            git -C $pkg_dir checkout $(cat $pkg_dir/.do_not_commit_this)
             rm "$pkg_dir/.do_not_commit_this"
         fi
     done
