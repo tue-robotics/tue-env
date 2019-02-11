@@ -1,5 +1,6 @@
 #!/usr/bin/python
 
+from os import environ
 import sys
 import yaml
 
@@ -31,19 +32,32 @@ def main():
 
         try:
             install_type = install_item["type"]
-            if install_type == "ros":
-                source_type = install_item["source"]["type"]
+            if install_type == "empty":
+                return 0
+            elif install_type == "ros":
+                if "source" in install_item:
+                    source = install_item["source"]
+                else:
+                    release = environ["ROS_DISTRO"]
+                    if release in install_item:
+                        source = install_item[release]["source"]
+                    elif "default" in install_item:
+                        source = install_item["default"]["source"]
+                    else:
+                        return show_error("ROS distro "+release+" or 'default' not specified in install.yaml")
+
+                source_type = source["type"]
                 if source_type == "svn" or source_type == "git":
-                    if "sub-dir" in install_item["source"]:
-                        sub_dir = install_item["source"]["sub-dir"]
+                    if "sub-dir" in source:
+                        sub_dir = source["sub-dir"]
                     else:
                         sub_dir = "."
 
-                    command = "tue-install-{0} {1} {2} {3}".format(install_type, source_type, install_item["source"]["url"], sub_dir)
-                    if "version" in install_item["source"]:
-                       command += " {0}".format(install_item["source"]["version"])
+                    command = "tue-install-{0} {1} {2} {3}".format(install_type, source_type, source["url"], sub_dir)
+                    if "version" in source:
+                       command += " {0}".format(source["version"])
                 elif source_type == "system":
-                    command = "tue-install-ros system {0}".format(install_item["source"]["name"])
+                    command = "tue-install-ros system {0}".format(source["name"])
             elif install_type == "target":
                 command = "tue-install-target {0}".format(install_item["name"])
             elif install_type == "system":
