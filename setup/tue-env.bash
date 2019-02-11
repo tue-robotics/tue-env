@@ -204,7 +204,7 @@ Purged environment directory of '$env'"""
         shift
         [ -n "$env" ] || env=$TUE_ENV
 
-        ./tue-env-config.bash $env $@
+        $TUE_DIR/setup/tue-env-config.bash $env $@
 
     elif [[ $cmd == "cd" ]]
     then
@@ -270,11 +270,12 @@ function _tue-env
                 local envs=
                 [ -d $TUE_DIR/user/envs ] && envs=$(ls $TUE_DIR/user/envs)
                 COMPREPLY=( $(compgen -W "$envs" -- $cur) )
-
-                if [ $COMP_CWORD -eq 3 ]
-                then
-                    COMPREPLY=( $(compgen -W "use-ssh use-https" -- $cur) )
-                fi
+            fi
+            if [ $COMP_CWORD -eq 3 ]
+            then
+                functions=$(compgen -A function | grep "tue-env-")
+                functions=${functions//tue-env-/}
+                COMPREPLY=( $(compgen -W "use-ssh use-https" -- $cur) )
             fi
         fi
     fi
