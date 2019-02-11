@@ -751,13 +751,15 @@ do
         return 1
     fi
 
-    if [[ -d $TUE_INSTALL_TARGETS_DIR/$target && "$tue_cmd" == "install" ]]
+    if [[ -d $TUE_INSTALL_TARGETS_DIR/$target ]]
     then
-        # Mark as installed
-        tue-install-debug "[$target] marked as installed after a successful install"
-        touch $TUE_INSTALL_INSTALLED_DIR/$target
-    else
-        tue-install-debug "[$target] succesfully updated"
+        if [[ "$tue_cmd" == "install" ]]
+        then # Mark as installed
+            tue-install-debug "[$target] marked as installed after a successful install"
+            touch $TUE_INSTALL_INSTALLED_DIR/$target
+        else
+            tue-install-debug "[$target] succesfully updated"
+        fi
     fi
 done
 
