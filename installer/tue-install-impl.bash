@@ -113,13 +113,14 @@ function tue-install-target
             tue-install-debug "Parsing $install_file.yaml"
             # Do not use 'local cmds=' because it does not preserve command output status ($?)
             cmds=$($TUE_INSTALL_SCRIPTS_DIR/parse-install-yaml.py $install_file.yaml)
-            if [ $? -eq 0 ]; then
+            if [ $? -eq 0 ]
+            then
                 for cmd in $cmds
                 do
                     tue-install-debug "Running following command: $cmd"
                     ${cmd//^/ }
-                    target_processed=true
                 done
+                target_processed=true
             else
                 tue-install-error "Invalid install.yaml: $cmd"
             fi
@@ -132,7 +133,7 @@ function tue-install-target
             target_processed=true
         fi
 
-        if [ "$target_processed" = false ]
+        if [ "$target_processed" == false ]
         then
             tue-install-warning "Target $target does not contain a valid install.yaml/bash file"
         fi
