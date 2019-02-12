@@ -189,7 +189,7 @@ function _tue-repo-status
 
     if [ ! -d $pkg_dir ]
     then
-        return
+        return 1
     fi
 
     local status=
@@ -240,7 +240,7 @@ function _tue-repo-status
 
 function _tue-dir-status
 {
-    [ -d "$1" ] || return
+    [ -d "$1" ] || return 1
 
     local fs=`ls $1`
     for f in $fs
@@ -1028,7 +1028,7 @@ function tue-robocup-install-package
     local branch=$TUE_ROBOCUP_BRANCH
 
     # If directory already exists, return
-    [ -d $repo_dir ] && return
+    [ -d $repo_dir ] && return 0
 
     git clone ${server}tue-robotics/${1}.git $repo_dir
 
