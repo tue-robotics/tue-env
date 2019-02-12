@@ -612,7 +612,7 @@ function tue-install-ros
             do
                 # Preference given to target name starting with ros-
                 tue-install-target ros-$dep || tue-install-target $dep || \
-                    tue-install-error "Target '$dep' does not exist."
+                    tue-install-error "Targets 'ros-$dep' and '$dep' does not exist."
             done
 
         else
