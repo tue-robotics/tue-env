@@ -1,6 +1,8 @@
 #! /usr/bin/env bash
 
 # Functions that configure an environment
+# All functions should be called tue-env-XXX. The functions should be in
+# this file for it to work and to be available in the auto complete
 
 function _set_export_option
 {
