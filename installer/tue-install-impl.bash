@@ -821,7 +821,7 @@ then
     if [ -n "$PPA_ADDED" ]
     then
         tue-install-debug "Updating apt-get"
-        sudo apt-get update
+        sudo apt-get update -qq
     fi
 fi
 
