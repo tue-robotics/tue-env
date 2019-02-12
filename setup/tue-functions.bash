@@ -19,6 +19,97 @@ function _list_subdirs
     done
 }
 
+function _set_export_option {
+
+    # _set_export_option KEY VALUE FILE
+    # Add the following line: 'export KEY=VALUE' to FILE
+    # Or changes the VALUE to current value if line already in FILE.
+
+    key=${1//\//\\/}
+    value=${2//\//\\/}
+    sed -i \
+        -e '/^#\?\(\s*'"export ${key}"'\s*=\s*\).*/{s//\1'"${value}"'/;:a;n;ba;q}' \
+        -e '$a'"export ${key}"'='"${value}" $3
+}
+
+# ----------------------------------------------------------------------------------------------------
+#                                              SSH
+# ----------------------------------------------------------------------------------------------------
+
+function tue-use-ssh
+{
+    local option="TUE_USE_SSH"
+    local value="true"
+    _set_export_option "$option" "$value" $TUE_ENV_DIR/.env/setup/user_setup.bash
+    source $TUE_ENV_DIR/.env/setup/user_setup.bash
+}
+
+function tue-use-https
+{
+    local option="TUE_USE_SSH"
+    local value="false"
+    _set_export_option "$option" "$value" $TUE_ENV_DIR/.env/setup/user_setup.bash
+    source $TUE_ENV_DIR/.env/setup/user_setup.bash
+}
+
+function _github_https
+{
+    local input_url=$1
+    echo ${input_url/git@github.com:/https:\/\/github.com\/}
+}
+export -f _github_https # otherwise not available in sourced files
+
+function _github_ssh
+{
+    local input_url=$1
+    echo ${input_url/https:\/\/github.com\//git@github.com:}
+}
+export -f _github_ssh # otherwise not available in sourced files
+
+function _github_https_or_ssh
+{
+    local input_url=$1
+    if [[ "$TUE_USE_SSH" == "true" ]]
+    then
+        local output_url=$(_github_ssh $input_url)
+    else
+        local output_url=$(_github_https $input_url)
+    fi
+    echo "$output_url"
+}
+export -f _github_https_or_ssh # otherwise not available in sourced files
+
+# ----------------------------------------------------------------------------------------------------
+#                                              SSH
+# ----------------------------------------------------------------------------------------------------
+
+function _github_https
+{
+    local input_url=$1
+    echo ${input_url/git@github.com:/https:\/\/github.com\/}
+}
+export -f _github_https # otherwise not available in sourced files
+
+function _github_ssh
+{
+    local input_url=$1
+    echo ${input_url/https:\/\/github.com\//git@github.com:}
+}
+export -f _github_ssh # otherwise not available in sourced files
+
+function _github_https_or_ssh
+{
+    local input_url=$1
+    if [[ "$TUE_USE_SSH" == "true" ]]
+    then
+        local output_url=$(_github_ssh $input_url)
+    else
+        local output_url=$(_github_https $input_url)
+    fi
+    echo "$output_url"
+}
+export -f _github_https_or_ssh # otherwise not available in sourced files
+
 # ----------------------------------------------------------------------------------------------------
 #                                            TUE-MAKE
 # ----------------------------------------------------------------------------------------------------
@@ -202,8 +293,7 @@ function _tue-repo-status
     else
         # Try git
 
-        cd $pkg_dir
-        res=$(git status . --short --branch 2>&1)
+        res=$(git -C $pkg_dir status . --short --branch 2>&1)
         if [ $? -eq 0 ]
         then
             # Is git
@@ -211,18 +301,16 @@ function _tue-repo-status
             then
                 status=$res
             else
-                status=`git status . --short`
+                status=$(git -C $pkg_dir status . --short)
             fi
 
-            local current_branch=`git rev-parse --abbrev-ref HEAD`
-            if [ $current_branch != "master" ]  && [ $current_branch != "develop" ] && [ $current_branch != "indigo-devel" ] && [ $current_branch != "kinetic-devel" ] && [ $current_branch != "toolchain-2.9" ] && ! _robocup_branch_allowed $current_branch
-            then
-                echo -e "\033[1m$name\033[0m is on branch '$current_branch'"
-            fi
-
+            local current_branch=$(git -C $pkg_dir rev-parse --abbrev-ref HEAD)
+            case $current_branch in
+                master|develop|indigo-devel|hydro-devel|jade-devel|kinetic-devel|toolchain-2.9) ;;
+                *) _robocup_branch_allowed $current_branch || echo -e "\033[1m$name\033[0m is on branch '$current_branch'";;
+            esac
         fi
 
-        cd - &> /dev/null
         vctype=git
     fi
 
@@ -248,7 +336,7 @@ function _tue-dir-status
     for f in $fs
     do
         pkg_dir=$1/$f
-        _tue-repo-status $f $pkg_dir
+        _tue-repo-status "$f" "$pkg_dir"
     done
 }
 
@@ -257,34 +345,25 @@ function _tue-dir-status
 function tue-status
 {
     _tue-dir-status $_TUE_CATKIN_SYSTEM_DIR/src
-    _tue-repo-status tue-env $TUE_DIR
-    _tue-repo-status tue-env-targets $TUE_ENV_TARGETS_DIR
+    _tue-repo-status "tue-env" "$TUE_DIR"
+    _tue-repo-status "tue-env-targets" "$TUE_ENV_TARGETS_DIR"
 }
 
 # ----------------------------------------------------------------------------------------------------
 
 function tue-git-status
 {
-    local mem_pwd=$PWD
-    local output=""
-
-    fs=`ls $_TUE_CATKIN_SYSTEM_DIR/src`
-    for pkg in $fs
+    for pkg_dir in $_TUE_CATKIN_SYSTEM_DIR/src/*/
     do
-        pkg_dir=$_TUE_CATKIN_SYSTEM_DIR/src/$pkg
+        pkg=$(basename $pkg_dir)
 
-        if [ -d $pkg_dir ]
+        branch=$(git -C $pkg_dir rev-parse --abbrev-ref HEAD 2>&1)
+        if [ $? -eq 0 ]
         then
-            cd $pkg_dir
-            branch=$(git rev-parse --abbrev-ref HEAD 2>&1)
-            if [ $? -eq 0 ]
-            then
-                hash=$(git rev-parse --short HEAD)
-                printf "\e[0;36m%-20s\033[0m %-15s %s\n" "$branch" "$hash" "$pkg"
-            fi
+            hash=$(git -C $pkg_dir rev-parse --short HEAD)
+            printf "\e[0;36m%-20s\033[0m %-15s %s\n" "$branch" "$hash" "$pkg"
         fi
     done
-    cd $mem_pwd
 }
 
 # ----------------------------------------------------------------------------------------------------
@@ -295,34 +374,29 @@ function tue-revert
 {
     human_time="$*"
 
-    fs=`ls $_TUE_CATKIN_SYSTEM_DIR/src`
-    for pkg in $fs
+    for pkg_dir in $_TUE_CATKIN_SYSTEM_DIR/src/*/
     do
-        pkg_dir=$_TUE_CATKIN_SYSTEM_DIR/src/$pkg
+        pkg=$(basename $pkg_dir)
 
-        if [ -d $pkg_dir ]
+        branch=$(git -C $pkg_dir rev-parse --abbrev-ref HEAD 2>&1)
+        if [ $? -eq 0 ] && [ $branch != "HEAD" ]
         then
-            cd $pkg_dir
-            branch=$(git rev-parse --abbrev-ref HEAD 2>&1)
-            if [ $? -eq 0 ] && [ $branch != "HEAD" ]
+            new_hash=$(git -C $pkg_dir  rev-list -1 --before="$human_time" $branch)
+            current_hash=$(git -C $pkg_dir  rev-parse HEAD)
+            git -C $pkg_dir  diff -s --exit-code $new_hash $current_hash
+            if [ $? -eq 0 ]
             then
-                new_hash=$(git rev-list -1 --before="$human_time" $branch)
-                current_hash=$(git rev-parse HEAD)
-                git diff -s --exit-code $new_hash $current_hash
-                if [ $? -eq 0 ]
-                then
-                    newtime=$(git show -s --format=%ci)
-                    printf "\e[0;36m%-20s\033[0m %-15s \e[1m%s\033[0m %s\n" "$branch is fine" "$new_hash" "$newtime" "$pkg"
-                else
-                    git checkout -q $new_hash
-                    newbranch=$(git rev-parse --abbrev-ref HEAD 2>&1)
-                    newtime=$(git show -s --format=%ci)
-                    echo $branch > .do_not_commit_this
-                    printf "\e[0;36m%-20s\033[0m %-15s \e[1m%s\033[0m %s\n" "$newbranch based on $branch" "$new_hash" "$newtime" "$pkg"
-                fi
+                newtime=$(git -C $pkg_dir  show -s --format=%ci)
+                printf "\e[0;36m%-20s\033[0m %-15s \e[1m%s\033[0m %s\n" "$branch is fine" "$new_hash" "$newtime" "$pkg"
             else
-                echo "Package $pkg could not be reverted, current state: $branch"
+                git -C $pkg_dir  checkout -q $new_hash
+                newbranch=$(git -C $pkg_dir  rev-parse --abbrev-ref HEAD 2>&1)
+                newtime=$(git -C $pkg_dir  show -s --format=%ci)
+                echo $branch > "$pkg_dir/.do_not_commit_this"
+                printf "\e[0;36m%-20s\033[0m %-15s \e[1m%s\033[0m %s\n" "$newbranch based on $branch" "$new_hash" "$newtime" "$pkg"
             fi
+        else
+            echo "Package $pkg could not be reverted, current state: $branch"
         fi
     done
 }
@@ -333,20 +407,15 @@ function tue-revert
 
 function tue-revert-undo
 {
-    fs=`ls $_TUE_CATKIN_SYSTEM_DIR/src`
-    for pkg in $fs
+    for pkg_dir in $_TUE_CATKIN_SYSTEM_DIR/src/*/
     do
-        pkg_dir=$_TUE_CATKIN_SYSTEM_DIR/src/$pkg
+        pkg=$(basename $pkg_dir)
 
-        if [ -d $pkg_dir ]
+        if [ -f "$pkg_dir/.do_not_commit_this" ]
         then
-            cd $pkg_dir
-            if [ -f .do_not_commit_this ]
-            then
-                echo $pkg
-                git checkout `cat .do_not_commit_this`
-                rm .do_not_commit_this
-            fi
+            echo $pkg
+            git -C $pkg_dir checkout $(cat $pkg_dir/.do_not_commit_this)
+            rm "$pkg_dir/.do_not_commit_this"
         fi
     done
     tue-git-status
@@ -672,6 +741,8 @@ function tue-checkout
 }
 
 # ----------------------------------------------------------------------------------------------------
+#                                              TUE-DATA
+# ----------------------------------------------------------------------------------------------------
 
 source $TUE_DIR/setup/tue-data.bash
 
@@ -679,7 +750,7 @@ source $TUE_DIR/setup/tue-data.bash
 #                                             TUE-ROBOCUP
 # ----------------------------------------------------------------------------------------------------
 
-export TUE_ROBOCUP_BRANCH="robocup"
+export TUE_ROBOCUP_BRANCH="rgo2019"
 
 function _tue-repos-do
 {
@@ -733,7 +804,7 @@ For example:
         return 1
     fi
 
-    local github_url="$(git config --get remote.origin.url)"
+    local github_url="$(_github_https "$(git config --get remote.origin.url)")"
     local url_extension=${github_url#https://github.com/}
 
     if [[ "$(git remote)" == *"$remote"* ]]
