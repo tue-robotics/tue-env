@@ -36,7 +36,7 @@ Error while installing target '$TUE_INSTALL_CURRENT_TARGET':
 
     $1
 \033[0m"
-    return 1
+    exit 1
 }
 
 # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # #
@@ -526,7 +526,7 @@ function tue-install-ros
     local ros_pkg_name=${TUE_INSTALL_CURRENT_TARGET#ros-}
 
     # First of all, make sure ROS itself is installed
-    tue-install-target ros
+    tue-install-target ros || tue-install-error "Failed to install target 'ROS'"
 
     if [ "$install_type" = "system" ]
     then
@@ -535,7 +535,7 @@ function tue-install-ros
         # all HSR system targets from Toyota need extra apt sources
         if [[ $src == *"hsr"* ||  "$src" == *"tmc"* ]]
         then
-            tue-install-target hsr-setup
+            tue-install-target hsr-setup || tue-install-error "Failed to install target 'hsr-setup'"
         fi
 
         tue-install-system ros-$TUE_ROS_DISTRO-$src
@@ -756,12 +756,7 @@ fi
 for target in $targets
 do
     tue-install-debug "Main loop: installing $target"
-    tue-install-target $target
-    if [ ! $? -eq 0 ]
-    then
-        tue-install-error "Installed target: '$target' doesn't exist (anymore)"
-        return 1
-    fi
+    tue-install-target $target || tue-install-error "Installed target: '$target' doesn't exist (anymore)"
 
     if [[ "$tue_cmd" == "install" ]]
     then # Mark as installed
