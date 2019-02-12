@@ -65,7 +65,6 @@ function tue-install-debug
     fi
 }
 
-
 # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # #
 
 function tue-install-target
@@ -589,7 +588,6 @@ function tue-install-ros
 
     if [ -d $repos_dir ]
     then
-
         if [ ! -d $repos_dir/$sub_dir ]
         then
             tue-install-error "Subdirectory '$sub_dir' does not exist for URL '$src'."
