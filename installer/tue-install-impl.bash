@@ -558,8 +558,6 @@ function tue-install-ros
     # now, clean out anything that's not alphanumeric or an underscore
     repos_dir=${repos_dir//[^a-zA-Z0-9\/\.-]/_}
 
-    #mkdir -p $repos_dir/..
-
     # For backwards compatibility: if the ros_pkg_dir already exists and is NOT
     # a symbolic link, then update this direcory instead of creating a symbolic
     # link from the repos directory. In other words, the ros_pkg_dir becomes the
