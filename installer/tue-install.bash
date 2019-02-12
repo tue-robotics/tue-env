@@ -12,6 +12,16 @@ then
     git -C $TUE_DIR fetch
 else
     echo -en "[tue-get] Updating tue-get... "
+
+    current_url=$(git -C $TUE_DIR config --get remote.origin.url)
+    new_url=$(_github_https_or_ssh "$current_url")
+
+    if [ "$current_url" != "$new_url" ]
+    then
+        git -C $TUE_DIR remote set-url origin $new_url
+        echo -e "[tue-get] Origin has switched to $new_url"
+    fi
+
     git -C $TUE_DIR pull --ff-only --prune
 
     error_code=$?
@@ -40,6 +50,16 @@ tue-env init-targets https://github.com/tue-robotics/tue-env-targets.git
     exit 1
 else
     echo -en "[tue-env-targets] Updating targets... "
+
+    current_url=$(git -C $TUE_ENV_TARGETS_DIR config --get remote.origin.url)
+    new_url=$(_github_https_or_ssh $current_url)
+
+    if [ "$current_url" != "$new_url" ]
+    then
+        git -C $TUE_ENV_TARGETS_DIR remote set-url origin $new_url
+        echo -e "[tue-env-targets] Origin has switched to $new_url"
+    fi
+
     git -C $TUE_ENV_TARGETS_DIR pull --ff-only --prune
 
     error_code=$?

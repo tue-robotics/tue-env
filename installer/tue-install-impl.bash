@@ -106,17 +106,21 @@ function tue-install-target
         # Empty the target's dependency file
         tue-install-debug "Emptying $TUE_INSTALL_DEPENDENCIES_DIR/$target"
         truncate -s 0 $TUE_INSTALL_DEPENDENCIES_DIR/$target
+        local target_processed=false
 
         if [ -f $install_file.yaml ]
         then
             tue-install-debug "Parsing $install_file.yaml"
-            local cmds=`$TUE_INSTALL_SCRIPTS_DIR/parse-install-yaml.py $install_file.yaml`
-            if [ $? -eq 0 ]; then
+            # Do not use 'local cmds=' because it does not preserve command output status ($?)
+            cmds=$($TUE_INSTALL_SCRIPTS_DIR/parse-install-yaml.py $install_file.yaml)
+            if [ $? -eq 0 ]
+            then
                 for cmd in $cmds
                 do
                     tue-install-debug "Running following command: $cmd"
                     ${cmd//^/ }
                 done
+                target_processed=true
             else
                 tue-install-error "Invalid install.yaml: $cmd"
             fi
@@ -126,9 +130,16 @@ function tue-install-target
         then
             tue-install-debug "Sourcing $install_file.bash"
             source $install_file.bash
+            target_processed=true
+        fi
+
+        if [ "$target_processed" == false ]
+        then
+            tue-install-warning "Target $target does not contain a valid install.yaml/bash file"
         fi
 
         touch $TUE_INSTALL_STATE_DIR/$target
+
     fi
 
     TUE_INSTALL_CURRENT_TARGET=$parent_target
@@ -157,6 +168,7 @@ function _show_update_message
 
 function tue-install-svn
 {
+    tue-install-system-now subversion
     if [ ! -d $2 ]; then
         res=$(svn co $1 $2 --trust-server-cert --non-interactive 2>&1)
     else
@@ -198,7 +210,10 @@ function tue-install-git
     local targetdir=$2
     local version=$3
 
-    if [ ! -d $2 ]; then
+    # Change url to https/ssh
+    repo=$(_github_https_or_ssh $repo)
+
+    if [ ! -d $targetdir ]; then
         tue-install-debug "git clone --recursive $repo $targetdir"
         res=$(git clone --recursive $repo $targetdir 2>&1)
         TUE_INSTALL_GIT_PULL_Q+=$targetdir
@@ -210,6 +225,18 @@ function tue-install-git
             # We have already pulled this repo, skip it
             res=
         else
+            # Switch url of origin to use https/ssh if different
+            # Get current remote url
+            local current_url=$(git -C $targetdir config --get remote.origin.url)
+
+            # If different, switch url
+            if [ ! "$current_url" == "$repo" ]
+            then
+                tue-install-debug "git -C $targetdir remote set-url origin $repo"
+                git -C $targetdir remote set-url origin $repo
+                tue-install-info "URL has switched to $repo"
+            fi
+
             tue-install-debug "git -C $targetdir pull --ff-only --prune"
 
             res=$(git -C $targetdir pull --ff-only --prune 2>&1)
@@ -665,7 +692,7 @@ function generate_setup_file
 # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # #
 
 # Make sure tools used by this installer are installed
-tue-install-system-now python-yaml git subversion python-pip
+tue-install-system-now python-yaml git python-pip
 
 stamp=$(date_stamp)
 INSTALL_DETAILS_FILE=/tmp/tue-get-details-$stamp
@@ -788,9 +815,10 @@ if [ -n "$TUE_INSTALL_PPA" ]; then
     do
         if [ -z "$(grep -h "^deb.*${ppa#ppa:}" /etc/apt/sources.list.d/* 2>&1)" ]
         then
-            PPA_ADDED=true
+            tue-install-system-now software-properties-common
             tue-install-info "Adding ppa: $ppa"
             sudo add-apt-repository --yes $ppa
+            PPA_ADDED=true
         else
             tue-install-debug "$ppa is already added previously"
         fi

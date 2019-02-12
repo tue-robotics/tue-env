@@ -201,15 +201,15 @@ Purged environment directory of '$env'"""
     elif [[ $cmd == "config" ]]
     then
         local env=$1
+        shift
         [ -n "$env" ] || env=$TUE_ENV
 
-        if [ -n "$env" ]
+        $TUE_DIR/setup/tue-env-config.bash $env $@
+
+        if [ "$env" == "$TUE_ENV" ]
         then
             local tue_env_dir=$(cat $TUE_DIR/user/envs/$env)
-            vim $tue_env_dir/.env/setup/user_setup.bash
-        else
-            echo "[tue-env](config) no enviroment set or provided"
-            return 1
+            source $tue_env_dir/.env/setup/user_setup.bash
         fi
 
     elif [[ $cmd == "cd" ]]
@@ -268,6 +268,20 @@ function _tue-env
                 local envs=
                 [ -d $TUE_DIR/user/envs ] && envs=$(ls $TUE_DIR/user/envs)
                 COMPREPLY=( $(compgen -W "$envs" -- $cur) )
+            fi
+        elif [[ $cmd == "config" ]]
+        then
+            if [ $COMP_CWORD -eq 2 ]
+            then
+                local envs=
+                [ -d $TUE_DIR/user/envs ] && envs=$(ls $TUE_DIR/user/envs)
+                COMPREPLY=( $(compgen -W "$envs" -- $cur) )
+            fi
+            if [ $COMP_CWORD -eq 3 ]
+            then
+                local functions=$(grep 'function ' $TUE_DIR/setup/tue-env-config.bash | awk '{print $2}' | grep "tue-env-")
+                functions=${functions//tue-env-/}
+                COMPREPLY=( $(compgen -W "$functions" -- $cur) )
             fi
         fi
     fi
