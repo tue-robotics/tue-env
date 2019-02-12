@@ -257,7 +257,8 @@ function _tue-env
     local cur=${COMP_WORDS[COMP_CWORD]}
     local prev=${COMP_WORDS[COMP_CWORD-1]}
 
-    if [ $COMP_CWORD -eq 1 ]; then
+    if [ $COMP_CWORD -eq 1 ]
+    then
         COMPREPLY=( $(compgen -W "init list switch list-current remove cd set-default config init-targets targets" -- $cur) )
     else
         cmd=${COMP_WORDS[1]}
