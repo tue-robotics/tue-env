@@ -80,6 +80,37 @@ function _github_https_or_ssh
 export -f _github_https_or_ssh # otherwise not available in sourced files
 
 # ----------------------------------------------------------------------------------------------------
+#                                              SSH
+# ----------------------------------------------------------------------------------------------------
+
+function _github_https
+{
+    local input_url=$1
+    echo ${input_url/git@github.com:/https:\/\/github.com\/}
+}
+export -f _github_https # otherwise not available in sourced files
+
+function _github_ssh
+{
+    local input_url=$1
+    echo ${input_url/https:\/\/github.com\//git@github.com:}
+}
+export -f _github_ssh # otherwise not available in sourced files
+
+function _github_https_or_ssh
+{
+    local input_url=$1
+    if [[ "$TUE_USE_SSH" == "true" ]]
+    then
+        local output_url=$(_github_ssh $input_url)
+    else
+        local output_url=$(_github_https $input_url)
+    fi
+    echo "$output_url"
+}
+export -f _github_https_or_ssh # otherwise not available in sourced files
+
+# ----------------------------------------------------------------------------------------------------
 #                                            TUE-MAKE
 # ----------------------------------------------------------------------------------------------------
 
