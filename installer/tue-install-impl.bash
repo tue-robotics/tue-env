@@ -706,23 +706,6 @@ then
 fi
 
 # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # #
-#                                           For backwards compatibility
-# # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # #
-if [ -d $TUE_REPOS_DIR/https: ]
-then
-    echo "Moving to new repos format: $TUE_REPOS_DIR"
-    mv -bv "$TUE_REPOS_DIR/https:"/* "$TUE_REPOS_DIR/https_"
-    rmdir -v "$TUE_REPOS_DIR/https:"
-fi
-
-if [ -d $TUE_REPOS_DIR/github.com ]
-then
-    echo "Moving to new old repos format: $TUE_REPOS_DIR"
-    mkdir -p "$TUE_REPOS_DIR/https_/github.com"
-    mv -bv "$TUE_REPOS_DIR/github.com"/* "$TUE_REPOS_DIR/https_/github.com"
-    rmdir -v "$TUE_REPOS_DIR/github.com"
-fi
-# # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # #
 
 tue_cmd=$1
 shift
