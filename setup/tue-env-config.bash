@@ -66,9 +66,4 @@ else
             shift
         done
     fi
-
-    if [ "$env" == "$TUE_ENV" ]
-    then
-        source $tue_env_dir/.env/setup/user_setup.bash
-    fi
 fi
