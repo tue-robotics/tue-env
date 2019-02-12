@@ -605,7 +605,7 @@ function tue-install-ros
 
         if  [ -f $ros_pkg_dir/package.xml ]; then
             # Catkin
-            deps=`$TUE_INSTALL_SCRIPTS_DIR/parse-ros-package-deps.py $ros_pkg_dir/package.xml`
+            deps=$($TUE_INSTALL_SCRIPTS_DIR/parse-ros-package-deps.py $ros_pkg_dir/package.xml)
             tue-install-debug "Parsed package.xml \n$deps"
 
             for dep in $deps
