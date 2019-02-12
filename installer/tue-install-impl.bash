@@ -768,7 +768,7 @@ do
         tue-install-debug "[$target] marked as installed after a successful install"
         touch $TUE_INSTALL_INSTALLED_DIR/$target
     else
-            tue-install-debug "[$target] succesfully updated"
+        tue-install-debug "[$target] succesfully updated"
     fi
 done
 
