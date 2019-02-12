@@ -585,7 +585,6 @@ function tue-install-ros
         fi
     else
         tue-install-error "Unknown ros install type: '${install_type}'"
-        return 1
     fi
 
     if [ -d $repos_dir ]
