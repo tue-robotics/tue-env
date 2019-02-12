@@ -206,6 +206,12 @@ Purged environment directory of '$env'"""
 
         $TUE_DIR/setup/tue-env-config.bash $env $@
 
+        if [ "$env" == "$TUE_ENV" ]
+        then
+            local tue_env_dir=$(cat $TUE_DIR/user/envs/$env)
+            source $tue_env_dir/.env/setup/user_setup.bash
+        fi
+
     elif [[ $cmd == "cd" ]]
     then
         local env=$1
