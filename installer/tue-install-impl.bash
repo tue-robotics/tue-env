@@ -59,7 +59,8 @@ function tue-install-info
 
 function tue-install-debug
 {
-    if [ "$DEBUG" = "true" ]; then
+    if [ "$DEBUG" = "true" ]
+    then
         echo -e "\e[0;34m[$TUE_INSTALL_CURRENT_TARGET] DEBUG: $1\033[0m"
     fi
 }
@@ -94,7 +95,8 @@ function tue-install-target
         fi
     fi
 
-    if [ ! -f $TUE_INSTALL_STATE_DIR/$target ]; then
+    if [ ! -f $TUE_INSTALL_STATE_DIR/$target ]
+    then
         tue-install-debug "File $TUE_INSTALL_STATE_DIR/$target does not exist, going to installation procedure"
 
 
@@ -112,7 +114,8 @@ function tue-install-target
             tue-install-debug "Parsing $install_file.yaml"
             # Do not use 'local cmds=' because it does not preserve command output status ($?)
             cmds=$($TUE_INSTALL_SCRIPTS_DIR/parse-install-yaml.py $install_file.yaml)
-            if [ $? -eq 0 ]; then
+            if [ $? -eq 0 ]
+            then
                 for cmd in $cmds
                 do
                     tue-install-debug "Running following command: $cmd"
@@ -159,7 +162,8 @@ function _show_update_message
 function tue-install-svn
 {
     tue-install-system-now subversion
-    if [ ! -d $2 ]; then
+    if [ ! -d $2 ]
+    then
         res=$(svn co $1 $2 --trust-server-cert --non-interactive 2>&1)
     else
         res=$(svn up $2 --trust-server-cert --non-interactive 2>&1)
@@ -200,7 +204,8 @@ function tue-install-git
     local targetdir=$2
     local version=$3
 
-    if [ ! -d $2 ]; then
+    if [ ! -d $2 ]
+    then
         tue-install-debug "git clone --recursive $repo $targetdir"
         res=$(git clone --recursive $repo $targetdir 2>&1)
         TUE_INSTALL_GIT_PULL_Q+=$targetdir
@@ -523,7 +528,8 @@ function tue-install-ros
     # First of all, make sure ROS itself is installed
     tue-install-target ros
 
-    if [ "$install_type" = "system" ]; then
+    if [ "$install_type" = "system" ]
+    then
         tue-install-debug "tue-install-system ros-$TUE_ROS_DISTRO-$src"
 
         # all HSR system targets from Toyota need extra apt sources
@@ -536,7 +542,8 @@ function tue-install-ros
         return
     fi
 
-    if [ -z $ROS_PACKAGE_INSTALL_DIR ]; then
+    if [ -z $ROS_PACKAGE_INSTALL_DIR ]
+    then
         tue-install-error "Environment variable ROS_PACKAGE_INSTALL_DIR not set."
     fi
 
@@ -563,14 +570,17 @@ function tue-install-ros
     fi
     tue-install-debug "repos_dir = $repos_dir"
 
-    if [ "$install_type" = "git" ]; then
+    if [ "$install_type" = "git" ]
+    then
         tue-install-git $src $repos_dir $version
         tue-install-debug "git clone $src"
         echo "git clone $src" >> $INSTALL_DETAILS_FILE
         [ "$version" ] && echo "# NOTE: check-out version $version" >> $INSTALL_DETAILS_FILE
-    elif [ "$install_type" = "svn" ]; then
+    elif [ "$install_type" = "svn" ]
+    then
         tue-install-svn $src $repos_dir $version
-        if [ "$version" ]; then
+        if [ "$version" ]
+        then
             echo "svn co $src -r $version" >> $INSTALL_DETAILS_FILE
         else
             echo "svn co $src" >> $INSTALL_DETAILS_FILE
@@ -580,7 +590,8 @@ function tue-install-ros
         return 1
     fi
 
-    if [ -d $repos_dir ]; then
+    if [ -d $repos_dir ]
+    then
 
         if [ ! -d $repos_dir/$sub_dir ]
         then
@@ -603,7 +614,8 @@ function tue-install-ros
             ln -s $repos_dir/$sub_dir $ros_pkg_dir
         fi
 
-        if  [ -f $ros_pkg_dir/package.xml ]; then
+        if  [ -f $ros_pkg_dir/package.xml ]
+        then
             # Catkin
             deps=$($TUE_INSTALL_SCRIPTS_DIR/parse-ros-package-deps.py $ros_pkg_dir/package.xml)
             tue-install-debug "Parsed package.xml \n$deps"
@@ -773,12 +785,14 @@ do
 done
 
 # Display infos
-if [ -n "$TUE_INSTALL_INFOS" ]; then
+if [ -n "$TUE_INSTALL_INFOS" ]
+then
     echo -e "\e[0;36m\nSome information you may have missed:\n\n$TUE_INSTALL_INFOS\033[0m"
 fi
 
 # Display warnings
-if [ -n "$TUE_INSTALL_WARNINGS" ]; then
+if [ -n "$TUE_INSTALL_WARNINGS" ]
+then
     echo -e "\033[33;5;1m\nOverview of warnings:\n\n$TUE_INSTALL_WARNINGS\033[0m"
 fi
 
@@ -786,8 +800,8 @@ fi
 rm -rf $TUE_INSTALL_STATE_DIR
 
 # Installing all the ppa repo's, which are collected during install
-if [ -n "$TUE_INSTALL_PPA" ]; then
-
+if [ -n "$TUE_INSTALL_PPA" ]
+then
     TUE_INSTALL_CURRENT_TARGET="PPA-ADD"
 
     echo -e "\nsudo add-apt-repository --yes $TUE_INSTALL_PPA" >> $INSTALL_DETAILS_FILE
@@ -804,15 +818,16 @@ if [ -n "$TUE_INSTALL_PPA" ]; then
             tue-install-debug "$ppa is already added previously"
         fi
     done
-    if [ -n "$PPA_ADDED" ]; then
+    if [ -n "$PPA_ADDED" ]
+    then
         tue-install-debug "Updating apt-get"
         sudo apt-get update
     fi
 fi
 
 # Installing all system (apt-get) targets, which are collected during the install
-if [ -n "$TUE_INSTALL_SYSTEMS" ]; then
-
+if [ -n "$TUE_INSTALL_SYSTEMS" ]
+then
     TUE_INSTALL_CURRENT_TARGET="APT-GET"
 
     echo -e "\nsudo apt-get install --assume-yes $TUE_INSTALL_SYSTEMS" >> $INSTALL_DETAILS_FILE
@@ -822,14 +837,15 @@ if [ -n "$TUE_INSTALL_SYSTEMS" ]; then
 fi
 
 # Installing all python (pip) targets, which are collected during the install
-if [ -n "$TUE_INSTALL_PIPS" ]; then
-
+if [ -n "$TUE_INSTALL_PIPS" ]
+then
     TUE_INSTALL_CURRENT_TARGET="PIP"
 
     echo -e "\nyes | pip install --user $TUE_INSTALL_PIPS" >> $INSTALL_DETAILS_FILE
 
     pip_version=$(pip --version | awk '{print $2}')
-    if version_gt "9" "$pip_version"; then
+    if version_gt "9" "$pip_version"
+    then
         tue-install-debug "pip not yet version >=9, but $pip_version"
         sudo -H pip install --upgrade pip
     else
@@ -843,8 +859,8 @@ if [ -n "$TUE_INSTALL_PIPS" ]; then
 fi
 
 # Installing all snap targets, which are collected during the install
-if [ -n "$TUE_INSTALL_SNAPS" ]; then
-
+if [ -n "$TUE_INSTALL_SNAPS" ]
+then
     TUE_INSTALL_CURRENT_TARGET="SNAP"
 
     echo -e "\nyes | sudo snap install --classic $TUE_INSTALL_SNAPS" >> $INSTALL_DETAILS_FILE

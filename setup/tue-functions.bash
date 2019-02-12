@@ -225,7 +225,8 @@ function _tue-repo-status
 
     if [ -n "$vctype" ]
     then
-        if [ -n "$status" ]; then
+        if [ -n "$status" ]
+        then
             echo -e ""
             echo -e "\033[38;5;1mM  \033[0m($vctype) \033[1m$name\033[0m"
             echo -e "--------------------------------------------------"
@@ -453,7 +454,8 @@ function tue-get
         done
 
         echo ""
-        if [ -n "$2" ]; then
+        if [ -n "$2" ]
+        then
             echo "[tue-get] The packages were removed from the 'installed list' but still need to be deleted from your workspace."
         else
             echo "[tue-get] The package was removed from the 'installed list' but still needs to be deleted from your workspace."
@@ -538,7 +540,8 @@ function _tue-get
     local cur=${COMP_WORDS[COMP_CWORD]}
     local prev=${COMP_WORDS[COMP_CWORD-1]}
 
-    if [ $COMP_CWORD -eq 1 ]; then
+    if [ $COMP_CWORD -eq 1 ]
+    then
         local IFS=$'\n'
         options="'dep '\n'install '\n'update '\n'remove '\n'list-installed '\n'show '"
         COMPREPLY=( $(compgen -W "$(echo -e "$options")" -- $cur) )
