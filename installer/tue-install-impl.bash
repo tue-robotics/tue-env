@@ -538,7 +538,7 @@ function tue-install-ros
         fi
 
         tue-install-system ros-$TUE_ROS_DISTRO-$src
-        return
+        return 0
     fi
 
     if [ -z $ROS_PACKAGE_INSTALL_DIR ]
@@ -640,7 +640,7 @@ function generate_setup_file
     # Check whether this target was already added to the setup
     if [[ "$TUE_SETUP_TARGETS" == *" $1 "* ]];
     then
-        return
+        return 0
     fi
 
     TUE_SETUP_TARGETS=" $1$TUE_SETUP_TARGETS"
@@ -648,7 +648,7 @@ function generate_setup_file
     # Check if the dependency file exists. If not, return
     if [ ! -f $TUE_INSTALL_DEPENDENCIES_DIR/$1 ]
     then
-        return
+        return 0
     fi
 
     # Recursively add a setup for each dependency
