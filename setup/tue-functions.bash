@@ -19,6 +19,97 @@ function _list_subdirs
     done
 }
 
+function _set_export_option {
+
+    # _set_export_option KEY VALUE FILE
+    # Add the following line: 'export KEY=VALUE' to FILE
+    # Or changes the VALUE to current value if line already in FILE.
+
+    key=${1//\//\\/}
+    value=${2//\//\\/}
+    sed -i \
+        -e '/^#\?\(\s*'"export ${key}"'\s*=\s*\).*/{s//\1'"${value}"'/;:a;n;ba;q}' \
+        -e '$a'"export ${key}"'='"${value}" $3
+}
+
+# ----------------------------------------------------------------------------------------------------
+#                                              SSH
+# ----------------------------------------------------------------------------------------------------
+
+function tue-use-ssh
+{
+    local option="TUE_USE_SSH"
+    local value="true"
+    _set_export_option "$option" "$value" $TUE_ENV_DIR/.env/setup/user_setup.bash
+    source $TUE_ENV_DIR/.env/setup/user_setup.bash
+}
+
+function tue-use-https
+{
+    local option="TUE_USE_SSH"
+    local value="false"
+    _set_export_option "$option" "$value" $TUE_ENV_DIR/.env/setup/user_setup.bash
+    source $TUE_ENV_DIR/.env/setup/user_setup.bash
+}
+
+function _github_https
+{
+    local input_url=$1
+    echo ${input_url/git@github.com:/https:\/\/github.com\/}
+}
+export -f _github_https # otherwise not available in sourced files
+
+function _github_ssh
+{
+    local input_url=$1
+    echo ${input_url/https:\/\/github.com\//git@github.com:}
+}
+export -f _github_ssh # otherwise not available in sourced files
+
+function _github_https_or_ssh
+{
+    local input_url=$1
+    if [[ "$TUE_USE_SSH" == "true" ]]
+    then
+        local output_url=$(_github_ssh $input_url)
+    else
+        local output_url=$(_github_https $input_url)
+    fi
+    echo "$output_url"
+}
+export -f _github_https_or_ssh # otherwise not available in sourced files
+
+# ----------------------------------------------------------------------------------------------------
+#                                              SSH
+# ----------------------------------------------------------------------------------------------------
+
+function _github_https
+{
+    local input_url=$1
+    echo ${input_url/git@github.com:/https:\/\/github.com\/}
+}
+export -f _github_https # otherwise not available in sourced files
+
+function _github_ssh
+{
+    local input_url=$1
+    echo ${input_url/https:\/\/github.com\//git@github.com:}
+}
+export -f _github_ssh # otherwise not available in sourced files
+
+function _github_https_or_ssh
+{
+    local input_url=$1
+    if [[ "$TUE_USE_SSH" == "true" ]]
+    then
+        local output_url=$(_github_ssh $input_url)
+    else
+        local output_url=$(_github_https $input_url)
+    fi
+    echo "$output_url"
+}
+export -f _github_https_or_ssh # otherwise not available in sourced files
+
 # ----------------------------------------------------------------------------------------------------
 #                                            TUE-MAKE
 # ----------------------------------------------------------------------------------------------------
@@ -650,6 +741,8 @@ function tue-checkout
 }
 
 # ----------------------------------------------------------------------------------------------------
+#                                              TUE-DATA
+# ----------------------------------------------------------------------------------------------------
 
 source $TUE_DIR/setup/tue-data.bash
 
@@ -657,7 +750,7 @@ source $TUE_DIR/setup/tue-data.bash
 #                                             TUE-ROBOCUP
 # ----------------------------------------------------------------------------------------------------
 
-export TUE_ROBOCUP_BRANCH="robocup"
+export TUE_ROBOCUP_BRANCH="rgo2019"
 
 function _tue-repos-do
 {
@@ -711,7 +804,7 @@ For example:
         return 1
     fi
 
-    local github_url="$(git config --get remote.origin.url)"
+    local github_url="$(_github_https "$(git config --get remote.origin.url)")"
     local url_extension=${github_url#https://github.com/}
 
     if [[ "$(git remote)" == *"$remote"* ]]
