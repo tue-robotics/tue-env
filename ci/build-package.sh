@@ -1,19 +1,31 @@
 #!/bin/bash
-# This script can only be ran after the install-package.sh script
-set -o errexit #Stop on errors
+#
+# Package builder (CI script)
+# This script can only be run after the install-package.sh
+
+# Stop on errors
+set -o errexit
+
+# Execute script only in a CI environment
+if [ "$CI" != "true" ]
+then
+    echo -e "\e[35m\[1m Error!\[0m Trying to execute a CI script in a non-CI environment. Exiting script."
+    exit 1
+fi
 
 # Standard argument parsing, example: build-package --package=ros_robot
 for i in "$@"
 do
-case $i in
-    -p=*|--package=*)
-    PACKAGE="${i#*=}"
-    shift # past argument=value
-    ;;
-    *)
+    case $i in
+        -p=* | --package=* )
+            PACKAGE="${i#*=}" ;;
+
+        * )
             # unknown option
-    ;;
-esac
+            echo -e "\e[35m\e[1m Unknown input argument '$i'. Check CI .yml file \e[0m"
+            exit 1 ;;
+    esac
+    shift
 done
 
 echo -e "\e[35m\e[1m PACKAGE     = ${PACKAGE} \e[0m"
