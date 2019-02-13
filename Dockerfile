@@ -1,10 +1,11 @@
 FROM ubuntu:16.04
 
 # Inform scripts that no questions should be asked
-ENV DEBIAN_FRONTEND=noninteractive
+ENV DEBIAN_FRONTEND=noninteractive \
 # Set some environment variables to prevent warnings and errors
-ENV CI=true
-ENV LANG=C.UTF-8
+    CI=true \
+    LANG=C.UTF-8 \
+    DOCKER=true
 
 # Install commands used in our scripts and standard present on a clean ubuntu installation
 RUN apt-get update -qq && apt-get install -qq --assume-yes --no-install-recommends sudo apt-utils git wget curl lsb-release ca-certificates apt-transport-https
