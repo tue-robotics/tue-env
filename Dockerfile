@@ -22,7 +22,8 @@ WORKDIR /home/amigo
 COPY / ./.tue/
 
 
-RUN sudo chown -R amigo:amigo /home/amigo/.tue/ && \
+RUN sudo ln -s /bin/sh bash && \
+    sudo chown -R amigo:amigo /home/amigo/.tue/ && \
     # Remove interactive check from bashrc, otherwise bashrc refuses to execute
     sed -e s/return//g -i ~/.bashrc && \
     # Run the standard installation script
