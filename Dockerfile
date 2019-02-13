@@ -22,7 +22,7 @@ WORKDIR /home/amigo
 COPY / ./.tue/
 
 
-RUN sudo ln -s /bin/sh bash && \
+RUN sudo ln -s bash /bin/sh && \
     sudo chown -R amigo:amigo /home/amigo/.tue/ && \
     # Remove interactive check from bashrc, otherwise bashrc refuses to execute
     sed -e s/return//g -i ~/.bashrc && \
