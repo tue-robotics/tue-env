@@ -1,30 +1,33 @@
 #!/bin/bash
-set -o errexit #Stop on errors
+#
+# Package installer
+# This script uses the Docker image of tue-env and installs the current git
+# repository as a tue-env package using tue-install in the CI
+
+# Stop on errors
+set -o errexit
 
 # Standard argument parsing, example: install-package --branch=master --package=ros_robot
 for i in "$@"
 do
-case $i in
-    -p=*|--package=*)
-    PACKAGE="${i#*=}"
-    shift 
-    ;;
-    -b=*|--branch=*)
-    BRANCH="${i#*=}"
-    shift 
-    ;;
-    -c=*|--commit=*)
-    COMMIT="${i#*=}"
-    shift 
-    ;;
-    -r=*|--pullrequest=*)
-    PULL_REQUEST="${i#*=}"
-    shift
-    ;;    
-    *)
+    case $i in
+        -p=* | --package=* )
+            PACKAGE="${i#*=}" ;;
+
+        -b=* | --branch=* )
+            BRANCH="${i#*=}" ;;
+
+        -c=* | --commit=* )
+            COMMIT="${i#*=}" ;;
+
+        -r=* | --pullrequest=* )
+            PULL_REQUEST="${i#*=}" ;;
+        * )
             # unknown option
-    ;;
-esac
+            echo -e "\e[35m\e[1m Unknown input argument '$i' \e[0m"
+            exit 1 ;;
+    esac
+    shift
 done
 
 echo -e "\e[35m\e[1m PACKAGE      = ${PACKAGE} \e[0m"
@@ -32,14 +35,14 @@ echo -e "\e[35m\e[1m BRANCH       = ${BRANCH} \e[0m"
 echo -e "\e[35m\e[1m COMMIT       = ${COMMIT} \e[0m"
 echo -e "\e[35m\e[1m PULL_REQUEST = ${PULL_REQUEST} \e[0m"
 
-echo -e "\e[35m\e[1m 
+echo -e "\e[35m\e[1m
 This build can be reproduced locally using the following commands:
 
 tue-get install docker
 ~/.tue/ci/install-package.sh --package=${PACKAGE} --branch=${BRANCH} --commit=${COMMIT} --pullrequest=${PULL_REQUEST}
-~/.tue/ci/build-package.sh --package=${PACKAGE} 
+~/.tue/ci/build-package.sh --package=${PACKAGE}
 
-Optionally fix your compilation errors and rerun only the last command
+Optionally fix your compilation errors and re-run only the last command
 \e[0m"
 
 # Name of the docker image
