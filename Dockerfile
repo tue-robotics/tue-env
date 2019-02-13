@@ -18,22 +18,20 @@ RUN adduser --disabled-password --gecos "" amigo && \
 USER amigo
 WORKDIR /home/amigo
 
-# Remove interactive check from bashrc, otherwise bashrc refuses to execute
-RUN sed -e s/return//g -i ~/.bashrc
-
-# Setup tue env
-RUN mkdir -p ~/.tue
-
 # The source of tue-env is already checked out in the current dir, moving this to the docker
-ADD ./ /home/amigo/.tue/
-RUN sudo chown -R amigo:amigo /home/amigo/.tue/
+COPY / ./.tue/
 
-# Run the standard installation script
-RUN /home/amigo/.tue/installer/bootstrap.bash
 
-# Already install ros since we will use this anyway
-RUN bash -c 'source /home/amigo/.bashrc && tue-get install ros'
-
-# Cleanup, make sure image is usable like any other computer
-RUN sudo chown -R amigo:amigo ~/.tue
-RUN cd ~/.tue && git remote set-url origin https://github.com/tue-robotics/tue-env.git
+RUN sudo chown -R amigo:amigo /home/amigo/.tue/ && \
+    # Remove interactive check from bashrc, otherwise bashrc refuses to execute
+    sed -e s/return//g -i ~/.bashrc && \
+    # Run the standard installation script
+    ~/.tue/installer/bootstrap.bash && \
+    # Already install ros since we will use this anyway
+    source ~/.bashrc && \
+    tue-get install ros && \
+    # Check ownership of .tue
+    ls -al && \
+    cd ~/.tue && \
+    # Check git remote origin
+    git remote -v
