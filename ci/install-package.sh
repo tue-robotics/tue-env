@@ -1,11 +1,18 @@
 #!/bin/bash
 #
-# Package installer
+# Package installer (CI script)
 # This script uses the Docker image of tue-env and installs the current git
 # repository as a tue-env package using tue-install in the CI
 
 # Stop on errors
 set -o errexit
+
+# Execute script only in a CI environment
+if [ "$CI" != "true" ]
+then
+    echo -e "\e[35m\[1m Error!\[0m Trying to execute a CI script in a non-CI environment. Exiting script."
+    exit 1
+fi
 
 # Standard argument parsing, example: install-package --branch=master --package=ros_robot
 for i in "$@"
@@ -24,7 +31,7 @@ do
             PULL_REQUEST="${i#*=}" ;;
         * )
             # unknown option
-            echo -e "\e[35m\e[1m Unknown input argument '$i' \e[0m"
+            echo -e "\e[35m\e[1m Unknown input argument '$i'. Check CI .yml file \e[0m"
             exit 1 ;;
     esac
     shift
