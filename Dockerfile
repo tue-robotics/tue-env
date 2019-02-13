@@ -21,9 +21,8 @@ WORKDIR /home/amigo
 # The source of tue-env is already checked out in the current dir, moving this to the docker
 COPY / ./.tue/
 
-
-RUN sudo ln -s -f bash /bin/sh && \
-    sudo chown -R amigo:amigo /home/amigo/.tue/ && \
+SHELL ["/bin/bash", "-c"]
+RUN sudo chown -R amigo:amigo /home/amigo/.tue/ && \
     # Remove interactive check from bashrc, otherwise bashrc refuses to execute
     sed -e s/return//g -i ~/.bashrc && \
     # Run the standard installation script
