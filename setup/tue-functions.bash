@@ -19,66 +19,6 @@ function _list_subdirs
     done
 }
 
-function _set_export_option {
-
-    # _set_export_option KEY VALUE FILE
-    # Add the following line: 'export KEY=VALUE' to FILE
-    # Or changes the VALUE to current value if line already in FILE.
-
-    key=${1//\//\\/}
-    value=${2//\//\\/}
-    sed -i \
-        -e '/^#\?\(\s*'"export ${key}"'\s*=\s*\).*/{s//\1'"${value}"'/;:a;n;ba;q}' \
-        -e '$a'"export ${key}"'='"${value}" $3
-}
-
-# ----------------------------------------------------------------------------------------------------
-#                                              SSH
-# ----------------------------------------------------------------------------------------------------
-
-function tue-use-ssh
-{
-    local option="TUE_USE_SSH"
-    local value="true"
-    _set_export_option "$option" "$value" $TUE_ENV_DIR/.env/setup/user_setup.bash
-    source $TUE_ENV_DIR/.env/setup/user_setup.bash
-}
-
-function tue-use-https
-{
-    local option="TUE_USE_SSH"
-    local value="false"
-    _set_export_option "$option" "$value" $TUE_ENV_DIR/.env/setup/user_setup.bash
-    source $TUE_ENV_DIR/.env/setup/user_setup.bash
-}
-
-function _github_https
-{
-    local input_url=$1
-    echo ${input_url/git@github.com:/https:\/\/github.com\/}
-}
-export -f _github_https # otherwise not available in sourced files
-
-function _github_ssh
-{
-    local input_url=$1
-    echo ${input_url/https:\/\/github.com\//git@github.com:}
-}
-export -f _github_ssh # otherwise not available in sourced files
-
-function _github_https_or_ssh
-{
-    local input_url=$1
-    if [[ "$TUE_USE_SSH" == "true" ]]
-    then
-        local output_url=$(_github_ssh $input_url)
-    else
-        local output_url=$(_github_https $input_url)
-    fi
-    echo "$output_url"
-}
-export -f _github_https_or_ssh # otherwise not available in sourced files
-
 # ----------------------------------------------------------------------------------------------------
 #                                              SSH
 # ----------------------------------------------------------------------------------------------------
