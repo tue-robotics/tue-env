@@ -20,6 +20,26 @@ function _list_subdirs
 }
 
 # ----------------------------------------------------------------------------------------------------
+#                                       GIT LOCAL HOUSEKEEPING
+# ----------------------------------------------------------------------------------------------------
+
+function tue-git-branch-clean
+{
+    if [ -z $1 ]
+    then
+        echo -e "[tue-git-branch-clean] No target repository provided"
+        return 1
+    else
+        local repo=$1
+
+        local stale_branches=$(git -C $repo branch -vv | tr -s ' ' | cut -d' ' -f1-5 | grep "\[.*: gone\]" | awk '{print($1)}')
+
+        echo -e "Branches to be removed:"
+        echo -e "$stale_branches"
+    fi
+}
+
+# ----------------------------------------------------------------------------------------------------
 #                                              SSH
 # ----------------------------------------------------------------------------------------------------
 
