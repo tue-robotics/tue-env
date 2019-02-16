@@ -20,6 +20,37 @@ function _list_subdirs
 }
 
 # ----------------------------------------------------------------------------------------------------
+#                                              SSH
+# ----------------------------------------------------------------------------------------------------
+
+function _github_https
+{
+    local input_url=$1
+    echo ${input_url/git@github.com:/https:\/\/github.com\/}
+}
+export -f _github_https # otherwise not available in sourced files
+
+function _github_ssh
+{
+    local input_url=$1
+    echo ${input_url/https:\/\/github.com\//git@github.com:}
+}
+export -f _github_ssh # otherwise not available in sourced files
+
+function _github_https_or_ssh
+{
+    local input_url=$1
+    if [[ "$TUE_USE_SSH" == "true" ]]
+    then
+        local output_url=$(_github_ssh $input_url)
+    else
+        local output_url=$(_github_https $input_url)
+    fi
+    echo "$output_url"
+}
+export -f _github_https_or_ssh # otherwise not available in sourced files
+
+# ----------------------------------------------------------------------------------------------------
 #                                            TUE-MAKE
 # ----------------------------------------------------------------------------------------------------
 
@@ -653,6 +684,8 @@ function tue-checkout
 }
 
 # ----------------------------------------------------------------------------------------------------
+#                                              TUE-DATA
+# ----------------------------------------------------------------------------------------------------
 
 source $TUE_DIR/setup/tue-data.bash
 
@@ -660,7 +693,7 @@ source $TUE_DIR/setup/tue-data.bash
 #                                             TUE-ROBOCUP
 # ----------------------------------------------------------------------------------------------------
 
-export TUE_ROBOCUP_BRANCH="robocup"
+export TUE_ROBOCUP_BRANCH="rgo2019"
 
 function _tue-repos-do
 {
@@ -714,7 +747,7 @@ For example:
         return 1
     fi
 
-    local github_url="$(git config --get remote.origin.url)"
+    local github_url="$(_github_https "$(git config --get remote.origin.url)")"
     local url_extension=${github_url#https://github.com/}
 
     if [[ "$(git remote)" == *"$remote"* ]]
