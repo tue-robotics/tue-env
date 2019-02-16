@@ -107,6 +107,7 @@ function tue-install-target
         # Empty the target's dependency file
         tue-install-debug "Emptying $TUE_INSTALL_DEPENDENCIES_DIR/$target"
         truncate -s 0 $TUE_INSTALL_DEPENDENCIES_DIR/$target
+        local target_processed=false
 
         if [ -f $install_file.yaml ]
         then
@@ -120,6 +121,7 @@ function tue-install-target
                     tue-install-debug "Running following command: $cmd"
                     ${cmd//^/ }
                 done
+                target_processed=true
             else
                 tue-install-error "Invalid install.yaml: $cmd"
             fi
@@ -129,9 +131,16 @@ function tue-install-target
         then
             tue-install-debug "Sourcing $install_file.bash"
             source $install_file.bash
+            target_processed=true
+        fi
+
+        if [ "$target_processed" == false ]
+        then
+            tue-install-warning "Target $target does not contain a valid install.yaml/bash file"
         fi
 
         touch $TUE_INSTALL_STATE_DIR/$target
+
     fi
 
     TUE_INSTALL_CURRENT_TARGET=$parent_target
@@ -203,7 +212,10 @@ function tue-install-git
     local targetdir=$2
     local version=$3
 
-    if [ ! -d $2 ]
+    # Change url to https/ssh
+    repo=$(_github_https_or_ssh $repo)
+
+    if [ ! -d $targetdir ]
     then
         tue-install-debug "git clone --recursive $repo $targetdir"
         res=$(git clone --recursive $repo $targetdir 2>&1)
@@ -216,6 +228,18 @@ function tue-install-git
             # We have already pulled this repo, skip it
             res=
         else
+            # Switch url of origin to use https/ssh if different
+            # Get current remote url
+            local current_url=$(git -C $targetdir config --get remote.origin.url)
+
+            # If different, switch url
+            if [ ! "$current_url" == "$repo" ]
+            then
+                tue-install-debug "git -C $targetdir remote set-url origin $repo"
+                git -C $targetdir remote set-url origin $repo
+                tue-install-info "URL has switched to $repo"
+            fi
+
             tue-install-debug "git -C $targetdir pull --ff-only --prune"
 
             res=$(git -C $targetdir pull --ff-only --prune 2>&1)
