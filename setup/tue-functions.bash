@@ -34,8 +34,64 @@ function tue-git-branch-clean
 
         local stale_branches=$(git -C $repo branch -vv | tr -s ' ' | cut -d' ' -f1-5 | grep "\[.*: gone\]" | awk '{print($1)}')
 
-        echo -e "Branches to be removed:"
+        if [ -z "$stale_branches" ]
+        then
+            echo -e "[tue-git-branch-clean] No branches to remove in repo '$repo'. Cleanup complete."
+            return 0
+        fi
+
+        echo -e "Removing branches:"
+        echo -e "------------------"
         echo -e "$stale_branches"
+
+        local branch=
+        local unmerged_stale_branch=
+        for branch in $stale_branches
+        do
+            git -C $repo branch -d $branch > /dev/null 2>&1
+            local error_code=$?
+
+            if [ ! $error_code -eq 0 ]
+            then
+                unmerged_stale_branch="$unmerged_stale_branch $branch"
+            fi
+
+        done
+
+        if [ ! -z "$unmerged_stale_branch" ]
+        then
+            unmerged_stale_branch=$(echo "$unmerged_stale_branch" | tr " " "\n")
+            echo
+            echo -en "Found unmerged stale branches:"
+            echo -en "$unmerged_stale_branch"
+            echo
+            echo
+
+            local response=
+
+            read -p "[tue-git-branch-clean] Do you want to remove the unmerged stale branches [Y/n]? " -n 1 -r response
+
+            echo
+            if [[ ! $response =~ ^[Yy]$ ]]
+            then
+                echo -en "Exiting command"
+                return 1
+            else
+                local unmerged_branch=
+                for unmerged_branch in $unmerged_stale_branch
+                do
+                    git -C $repo branch -D $unmerged_branch > /dev/null 2>&1
+                    error_code=$?
+
+                    if [ ! $error_code -eq 0 ]
+                    then
+                        echo "Error deleting branch: $unmerged_branch"
+                    fi
+                done
+                echo "[tue-git-branch-clean] Branch cleanup of repository '$repo' complete"
+                return 0
+            fi
+        fi
     fi
 }
 
