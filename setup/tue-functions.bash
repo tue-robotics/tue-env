@@ -23,14 +23,14 @@ function _list_subdirs
 #                                       GIT LOCAL HOUSEKEEPING
 # ----------------------------------------------------------------------------------------------------
 
-function tue-git-branch-clean
+function _tue-git-branch-clean
 {
     if [ -z $1 ]
     then
         echo -e "[tue-git-branch-clean] No target repository provided"
         return 1
     else
-        local repo=$1
+        local repo="$(realpath $1)"
 
         local stale_branches=$(git -C $repo branch -vv | tr -s ' ' | cut -d' ' -f1-5 | grep "\[.*: gone\]" | awk '{print($1)}')
 
@@ -93,6 +93,12 @@ function tue-git-branch-clean
             fi
         fi
     fi
+}
+
+function tue-git-branch-clean
+{
+    # Run _tue-git-branch-clean on tue-env and all tue-robotics repositories
+    _tue-repos-do "_tue-git-branch-clean ."
 }
 
 # ----------------------------------------------------------------------------------------------------
@@ -1004,7 +1010,7 @@ function tue-robocup-remote-checkout
 
 function __tue-robocup-default-branch
 {
-    local default_branch=$(git remote show origin | grep HEAD | awk '{print $3}')
+    local default_branch=$(git symbolic-ref refs/remotes/origin/HEAD| sed 's@^refs/remotes/origin/@@')
     _git_remote_checkout origin $default_branch
 }
 
