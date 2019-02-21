@@ -9,7 +9,7 @@ _TUE_CATKIN_SYSTEM_DIR=$TUE_ENV_DIR/system
 
 function _list_subdirs
 {
-    fs=`ls $1`
+    fs="$(ls $1)"
     for f in $fs
     do
         if [ -d $1/$f ]
@@ -30,13 +30,23 @@ function _tue-git-branch-clean
         echo -e "[tue-git-branch-clean] No target repository provided"
         return 1
     else
+        local assume_yes=
+
+        if [ "$2" == "--yes" ]
+        then
+            assume_yes=true
+        fi
+
         local repo="$(realpath $1)"
 
-        local stale_branches=$(git -C $repo branch -vv | tr -s ' ' | cut -d' ' -f1-5 | grep "\[.*: gone\]" | awk '{print($1)}')
+        git -C $repo fetch -p
+
+        local stale_branches=$(git -C $dir branch --list --format "%(if:equals=[gone])%(upstream:track)%(then)%(refname)%(end)" \
+    | sed 's,^refs/heads/,,;/^$/d')
 
         if [ -z "$stale_branches" ]
         then
-            echo -e "[tue-git-branch-clean] No branches to remove in repo '$repo'. Cleanup complete."
+            echo -e "[tue-git-branch-clean] No branches to remove in repository '$repo'. Cleanup complete."
             return 0
         fi
 
@@ -55,42 +65,49 @@ function _tue-git-branch-clean
             then
                 unmerged_stale_branch="$unmerged_stale_branch $branch"
             fi
-
         done
 
         if [ ! -z "$unmerged_stale_branch" ]
         then
-            unmerged_stale_branch=$(echo "$unmerged_stale_branch" | tr " " "\n")
-            echo
-            echo -en "Found unmerged stale branches:"
-            echo -en "$unmerged_stale_branch"
-            echo
-            echo
-
-            local response=
-
-            read -p "[tue-git-branch-clean] Do you want to remove the unmerged stale branches [Y/n]? " -n 1 -r response
-
-            echo
-            if [[ ! $response =~ ^[Yy]$ ]]
+            # If assume_yes is not true then prompt the user. If the user
+            # doesn't answer with Y/y then return from the function else execute
+            # the commands outside the if block
+            if [ ! "$assume_yes" == "true" ]
             then
-                echo -en "Exiting command"
-                return 1
-            else
-                local unmerged_branch=
-                for unmerged_branch in $unmerged_stale_branch
-                do
-                    git -C $repo branch -D $unmerged_branch > /dev/null 2>&1
-                    error_code=$?
+                unmerged_stale_branch=$(echo "$unmerged_stale_branch" | tr " " "\n")
+                echo
+                echo -en "Found unmerged stale branches:"
+                echo -en "------------------------------"
+                echo -en "$unmerged_stale_branch"
+                echo
+                echo
 
-                    if [ ! $error_code -eq 0 ]
-                    then
-                        echo "Error deleting branch: $unmerged_branch"
-                    fi
-                done
-                echo "[tue-git-branch-clean] Branch cleanup of repository '$repo' complete"
-                return 0
+                local response=
+
+                read -p "[tue-git-branch-clean] Do you want to remove the unmerged stale branches [Y/n]? " -n 1 -r response
+
+                echo
+
+                if [[ ! $response =~ ^[Yy]$ ]]
+                then
+                    echo -en "[tue-git-branch-clean] Not removing unmerged stale branches. Exiting command."
+                    return 1
+                fi
             fi
+
+            local unmerged_branch=
+            for unmerged_branch in $unmerged_stale_branch
+            do
+                git -C $repo branch -D $unmerged_branch > /dev/null 2>&1
+                error_code=$?
+
+                if [ ! $error_code -eq 0 ]
+                then
+                    echo "[tue-git-branch-clean] Error deleting branch: $unmerged_branch"
+                fi
+            done
+            echo "[tue-git-branch-clean] Branch cleanup of repository '$repo' complete"
+            return 0
         fi
     fi
 }
