@@ -31,6 +31,7 @@ function _tue-git-branch-clean
         return 1
     else
         local assume_yes=
+        local error_code=
 
         if [ "$2" == "--yes" ]
         then
@@ -48,6 +49,28 @@ function _tue-git-branch-clean
         then
             echo -e "[tue-git-branch-clean] No branches to remove in repository '$repo'. Cleanup complete."
             return 0
+        fi
+
+        if [[ "$stale_branches" == *$(git -C $dir rev-parse --abbrev-ref HEAD)* ]]
+        then
+            if [ ! "$PWD" == "$repo" ]
+            then
+                local mempwd=$PWD
+                cd $repo
+                __tue-robocup-default-branch
+                cd $mempwd
+            else
+                __tue-robocup-default-branch
+            fi
+
+            git -C $repo pull --ff-only --prune > /dev/null 2>&1
+            error_code=$?
+
+            if [ ! $error_code -eq 0 ]
+            then
+                echo -en "[tue-git-branch-clean] Error pulling upstream on default branch of repository '$repo'. Cancelling branch cleanup."
+                return 1
+            fi
         fi
 
         echo -e "Removing branches:"
@@ -103,7 +126,7 @@ function _tue-git-branch-clean
 
                 if [ ! $error_code -eq 0 ]
                 then
-                    echo "[tue-git-branch-clean] Error deleting branch: $unmerged_branch"
+                    echo "[tue-git-branch-clean] In repository '$repo' error deleting branch: $unmerged_branch"
                 fi
             done
             echo "[tue-git-branch-clean] Branch cleanup of repository '$repo' complete"
@@ -115,7 +138,7 @@ function _tue-git-branch-clean
 function tue-git-branch-clean
 {
     # Run _tue-git-branch-clean on tue-env and all tue-robotics repositories
-    _tue-repos-do "_tue-git-branch-clean ."
+    _tue-repos-do "_tue-git-branch-clean . --yes"
 }
 
 # ----------------------------------------------------------------------------------------------------
