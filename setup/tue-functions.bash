@@ -816,7 +816,7 @@ export TUE_ROBOCUP_BRANCH="rgo2019"
 
 function _tue-repos-do
 {
-    # Evaluates the command of the input for tue-env and all repo's of tue-robotics.
+    # Evaluates the command of the input for tue-env, tue-env-targets and all repo's of tue-robotics.
     # The input can be multiple arguments, but if the input consists of multiple commands
     # seperated by ';' or '&&' the input needs to be captured in a string.
 
@@ -826,9 +826,13 @@ function _tue-repos-do
     echo -e "\033[1m[tue-env]\033[0m"
     eval "$@"
 
+    cd $TUE_ENV_TARGETS_DIR
+    echo -e "\033[1m[tue-env-targets]\033[0m"
+    eval "$@"
+
     local repos_dir=$TUE_ENV_DIR/repos/https_/github.com/tue-robotics
 
-    local fs=`ls $repos_dir`
+    local fs="$(ls $repos_dir)"
     for repo in $fs
     do
         local repo_dir=$repos_dir/$repo
@@ -1050,7 +1054,7 @@ function tue-robocup-remote-checkout
 
 function __tue-robocup-default-branch
 {
-    local default_branch=$(git symbolic-ref refs/remotes/origin/HEAD| sed 's@^refs/remotes/origin/@@')
+    local default_branch=$(git symbolic-ref refs/remotes/origin/HEAD | sed 's@^refs/remotes/origin/@@')
     _git_remote_checkout origin $default_branch
 }
 
