@@ -11,7 +11,8 @@ ENV DEBIAN_FRONTEND=noninteractive \
     CI=true \
     LANG=C.UTF-8 \
     DOCKER=true \
-    USER=amigo
+    USER=amigo \
+    BASH_ENV=~/.bashrc
 
 # Install commands used in our scripts and standard present on a clean ubuntu installation
 RUN apt-get update -qq && \
@@ -33,7 +34,7 @@ COPY / ./.tue/
 SHELL ["/bin/bash", "-c"]
 
 # Setup tue-env and install target ros
-RUN sudo chown -R $USER:$USER ~/.tue/ && \
+RUN sudo chown -R "$USER:$USER" ~/.tue/ && \
     # Remove interactive check from bashrc, otherwise bashrc refuses to execute
     sed -e s/return//g -i ~/.bashrc && \
     # Run the standard installation script
@@ -46,3 +47,4 @@ RUN sudo chown -R $USER:$USER ~/.tue/ && \
     namei -l ~/.tue && \
     # Check git remote origin
     git -C ~/.tue remote -v
+
