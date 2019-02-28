@@ -6,13 +6,7 @@ if [ ! -d $TUE_DIR ]
 then
     echo "[tue-get] 'TUE_DIR' $TUE_DIR doesn't exist"
     exit 1
-elif [[ -n "$CI" ]] #Do not update with continuous integration but do fetch to refresh available branches
-then
-    echo -e "[tue-get] Fetching tue-get... "
-    git -C $TUE_DIR fetch
 else
-    echo -en "[tue-get] Updating tue-get... "
-
     current_url=$(git -C $TUE_DIR config --get remote.origin.url)
     new_url=$(_github_https_or_ssh "$current_url")
 
@@ -22,20 +16,28 @@ else
         echo -e "[tue-get] Origin has switched to $new_url"
     fi
 
-    git -C $TUE_DIR pull --ff-only --prune
-
-    error_code=$?
-
-    if [ ! $error_code -eq 0 ]
+    if [[ -n "$CI" ]]
     then
-        # prompt for conformation
-        exec < /dev/tty
-        read -p "[tue-get] Could not update tue-get. Continue? " -n 1 -r
-        exec <&-
-        echo    # (optional) move to a new line
-        if [[ ! $REPLY =~ ^[Yy]$ ]]
+        # Do not update with continuous integration but do fetch to refresh available branches
+        echo -e "[tue-get] Fetching tue-get... "
+        git -C $TUE_DIR fetch
+    else
+        echo -en "[tue-get] Updating tue-get... "
+        git -C $TUE_DIR pull --ff-only --prune
+
+        error_code=$?
+
+        if [ ! $error_code -eq 0 ]
         then
-            exit 1
+            # prompt for conformation
+            exec < /dev/tty
+            read -p "[tue-get] Could not update tue-get. Continue? " -n 1 -r
+            exec <&-
+            echo    # (optional) move to a new line
+            if [[ ! $REPLY =~ ^[Yy]$ ]]
+            then
+                exit 1
+            fi
         fi
     fi
 fi
