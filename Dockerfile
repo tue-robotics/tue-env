@@ -13,12 +13,15 @@ ENV DEBIAN_FRONTEND=noninteractive \
     DOCKER=true \
     USER=amigo
 
-# Install commands used in our scripts and standard present on a clean ubuntu installation
-RUN apt-get update -qq && \
-    apt-get install -qq --assume-yes --no-install-recommends apt-transport-https apt-utils ca-certificates curl dbus dialog git lsb-release sudo wget
+# Set default shell to be bash
+SHELL ["/bin/bash", "-c"]
 
-# Add amigo user
-RUN adduser --disabled-password --gecos "" $USER && \
+# Install commands used in our scripts and standard present on a clean ubuntu
+# installation and setup a user with sudo priviledges
+RUN apt-get update -qq && \
+    apt-get install -qq --assume-yes --no-install-recommends apt-transport-https apt-utils ca-certificates curl dbus dialog git lsb-release sudo wget && \
+    # Add amigo user
+    adduser --disabled-password --gecos "" $USER && \
     adduser $USER sudo && \
     echo '%sudo ALL=(ALL) NOPASSWD:ALL' >> /etc/sudoers
 
@@ -29,13 +32,11 @@ WORKDIR /home/"$USER"
 # The source of tue-env is already checked out in the current dir, moving this to the docker
 COPY / ./.tue/
 
-# Set default shell to be Bash
-SHELL ["/bin/bash", "-c"]
-
 # Setup tue-env and install target ros
-RUN sudo chown -R "$USER:$USER" ~/.tue/ && \
     # Remove interactive check from bashrc, otherwise bashrc refuses to execute
-    sed -e s/return//g -i ~/.bashrc && \
+RUN sed -e s/return//g -i ~/.bashrc && \
+    # Change the ownership of tue dir to USER
+    sudo chown -R "$USER:$USER" ~/.tue/ && \
     # Run the standard installation script
     ~/.tue/installer/bootstrap.bash && \
     # Make tue-env to be available to the environment
