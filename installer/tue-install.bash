@@ -85,7 +85,7 @@ then
     # BRANCH is an environment variable set by ci/install-package.sh in the
     # Docker container. The container has no knowledge about TRAVIS environment
     # variable. BRANCH=${TRAVIS_PULL_REQUEST_BRANCH:-$TRAVIS_BRANCH}
-    if [ -n $BRANCH ]
+    if [ -n "$BRANCH" ]
     then
         echo -en "[tue-env-targets] Trying to switch to branch $BRANCH..."
         test_branch=$(git -C $TUE_ENV_TARGETS_DIR branch -a 2> /dev/null | grep -q $BRANCH)
