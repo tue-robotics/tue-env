@@ -11,8 +11,7 @@ ENV DEBIAN_FRONTEND=noninteractive \
     CI=true \
     LANG=C.UTF-8 \
     DOCKER=true \
-    USER=amigo \
-    BASH_ENV=~/.bashrc
+    USER=amigo
 
 # Install commands used in our scripts and standard present on a clean ubuntu installation
 RUN apt-get update -qq && \
