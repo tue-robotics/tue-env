@@ -51,3 +51,5 @@ RUN sed -e s/return//g -i ~/.bashrc && \
     # Check git remote origin
     git -C ~/.tue remote -v
 
+# Specify container entry point
+CMD ["/bin/bash"]
