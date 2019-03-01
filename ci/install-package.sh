@@ -76,24 +76,24 @@ fi
 docker run --detach --interactive -e PACKAGE=$PACKAGE -e BRANCH=$BRANCH -e COMMIT=$COMMIT -e PULL_REQUEST=$PULL_REQUEST --name tue-env $IMAGE_NAME:$BRANCH_TAG
 
 # Refresh the apt cache in the docker image
-docker exec tue-env bash -c "sudo apt-get update -qq"
+docker exec tue-env 'sudo apt-get update -qq'
 
 # Use docker environment variables in all exec commands instead of script variables
 # Catch the ROS_DISTRO of the docker container
-ROS_DISTRO=$(docker exec tue-env bash -c 'source ~/.bashrc; echo "$ROS_DISTRO"')
+ROS_DISTRO=$(docker exec tue-env 'source ~/.bashrc; echo "$ROS_DISTRO"')
 echo -e "\e[35m\e[1m ROS_DISTRO = ${ROS_DISTRO}\e[0m"
 
 # Install the package
 echo -e "\e[35m\e[1m tue-get install ros-$PACKAGE --branch=$BRANCH\e[0m"
-docker exec tue-env bash -c 'source ~/.bashrc; tue-get install ros-"$PACKAGE" --branch="$BRANCH"'
+docker exec tue-env 'source ~/.bashrc; tue-get install ros-"$PACKAGE" --branch="$BRANCH"'
 
 # Set the package to the right commit
 echo -e "\e[35m\e[1m Reset package to this commit \e[0m"
 if [[ $PULL_REQUEST == "false" ]]
 then
     echo -e "\e[35m\e[1m cd ~/ros/$ROS_DISTRO/system/src/$PACKAGE && git reset --hard $COMMIT \e[0m"
-    docker exec tue-env bash -c 'source ~/.bashrc; cd ~/ros/"$ROS_DISTRO"/system/src/"$PACKAGE" && git reset --hard "$COMMIT"'
+    docker exec tue-env 'source ~/.bashrc; cd ~/ros/"$ROS_DISTRO"/system/src/"$PACKAGE" && git reset --hard "$COMMIT"'
 else
     echo -e "\e[35m\e[1m cd ~/ros/$ROS_DISTRO/system/src/$PACKAGE && git fetch origin pull/$PULL_REQUEST/head:PULLREQUEST && git checkout PULLREQUEST \e[0m"
-    docker exec tue-env bash -c 'source ~/.bashrc; cd ~/ros/"$ROS_DISTRO"/system/src/"$PACKAGE" && git fetch origin pull/"$PULL_REQUEST"/head:PULLREQUEST && git checkout PULLREQUEST'
+    docker exec tue-env 'source ~/.bashrc; cd ~/ros/"$ROS_DISTRO"/system/src/"$PACKAGE" && git fetch origin pull/"$PULL_REQUEST"/head:PULLREQUEST && git checkout PULLREQUEST'
 fi
