@@ -95,13 +95,13 @@ then
         then
             if [[ "$current_branch" == "$BRANCH" ]]
             then
-                echo -e "[tue-env-targets] Already on branch $BRANCH"
+                echo -en "[tue-env-targets] Already on branch $BRANCH"
             else
                 git -C $TUE_ENV_TARGETS_DIR checkout $BRANCH 2>&1
-                echo -e "[tue-env-targets] Switchted to branch $BRANCH"
+                echo -en "[tue-env-targets] Switchted to branch $BRANCH"
             fi
         else
-            echo -e "[tue-env-targets] Branch '$BRANCH' does not exist. Current branch is $current_branch"
+            echo -en "[tue-env-targets] Branch '$BRANCH' does not exist. Current branch is $current_branch"
         fi
     fi
 fi
