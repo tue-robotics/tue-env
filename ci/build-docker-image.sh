@@ -8,13 +8,12 @@
 set -o errexit
 
 # create tag based on branch name
-CI_BUILD_BRANCH=$(echo "$TRAVIS_BRANCH" | tr '[:upper:]' '[:lower:]' | sed -e 's:/:_:g')
-IMAGE_NAME=tueroboticsamigo/tue-env:"$CI_BUILD_BRANCH"
+IMAGE_NAME=tueroboticsamigo/tue-env:$(echo "$TRAVIS_BRANCH" | tr '[:upper:]' '[:lower:]' | sed -e 's:/:_:g')
 
 echo -e "\e[35m\e[1m Creating docker $IMAGE_NAME \e[0m"
 
 # build the Docker image (this will use the Dockerfile in the root of the repo)
-docker build --build-arg CI_BUILD_BRANCH=$CI_BUILD_BRANCH -t $IMAGE_NAME .
+docker build --build-arg CI_BUILD_BRANCH="$TRAVIS_BRANCH" -t $IMAGE_NAME .
 
 # authenticate with the Docker Hub registry
 docker login -u="$DOCKER_HUB_USERNAME" -p="$DOCKER_HUB_PASSWORD"
