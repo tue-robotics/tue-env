@@ -20,6 +20,9 @@ ENV DEBIAN_FRONTEND=noninteractive \
 # Set default shell to be bash
 SHELL ["/bin/bash", "-c"]
 
+# Test
+RUN echo $CI_BRANCH
+
 # Install commands used in our scripts and standard present on a clean ubuntu
 # installation and setup a user with sudo priviledges
 RUN apt-get update -qq && \
