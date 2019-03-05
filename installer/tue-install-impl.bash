@@ -687,7 +687,9 @@ function generate_setup_file
 # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # #
 
 # Make sure tools used by this installer are installed
+# TODO: Replace system-now with target-now in future
 tue-install-system-now python-yaml git python-pip
+tue-install-target python-pip
 
 stamp=$(date_stamp)
 INSTALL_DETAILS_FILE=/tmp/tue-get-details-$stamp
