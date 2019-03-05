@@ -42,9 +42,9 @@ fi
 
 if [ -n "$CI" -a -n "$DOCKER" ]
 then
-    if [ -n "$CI_BUILD_BRANCH" ]
+    if [ -n "$CI_BRANCH" ]
     then
-        git clone --single-branch --branch "$CI_BUILD_BRANCH" https://github.com/tue-robotics/tue-env.git ~/.tue
+        git clone --single-branch --branch "$CI_BRANCH" https://github.com/tue-robotics/tue-env.git ~/.tue
     else
         git clone https://github.com/tue-robotics/tue-env.git ~/.tue
     fi
