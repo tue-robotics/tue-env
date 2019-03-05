@@ -40,7 +40,7 @@ WORKDIR /home/"$USER"
     # Remove interactive check from bashrc, otherwise bashrc refuses to execute
 RUN sed -e s/return//g -i ~/.bashrc && \
     # Run the standard installation script
-    source <(wget -O - https://raw.githubusercontent.com/tue-robotics/tue-env/master/installer/bootstrap.bash) && \
+    source <(wget -O - https://raw.githubusercontent.com/tue-robotics/tue-env/"$CI_BRANCH"/installer/bootstrap.bash) && \
     # Make tue-env to be available to the environment
     source ~/.bashrc && \
     # Set all git repositories to use HTTPS urls (Needed for local image builds)
