@@ -29,7 +29,7 @@ case $DISTRIB_RELEASE in
 esac
 
 # Move old environments and installer
-if [[ -d ~/.tue && -z "$CI" ]]
+if [ -d ~/.tue ]
 then
     FILES=$(find ~/.tue/user/envs -maxdepth 1 -type f)
     date_now=$(date +%F_%R)
@@ -38,6 +38,16 @@ then
         mv -f $(cat $env) $(cat $env).$date_now
     done
     mv -f ~/.tue ~/.tue.$date_now
+fi
+
+if [ -n "$CI" -a -n "$DOCKER" ]
+then
+    if [ -n "$CI_BUILD_BRANCH" ]
+    then
+        git clone --single-branch --branch "$CI_BUILD_BRANCH" https://github.com/tue-robotics/tue-env.git ~/.tue
+    else
+        git clone https://github.com/tue-robotics/tue-env.git ~/.tue
+    fi
 fi
 
 if [[ -z "$CI" ]]
