@@ -40,30 +40,22 @@ then
     mv -f ~/.tue ~/.tue.$date_now
 fi
 
-# Test variables
-echo -en "CI: $CI"
-echo -en "Docker: $DOCKER"
-echo -en "CI branch: $CI_BRANCH"
-
-if [ -n "$CI" -a -n "$DOCKER" ]
+# If in CI with Docker, then clone tue-env with CI_BRANCH
+if [ -n "$CI" ]
 then
-    echo -en "[tue-env](bootstrap) Docker CI environment found"
-    if [ -n "$CI_BRANCH" ]
+    if [ -n "$DOCKER" -a -n "$CI_BRANCH" ]
     then
+        echo -en "[tue-env](bootstrap) Docker CI environment found"
         echo -en "[tue-env](bootstrap) Cloning tue-env repository with branch: $CI_BRANCH"
         git clone --single-branch --branch "$CI_BRANCH" https://github.com/tue-robotics/tue-env.git ~/.tue
     else
-        echo -en "[tue-env](bootstrap) Cloning complete tue-env repository"
-        git clone https://github.com/tue-robotics/tue-env.git ~/.tue
+        echo -en "[tue-env](bootstrap) Error! In CI but either not in Docker or no CI_BRANCH set"
+        return 1
     fi
-elif [[ -z "$CI" ]]
-then
+else
     # Update installer
     echo -en "[tue-env](bootstrap) Cloning complete tue-env repository"
     git clone https://github.com/tue-robotics/tue-env.git ~/.tue
-else
-    echo -en "[tue-env](bootstrap) On CI but not in Docker. Exiting process..."
-    return 1
 fi
 
 # Source the installer commands
