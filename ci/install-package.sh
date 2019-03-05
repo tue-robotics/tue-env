@@ -1,30 +1,40 @@
 #!/bin/bash
-set -o errexit #Stop on errors
+#
+# Package installer (CI script)
+# This script uses the Docker image of tue-env and installs the current git
+# repository as a tue-env package using tue-install in the CI
+
+# Stop on errors
+set -o errexit
+
+# Execute script only in a CI environment
+if [ "$CI" != "true" ]
+then
+    echo -e "\e[35m\[1m Error!\[0m Trying to execute a CI script in a non-CI environment. Exiting script."
+    exit 1
+fi
 
 # Standard argument parsing, example: install-package --branch=master --package=ros_robot
 for i in "$@"
 do
-case $i in
-    -p=*|--package=*)
-    PACKAGE="${i#*=}"
-    shift 
-    ;;
-    -b=*|--branch=*)
-    BRANCH="${i#*=}"
-    shift 
-    ;;
-    -c=*|--commit=*)
-    COMMIT="${i#*=}"
-    shift 
-    ;;
-    -r=*|--pullrequest=*)
-    PULL_REQUEST="${i#*=}"
-    shift
-    ;;    
-    *)
+    case $i in
+        -p=* | --package=* )
+            PACKAGE="${i#*=}" ;;
+
+        -b=* | --branch=* )
+            BRANCH="${i#*=}" ;;
+
+        -c=* | --commit=* )
+            COMMIT="${i#*=}" ;;
+
+        -r=* | --pullrequest=* )
+            PULL_REQUEST="${i#*=}" ;;
+        * )
             # unknown option
-    ;;
-esac
+            echo -e "\e[35m\e[1m Unknown input argument '$i'. Check CI .yml file \e[0m"
+            exit 1 ;;
+    esac
+    shift
 done
 
 echo -e "\e[35m\e[1m PACKAGE      = ${PACKAGE} \e[0m"
@@ -32,20 +42,20 @@ echo -e "\e[35m\e[1m BRANCH       = ${BRANCH} \e[0m"
 echo -e "\e[35m\e[1m COMMIT       = ${COMMIT} \e[0m"
 echo -e "\e[35m\e[1m PULL_REQUEST = ${PULL_REQUEST} \e[0m"
 
-echo -e "\e[35m\e[1m 
+echo -e "\e[35m\e[1m
 This build can be reproduced locally using the following commands:
 
 tue-get install docker
 ~/.tue/ci/install-package.sh --package=${PACKAGE} --branch=${BRANCH} --commit=${COMMIT} --pullrequest=${PULL_REQUEST}
-~/.tue/ci/build-package.sh --package=${PACKAGE} 
+~/.tue/ci/build-package.sh --package=${PACKAGE}
 
-Optionally fix your compilation errors and rerun only the last command
+Optionally fix your compilation errors and re-run only the last command
 \e[0m"
 
 # Name of the docker image
 IMAGE_NAME=tueroboticsamigo/tue-env
 # Determine docker tag if the same branch exists there
-BRANCH_TAG=`echo "$BRANCH" | tr '[:upper:]' '[:lower:]' | sed -e 's:/:_:g'`
+BRANCH_TAG=$(echo "$BRANCH" | tr '[:upper:]' '[:lower:]' | sed -e 's:/:_:g')
 
 # Set the default fallback branch to master
 MASTER_TAG=master
@@ -58,32 +68,32 @@ echo -e "\e[35m\e[1m Trying to fetch docker image: $IMAGE_NAME:$BRANCH_TAG \e[0m
 if ! docker pull $IMAGE_NAME:$BRANCH_TAG
 then
     echo -e "\e[35m\e[1m No worries, we just test against the master branch: $IMAGE_NAME:$MASTER_TAG \e[0m"
-    docker pull $IMAGE_NAME:$MASTER_TAG 
+    docker pull $IMAGE_NAME:$MASTER_TAG
     BRANCH_TAG=master
 fi
 
 # Run the docker image along with setting new environment variables
-docker run --detach --interactive -e CI="true" -e PACKAGE=$PACKAGE -e BRANCH=$BRANCH -e COMMIT=$COMMIT -e PULL_REQUEST=$PULL_REQUEST --name tue-env $IMAGE_NAME:$BRANCH_TAG
+docker run --detach --interactive -e PACKAGE=$PACKAGE -e BRANCH=$BRANCH -e COMMIT=$COMMIT -e PULL_REQUEST=$PULL_REQUEST --name tue-env $IMAGE_NAME:$BRANCH_TAG
 
 # Refresh the apt cache in the docker image
 docker exec tue-env bash -c "sudo apt-get update -qq"
 
 # Use docker environment variables in all exec commands instead of script variables
 # Catch the ROS_DISTRO of the docker container
-ROS_DISTRO=$(docker exec tue-env bash -c 'export CI="true"; source /home/amigo/.bashrc; echo "$ROS_DISTRO"')
+ROS_DISTRO=$(docker exec tue-env bash -c 'source ~/.bashrc; echo "$ROS_DISTRO"')
 echo -e "\e[35m\e[1m ROS_DISTRO = ${ROS_DISTRO}\e[0m"
 
 # Install the package
 echo -e "\e[35m\e[1m tue-get install ros-$PACKAGE --branch=$BRANCH\e[0m"
-docker exec tue-env bash -c 'source /home/amigo/.bashrc; tue-get install ros-"$PACKAGE" --branch="$BRANCH"'
+docker exec tue-env bash -c 'source ~/.bashrc; tue-get install ros-"$PACKAGE" --branch="$BRANCH"'
 
 # Set the package to the right commit
 echo -e "\e[35m\e[1m Reset package to this commit \e[0m"
-if [[ $PULL_REQUEST == "false" ]]; 
+if [[ $PULL_REQUEST == "false" ]]
 then
     echo -e "\e[35m\e[1m cd ~/ros/$ROS_DISTRO/system/src/$PACKAGE && git reset --hard $COMMIT \e[0m"
-    docker exec tue-env bash -c 'source /home/amigo/.bashrc; cd ~/ros/"$ROS_DISTRO"/system/src/"$PACKAGE" && git reset --hard "$COMMIT"'
+    docker exec tue-env bash -c 'source ~/.bashrc; cd ~/ros/"$ROS_DISTRO"/system/src/"$PACKAGE" && git reset --hard "$COMMIT"'
 else
     echo -e "\e[35m\e[1m cd ~/ros/$ROS_DISTRO/system/src/$PACKAGE && git fetch origin pull/$PULL_REQUEST/head:PULLREQUEST && git checkout PULLREQUEST \e[0m"
-    docker exec tue-env bash -c 'source /home/amigo/.bashrc; cd ~/ros/"$ROS_DISTRO"/system/src/"$PACKAGE" && git fetch origin pull/"$PULL_REQUEST"/head:PULLREQUEST && git checkout PULLREQUEST'
+    docker exec tue-env bash -c 'source ~/.bashrc; cd ~/ros/"$ROS_DISTRO"/system/src/"$PACKAGE" && git fetch origin pull/"$PULL_REQUEST"/head:PULLREQUEST && git checkout PULLREQUEST'
 fi
