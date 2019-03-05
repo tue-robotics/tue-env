@@ -40,8 +40,14 @@ then
     mv -f ~/.tue ~/.tue.$date_now
 fi
 
+# Test variables
+echo -en "CI: $CI"
+echo -en "Docker: $DOCKER"
+echo -en "CI branch: $CI_BRANCH"
+
 if [ -n "$CI" -a -n "$DOCKER" ]
 then
+    echo -en "[tue-env](bootstrap) Docker CI environment found"
     if [ -n "$CI_BRANCH" ]
     then
         echo -en "[tue-env](bootstrap) Cloning tue-env repository with branch: $CI_BRANCH"
