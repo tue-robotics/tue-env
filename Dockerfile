@@ -5,7 +5,7 @@
 # Set the base image to Ubuntu 16.04
 FROM ubuntu:16.04
 
-ARG CI_BUILD_BRANCH=
+ARG CI_BUILD_BRANCH=master
 
 # Inform scripts that no questions should be asked and set some environment
 # variables to prevent warnings and errors
@@ -19,9 +19,6 @@ ENV DEBIAN_FRONTEND=noninteractive \
 
 # Set default shell to be bash
 SHELL ["/bin/bash", "-c"]
-
-# Test
-RUN echo $CI_BRANCH
 
 # Install commands used in our scripts and standard present on a clean ubuntu
 # installation and setup a user with sudo priviledges
