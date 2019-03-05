@@ -5,6 +5,8 @@
 # Set the base image to Ubuntu 16.04
 FROM ubuntu:16.04
 
+ARG CI_BUILD_BRANCH=
+
 # Inform scripts that no questions should be asked and set some environment
 # variables to prevent warnings and errors
 ENV DEBIAN_FRONTEND=noninteractive \
@@ -12,7 +14,8 @@ ENV DEBIAN_FRONTEND=noninteractive \
     LANG=C.UTF-8 \
     DOCKER=true \
     USER=amigo \
-    TERM=xterm
+    TERM=xterm \
+    CI_BRANCH=$CI_BUILD_BRANCH
 
 # Set default shell to be bash
 SHELL ["/bin/bash", "-c"]
@@ -30,16 +33,11 @@ RUN apt-get update -qq && \
 USER "$USER"
 WORKDIR /home/"$USER"
 
-# The source of tue-env is already checked out in the current dir, moving this to the docker
-COPY / ./.tue/
-
 # Setup tue-env and install target ros
     # Remove interactive check from bashrc, otherwise bashrc refuses to execute
 RUN sed -e s/return//g -i ~/.bashrc && \
-    # Change the ownership of tue dir to USER
-    sudo chown -R "$USER:$USER" ~/.tue/ && \
     # Run the standard installation script
-    ~/.tue/installer/bootstrap.bash && \
+    source <(wget -O - https://raw.githubusercontent.com/tue-robotics/tue-env/master/installer/bootstrap.bash) && \
     # Make tue-env to be available to the environment
     source ~/.bashrc && \
     # Set all git repositories to use HTTPS urls (Needed for local image builds)
