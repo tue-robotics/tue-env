@@ -33,6 +33,9 @@ RUN apt-get update -qq && \
 USER "$USER"
 WORKDIR /home/"$USER"
 
+# Test CI BRANCH
+RUN echo $CI_BRANCH
+
 # Setup tue-env and install target ros
     # Remove interactive check from bashrc, otherwise bashrc refuses to execute
 RUN sed -e s/return//g -i ~/.bashrc && \
