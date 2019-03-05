@@ -44,16 +44,20 @@ if [ -n "$CI" -a -n "$DOCKER" ]
 then
     if [ -n "$CI_BRANCH" ]
     then
+        echo -en "[tue-env](bootstrap) Cloning tue-env repository with branch: $CI_BRANCH"
         git clone --single-branch --branch "$CI_BRANCH" https://github.com/tue-robotics/tue-env.git ~/.tue
     else
+        echo -en "[tue-env](bootstrap) Cloning complete tue-env repository"
         git clone https://github.com/tue-robotics/tue-env.git ~/.tue
     fi
-fi
-
-if [[ -z "$CI" ]]
+elif [[ -z "$CI" ]]
 then
     # Update installer
+    echo -en "[tue-env](bootstrap) Cloning complete tue-env repository"
     git clone https://github.com/tue-robotics/tue-env.git ~/.tue
+else
+    echo -en "[tue-env](bootstrap) On CI but not in Docker. Exiting process..."
+    return 1
 fi
 
 # Source the installer commands
