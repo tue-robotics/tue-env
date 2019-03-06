@@ -41,7 +41,7 @@ then
 fi
 
 # If in CI with Docker, then clone tue-env with CI_BRANCH
-if [ -n "$CI" -a -n "$DOCKER"]
+if [ -n "$CI" -a -n "$DOCKER" ]
 then
     if [ "$CI_PULL_REQUEST" == "false" ]
     then
