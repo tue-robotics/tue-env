@@ -6,7 +6,7 @@
 FROM ubuntu:16.04
 
 # Build time arguments
-# CI_BRANCH is the PULL_REQUEST_BRANCH if in PULL_REQUEST mode else it is the
+# BRANCH is the PULL_REQUEST_BRANCH if in PULL_REQUEST mode else it is the
 # BUILD_BRANCH
 ARG BRANCH=master
 ARG CI_PULL_REQUEST=false
