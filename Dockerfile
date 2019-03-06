@@ -46,7 +46,7 @@ WORKDIR /home/"$USER"
 RUN sed -e s/return//g -i ~/.bashrc && \
     # Run the standard installation script if not in a PR
     if [ "$CI_PULL_REQUEST" == "false" ]; then \
-        source <(wget -O - https://raw.githubusercontent.com/tue-robotics/tue-env/"$CI_BRANCH"/installer/bootstrap.bash);
+        source <(wget -O - https://raw.githubusercontent.com/tue-robotics/tue-env/"$CI_BRANCH"/installer/bootstrap.bash); \
     else \
        { [ -d ~/.tue ] && sudo chown -R "$USER":"$USER" ~/.tue && \
         ~/.tue/installer/bootstrap.bash; };
