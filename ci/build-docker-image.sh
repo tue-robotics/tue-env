@@ -12,15 +12,31 @@ IMAGE_NAME=tueroboticsamigo/tue-env:$(echo "$TRAVIS_BRANCH" | tr '[:upper:]' '[:
 
 echo -e "\e[35m\e[1m Creating docker $IMAGE_NAME \e[0m"
 
-# build the Docker image (this will use the Dockerfile in the root of the repo)
-docker build --build-arg CI_BUILD_BRANCH="$TRAVIS_BRANCH" -t $IMAGE_NAME .
+if [ "$TRAVIS_PULL_REQUEST" != "false" ]
+then
+    local end_tag="##TUE_END"
+    local begin_tag="##TUE_BEGIN"
+    local target_file=Dockerfile
+    local source_text="COPY / ./.tue/"
 
-# authenticate with the Docker Hub registry
-docker login -u="$DOCKER_HUB_USERNAME" -p="$DOCKER_HUB_PASSWORD"
+    # Dynamically modify Dockerfile
+    sed -e "/^$end_tag/r $source_text" -e "/^$begin_tag/,/^$end_tag/d" $target_file | tee $target_file.tmp
+    mv $target_file.tmp $target_file
+    echo -en " "
+
+    cat $target_file
+fi
+
+# build the Docker image (this will use the Dockerfile in the root of the repo)
+docker build --build-arg CI_BUILD_BRANCH="$TRAVIS_BRANCH" --build-arg \
+CI_PULL_REQUEST="$TRAVIS_PULL_REQUEST" -t $IMAGE_NAME .
 
 # push the new Docker image to the Docker registry only after acceptance of pull request
 if [[ $TRAVIS_PULL_REQUEST == "false" ]]
 then
+    # authenticate with the Docker Hub registry
+    docker login -u="$DOCKER_HUB_USERNAME" -p="$DOCKER_HUB_PASSWORD"
+
     echo -e "\e[35m\e[1m docker push $IMAGE_NAME \e[0m"
     docker push $IMAGE_NAME
 
