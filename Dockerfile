@@ -49,7 +49,7 @@ RUN sed -e s/return//g -i ~/.bashrc && \
         source <(wget -O - https://raw.githubusercontent.com/tue-robotics/tue-env/"$CI_BRANCH"/installer/bootstrap.bash); \
     else \
        { [ -d ~/.tue ] && sudo chown -R "$USER":"$USER" ~/.tue && \
-        ~/.tue/installer/bootstrap.bash; };
+        ~/.tue/installer/bootstrap.bash; }; \
     fi && \
     # Make tue-env to be available to the environment
     source ~/.bashrc && \
