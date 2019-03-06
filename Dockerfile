@@ -5,8 +5,9 @@
 # Set the base image to Ubuntu 16.04
 FROM ubuntu:16.04
 
-ARG CI_BUILD_BRANCH=master \
-    CI_PULL_REQUEST=false
+# Build time arguments
+ARG CI_BUILD_BRANCH=master
+ARG CI_PULL_REQUEST=false
 
 # Inform scripts that no questions should be asked and set some environment
 # variables to prevent warnings and errors
