@@ -23,13 +23,13 @@ case $DISTRIB_RELEASE in
         TUE_ROS_DISTRO=melodic
         ;;
     *)
-        echo "[bootstrap] Ubuntu $DISTRIB_RELEASE is unsupported. Use either 16.04 or 18.04"
+        echo "[tue-env](bootstrap) Ubuntu $DISTRIB_RELEASE is unsupported. Use either 16.04 or 18.04"
         exit 1
         ;;
 esac
 
 # Move old environments and installer
-if [ -d ~/.tue ]
+if [ -d ~/.tue -a -z "$CI" ]
 then
     FILES=$(find ~/.tue/user/envs -maxdepth 1 -type f)
     date_now=$(date +%F_%R)
