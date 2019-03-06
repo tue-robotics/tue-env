@@ -6,7 +6,9 @@
 FROM ubuntu:16.04
 
 # Build time arguments
-ARG CI_BUILD_BRANCH=master
+# CI_BRANCH is the PULL_REQUEST_BRANCH if in PULL_REQUEST mode else it is the
+# BUILD_BRANCH
+ARG CI_BRANCH=master
 ARG CI_PULL_REQUEST=false
 
 # Inform scripts that no questions should be asked and set some environment
@@ -17,7 +19,7 @@ ENV DEBIAN_FRONTEND=noninteractive \
     DOCKER=true \
     USER=amigo \
     TERM=xterm \
-    CI_BRANCH=$CI_BUILD_BRANCH \
+    CI_BRANCH=$CI_BRANCH \
     CI_PULL_REQUEST=$CI_PULL_REQUEST
 
 
@@ -45,12 +47,7 @@ WORKDIR /home/"$USER"
     # Remove interactive check from bashrc, otherwise bashrc refuses to execute
 RUN sed -e s/return//g -i ~/.bashrc && \
     # Run the standard installation script if not in a PR
-    if [ "$CI_PULL_REQUEST" == "false" ]; then \
-        source <(wget -O - https://raw.githubusercontent.com/tue-robotics/tue-env/"$CI_BRANCH"/installer/bootstrap.bash); \
-    else \
-       { [ -d ~/.tue ] && sudo chown -R "$USER":"$USER" ~/.tue && \
-        ~/.tue/installer/bootstrap.bash; }; \
-    fi && \
+    source <(wget -q -O - https://raw.githubusercontent.com/tue-robotics/tue-env/"$CI_BRANCH"/ci/docker-build-select.bash) && \
     # Make tue-env to be available to the environment
     source ~/.bashrc && \
     # Set all git repositories to use HTTPS urls (Needed for local image builds)
