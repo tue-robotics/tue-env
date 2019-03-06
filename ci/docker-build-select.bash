@@ -12,7 +12,7 @@ fi
 # If no PR is being tested, build the standard image
 if [ "$CI_PULL_REQUEST" == "false" ]
 then
-    source <(wget -O - https://raw.githubusercontent.com/tue-robotics/tue-env/"$CI_BRANCH"/installer/bootstrap.bash)
+    source <(wget -q -O - https://raw.githubusercontent.com/tue-robotics/tue-env/"$CI_BRANCH"/installer/bootstrap.bash)
 else
     [ -d ~/.tue ] && sudo chown -R "$USER":"$USER" ~/.tue && ~/.tue/installer/bootstrap.bash
 fi
