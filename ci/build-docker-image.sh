@@ -14,10 +14,10 @@ echo -e "\e[35m\e[1m Creating docker $IMAGE_NAME \e[0m"
 
 if [ "$TRAVIS_PULL_REQUEST" != "false" ]
 then
-    local end_tag="##TUE_END"
-    local begin_tag="##TUE_BEGIN"
-    local target_file=Dockerfile
-    local source_text="COPY / ./.tue/"
+    end_tag="##TUE_END"
+    begin_tag="##TUE_BEGIN"
+    target_file=Dockerfile
+    source_text="COPY / ./.tue/"
 
     # Dynamically modify Dockerfile
     sed -e "/^$end_tag/r $source_text" -e "/^$begin_tag/,/^$end_tag/d" $target_file | tee $target_file.tmp
