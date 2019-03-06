@@ -46,10 +46,10 @@ then
     if [ "$CI_PULL_REQUEST" == "false" ]
     then
         # Docker has a default value as master for CI_BRANCH
-        if [ -n "$CI_BRANCH" ]
+        if [ -n "$BRANCH" ]
         then
-            echo -e "[tue-env](bootstrap) Cloning tue-env repository with branch: $CI_BRANCH"
-            git clone --single-branch --branch "$CI_BRANCH" https://github.com/tue-robotics/tue-env.git ~/.tue
+            echo -e "[tue-env](bootstrap) Cloning tue-env repository with branch: $BRANCH"
+            git clone --single-branch --branch "$BRANCH" https://github.com/tue-robotics/tue-env.git ~/.tue
         else
             echo -e "[tue-env](bootstrap) Error! CI branch is unset"
             return 1

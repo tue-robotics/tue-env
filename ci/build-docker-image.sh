@@ -32,14 +32,10 @@ then
 
     # Remove the dockerignore to ensure local repository copy
     rm .dockerignore
-    # Set CI BRANCH to the PR BRANCH
-    CI_BRANCH="$TRAVIS_PULL_REQUEST_BRANCH"
-else
-    CI_BRANCH="$TRAVIS_BRANCH"
 fi
 
 # build the Docker image (this will use the Dockerfile in the root of the repo)
-docker build --build-arg CI_BRANCH="$CI_BRANCH" --build-arg \
+docker build --build-arg BRANCH=${TRAVIS_PULL_REQUEST_BRANCH:-$TRAVIS_BRANCH} --build-arg \
 CI_PULL_REQUEST="$TRAVIS_PULL_REQUEST" -t $IMAGE_NAME .
 
 # push the new Docker image to the Docker registry only after acceptance of pull request
