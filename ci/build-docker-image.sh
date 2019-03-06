@@ -7,7 +7,14 @@
 # Stop on errors
 set -o errexit
 
-# create tag based on branch name
+# Execute script only in a CI environment
+if [ "$CI" != "true" ]
+then
+    echo -e "\e[35m\e[1m Error!\e[0m Trying to execute a CI script in a non-CI environment. Exiting script."
+    exit 1
+fi
+
+# Create tag based on branch name
 IMAGE_NAME=tueroboticsamigo/tue-env:$(echo "$TRAVIS_BRANCH" | tr '[:upper:]' '[:lower:]' | sed -e 's:/:_:g')
 
 echo -e "\e[35m\e[1m Creating docker $IMAGE_NAME \e[0m"
@@ -22,11 +29,17 @@ then
     # Dynamically modify Dockerfile
     sed -e "/^$end_tag/a $source_text" -e "/^$begin_tag/,/^$end_tag/d" $target_file | tee $target_file.tmp
     mv $target_file.tmp $target_file
+
+    # Remove the dockerignore to ensure local repository copy
     rm .dockerignore
+    # Set CI BRANCH to the PR BRANCH
+    CI_BRANCH="$TRAVIS_PULL_REQUEST_BRANCH"
+else
+    CI_BRANCH="$TRAVIS_BRANCH"
 fi
 
 # build the Docker image (this will use the Dockerfile in the root of the repo)
-docker build --build-arg CI_BUILD_BRANCH="$TRAVIS_BRANCH" --build-arg \
+docker build --build-arg CI_BRANCH="$CI_BRANCH" --build-arg \
 CI_PULL_REQUEST="$TRAVIS_PULL_REQUEST" -t $IMAGE_NAME .
 
 # push the new Docker image to the Docker registry only after acceptance of pull request
