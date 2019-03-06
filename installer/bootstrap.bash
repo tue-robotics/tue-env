@@ -41,16 +41,21 @@ then
 fi
 
 # If in CI with Docker, then clone tue-env with CI_BRANCH
-if [ -n "$CI" ]
+if [ -n "$CI" -a -n "$DOCKER"]
 then
-    if [ -n "$DOCKER" -a -n "$CI_BRANCH" ]
+    if [ "$CI_PULL_REQUEST" == "false" ]
     then
-        echo -en "[tue-env](bootstrap) Docker CI environment found"
-        echo -en "[tue-env](bootstrap) Cloning tue-env repository with branch: $CI_BRANCH"
-        git clone --single-branch --branch "$CI_BRANCH" https://github.com/tue-robotics/tue-env.git ~/.tue
+        if [ -n "$CI_BRANCH" ]
+        then
+            echo -en "[tue-env](bootstrap) Docker CI environment found"
+            echo -en "[tue-env](bootstrap) Cloning tue-env repository with branch: $CI_BRANCH"
+            git clone --single-branch --branch "$CI_BRANCH" https://github.com/tue-robotics/tue-env.git ~/.tue
+        else
+            echo -en "[tue-env](bootstrap) Error! CI branch is unset"
+            return 1
+        fi
     else
-        echo -en "[tue-env](bootstrap) Error! In CI but either not in Docker or no CI_BRANCH set"
-        return 1
+        echo -en "[tue-env](bootstrap) Testing Pull Request"
     fi
 else
     # Update installer
