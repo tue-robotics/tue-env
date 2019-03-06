@@ -21,7 +21,6 @@ then
 
     # Dynamically modify Dockerfile
     sed -e "/^$end_tag/a $source_text" -e "/^$begin_tag/,/^$end_tag/d" $target_file | tee $target_file
-    cat $target_file
 fi
 
 # build the Docker image (this will use the Dockerfile in the root of the repo)
