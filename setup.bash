@@ -9,7 +9,8 @@ source $TUE_DIR/setup/tue-env.bash
 function _tue-check-env-vars
 {
     [ -n "$TUE_DIR" ] && [ -n "$TUE_ENV" ] && [ -n "$TUE_ENV_DIR" ] \
-       && [ -n "$TUE_BIN" ] && [ -n "$TUE_ENV_TARGETS_DIR" ] && return 0
+       && [ -n "$TUE_BIN" ] && [ -n "$TUE_ENV_TARGETS_DIR" ] \
+       && [ -n "$TUE_DATA"] && return 0
     echo "[tue] Not all needed environment variables are set."
     return 1
 }
@@ -68,5 +69,6 @@ then
 fi
 
 export TUE_BIN=$TUE_DIR/bin
+export TUE_DATA=~/tue-data
 export PATH=$TUE_BIN${PATH:+:${PATH}}
 
