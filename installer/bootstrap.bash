@@ -40,12 +40,13 @@ then
     mv -f ~/.tue ~/.tue.$date_now
 fi
 
-# If in CI with Docker, then clone tue-env with CI_BRANCH
+# If in CI with Docker, then clone tue-env with BRANCH when not testing a PR
 if [ -n "$CI" -a -n "$DOCKER" ]
 then
+    # Docker has a default value as false for CI_PULL_REQUEST
     if [ "$CI_PULL_REQUEST" == "false" ]
     then
-        # Docker has a default value as master for CI_BRANCH
+        # Docker has a default value as master for BRANCH
         if [ -n "$BRANCH" ]
         then
             echo -e "[tue-env](bootstrap) Cloning tue-env repository with branch: $BRANCH"
