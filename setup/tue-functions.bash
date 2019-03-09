@@ -704,6 +704,10 @@ function _tue-repos-do
     echo -e "\033[1m[tue-env]\033[0m"
     eval "$@"
 
+    cd $TUE_ENV_TARGETS_DIR
+    echo -e "\033[1m[tue-env-targets]\033[0m"
+    eval "$@"
+
     local repos_dir=$TUE_ENV_DIR/repos/https_/github.com/tue-robotics
 
     local fs=`ls $repos_dir`
