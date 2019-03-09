@@ -8,17 +8,18 @@ FROM ubuntu:16.04
 # Build time arguments
 # BRANCH is the PULL_REQUEST_BRANCH if in PULL_REQUEST mode else it is the
 # BUILD_BRANCH
+ARG CI=false
 ARG BRANCH=master
 ARG PULL_REQUEST=false
 
 # Inform scripts that no questions should be asked and set some environment
 # variables to prevent warnings and errors
 ENV DEBIAN_FRONTEND=noninteractive \
-    CI=true \
     LANG=C.UTF-8 \
     DOCKER=true \
     USER=amigo \
     TERM=xterm \
+    CI=$CI \
     BRANCH=$BRANCH \
     PULL_REQUEST=$PULL_REQUEST
 
