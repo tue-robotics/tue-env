@@ -10,7 +10,7 @@ then
 fi
 
 # If no PR is being tested, build the standard image
-if [ "$CI_PULL_REQUEST" == "false" ]
+if [ "$PULL_REQUEST" == "false" ]
 then
     source <(wget -q -O - https://raw.githubusercontent.com/tue-robotics/tue-env/"$BRANCH"/installer/bootstrap.bash)
 else
