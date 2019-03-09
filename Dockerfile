@@ -40,15 +40,11 @@ RUN apt-get update -qq && \
 USER "$USER"
 WORKDIR /home/"$USER"
 
-# Dynamic additions to Dockerfile in case of a PR
-##TUE_BEGIN
-##TUE_END
-
 # Setup tue-env and install target ros
     # Remove interactive check from bashrc, otherwise bashrc refuses to execute
 RUN sed -e s/return//g -i ~/.bashrc && \
     # Run the standard installation script if not in a PR
-    source <(wget -q -O - https://raw.githubusercontent.com/tue-robotics/tue-env/"$BRANCH"/ci/docker-build-select.bash) && \
+    source <(wget -q -O - https://raw.githubusercontent.com/tue-robotics/tue-env/"$BRANCH"/installer/bootstap.bash) && \
     # Make tue-env to be available to the environment
     source ~/.bashrc && \
     # Set all git repositories to use HTTPS urls (Needed for local image builds)
