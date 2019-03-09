@@ -1,6 +1,9 @@
 sudo: true
-dist: trusty
+dist: xenial
 language: cpp
+
+services:
+    - docker
 
 jobs:
   include:
