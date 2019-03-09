@@ -9,7 +9,7 @@ FROM ubuntu:16.04
 # BRANCH is the PULL_REQUEST_BRANCH if in PULL_REQUEST mode else it is the
 # BUILD_BRANCH
 ARG BRANCH=master
-ARG CI_PULL_REQUEST=false
+ARG PULL_REQUEST=false
 
 # Inform scripts that no questions should be asked and set some environment
 # variables to prevent warnings and errors
@@ -20,7 +20,7 @@ ENV DEBIAN_FRONTEND=noninteractive \
     USER=amigo \
     TERM=xterm \
     BRANCH=$BRANCH \
-    CI_PULL_REQUEST=$CI_PULL_REQUEST
+    PULL_REQUEST=$PULL_REQUEST
 
 
 # Set default shell to be bash

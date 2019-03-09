@@ -43,8 +43,8 @@ fi
 # If in CI with Docker, then clone tue-env with BRANCH when not testing a PR
 if [ -n "$CI" -a -n "$DOCKER" ]
 then
-    # Docker has a default value as false for CI_PULL_REQUEST
-    if [ "$CI_PULL_REQUEST" == "false" ]
+    # Docker has a default value as false for PULL_REQUEST
+    if [ "$PULL_REQUEST" == "false" ]
     then
         # Docker has a default value as master for BRANCH
         if [ -n "$BRANCH" ]
