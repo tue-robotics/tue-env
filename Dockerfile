@@ -1,38 +1,53 @@
+# ----------------------------------------------------------------
+#       Dockerfile to build working Ubuntu image with tue-env
+# ----------------------------------------------------------------
+
+# Set the base image to Ubuntu 16.04
 FROM ubuntu:16.04
 
-# Inform scripts that no questions should be asked
-ENV DEBIAN_FRONTEND=noninteractive
+# Inform scripts that no questions should be asked and set some environment
+# variables to prevent warnings and errors
+ENV DEBIAN_FRONTEND=noninteractive \
+    CI=true \
+    LANG=C.UTF-8 \
+    DOCKER=true \
+    USER=amigo \
+    TERM=xterm
 
-# Install commands used in our scripts and standard present on a clean ubuntu installation
-RUN apt-get update -qq && apt-get install -qq --assume-yes --no-install-recommends sudo apt-utils git wget curl lsb-release ca-certificates apt-transport-https
+# Set default shell to be bash
+SHELL ["/bin/bash", "-c"]
 
-# Add amigo user
-RUN adduser --disabled-password --gecos "" amigo
-RUN adduser amigo sudo
-RUN echo '%sudo ALL=(ALL) NOPASSWD:ALL' >> /etc/sudoers
-USER amigo
-WORKDIR /home/amigo
+# Install commands used in our scripts and standard present on a clean ubuntu
+# installation and setup a user with sudo priviledges
+RUN apt-get update -qq && \
+    apt-get install -qq --assume-yes --no-install-recommends apt-transport-https apt-utils ca-certificates curl dbus dialog git lsb-release sudo wget && \
+    # Add amigo user
+    adduser --disabled-password --gecos "" $USER && \
+    adduser $USER sudo && \
+    echo '%sudo ALL=(ALL) NOPASSWD:ALL' >> /etc/sudoers
 
-# Remove interactive check from bashrc, otherwise bashrc refuses to execute
-RUN sed -e s/return//g -i ~/.bashrc
-
-# Setup tue env
-RUN mkdir -p ~/.tue
+# Setup the current user and its home directory
+USER "$USER"
+WORKDIR /home/"$USER"
 
 # The source of tue-env is already checked out in the current dir, moving this to the docker
-ADD ./ /home/amigo/.tue/
-RUN sudo chown -R amigo:amigo /home/amigo/.tue/
+COPY / ./.tue/
 
-# Set some environment variables to prevent warnings and errors
-ENV CI=true
-ENV LANG=C.UTF-8
+# Setup tue-env and install target ros
+    # Remove interactive check from bashrc, otherwise bashrc refuses to execute
+RUN sed -e s/return//g -i ~/.bashrc && \
+    # Change the ownership of tue dir to USER
+    sudo chown -R "$USER:$USER" ~/.tue/ && \
+    # Run the standard installation script
+    ~/.tue/installer/bootstrap.bash && \
+    # Make tue-env to be available to the environment
+    source ~/.bashrc && \
+    # Set all git repositories to use HTTPS urls (Needed for local image builds)
+    tue-env config ros-"$TUE_ROS_DISTRO" use-https && \
+    # Install target ros
+    tue-get install ros && \
+    # Show ownership of .tue
+    namei -l ~/.tue && \
+    # Check git remote origin
+    git -C ~/.tue remote -v
 
-# Run the standard installation script
-RUN /home/amigo/.tue/installer/bootstrap.bash
-
-# Already install ros since we will use this anyway
-RUN bash -c 'source /home/amigo/.bashrc && tue-get install ros'
-
-# Cleanup, make sure image is usable like any other computer
-RUN sudo chown -R amigo:amigo ~/.tue
-RUN cd ~/.tue && git remote set-url origin https://github.com/tue-robotics/tue-env.git

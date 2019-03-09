@@ -1,0 +1,5 @@
+# Ignore files and directories in the docker image
+# Needed when building the docker image locally and not on CI
+/bin/
+/user/
+
