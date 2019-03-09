@@ -36,7 +36,7 @@ Error while installing target '$TUE_INSTALL_CURRENT_TARGET':
 
     $1
 \033[0m"
-    return 1
+    exit 1
 }
 
 # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # #
@@ -59,13 +59,13 @@ function tue-install-info
 
 function tue-install-debug
 {
-    if [ "$DEBUG" = "true" ]; then
+    if [ "$DEBUG" = "true" ]
+    then
         echo -e "\e[0;34m[$TUE_INSTALL_CURRENT_TARGET] DEBUG: $1\033[0m"  | tee --append $INSTALL_DETAILS_FILE
     else
         echo -e "\e[0;34m[$TUE_INSTALL_CURRENT_TARGET] DEBUG: $1\033[0m"  | tee --append $INSTALL_DETAILS_FILE 1> /dev/null
     fi
 }
-
 
 # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # #
 
@@ -96,7 +96,8 @@ function tue-install-target
         fi
     fi
 
-    if [ ! -f $TUE_INSTALL_STATE_DIR/$target ]; then
+    if [ ! -f $TUE_INSTALL_STATE_DIR/$target ]
+    then
         tue-install-debug "File $TUE_INSTALL_STATE_DIR/$target does not exist, going to installation procedure"
 
 
@@ -171,7 +172,8 @@ function _show_update_message
 function tue-install-svn
 {
     tue-install-system-now subversion
-    if [ ! -d $2 ]; then
+    if [ ! -d $2 ]
+    then
         res=$(svn co $1 $2 --trust-server-cert --non-interactive 2>&1)
     else
         res=$(svn up $2 --trust-server-cert --non-interactive 2>&1)
@@ -215,7 +217,8 @@ function tue-install-git
     # Change url to https/ssh
     repo=$(_github_https_or_ssh $repo)
 
-    if [ ! -d $targetdir ]; then
+    if [ ! -d $targetdir ]
+    then
         tue-install-debug "git clone --recursive $repo $targetdir"
         res=$(git clone --recursive $repo $targetdir 2>&1)
         TUE_INSTALL_GIT_PULL_Q+=$targetdir
@@ -548,22 +551,24 @@ function tue-install-ros
     local ros_pkg_name=${TUE_INSTALL_CURRENT_TARGET#ros-}
 
     # First of all, make sure ROS itself is installed
-    tue-install-target ros
+    tue-install-target ros || tue-install-error "Failed to install target 'ROS'"
 
-    if [ "$install_type" = "system" ]; then
+    if [ "$install_type" = "system" ]
+    then
         tue-install-debug "tue-install-system ros-$TUE_ROS_DISTRO-$src"
 
         # all HSR system targets from Toyota need extra apt sources
         if [[ $src == *"hsr"* ||  "$src" == *"tmc"* ]]
         then
-            tue-install-target hsr-setup
+            tue-install-target hsr-setup || tue-install-error "Failed to install target 'hsr-setup'"
         fi
 
         tue-install-system ros-$TUE_ROS_DISTRO-$src
-        return
+        return 0
     fi
 
-    if [ -z $ROS_PACKAGE_INSTALL_DIR ]; then
+    if [ -z $ROS_PACKAGE_INSTALL_DIR ]
+    then
         tue-install-error "Environment variable ROS_PACKAGE_INSTALL_DIR not set."
     fi
 
@@ -578,8 +583,6 @@ function tue-install-ros
     # now, clean out anything that's not alphanumeric or an underscore
     repos_dir=${repos_dir//[^a-zA-Z0-9\/\.-]/_}
 
-    #mkdir -p $repos_dir/..
-
     # For backwards compatibility: if the ros_pkg_dir already exists and is NOT
     # a symbolic link, then update this direcory instead of creating a symbolic
     # link from the repos directory. In other words, the ros_pkg_dir becomes the
@@ -590,18 +593,19 @@ function tue-install-ros
     fi
     tue-install-debug "repos_dir = $repos_dir"
 
-    if [ "$install_type" = "git" ]; then
+    if [ "$install_type" = "git" ]
+    then
         tue-install-git $src $repos_dir $version
         tue-install-debug "git clone $src"
-    elif [ "$install_type" = "svn" ]; then
+    elif [ "$install_type" = "svn" ]
+    then
         tue-install-svn $src $repos_dir $version
     else
         tue-install-error "Unknown ros install type: '${install_type}'"
-        return 1
     fi
 
-    if [ -d $repos_dir ]; then
-
+    if [ -d $repos_dir ]
+    then
         if [ ! -d $repos_dir/$sub_dir ]
         then
             tue-install-error "Subdirectory '$sub_dir' does not exist for URL '$src'."
@@ -623,16 +627,17 @@ function tue-install-ros
             ln -s $repos_dir/$sub_dir $ros_pkg_dir
         fi
 
-        if  [ -f $ros_pkg_dir/package.xml ]; then
+        if  [ -f $ros_pkg_dir/package.xml ]
+        then
             # Catkin
-            deps=`$TUE_INSTALL_SCRIPTS_DIR/parse-ros-package-deps.py $ros_pkg_dir/package.xml`
+            deps=$($TUE_INSTALL_SCRIPTS_DIR/parse-ros-package-deps.py $ros_pkg_dir/package.xml)
             tue-install-debug "Parsed package.xml \n$deps"
 
             for dep in $deps
             do
                 # Preference given to target name starting with ros-
                 tue-install-target ros-$dep || tue-install-target $dep || \
-                    tue-install-error "Target '$dep' does not exist."
+                    tue-install-error "Targets 'ros-$dep' and '$dep' does not exist."
             done
 
         else
@@ -653,7 +658,7 @@ function generate_setup_file
     # Check whether this target was already added to the setup
     if [[ "$TUE_SETUP_TARGETS" == *" $1 "* ]];
     then
-        return
+        return 0
     fi
 
     TUE_SETUP_TARGETS=" $1$TUE_SETUP_TARGETS"
@@ -661,7 +666,7 @@ function generate_setup_file
     # Check if the dependency file exists. If not, return
     if [ ! -f $TUE_INSTALL_DEPENDENCIES_DIR/$1 ]
     then
-        return
+        return 0
     fi
 
     # Recursively add a setup for each dependency
@@ -717,23 +722,6 @@ then
 fi
 
 # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # #
-#                                           For backwards compatibility
-# # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # #
-if [ -d $TUE_REPOS_DIR/https: ]
-then
-    echo "Moving to new repos format: $TUE_REPOS_DIR"
-    mv -bv "$TUE_REPOS_DIR/https:"/* "$TUE_REPOS_DIR/https_"
-    rmdir -v "$TUE_REPOS_DIR/https:"
-fi
-
-if [ -d $TUE_REPOS_DIR/github.com ]
-then
-    echo "Moving to new old repos format: $TUE_REPOS_DIR"
-    mkdir -p "$TUE_REPOS_DIR/https_/github.com"
-    mv -bv "$TUE_REPOS_DIR/github.com"/* "$TUE_REPOS_DIR/https_/github.com"
-    rmdir -v "$TUE_REPOS_DIR/github.com"
-fi
-# # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # #
 
 tue_cmd=$1
 shift
@@ -764,13 +752,14 @@ fi
 for target in $targets
 do
     tue-install-debug "Main loop: installing $target"
-    tue-install-target $target
+    tue-install-target $target || tue-install-error "Installed target: '$target' doesn't exist (anymore)"
 
-    if [[ -d $TUE_INSTALL_TARGETS_DIR/$target && "$tue_cmd" == "install" ]]
-    then
-        # Mark as installed
+    if [[ "$tue_cmd" == "install" ]]
+    then # Mark as installed
         tue-install-debug "[$target] marked as installed after a successful install"
         touch $TUE_INSTALL_INSTALLED_DIR/$target
+    else
+        tue-install-debug "[$target] succesfully updated"
     fi
 done
 
@@ -787,12 +776,14 @@ do
 done
 
 # Display infos
-if [ -n "$TUE_INSTALL_INFOS" ]; then
+if [ -n "$TUE_INSTALL_INFOS" ]
+then
     echo -e "\e[0;36m\nSome information you may have missed:\n\n$TUE_INSTALL_INFOS\033[0m"
 fi
 
 # Display warnings
-if [ -n "$TUE_INSTALL_WARNINGS" ]; then
+if [ -n "$TUE_INSTALL_WARNINGS" ]
+then
     echo -e "\033[33;5;1m\nOverview of warnings:\n\n$TUE_INSTALL_WARNINGS\033[0m"
 fi
 
@@ -800,8 +791,8 @@ fi
 rm -rf $TUE_INSTALL_STATE_DIR
 
 # Installing all the ppa repo's, which are collected during install
-if [ -n "$TUE_INSTALL_PPA" ]; then
-
+if [ -n "$TUE_INSTALL_PPA" ]
+then
     TUE_INSTALL_CURRENT_TARGET="PPA-ADD"
 
     PPA_ADDED=""
@@ -817,15 +808,16 @@ if [ -n "$TUE_INSTALL_PPA" ]; then
             tue-install-debug "$ppa is already added previously"
         fi
     done
-    if [ -n "$PPA_ADDED" ]; then
+    if [ -n "$PPA_ADDED" ]
+    then
         tue-install-debug "Updating apt-get"
-        sudo apt-get update
+        sudo apt-get update -qq
     fi
 fi
 
 # Installing all system (apt-get) targets, which are collected during the install
-if [ -n "$TUE_INSTALL_SYSTEMS" ]; then
-
+if [ -n "$TUE_INSTALL_SYSTEMS" ]
+then
     TUE_INSTALL_CURRENT_TARGET="APT-GET"
 
     tue-install-debug "tue-install-system-now $TUE_INSTALL_SYSTEMS"
@@ -833,12 +825,13 @@ if [ -n "$TUE_INSTALL_SYSTEMS" ]; then
 fi
 
 # Installing all python (pip) targets, which are collected during the install
-if [ -n "$TUE_INSTALL_PIPS" ]; then
-
+if [ -n "$TUE_INSTALL_PIPS" ]
+then
     TUE_INSTALL_CURRENT_TARGET="PIP"
 
     pip_version=$(pip --version | awk '{print $2}')
-    if version_gt "9" "$pip_version"; then
+    if version_gt "9" "$pip_version"
+    then
         tue-install-debug "pip not yet version >=9, but $pip_version"
         sudo -H pip install --upgrade pip
     else
@@ -852,8 +845,8 @@ if [ -n "$TUE_INSTALL_PIPS" ]; then
 fi
 
 # Installing all snap targets, which are collected during the install
-if [ -n "$TUE_INSTALL_SNAPS" ]; then
-
+if [ -n "$TUE_INSTALL_SNAPS" ]
+then
     TUE_INSTALL_CURRENT_TARGET="SNAP"
 
     tue-install-system-now snapd
