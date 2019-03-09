@@ -43,7 +43,7 @@ Error while installing target '$TUE_INSTALL_CURRENT_TARGET':
 
 function tue-install-warning
 {
-    echo -e "\033[33;5;1m[$TUE_INSTALL_CURRENT_TARGET] WARNING: $1\033[0m"
+    echo -e "\033[33;5;1m[$TUE_INSTALL_CURRENT_TARGET] WARNING: $1\033[0m" | tee --append $INSTALL_DETAILS_FILE
     TUE_INSTALL_WARNINGS="    [$TUE_INSTALL_CURRENT_TARGET] $1\n${TUE_INSTALL_WARNINGS}"
 }
 
@@ -51,7 +51,7 @@ function tue-install-warning
 
 function tue-install-info
 {
-    echo -e "\e[0;36m[$TUE_INSTALL_CURRENT_TARGET] INFO: $1\033[0m"
+    echo -e "\e[0;36m[$TUE_INSTALL_CURRENT_TARGET] INFO: $1\033[0m"  | tee --append $INSTALL_DETAILS_FILE
     TUE_INSTALL_INFOS="    [$TUE_INSTALL_CURRENT_TARGET] $1\n${TUE_INSTALL_INFOS}"
 }
 
@@ -60,7 +60,9 @@ function tue-install-info
 function tue-install-debug
 {
     if [ "$DEBUG" = "true" ]; then
-        echo -e "\e[0;34m[$TUE_INSTALL_CURRENT_TARGET] DEBUG: $1\033[0m"
+        echo -e "\e[0;34m[$TUE_INSTALL_CURRENT_TARGET] DEBUG: $1\033[0m"  | tee --append $INSTALL_DETAILS_FILE
+    else
+        echo -e "\e[0;34m[$TUE_INSTALL_CURRENT_TARGET] DEBUG: $1\033[0m"  | tee --append $INSTALL_DETAILS_FILE 1> /dev/null
     fi
 }
 
@@ -154,13 +156,13 @@ function _show_update_message
 {
     if [ -n "$(echo $2)" ]
     then
-        echo -e "\n    \033[1m$1\033[0m"
-        echo "--------------------------------------------------"
-        echo -e "$2"
-        echo "--------------------------------------------------"
-        echo ""
+        echo -e "\n    \033[1m$1\033[0m"                          | tee --append $INSTALL_DETAILS_FILE
+        echo "--------------------------------------------------" | tee --append $INSTALL_DETAILS_FILE
+        echo -e "$2"                                              | tee --append $INSTALL_DETAILS_FILE
+        echo "--------------------------------------------------" | tee --append $INSTALL_DETAILS_FILE
+        echo ""                                                   | tee --append $INSTALL_DETAILS_FILE
     else
-        echo -e "\033[1m$1\033[0m: up-to-date"
+        echo -e "\033[1m$1\033[0m: up-to-date"                    | tee --append $INSTALL_DETAILS_FILE
     fi
 }
 
@@ -591,15 +593,8 @@ function tue-install-ros
     if [ "$install_type" = "git" ]; then
         tue-install-git $src $repos_dir $version
         tue-install-debug "git clone $src"
-        echo "git clone $src" >> $INSTALL_DETAILS_FILE
-        [ "$version" ] && echo "# NOTE: check-out version $version" >> $INSTALL_DETAILS_FILE
     elif [ "$install_type" = "svn" ]; then
         tue-install-svn $src $repos_dir $version
-        if [ "$version" ]; then
-            echo "svn co $src -r $version" >> $INSTALL_DETAILS_FILE
-        else
-            echo "svn co $src" >> $INSTALL_DETAILS_FILE
-        fi
     else
         tue-install-error "Unknown ros install type: '${install_type}'"
         return 1
@@ -809,7 +804,6 @@ if [ -n "$TUE_INSTALL_PPA" ]; then
 
     TUE_INSTALL_CURRENT_TARGET="PPA-ADD"
 
-    echo -e "\nsudo add-apt-repository --yes $TUE_INSTALL_PPA" >> $INSTALL_DETAILS_FILE
     PPA_ADDED=""
     for ppa in $TUE_INSTALL_PPA
     do
@@ -834,8 +828,6 @@ if [ -n "$TUE_INSTALL_SYSTEMS" ]; then
 
     TUE_INSTALL_CURRENT_TARGET="APT-GET"
 
-    echo -e "\nsudo apt-get install --assume-yes $TUE_INSTALL_SYSTEMS" >> $INSTALL_DETAILS_FILE
-
     tue-install-debug "tue-install-system-now $TUE_INSTALL_SYSTEMS"
     tue-install-system-now "$TUE_INSTALL_SYSTEMS"
 fi
@@ -844,8 +836,6 @@ fi
 if [ -n "$TUE_INSTALL_PIPS" ]; then
 
     TUE_INSTALL_CURRENT_TARGET="PIP"
-
-    echo -e "\nyes | pip install --user $TUE_INSTALL_PIPS" >> $INSTALL_DETAILS_FILE
 
     pip_version=$(pip --version | awk '{print $2}')
     if version_gt "9" "$pip_version"; then
@@ -865,8 +855,6 @@ fi
 if [ -n "$TUE_INSTALL_SNAPS" ]; then
 
     TUE_INSTALL_CURRENT_TARGET="SNAP"
-
-    echo -e "\nyes | sudo snap install --classic $TUE_INSTALL_SNAPS" >> $INSTALL_DETAILS_FILE
 
     tue-install-system-now snapd
 
@@ -889,6 +877,7 @@ if [ -n "$TUE_INSTALL_SNAPS" ]; then
         for pkg in $snaps_to_install
         do
             echo -e "yes | sudo snap install --classic $pkg\n"
+            tue-install-debug "yes | sudo snap install --classic $pkg"
             yes | sudo snap install --classic $pkg
         done
     fi
