@@ -36,10 +36,10 @@ fi
 
 # build the Docker image (this will use the Dockerfile in the root of the repo)
 docker build --build-arg BRANCH=${TRAVIS_PULL_REQUEST_BRANCH:-$TRAVIS_BRANCH} --build-arg \
-PULL_REQUEST="$TRAVIS_PULL_REQUEST" -t $IMAGE_NAME .
+PULL_REQUEST="$TRAVIS_PULL_REQUEST" --build-arg CI="$CI" -t $IMAGE_NAME .
 
 # push the new Docker image to the Docker registry only after acceptance of pull request
-if [[ $TRAVIS_PULL_REQUEST == "false" ]]
+if [ $TRAVIS_PULL_REQUEST == "false" ]
 then
     # authenticate with the Docker Hub registry
     docker login -u="$DOCKER_HUB_USERNAME" -p="$DOCKER_HUB_PASSWORD"
