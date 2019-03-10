@@ -8,7 +8,7 @@
 set -o errexit
 
 # create tag based on branch name
-export IMAGE_NAME=tueroboticsamigo/tue-env:`echo "$TRAVIS_BRANCH" | tr '[:upper:]' '[:lower:]' | sed -e 's:/:_:g'`
+export IMAGE_NAME=tuerobotics/tue-env:`echo "$TRAVIS_BRANCH" | tr '[:upper:]' '[:lower:]' | sed -e 's:/:_:g'`
 
 echo -e "\e[35m\e[1m Creating docker $IMAGE_NAME \e[0m"
 
