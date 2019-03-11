@@ -60,7 +60,7 @@ then
     fi
 else
     # Update installer
-    echo -e "[tue-env](bootstrap) Cloning complete tue-env repository"
+    echo -e "[tue-env](bootstrap) Cloning tue-env repository"
     git clone https://github.com/tue-robotics/tue-env.git ~/.tue
 fi
 
