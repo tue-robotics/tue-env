@@ -6,8 +6,9 @@ services:
     - docker
 
 before_install:
-    - git clone https://github.com/tue-robotics/tue-env.git tue-robotics/tue-env
-    - cd tue-robotics/tue-env
+    - git clone https://github.com/$TRAVIS_REPO_SLUG.git $TRAVIS_REPO_SLUG
+    - cd $TRAVIS_REPO_SLUG
+    - git checkout ${TRAVIS_PULL_REQUEST_BRANCH:-${TRAVIS_BRANCH}}
 
 jobs:
   include:
