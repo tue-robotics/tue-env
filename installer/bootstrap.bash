@@ -1,5 +1,6 @@
 #!/bin/bash
 
+echo "[tue-env](bootstrap) Starting tue-env installation"
 # Make sure git is installed
 hash git 2> /dev/null || sudo apt-get install --assume-yes git
 # Make sure lsb-release is installed
@@ -50,7 +51,7 @@ then
         if [ -n "$BRANCH" -a -n "$COMMIT" ]
         then
             echo -e "[tue-env](bootstrap) Cloning tue-env repository with branch: $BRANCH at commit: $COMMIT"
-            git clone -q --single-branch --branch "$BRANCH" https://github.com/tue-robotics/tue-env.git ~/.tue
+            git clone --single-branch --branch "$BRANCH" https://github.com/tue-robotics/tue-env.git ~/.tue
             git -C ~/.tue reset --hard "$COMMIT"
         else
             echo -e "[tue-env](bootstrap) Error! CI branch or commit is unset"
@@ -58,7 +59,7 @@ then
         fi
     else
         echo -e "[tue-env](bootstrap) Testing Pull Request"
-        git clone -q --depth=10 https://github.com/tue-robotics/tue-env.git ~/.tue
+        git clone --depth=10 https://github.com/tue-robotics/tue-env.git ~/.tue
         git -C ~/.tue fetch origin pull/"$PULL_REQUEST"/head:PULLREQUEST
         git -C ~/.tue checkout PULLREQUEST
     fi

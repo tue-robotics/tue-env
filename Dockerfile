@@ -8,10 +8,14 @@ FROM ubuntu:16.04
 # Build time arguments
 # BRANCH is the PULL_REQUEST_BRANCH if in PULL_REQUEST mode else it is the
 # BUILD_BRANCH
-ARG CI=false
-ARG BRANCH=master
-ARG PULL_REQUEST=false
-ARG COMMIT=
+ARG CI=true
+ARG BRANCH=test-pr
+ARG PULL_REQUEST=381
+ARG COMMIT=04363a082608cc49f6dae703aa5b7fae21ec6bf7
+#ARG CI=false
+#ARG BRANCH=master
+#ARG PULL_REQUEST=false
+#ARG COMMIT=
 
 # Inform scripts that no questions should be asked and set some environment
 # variables to prevent warnings and errors
@@ -47,8 +51,13 @@ WORKDIR /home/"$USER"
 RUN sed -e s/return//g -i ~/.bashrc && \
     # Run the standard installation script if not in a PR
     source <(wget -q -O - https://raw.githubusercontent.com/tue-robotics/tue-env/"$BRANCH"/installer/bootstap.bash) && \
+    # Check if .tue exists
+    ls -aln && \
+    # Check git remote
+    git -C ~/.tue remote -v
+
     # Make tue-env to be available to the environment
-    source ~/.bashrc && \
+RUN source ~/.bashrc && \
     # Set all git repositories to use HTTPS urls (Needed for local image builds)
     tue-env config ros-"$TUE_ROS_DISTRO" use-https && \
     # Install target ros
