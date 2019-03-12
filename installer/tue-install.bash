@@ -100,6 +100,7 @@ then
                 echo -en "Switched to branch $BRANCH"
             fi
         else
+            echo # (Optional) move to a new line 
             echo -e "[tue-env-targets] Branch '$BRANCH' does not exist. Current branch is $current_branch"
         fi
     fi
