@@ -56,5 +56,7 @@ RUN sed -e s/return//g -i ~/.bashrc && \
     # Show ownership of .tue
     namei -l ~/.tue && \
     # Check git remote origin
-    git -C ~/.tue remote -v
+    git -C ~/.tue remote -v && \
+    # Show the branches of tue-env
+    git -C ~/.tue branch
 
