@@ -19,12 +19,7 @@ ENV DEBIAN_FRONTEND=noninteractive \
     LANG=C.UTF-8 \
     DOCKER=true \
     USER=amigo \
-    TERM=xterm \
-    CI=$CI \
-    BRANCH=$BRANCH \
-    PULL_REQUEST=$PULL_REQUEST \
-    COMMIT=$COMMIT
-
+    TERM=xterm
 
 # Set default shell to be bash
 SHELL ["/bin/bash", "-c"]
@@ -45,6 +40,13 @@ WORKDIR /home/"$USER"
 # Setup tue-env and install target ros
     # Remove interactive check from bashrc, otherwise bashrc refuses to execute
 RUN sed -e s/return//g -i ~/.bashrc && \
+    # Set the CI args in the container as docker currently provides no method to
+    # remove the environment variables
+    # NOTE: The following exports will exist only in this container
+    export CI=$CI && \
+    export BRANCH=$BRANCH && \
+    export PULL_REQUEST=$PULL_REQUEST && \
+    export COMMIT=$COMMIT && \
     # Run the standard installation script if not in a PR
     source <(wget -q -O - https://raw.githubusercontent.com/tue-robotics/tue-env/"$BRANCH"/installer/bootstrap.bash) && \
     # Make tue-env to be available to the environment
