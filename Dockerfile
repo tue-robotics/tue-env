@@ -11,6 +11,7 @@ FROM ubuntu:16.04
 ARG CI=false
 ARG BRANCH=master
 ARG PULL_REQUEST=false
+ARG COMMIT=
 
 # Inform scripts that no questions should be asked and set some environment
 # variables to prevent warnings and errors
@@ -21,7 +22,8 @@ ENV DEBIAN_FRONTEND=noninteractive \
     TERM=xterm \
     CI=$CI \
     BRANCH=$BRANCH \
-    PULL_REQUEST=$PULL_REQUEST
+    PULL_REQUEST=$PULL_REQUEST \
+    COMMIT=$COMMIT
 
 
 # Set default shell to be bash
