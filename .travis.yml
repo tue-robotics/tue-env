@@ -5,6 +5,10 @@ language: cpp
 services:
     - docker
 
+install:
+    git clone https://github.com/tue-robotics/tue-env.git tue-robotics/tue-env
+    cd tue-robotics/tue-env
+
 jobs:
   include:
     - stage: build docker image
