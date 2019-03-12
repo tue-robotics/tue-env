@@ -51,8 +51,6 @@ tue-env init-targets https://github.com/tue-robotics/tue-env-targets.git
 """
     exit 1
 else
-    echo -en "[tue-env-targets] Updating targets... "
-
     current_url=$(git -C $TUE_ENV_TARGETS_DIR config --get remote.origin.url)
     new_url=$(_github_https_or_ssh $current_url)
 
@@ -62,6 +60,7 @@ else
         echo -e "[tue-env-targets] Origin has switched to $new_url"
     fi
 
+    echo -en "[tue-env-targets] Updating targets... "
     git -C $TUE_ENV_TARGETS_DIR pull --ff-only --prune
 
     error_code=$?
@@ -95,13 +94,13 @@ then
         then
             if [[ "$current_branch" == "$BRANCH" ]]
             then
-                echo -en "[tue-env-targets] Already on branch $BRANCH"
+                echo -en "Already on branch $BRANCH"
             else
                 git -C $TUE_ENV_TARGETS_DIR checkout $BRANCH 2>&1
-                echo -en "[tue-env-targets] Switchted to branch $BRANCH"
+                echo -en "Switched to branch $BRANCH"
             fi
         else
-            echo -en "[tue-env-targets] Branch '$BRANCH' does not exist. Current branch is $current_branch"
+            echo -e "[tue-env-targets] Branch '$BRANCH' does not exist. Current branch is $current_branch"
         fi
     fi
 fi
