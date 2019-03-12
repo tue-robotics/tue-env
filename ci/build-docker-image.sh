@@ -14,8 +14,18 @@ then
     exit 1
 fi
 
+default_branch=$(git symbolic-ref refs/remotes/origin/HEAD | sed 's@^refs/remotes/origin/@@')
+echo "Repository default branch: $default_branch"
+
+if [ "$default_branch" == "$TRAVIS_BRANCH" ]
+then
+    IMAGE_TAG="latest"
+else
+    IMAGE_TAG=$(echo "$TRAVIS_BRANCH" | tr '[:upper:]' '[:lower:]' | sed -e 's:/:_:g')
+fi
+
 # Create tag based on branch name
-IMAGE_NAME=tuerobotics/tue-env:$(echo "$TRAVIS_BRANCH" | tr '[:upper:]' '[:lower:]' | sed -e 's:/:_:g')
+IMAGE_NAME=tuerobotics/tue-env:"$IMAGE_TAG"
 
 echo -e "\e[35m\e[1m Creating docker $IMAGE_NAME \e[0m"
 
