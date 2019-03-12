@@ -47,16 +47,20 @@ then
     if [ "$PULL_REQUEST" == "false" ]
     then
         # Docker has a default value as master for BRANCH
-        if [ -n "$BRANCH" ]
+        if [ -n "$BRANCH" -a -n "$COMMIT" ]
         then
-            echo -e "[tue-env](bootstrap) Cloning tue-env repository with branch: $BRANCH"
-            git clone --single-branch --branch "$BRANCH" https://github.com/tue-robotics/tue-env.git ~/.tue
+            echo -e "[tue-env](bootstrap) Cloning tue-env repository with branch: $BRANCH at commit: $COMMIT"
+            git clone -q --single-branch --branch "$BRANCH" https://github.com/tue-robotics/tue-env.git ~/.tue
+            git -C ~/.tue reset --hard "$COMMIT"
         else
-            echo -e "[tue-env](bootstrap) Error! CI branch is unset"
+            echo -e "[tue-env](bootstrap) Error! CI branch or commit is unset"
             return 1
         fi
     else
         echo -e "[tue-env](bootstrap) Testing Pull Request"
+        git clone -q --depth=10 https://github.com/tue-robotics/tue-env.git ~/.tue
+        git -C ~/.tue fetch origin pull/"$PULL_REQUEST"/head:PULLREQUEST
+        git -C ~/.tue checkout PULLREQUEST
     fi
 else
     # Update installer
