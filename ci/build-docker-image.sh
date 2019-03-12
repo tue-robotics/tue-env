@@ -14,7 +14,7 @@ then
     exit 1
 fi
 
-default_branch=$(git symbolic-ref refs/remotes/origin/HEAD | sed 's@^refs/remotes/origin/@@')
+default_branch=$(git update-ref && git symbolic-ref refs/remotes/origin/HEAD | sed 's@^refs/remotes/origin/@@')
 echo "Repository default branch: $default_branch"
 
 if [ "$default_branch" == "$TRAVIS_BRANCH" ]
