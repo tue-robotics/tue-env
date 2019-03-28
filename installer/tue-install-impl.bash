@@ -91,18 +91,6 @@ function tue-install-rosdep
         then
             tue-install-debug "rosdep correctly resolved to: ${rosdep_res[@]}"
 
-            # If the target has a parent target, add target as a dependency to the parent target
-            if [ -n "$parent_target" ]
-            then
-                if [ "$parent_target" != "$target" ]
-                then
-                    echo "$target" >> $TUE_INSTALL_DEPENDENCIES_DIR/$parent_target
-                    echo "$parent_target" >> $TUE_INSTALL_DEPENDENCIES_ON_DIR/$target
-                    sort $TUE_INSTALL_DEPENDENCIES_DIR/$parent_target -u -o $TUE_INSTALL_DEPENDENCIES_DIR/$parent_target
-                    sort $TUE_INSTALL_DEPENDENCIES_ON_DIR/$target -u -o $TUE_INSTALL_DEPENDENCIES_ON_DIR/$target
-                fi
-            fi
-
             case ${rosdep_res[0]} in
                 "#apt") tue-install-system ${rosdep_res[1]}
                 ;;
@@ -111,6 +99,23 @@ function tue-install-rosdep
                 *) tue-install-debug "Unsupported rosdep output: ${rosdep_res[@]}"; TUE_INSTALL_CURRENT_TARGET=$parent_target; return 1
                 ;;
             esac
+
+            # If the target has a parent target, add target as a dependency to the parent target
+            if [ -n "$parent_target" ]
+            then
+                if [ "$parent_target" != "$target" ]
+                then
+                    local dep_target="$target"
+                    if [[ "${rosdep_res[1]}" == "ros-"* ]]
+                    then
+                        dep_target="ros-$target" # Add ros prefix for clearity
+                    fi
+                    echo "$dep_target" >> $TUE_INSTALL_DEPENDENCIES_DIR/$parent_target
+                    echo "$parent_target" >> $TUE_INSTALL_DEPENDENCIES_ON_DIR/$dep_target
+                    sort $TUE_INSTALL_DEPENDENCIES_DIR/$parent_target -u -o $TUE_INSTALL_DEPENDENCIES_DIR/$parent_target
+                    sort $TUE_INSTALL_DEPENDENCIES_ON_DIR/$dep_target -u -o $TUE_INSTALL_DEPENDENCIES_ON_DIR/$dep_target
+                fi
+            fi
 
             touch $TUE_INSTALL_STATE_DIR/$target
 
