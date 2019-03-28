@@ -81,14 +81,15 @@ function tue-install-rosdep
     then
         tue-install-debug "Target '$target' has not yet been resolved by rosdep, going to installation procedure"
 
+        # Also make sure ros is installed
+        tue-install-target ros || tue-install-error "Failed to install target 'ROS'"
+
         # Check if target can be resolved by rosdep
         tue-install-debug "rosdep resolve $target"
         rosdep_res=($(rosdep resolve $target 2>&1))
         if [ $? -eq 0 ]
         then
             tue-install-debug "rosdep correctly resolved to: ${rosdep_res[@]}"
-            # Also make sure ros is installed
-            tue-install-target ros || tue-install-error "Failed to install target 'ROS'"
 
             # If the target has a parent target, add target as a dependency to the parent target
             if [ -n "$parent_target" ]
