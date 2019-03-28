@@ -78,8 +78,44 @@ function tue-install-target
     # Check if valid target received as input
     if [ ! -d $TUE_INSTALL_TARGETS_DIR/$target ]
     then
-        tue-install-debug "Target '$target' does not exist."
-        return 1
+        # ros-targets can also be resolved by rosdep
+        if [[ "$target" != "ros-"* ]]
+        then
+            tue-install-debug "Target '$target' does not exist."
+            return 1
+        fi
+
+        # If file exist, target has been resolved correctly in the past.
+        if [ ! -f $TUE_INSTALL_STATE_DIR/$target ]
+        then
+            tue-install-debug "File $TUE_INSTALL_STATE_DIR/$target does not exist, going to installation procedure"
+
+            # Check if ros target can be resolved by rosdep
+            tue-install-debug "rosdep resolve ${target#ros-}"
+            rosdep_res=($(rosdep resolve ${target#ros-} 2>&1))
+            if [ $? -eq 0 ]
+            then
+                if [[ ${rosdep_res[0]} == "#apt" ]]
+                then
+                    tue-install-system ${rosdep_res[1]}
+                elif [[ ${rosdep_res[0]} == "#pip" ]]
+                then
+                    tue-install-pip ${rosdep_res[1]}
+                else
+                    tue-install-debug "Target '$target' generates the following unsupported rosdep output: '$rosdep_res'"
+                    return 1
+                fi
+                # Also make sure ros is installed
+                tue-install-target ros || tue-install-error "Failed to install target 'ROS'"
+                touch $TUE_INSTALL_STATE_DIR/$target
+                return 0
+            else
+                tue-install-debug "Target '$target' does not exist and could not be resolved by rosdep. error: '$rosdep_res'"
+                return 1
+            fi
+        else
+            tue-install-debug "File $TUE_INSTALL_STATE_DIR/$target DOES exist, so it has been correctly been reoslved by rosdep in the past"
+        fi
     fi
 
     local parent_target=$TUE_INSTALL_CURRENT_TARGET
