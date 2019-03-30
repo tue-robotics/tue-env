@@ -1,8 +1,5 @@
 #!/bin/bash
 
-_TUE_CATKIN_DEV_DIR=$TUE_ENV_DIR/dev
-_TUE_CATKIN_SYSTEM_DIR=$TUE_ENV_DIR/system
-
 # ----------------------------------------------------------------------------------------------------
 #                                        HELPER FUNCTIONS
 # ----------------------------------------------------------------------------------------------------
@@ -56,36 +53,23 @@ export -f _github_https_or_ssh # otherwise not available in sourced files
 
 function tue-make
 {
-    if [ -n "$TUE_ROS_DISTRO" ] && [ -d $_TUE_CATKIN_SYSTEM_DIR ]
+    if [ ! -d $TUE_SYSTEM_DIR ]
     then
-        case $(cat $_TUE_CATKIN_SYSTEM_DIR/devel/.built_by) in
+        echo -e "[tue-make] Set system workspace (TUE_SYSTEM_DIR) by installing ros target"
+        return 1
+    fi
+
+    case $(cat $TUE_SYSTEM_DIR/devel/.built_by) in
         'catkin_make')
-            catkin_make --directory $_TUE_CATKIN_SYSTEM_DIR -DCMAKE_BUILD_TYPE=RelWithDebInfo $@
+            catkin_make --directory $TUE_SYSTEM_DIR -DCMAKE_BUILD_TYPE=RelWithDebInfo $@
             ;;
         'catkin build')
-            catkin build --workspace $_TUE_CATKIN_SYSTEM_DIR $@
+            catkin build --workspace $TUE_SYSTEM_DIR $@
             ;;
         '')
-            catkin init --workspace $_TUE_CATKIN_SYSTEM_DIR $@
-            catkin build --workspace $_TUE_CATKIN_SYSTEM_DIR $@
+            catkin init --workspace $TUE_SYSTEM_DIR $@
+            catkin build --workspace $TUE_SYSTEM_DIR $@
             ;;
-        esac
-    fi
-}
-
-function tue-make-system
-{
-    case $(cat $_TUE_CATKIN_SYSTEM_DIR/devel/.built_by) in
-    'catkin_make')
-        catkin_make --directory $_TUE_CATKIN_SYSTEM_DIR -DCMAKE_BUILD_TYPE=RelWithDebInfo $@
-        ;;
-    'catkin build')
-        catkin build --workspace $_TUE_CATKIN_SYSTEM_DIR $@
-        ;;
-    '')
-        catkin init --workspace $_TUE_CATKIN_SYSTEM_DIR $@
-        catkin build --workspace $_TUE_CATKIN_SYSTEM_DIR $@
-        ;;
     esac
 }
 
@@ -94,7 +78,7 @@ function _tue-make
     local cur=${COMP_WORDS[COMP_CWORD]}
     local prev=${COMP_WORDS[COMP_CWORD-1]}
 
-    COMPREPLY=( $(compgen -W "`_list_subdirs $_TUE_CATKIN_SYSTEM_DIR/src`" -- $cur) )
+    COMPREPLY=( $(compgen -W "`_list_subdirs $TUE_SYSTEM_DIR/src`" -- $cur) )
 }
 
 complete -F _tue-make tue-make
@@ -102,33 +86,45 @@ complete -F _tue-make tue-make-system
 
 function tue-make-dev
 {
-    case $(cat $_TUE_CATKIN_DEV_DIR/devel/.built_by) in
-    'catkin_make')
-        catkin_make --directory $_TUE_CATKIN_DEV_DIR -DCMAKE_BUILD_TYPE=RelWithDebInfo $@
+    if [ ! -d $TUE_DEV_DIR ]
+    then
+        echo -e "[tue-make-dev] Set dev workspace (TUE_DEV_DIR) by installing ros target"
+        return 1
+    fi
+
+    case $(cat $TUE_DEV_DIR/devel/.built_by) in
+        'catkin_make')
+            catkin_make --directory $TUE_DEV_DIR -DCMAKE_BUILD_TYPE=RelWithDebInfo $@
         ;;
-    'catkin build')
-        catkin build --workspace $_TUE_CATKIN_DEV_DIR $@
+        'catkin build')
+            catkin build --workspace $TUE_DEV_DIR $@
         ;;
-    '')
-        catkin init --workspace $_TUE_CATKIN_DEV_DIR $@
-        catkin build --workspace $_TUE_CATKIN_DEV_DIR $@
+        '')
+            catkin init --workspace $TUE_DEV_DIR $@
+            catkin build --workspace $TUE_DEV_DIR $@
         ;;
     esac
 }
 
 function tue-make-dev-isolated
 {
-    case $(cat $_TUE_CATKIN_SYSTEM_DIR/devel/.built_by) in
-    'catkin_make')
-        catkin_make_isolated --directory $_TUE_CATKIN_DEV_DIR -DCMAKE_BUILD_TYPE=RelWithDebInfo $@
-        ;;
-    'catkin build')
-        catkin build --workspace $_TUE_CATKIN_DEV_DIR $@
-        ;;
-    '')
-        catkin init --workspace $_TUE_CATKIN_DEV_DIR $@
-        catkin build --workspace $_TUE_CATKIN_DEV_DIR $@
-        ;;
+    if [ ! -d $TUE_DEV_DIR ]
+    then
+        echo -e "[tue-make-dev-isolated] Set dev workspace (TUE_DEV_DIR) by installing ros target"
+        return 1
+    fi
+
+    case $(cat $TUE_DEV_DIR/devel/.built_by) in
+        'catkin_make')
+            catkin_make_isolated --directory $TUE_DEV_DIR -DCMAKE_BUILD_TYPE=RelWithDebInfo $@
+            ;;
+        'catkin build')
+            catkin build --workspace $TUE_DEV_DIR $@
+            ;;
+        '')
+            catkin init --workspace $TUE_DEV_DIR $@
+            catkin build --workspace $TUE_DEV_DIR $@
+            ;;
     esac
 }
 
@@ -137,7 +133,7 @@ function _tue-make-dev
     local cur=${COMP_WORDS[COMP_CWORD]}
     local prev=${COMP_WORDS[COMP_CWORD-1]}
 
-    COMPREPLY=( $(compgen -W "`_list_subdirs $_TUE_CATKIN_DEV_DIR/src`" -- $cur) )
+    COMPREPLY=( $(compgen -W "`_list_subdirs $TUE_DEV_DIR/src`" -- $cur) )
 }
 complete -F _tue-make-dev tue-make-dev
 complete -F _tue-make-dev tue-make-dev-isolated
@@ -148,22 +144,27 @@ complete -F _tue-make-dev tue-make-dev-isolated
 
 function tue-dev
 {
+    if [ ! -d $TUE_SYSTEM_DIR ] || [ ! -d $TUE_DEV_DIR ]
+    then
+        echo -e "[tue-dev] Set system (TUE_SYSTEM_DIR) and dev (TUE_DEV_DIR) workspace by installing ros target"
+        return 1
+    fi
     if [ -z "$1" ]
     then
-        _list_subdirs $_TUE_CATKIN_DEV_DIR/src
+        _list_subdirs $TUE_DEV_DIR/src
         return 0
     fi
 
     for pkg in $@
     do
-        if [ ! -d $_TUE_CATKIN_SYSTEM_DIR/src/$pkg ]
+        if [ ! -d $TUE_SYSTEM_DIR/src/$pkg ]
         then
             echo "[tue-dev] '$pkg' does not exist in the system workspace."
-        elif [ -d $_TUE_CATKIN_DEV_DIR/src/$pkg ]
+        elif [ -d $TUE_DEV_DIR/src/$pkg ]
         then
             echo "[tue-dev] '$pkg' is already in the dev workspace."
         else
-            ln -s $_TUE_CATKIN_SYSTEM_DIR/src/$pkg $_TUE_CATKIN_DEV_DIR/src/$pkg
+            ln -s $TUE_SYSTEM_DIR/src/$pkg $TUE_DEV_DIR/src/$pkg
         fi
     done
 
@@ -173,21 +174,27 @@ function tue-dev
 
 function tue-dev-clean
 {
-    for f in `_list_subdirs $_TUE_CATKIN_DEV_DIR/src`
+    if [ ! -d $TUE_DEV_DIR ]
+    then
+        echo -e "[tue-dev-clean] Set dev workspace (TUE_DEV_DIR)by installing ros target"
+        return 1
+    fi
+
+    for f in `_list_subdirs $TUE_DEV_DIR/src`
     do
         # Test if f is a symbolic link
-        if [[ -L $_TUE_CATKIN_DEV_DIR/src/$f ]]
+        if [[ -L $TUE_DEV_DIR/src/$f ]]
         then
             echo "Cleaned '$f'"
-            rm $_TUE_CATKIN_DEV_DIR/src/$f
+            rm $TUE_DEV_DIR/src/$f
         fi
     done
 
-    rm -rf $_TUE_CATKIN_DEV_DIR/devel/share
-    rm -rf $_TUE_CATKIN_DEV_DIR/devel/etc
-    rm -rf $_TUE_CATKIN_DEV_DIR/devel/include
-    rm -rf $_TUE_CATKIN_DEV_DIR/devel/lib
-    rm -rf $_TUE_CATKIN_DEV_DIR/build
+    rm -rf $TUE_DEV_DIR/devel/share
+    rm -rf $TUE_DEV_DIR/devel/etc
+    rm -rf $TUE_DEV_DIR/devel/include
+    rm -rf $TUE_DEV_DIR/devel/lib
+    rm -rf $TUE_DEV_DIR/build
 }
 
 function _tue-dev
@@ -195,7 +202,7 @@ function _tue-dev
     local cur=${COMP_WORDS[COMP_CWORD]}
     local prev=${COMP_WORDS[COMP_CWORD-1]}
 
-    COMPREPLY=( $(compgen -W "`_list_subdirs $_TUE_CATKIN_SYSTEM_DIR/src`" -- $cur) )
+    COMPREPLY=( $(compgen -W "`_list_subdirs $TUE_SYSTEM_DIR/src`" -- $cur) )
 }
 complete -F _tue-dev tue-dev
 
@@ -285,7 +292,12 @@ function _tue-dir-status
 
 function tue-status
 {
-    _tue-dir-status $_TUE_CATKIN_SYSTEM_DIR/src
+    if [ ! -d $TUE_SYSTEM_DIR ]
+    then
+        echo -e "[tue-status] Set system workspace (TUE_SYSTEM_DIR) by installing ros target"
+        return 1
+    fi
+    _tue-dir-status $TUE_SYSTEM_DIR/src
     _tue-repo-status "tue-env" "$TUE_DIR"
     _tue-repo-status "tue-env-targets" "$TUE_ENV_TARGETS_DIR"
 }
@@ -294,7 +306,12 @@ function tue-status
 
 function tue-git-status
 {
-    for pkg_dir in $_TUE_CATKIN_SYSTEM_DIR/src/*/
+    if [ ! -d $TUE_SYSTEM_DIR ]
+    then
+        echo -e "[tue-git-status] Set system workspace (TUE_SYSTEM_DIR) by installing ros target"
+        return 1
+    fi
+    for pkg_dir in $TUE_SYSTEM_DIR/src/*/
     do
         pkg=$(basename $pkg_dir)
 
@@ -315,7 +332,13 @@ function tue-revert
 {
     human_time="$*"
 
-    for pkg_dir in $_TUE_CATKIN_SYSTEM_DIR/src/*/
+    if [ ! -d $TUE_SYSTEM_DIR ]
+    then
+        echo -e "[tue-revert] Set system workspace (TUE_SYSTEM_DIR) by installing ros target"
+        return 1
+    fi
+
+    for pkg_dir in $TUE_SYSTEM_DIR/src/*/
     do
         pkg=$(basename $pkg_dir)
 
@@ -348,7 +371,12 @@ function tue-revert
 
 function tue-revert-undo
 {
-    for pkg_dir in $_TUE_CATKIN_SYSTEM_DIR/src/*/
+    if [ ! -d $TUE_SYSTEM_DIR ]
+    then
+        echo -e "[tue-revert-undo] Set system workspace (TUE_SYSTEM_DIR) by installing ros target"
+        return 1
+    fi
+    for pkg_dir in $TUE_SYSTEM_DIR/src/*/
     do
         pkg=$(basename $pkg_dir)
 
@@ -624,6 +652,12 @@ function tue-checkout
         return 1
     fi
 
+    if [ ! -d $TUE_SYSTEM_DIR ]
+    then
+        echo -e "[tue-checkout] Set system workspace (TUE_SYSTEM_DIR) by installing ros target"
+        return 1
+    fi
+
     while test $# -gt 0
     do
         case "$1" in
@@ -637,14 +671,14 @@ function tue-checkout
         shift
     done
 
-    fs=`ls -d -1 $_TUE_CATKIN_SYSTEM_DIR/src/**`
+    fs=`ls -d -1 $TUE_SYSTEM_DIR/src/**`
     if [ -z "$NO_TUE_ENV" ]
     then
         fs="$TUE_DIR $TUE_ENV_TARGETS_DIR $fs"
     fi
     for pkg_dir in $fs
     do
-        pkg=${pkg_dir#$_TUE_CATKIN_SYSTEM_DIR/src/}
+        pkg=${pkg_dir#$TUE_SYSTEM_DIR/src/}
         if [ -z "$NO_TUE_ENV" ]
         then
             if [[ $pkg =~ ".tue" ]]
