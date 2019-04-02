@@ -395,8 +395,8 @@ function tue-install-add-text
     fi
 
     local begin_tag=$(head -n 1 $source_file)
-    local end_tag=$(tail -n 1 $source_file)
-    local text=$(cat $source_file)
+    local end_tag=$(awk '/./{line=$0} END{print line}' $source_file)
+    local text=$(sed -e :a -e '/^\n*$/{$d;N;};/\n&/ba' $source_file)
 
     if ! grep -q "$begin_tag" $target_file
     then
@@ -407,12 +407,14 @@ function tue-install-add-text
             echo -e "$text" | tee --append $target_file
         fi
     else
+        local tmp_source_file="/tmp/tue-install-add-text_temp"
+        echo "$text" | tee "$tmp_source_file"
         if $root_required
         then
-            sed -e "/^$end_tag/r $source_file" -e "/^$begin_tag/,/^$end_tag/d" $target_file | sudo tee $target_file.tmp
+            sed -e "/^$end_tag/r $tmp_source_file" -e "/^$begin_tag/,/^$end_tag/d" $target_file | sudo tee $target_file.tmp
             sudo mv $target_file.tmp $target_file
         else
-            sed -e "/^$end_tag/r $source_file" -e "/^$begin_tag/,/^$end_tag/d" $target_file | tee $target_file.tmp
+            sed -e "/^$end_tag/r $tmp_source_file" -e "/^$begin_tag/,/^$end_tag/d" $target_file | tee $target_file.tmp
             mv $target_file.tmp $target_file
         fi
     fi
