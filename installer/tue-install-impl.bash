@@ -375,45 +375,74 @@ function tue-install-add-text
         tue-install-error "Invalid tue-install-add-text call. Usage: tue-install-add-text SOURCE_FILE TARGET_FILE"
     fi
 
-    local source_file=$TUE_INSTALL_CURRENT_TARGET_DIR/$1
+    tue-install-debug "tue-install-add-text $*"
+
+    local source_file=$1
+    if [[ "$source_file" != "/"* ]] || [[ "$source_file" != "~/"* ]]
+    then
+        tue-install-debug "tue-install-add-text: relative source file"
+        source_file="$TUE_INSTALL_CURRENT_TARGET_DIR/$source_file"
+    else
+        tue-install-debug "tue-install-add-text: absolute source file"
+    fi
     local target_file=$2
+    if [[ "$target_file" != "/"* ]] && [[ "$source_file" != "~/"* ]]
+    then
+        tue-install-error "tue-install-add-text: target file needs to be absolute or relative to the home directory"
+    fi
 
     local root_required=true
     if namei -l $target_file | grep -q $(whoami)
     then
+        tue-install-debug "tue-install-add-text: NO root required"
         root_required=false
+    else
+        tue-install-debug "tue-install-add-text: root required"
     fi
 
     if [ ! -f $source_file ]
     then
-        tue-install-error "tue-install-add-text: No such file: $source_file"
+        tue-install-error "tue-install-add-text: No such source file: $source_file"
     fi
 
     if [ ! -f $target_file ]
     then
-        tue-install-error "tue-install-add-text: No such file: $target_file"
+        tue-install-error "tue-install-add-text: No such target file: $target_file"
     fi
 
     local begin_tag=$(head -n 1 $source_file)
-    local end_tag=$(tail -n 1 $source_file)
-    local text=$(cat $source_file)
+    local end_tag=$(awk '/./{line=$0} END{print line}' $source_file)
+    local text=$(sed -e :a -e '/^\n*$/{$d;N;};/\n&/ba' $source_file)
+    tue-install-debug "tue-install-add-text: Lines to be added: \n$text"
 
     if ! grep -q "$begin_tag" $target_file
     then
+        tue-install-debug "tue-install-add-text: Appending $target_file"
         if $root_required
         then
-            echo -e "$text" | sudo tee --append $target_file
+            echo -e "$text" | sudo tee --append $target_file > /dev/null
         else
-            echo -e "$text" | tee --append $target_file
+            echo -e "$text" | tee --append $target_file > /dev/null
         fi
     else
-        if $root_required
+        tue-install-debug "tue-install-add-text: Begin tag already in $target_file, so comparing the files for changed lines"
+        local tmp_source_file="/tmp/tue-install-add-text_source_temp"
+        local tmp_target_file="/tmp/tue-install-add-text_target_temp"
+
+        echo "$text" | tee "$tmp_source_file" > /dev/null
+        sed -e "/^$end_tag/r $tmp_source_file" -e "/^$begin_tag/,/^$end_tag/d" $target_file | tee $tmp_target_file > /dev/null
+
+        if ! cmp --quiet "$tmp_target_file" "$target_file"
         then
-            sed -e "/^$end_tag/r $source_file" -e "/^$begin_tag/,/^$end_tag/d" $target_file | sudo tee $target_file.tmp
-            sudo mv $target_file.tmp $target_file
+            tue-install-debug "tue-install-add-text: Lines are changed, so copying"
+            if $root_required
+            then
+                sudo mv $tmp_target_file $target_file
+            else
+                mv $target_file.tmp $target_file
+            fi
         else
-            sed -e "/^$end_tag/r $source_file" -e "/^$begin_tag/,/^$end_tag/d" $target_file | tee $target_file.tmp
-            mv $target_file.tmp $target_file
+            tue-install-debug "tue-install-add-text: Lines have not changed, so not copying"
         fi
     fi
 }
