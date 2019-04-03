@@ -1,3 +1,5 @@
+#! /usr/bin/env bash
+
 LOCAL_DATA_DIR=~/ros/data
 ROBOTICSSRV_LOGIN=data@roboticssrv.wtb.tue.nl
 REMOTE_DATA_DIR=/home/data/data
@@ -62,7 +64,7 @@ function tue-data
         # Determine current directory relative to local data dir root
         local rel_dir=${PWD#$LOCAL_DATA_DIR}
 
-        rsync $ROBOTICSSRV_LOGIN:$REMOTE_DATA_DIR/$rel_dir/ . -av --progress --exclude=".svn"   
+        rsync $ROBOTICSSRV_LOGIN:$REMOTE_DATA_DIR/$rel_dir/ . -av --progress --exclude=".svn"
     elif [[ $cmd == "store" ]]
     then
         if [ -z "$1" ]
