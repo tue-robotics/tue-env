@@ -1,3 +1,5 @@
+#! /usr/bin/env bash
+
 # ----------------------------------------------------------------------------------------------------
 #                                              TUE-ENV
 # ----------------------------------------------------------------------------------------------------
@@ -204,7 +206,7 @@ Purged environment directory of '$env'"""
         shift
         [ -n "$env" ] || env=$TUE_ENV
 
-        $TUE_DIR/setup/tue-env-config.bash $env $@
+        $TUE_DIR/setup/tue-env-config.bash $env "$@"
 
         if [ "$env" == "$TUE_ENV" ]
         then
@@ -230,14 +232,14 @@ Purged environment directory of '$env'"""
     then
         [ -d $TUE_DIR/user/envs ] || return 0
 
-        for env in $(ls $TUE_DIR/user/envs)
+        for env in $TUE_DIR/user/envs/*
         do
-            echo $env
+            echo $(basename $env)
         done
 
     elif [[ $cmd == "list-current" ]]
     then
-        if [ -n $TUE_ENV ]
+        if [[ -n $TUE_ENV ]]
         then
             echo $TUE_ENV
         else
