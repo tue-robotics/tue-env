@@ -1,4 +1,4 @@
-#!/bin/bash
+#! /usr/bin/env bash
 
 TUE_INSTALL_DEPENDENCIES_DIR=$TUE_ENV_DIR/.env/dependencies
 TUE_INSTALL_DEPENDENCIES_ON_DIR=$TUE_ENV_DIR/.env/dependencies-on
@@ -209,7 +209,7 @@ function _try_branch
 
 function tue-install-git
 {
-    tue-install-debug "tue-install-git $@"
+    tue-install-debug "tue-install-git $*"
     local repo=$1
     local targetdir=$2
     local version=$3
@@ -463,14 +463,14 @@ function tue-install-system
 
 function tue-install-system-now
 {
-    tue-install-debug "tue-install-system-now $@"
+    tue-install-debug "tue-install-system-now $*"
     if [ -z "$1" ]
     then
         tue-install-error "Invalid tue-install-system-now call: needs package as argument."
     fi
 
     pkgs_to_install=""
-    for pkg in $@ # Unquoted to seperate arguments based on spaces
+    for pkg in $*
     do
         # Check if pkg is not already installed dpkg -S does not cover previously removed packages
         # Based on https://stackoverflow.com/questions/1298066
