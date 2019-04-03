@@ -63,7 +63,7 @@ function _show_dep
         fi
     fi
 
-    for t in `cat $TUE_ENV_DIR/.env/dependencies/$1`
+    for t in $(cat "$TUE_ENV_DIR/.env/dependencies/$1")
     do
         _show_dep $t "$2" $(expr $indent + 1) "$tmp"
     done
@@ -105,9 +105,9 @@ done
 set -- $targets
 if [[ -z "$targets" || "$ALL" = "true" ]]
 then
-    for t in `ls $TUE_ENV_DIR/.env/dependencies`
+    for t in $TUE_ENV_DIR/.env/dependencies/*
     do
-        _show_dep $t $2
+        _show_dep $(basename $t) $2
     done
 else
     _show_dep $1 $2

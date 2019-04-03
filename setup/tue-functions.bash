@@ -60,14 +60,14 @@ function tue-make
     then
         case $(cat $_TUE_CATKIN_SYSTEM_DIR/devel/.built_by) in
         'catkin_make')
-            catkin_make --directory $_TUE_CATKIN_SYSTEM_DIR -DCMAKE_BUILD_TYPE=RelWithDebInfo $@
+            catkin_make --directory $_TUE_CATKIN_SYSTEM_DIR -DCMAKE_BUILD_TYPE=RelWithDebInfo "$@"
             ;;
         'catkin build')
-            catkin build --workspace $_TUE_CATKIN_SYSTEM_DIR $@
+            catkin build --workspace $_TUE_CATKIN_SYSTEM_DIR "$@"
             ;;
         '')
-            catkin init --workspace $_TUE_CATKIN_SYSTEM_DIR $@
-            catkin build --workspace $_TUE_CATKIN_SYSTEM_DIR $@
+            catkin init --workspace $_TUE_CATKIN_SYSTEM_DIR "$@"
+            catkin build --workspace $_TUE_CATKIN_SYSTEM_DIR "$@"
             ;;
         esac
     fi
@@ -77,14 +77,14 @@ function tue-make-system
 {
     case $(cat $_TUE_CATKIN_SYSTEM_DIR/devel/.built_by) in
     'catkin_make')
-        catkin_make --directory $_TUE_CATKIN_SYSTEM_DIR -DCMAKE_BUILD_TYPE=RelWithDebInfo $@
+        catkin_make --directory $_TUE_CATKIN_SYSTEM_DIR -DCMAKE_BUILD_TYPE=RelWithDebInfo "$@"
         ;;
     'catkin build')
-        catkin build --workspace $_TUE_CATKIN_SYSTEM_DIR $@
+        catkin build --workspace $_TUE_CATKIN_SYSTEM_DIR "$@"
         ;;
     '')
-        catkin init --workspace $_TUE_CATKIN_SYSTEM_DIR $@
-        catkin build --workspace $_TUE_CATKIN_SYSTEM_DIR $@
+        catkin init --workspace $_TUE_CATKIN_SYSTEM_DIR "$@"
+        catkin build --workspace $_TUE_CATKIN_SYSTEM_DIR "$@"
         ;;
     esac
 }
@@ -104,14 +104,14 @@ function tue-make-dev
 {
     case $(cat $_TUE_CATKIN_DEV_DIR/devel/.built_by) in
     'catkin_make')
-        catkin_make --directory $_TUE_CATKIN_DEV_DIR -DCMAKE_BUILD_TYPE=RelWithDebInfo $@
+        catkin_make --directory $_TUE_CATKIN_DEV_DIR -DCMAKE_BUILD_TYPE=RelWithDebInfo "$@"
         ;;
     'catkin build')
-        catkin build --workspace $_TUE_CATKIN_DEV_DIR $@
+        catkin build --workspace $_TUE_CATKIN_DEV_DIR "$@"
         ;;
     '')
-        catkin init --workspace $_TUE_CATKIN_DEV_DIR $@
-        catkin build --workspace $_TUE_CATKIN_DEV_DIR $@
+        catkin init --workspace $_TUE_CATKIN_DEV_DIR "$@"
+        catkin build --workspace $_TUE_CATKIN_DEV_DIR "$@"
         ;;
     esac
 }
@@ -120,14 +120,14 @@ function tue-make-dev-isolated
 {
     case $(cat $_TUE_CATKIN_SYSTEM_DIR/devel/.built_by) in
     'catkin_make')
-        catkin_make_isolated --directory $_TUE_CATKIN_DEV_DIR -DCMAKE_BUILD_TYPE=RelWithDebInfo $@
+        catkin_make_isolated --directory $_TUE_CATKIN_DEV_DIR -DCMAKE_BUILD_TYPE=RelWithDebInfo "$@"
         ;;
     'catkin build')
-        catkin build --workspace $_TUE_CATKIN_DEV_DIR $@
+        catkin build --workspace $_TUE_CATKIN_DEV_DIR "$@"
         ;;
     '')
-        catkin init --workspace $_TUE_CATKIN_DEV_DIR $@
-        catkin build --workspace $_TUE_CATKIN_DEV_DIR $@
+        catkin init --workspace $_TUE_CATKIN_DEV_DIR "$@"
+        catkin build --workspace $_TUE_CATKIN_DEV_DIR "$@"
         ;;
     esac
 }
@@ -154,7 +154,7 @@ function tue-dev
         return 0
     fi
 
-    for pkg in $@
+    for pkg in "$@"
     do
         if [ ! -d $_TUE_CATKIN_SYSTEM_DIR/src/$pkg ]
         then
@@ -431,7 +431,7 @@ function tue-get
 
     if [[ $cmd == "install" ]]
     then
-        $TUE_DIR/installer/tue-install.bash $cmd $@
+        $TUE_DIR/installer/tue-install.bash $cmd "$@"
         error_code=$?
 
         [ $error_code -eq 0 ] && source ~/.bashrc
@@ -440,7 +440,7 @@ function tue-get
     elif [[ $cmd == "update" ]]
     then
         error_code=0
-        for target in $@
+        for target in "$@"
         do
             #Skip options
             [[ $target = '--'* ]] && continue
@@ -454,7 +454,7 @@ function tue-get
 
         if [ $error_code -eq 0 ]
         then
-            $TUE_DIR/installer/tue-install.bash $cmd $@
+            $TUE_DIR/installer/tue-install.bash $cmd "$@"
             error_code=$?
             [ $error_code -eq 0 ] && source ~/.bashrc
         fi
@@ -463,7 +463,7 @@ function tue-get
     elif [[ $cmd == "remove" ]]
     then
         error=0
-        for target in $@
+        for target in "$@"
         do
             if [ ! -f $tue_installed_dir/$target ]
             then
@@ -479,7 +479,7 @@ function tue-get
             return $error;
         fi
 
-        for target in $@
+        for target in "$@"
         do
             rm $tue_installed_dir/$target
         done
@@ -507,7 +507,7 @@ function tue-get
             return 1
         fi
         local firsttarget=true
-        for target in $@
+        for target in "$@"
         do
             if [[ $firsttarget == false ]]
             then
@@ -527,7 +527,7 @@ function tue-get
             local main_target_files="install.yaml install.bash setup"
             for file in $main_target_files
             do
-                for key in ${!files[@]}
+                for key in "${!files[@]}"
                 do
                     if [ ${files[$key]} == $TUE_ENV_TARGETS_DIR/$target/$file ]
                     then
@@ -545,7 +545,7 @@ function tue-get
             done
 
             # Show all remaining files
-            for file in ${files[@]}
+            for file in "${files[@]}"
             do
                 if [[ $firstfile == false ]]
                 then
@@ -559,7 +559,7 @@ function tue-get
 
     elif [[ $cmd == "dep" ]]
     then
-        $TUE_DIR/installer/tue-get-dep.bash $@
+        $TUE_DIR/installer/tue-get-dep.bash "$@"
     else
         echo "[tue-get] Unknown command: '$cmd'"
         return 1
@@ -647,10 +647,10 @@ function tue-checkout
         pkg=${pkg_dir#$_TUE_CATKIN_SYSTEM_DIR/src/}
         if [ -z "$NO_TUE_ENV" ]
         then
-            if [[ $pkg =~ ".tue" ]]
+            if [[ $pkg =~ .tue ]]
             then
                 pkg="tue-env"
-            elif [[ $pkg =~ "targets" ]]
+            elif [[ $pkg =~ targets ]]
             then
                 pkg="tue-env-targets"
             fi
@@ -1110,7 +1110,7 @@ function tue-robocup-update
     if [ "$ROBOT_REAL" != "true" ]
     then
         rsettings_file=$TUE_ENV_TARGETS_DIR/tue-common/rsettings_file
-        if [ -f $rsettings_file]
+        if [ -f $rsettings_file ]
         then
             cp $rsettings_file $TUE_DIR/.rsettings
         fi
