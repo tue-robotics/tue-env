@@ -378,12 +378,11 @@ function tue-install-add-text
     tue-install-debug "tue-install-add-text $*"
 
     local source_file=$1
-    if [[ "$source_file" != "/"* ]] || [[ "$source_file" != "~/"* ]]
+    if [[ "$source_file" == "/"* ]] || [[ "$source_file" == "~/"* ]]
     then
-        tue-install-debug "tue-install-add-text: relative source file"
-        source_file="$TUE_INSTALL_CURRENT_TARGET_DIR/$source_file"
+        tue-install-error "tue-install-add-text: Only relative source files to the target directory are allowed"
     else
-        tue-install-debug "tue-install-add-text: absolute source file"
+        source_file="$TUE_INSTALL_CURRENT_TARGET_DIR/$source_file"
     fi
     local target_file=$2
     if [[ "$target_file" != "/"* ]] && [[ "$source_file" != "~/"* ]]
