@@ -438,7 +438,7 @@ function tue-install-add-text
             then
                 sudo mv $tmp_target_file $target_file
             else
-                mv $target_file.tmp $target_file
+                mv $tmp_target_file $target_file
             fi
         else
             tue-install-debug "tue-install-add-text: Lines have not changed, so not copying"
