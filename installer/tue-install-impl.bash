@@ -730,7 +730,7 @@ function generate_setup_file
 # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # #
 
 # Make sure tools used by this installer are installed
-tue-install-system-now python-yaml git python-pip
+tue-install-system-now python-yaml git python-pip python3-pip
 
 stamp=$(date_stamp)
 INSTALL_DETAILS_FILE=/tmp/tue-get-details-$stamp
