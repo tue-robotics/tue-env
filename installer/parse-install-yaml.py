@@ -64,6 +64,8 @@ def main():
                 command = "tue-install-system {0}".format(install_item["name"])
             elif install_type == "pip":
                 command = "tue-install-pip {0}".format(install_item["name"])
+            elif install_type == "pip3":
+                command = "tue-install-pip3 {0}".format(install_item["name"])
             elif install_type == "ppa":
                 command = "tue-install-ppa {0}".format(install_item["name"])
             elif install_type == "snap":
