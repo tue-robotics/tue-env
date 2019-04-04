@@ -894,7 +894,7 @@ then
         tue-install-debug "pip3 not yet version >=9, but $pip3_version"
         sudo -H pip3 install --upgrade pip
     else
-        tue-install-debug "Already pip>=9\n"
+        tue-install-debug "Already pip3>=9\n"
     fi
 
     # Just install the packages because checking for installation is not faster
