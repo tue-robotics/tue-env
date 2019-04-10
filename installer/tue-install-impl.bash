@@ -857,19 +857,20 @@ if [ -n "$TUE_INSTALL_PIPS" ]
 then
     TUE_INSTALL_CURRENT_TARGET="PIP"
 
-    pip_version=$(pip --version | awk '{print $2}')
+    pip_version=$(pip2 --version | awk '{print $2}')
     if version_gt "9" "$pip_version"
     then
-        tue-install-debug "pip not yet version >=9, but $pip_version"
-        sudo -H pip install --upgrade pip
+        tue-install-debug "pip2 not yet version >=9, but $pip_version"
+        sudo -H pip2 install --upgrade pip
+        hash -r
     else
-        tue-install-debug "Already pip>=9\n"
+        tue-install-debug "Already pip2>=9\n"
     fi
 
     # Just install the packages because checking for installation is not faster
     echo -e "Going to run the following command:\n"
     echo -e "yes | pip install --user $TUE_INSTALL_PIPS\n"
-    yes | pip install --user $TUE_INSTALL_PIPS
+    yes | pip2 install --user $TUE_INSTALL_PIPS
 fi
 
 # Installing all snap targets, which are collected during the install
