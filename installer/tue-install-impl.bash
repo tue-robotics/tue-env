@@ -869,7 +869,7 @@ then
 
     # Just install the packages because checking for installation is not faster
     echo -e "Going to run the following command:\n"
-    echo -e "yes | pip install --user $TUE_INSTALL_PIPS\n"
+    echo -e "yes | pip2 install --user $TUE_INSTALL_PIPS\n"
     yes | pip2 install --user $TUE_INSTALL_PIPS
 fi
 
