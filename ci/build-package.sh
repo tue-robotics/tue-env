@@ -33,11 +33,11 @@ echo -e "\e[35m\e[1m PACKAGE     = ${PACKAGE} \e[0m"
 # Use docker environment variables in all exec commands instead of script variables
 # Compile the package
 echo -e "\e[35m\e[1m Compile the package \e[0m"
-docker exec tue-env bash -c 'source ~/.bashrc; cd ~/ros/"$ROS_DISTRO"/system/src/"$PACKAGE" && catkin build --this --no-status --verbose'
+docker exec tue-env bash -c 'source ~/.bashrc; cd ~/ros/"$ROS_DISTRO"/system/src/"$PACKAGE" && catkin build --this --no-status --verbose -DCATKIN_ENABLE_TESTING=0'
 
 # Run unit tests
 echo -e "\e[35m\e[1m Run unit test on this package (catkin run_test --this --no-deps) \e[0m"
-docker exec tue-env bash -c 'source ~/.bashrc; cd ~/ros/"$ROS_DISTRO"/system/src/"$PACKAGE" && catkin run_tests --this --no-status --no-deps --verbose'
+docker exec tue-env bash -c 'source ~/.bashrc; cd ~/ros/"$ROS_DISTRO"/system/src/"$PACKAGE" && catkin run_tests --this --no-status --no-deps --verbose -DCATKIN_ENABLE_TESTING=1'
 
 # Check results of unit tests
 echo -e "\e[35m\e[1m Check results of unit test on this package (catkin_test_results build/$PACKAGE) \e[0m"
