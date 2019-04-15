@@ -744,11 +744,6 @@ TUE_INSTALL_SNAPS=
 TUE_INSTALL_WARNINGS=
 TUE_INSTALL_INFOS=
 
-if [ -d "/usr/local/cuda/" ]
-then
-    export TUE_CUDA=1
-fi
-
 # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # #
 
 tue_cmd=$1
