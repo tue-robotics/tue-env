@@ -10,4 +10,4 @@ matrix:
       services: docker
       script: ci/build-docker-image.sh
     - language: shell
-      script: bash -c 'shopt -s globstar; shellcheck **/*.bash **/*.sh'
+      script: bash -c 'shopt -s globstar; shellcheck -x **/*.bash **/*.sh'
