@@ -156,7 +156,7 @@ function tue-install-target
 
 function _show_update_message
 {
-    if [ -n "$2" ]
+    if [ -n "${2%% }" ]
     then
         echo -e "\n    \033[1m$1\033[0m"                          | tee --append "$INSTALL_DETAILS_FILE"
         echo "--------------------------------------------------" | tee --append "$INSTALL_DETAILS_FILE"
