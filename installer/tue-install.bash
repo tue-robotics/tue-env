@@ -2,17 +2,17 @@
 _tue-check-env-vars || return 1
 
 # Update installer
-if [ ! -d $TUE_DIR ]
+if [ ! -d "$TUE_DIR" ]
 then
     echo "[tue-get] 'TUE_DIR' $TUE_DIR doesn't exist"
     exit 1
 else
-    current_url=$(git -C $TUE_DIR config --get remote.origin.url)
+    current_url=$(git -C "$TUE_DIR" config --get remote.origin.url)
     new_url=$(_github_https_or_ssh "$current_url")
 
     if [ "$current_url" != "$new_url" ]
     then
-        git -C $TUE_DIR remote set-url origin $new_url
+        git -C "$TUE_DIR" remote set-url origin "$new_url"
         echo -e "[tue-get] Origin has switched to $new_url"
     fi
 
@@ -20,14 +20,11 @@ else
     then
         # Do not update with continuous integration but do fetch to refresh available branches
         echo -e "[tue-get] Fetching tue-get... "
-        git -C $TUE_DIR fetch
+        git -C "$TUE_DIR" fetch
     else
         echo -en "[tue-get] Updating tue-get... "
-        git -C $TUE_DIR pull --ff-only --prune
 
-        error_code=$?
-
-        if [ ! $error_code -eq 0 ]
+        if ! git -C "$TUE_DIR" pull --ff-only --prune
         then
             # prompt for conformation
             exec < /dev/tty
@@ -42,30 +39,28 @@ else
     fi
 fi
 
-if [ ! -d $TUE_ENV_TARGETS_DIR ]
+if [ ! -d "$TUE_ENV_TARGETS_DIR" ]
 then
     echo "[tue-get] 'TUE_ENV_TARGETS_DIR' $TUE_ENV_TARGETS_DIR doesn't exist"
+    # shellcheck disable=SC1078,SC1079
     echo """To setup the default tue-env targets repository do,
 
 tue-env init-targets https://github.com/tue-robotics/tue-env-targets.git
 """
     exit 1
 else
-    current_url=$(git -C $TUE_ENV_TARGETS_DIR config --get remote.origin.url)
-    new_url=$(_github_https_or_ssh $current_url)
+    current_url=$(git -C "$TUE_ENV_TARGETS_DIR" config --get remote.origin.url)
+    new_url=$(_github_https_or_ssh "$current_url")
 
     if [ "$current_url" != "$new_url" ]
     then
-        git -C $TUE_ENV_TARGETS_DIR remote set-url origin $new_url
+        git -C "$TUE_ENV_TARGETS_DIR" remote set-url origin "$new_url"
         echo -e "[tue-env-targets] Origin has switched to $new_url"
     fi
 
     echo -en "[tue-env-targets] Updating targets... "
-    git -C $TUE_ENV_TARGETS_DIR pull --ff-only --prune
 
-    error_code=$?
-
-    if [ ! $error_code -eq 0 ] && [ -z "$CI" ]
+    if ! git -C "$TUE_ENV_TARGETS_DIR" pull --ff-only --prune
     then
         # prompt for conformation
         exec < /dev/tty
@@ -81,7 +76,7 @@ fi
 
 if [[ -n "$CI" ]] #With continuous integration try to switch the targets repo to the PR branch
 then
-    current_branch=$(git -C $TUE_ENV_TARGETS_DIR rev-parse --abbrev-ref HEAD)
+    current_branch=$(git -C "$TUE_ENV_TARGETS_DIR" rev-parse --abbrev-ref HEAD)
 
     # BRANCH is an environment variable set by ci/install-package.sh in the
     # Docker container. The container has no knowledge about TRAVIS environment
@@ -89,14 +84,13 @@ then
     if [ -n "$BRANCH" ]
     then
         echo -en "[tue-env-targets] Trying to switch to branch $BRANCH..."
-        test_branch=$(git -C $TUE_ENV_TARGETS_DIR branch -a 2> /dev/null | grep -q $BRANCH)
-        if [ $? -eq 0 ]
+        if git -C "$TUE_ENV_TARGETS_DIR" branch -a 2> /dev/null | grep -q "$BRANCH"
         then
             if [[ "$current_branch" == "$BRANCH" ]]
             then
                 echo -en "Already on branch $BRANCH"
             else
-                git -C $TUE_ENV_TARGETS_DIR checkout $BRANCH 2>&1
+                git -C "$TUE_ENV_TARGETS_DIR" checkout "$BRANCH" 2>&1
                 echo -en "Switched to branch $BRANCH"
             fi
         else
@@ -107,4 +101,5 @@ then
 fi
 
 # Run installer
-source $TUE_DIR/installer/tue-install-impl.bash "$@"
+# shellcheck disable=SC1090
+source "$TUE_DIR"/installer/tue-install-impl.bash "$@"
