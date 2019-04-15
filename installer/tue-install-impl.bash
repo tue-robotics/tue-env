@@ -156,6 +156,7 @@ function tue-install-target
 
 function _show_update_message
 {
+    # shellcheck disable=SC2086,SC2116
     if [ -n "$(echo $2)" ]
     then
         echo -e "\n    \033[1m$1\033[0m"                          | tee --append "$INSTALL_DETAILS_FILE"
