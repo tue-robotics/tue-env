@@ -71,7 +71,7 @@ fi
 
 # Source the installer commands
 # No need to follow to a file which is already checked by CI
-# shellcheck disable=SC1091
+# shellcheck disable=SC1090
 source ~/.tue/setup.bash
 
 # Create ros environment directory
@@ -98,5 +98,5 @@ tue-env set-default ros-$TUE_ROS_DISTRO
 
 # Activate the default environment
 # No need to follow to file which is already checked by CI
-# shellcheck disable=SC1091
+# shellcheck disable=SC1090
 source ~/.tue/setup.bash
