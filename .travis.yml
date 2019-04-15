@@ -1,11 +1,16 @@
 sudo: true
 dist: xenial
-language: cpp
+language:
+  - cpp
+  - shell
 
 services:
     - docker
 
-jobs:
+matrix:
   include:
-    - stage: build docker image
+    - language: cpp
+      services: docker
       script: ci/build-docker-image.sh
+    - language: shell
+      script: bash -c 'shopt -s globstar; shellcheck **/*.bash **/*.sh'
