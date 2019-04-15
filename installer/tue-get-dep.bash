@@ -76,7 +76,8 @@ while test $# -gt 0
 do
     case "$1" in
         --help|-h)
-            echo -e """[tue-get dep] shows dependencies of one target (to another target)
+            # shellcheck disable=SC1078
+            echo """[tue-get dep] shows dependencies of one target (to another target)
 
     Usage: tue-get dep TARGET_FROM [ TARGET_TO ]
 
@@ -84,8 +85,9 @@ do
         --plain        - Show flat output, usefull for parsing later
         --verbose      - Also show the versions of every package
         --all          - Show the dependencies of all installed targets
-        --level        - Show the dependencies with a max depth(ignored, if TARGET_TO is provided)\n"""
-exit 0
+        --level        - Show the dependencies with a max depth(ignored, if TARGET_TO is provided)
+"""
+            exit 0
             ;;
         --plain) PLAIN=true
             ;;
@@ -93,8 +95,9 @@ exit 0
             ;;
         --all) ALL=true
             ;;
-        # shellcheck disable=SC2001
-        --level*) LEVEL=$(echo "$1" | sed -e 's/^[^=]*=//g')
+        --level*)
+	# shellcheck disable=SC2001
+	LEVEL=$(echo "$1" | sed -e 's/^[^=]*=//g')
             ;;
         --*) echo "unknown option $1"; exit 1;
             ;;
