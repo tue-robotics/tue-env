@@ -19,7 +19,8 @@ function _show_dep
         indent=0
     fi
 
-    local indent_str=$(perl -E 'say "--" x '$indent)
+    local indent_str
+    indent_str=$(perl -E 'say "--" x '$indent)
 
     if [ -n "$2" ]
     then
@@ -42,9 +43,9 @@ function _show_dep
         then
             #get package version
             packagexml="$(rospack find "${1//ros-}" 2> /dev/null)/package.xml"
-            if [ -f $packagexml ]
+            if [ -f "$packagexml" ]
             then
-                version=$(xmlstarlet sel -t -m '//version[1]' -v . -n <$packagexml)
+                version=$(xmlstarlet sel -t -m '//version[1]' -v . -n <"$packagexml")
                 #xmlstarlet ed --inplace --update '//version[1]' -v 0.4.0 $packagexml
             else
                 version=""
@@ -54,19 +55,19 @@ function _show_dep
         #echo output
         if [[ "$PLAIN" = "true" ]]
         then
-            echo $1
+            echo "$1"
         elif [[ "$VERBOSE" = "true" ]]
         then
-            echo $indent_str$1 $version
+            echo "$indent_str""$1" "$version"
         else
-            echo $indent_str$1
+            echo "$indent_str""$1"
         fi
     fi
 
-    for t in $(cat "$TUE_ENV_DIR/.env/dependencies/$1")
+    while read -r line
     do
-        _show_dep $t "$2" $(expr $indent + 1) "$tmp"
-    done
+        _show_dep "$t" "$2" "$(($indent + 1))" "$tmp"
+    done < "$TUE_ENV_DIR"/.env/dependencies/"$1"
 }
 
 # idiomatic parameter and option handling in sh
@@ -75,7 +76,7 @@ while test $# -gt 0
 do
     case "$1" in
         --help|-h)
-            echo """[tue-get dep] shows dependencies of one target (to another target)
+            echo -e """[tue-get dep] shows dependencies of one target (to another target)
 
     Usage: tue-get dep TARGET_FROM [ TARGET_TO ]
 
@@ -83,8 +84,8 @@ do
         --plain        - Show flat output, usefull for parsing later
         --verbose      - Also show the versions of every package
         --all          - Show the dependencies of all installed targets
-        --level        - Show the dependencies with a max depth(ignored, if TARGET_TO is provided)
-"""; exit 0
+        --level        - Show the dependencies with a max depth(ignored, if TARGET_TO is provided)\n"""
+exit 0
             ;;
         --plain) PLAIN=true
             ;;
@@ -92,7 +93,8 @@ do
             ;;
         --all) ALL=true
             ;;
-        --level*) LEVEL=`echo $1 | sed -e 's/^[^=]*=//g'`
+        # shellcheck disable=SC2001
+        --level*) LEVEL=$(echo "$1" | sed -e 's/^[^=]*=//g')
             ;;
         --*) echo "unknown option $1"; exit 1;
             ;;
@@ -102,13 +104,13 @@ do
     shift
 done
 
-set -- $targets
+set -- "$targets"
 if [[ -z "$targets" || "$ALL" = "true" ]]
 then
-    for t in $TUE_ENV_DIR/.env/dependencies/*
+    for t in "$TUE_ENV_DIR"/.env/dependencies/*
     do
-        _show_dep $(basename $t) $2
+        _show_dep "$(basename "$t")" "$2"
     done
 else
-    _show_dep $1 $2
+    _show_dep "$1" "$2"
 fi
