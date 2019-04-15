@@ -64,9 +64,9 @@ function _show_dep
         fi
     fi
 
-    while read -r line
+    while read -r t
     do
-        _show_dep "$t" "$2" "$(($indent + 1))" "$tmp"
+        _show_dep "$t" "$2" "$((indent + 1))" "$tmp"
     done < "$TUE_ENV_DIR"/.env/dependencies/"$1"
 }
 
@@ -76,7 +76,7 @@ while test $# -gt 0
 do
     case "$1" in
         --help|-h)
-            # shellcheck disable=SC1078
+            # shellcheck disable=SC1078,SC1079
             echo """[tue-get dep] shows dependencies of one target (to another target)
 
     Usage: tue-get dep TARGET_FROM [ TARGET_TO ]
