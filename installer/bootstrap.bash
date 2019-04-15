@@ -6,6 +6,7 @@ hash git 2> /dev/null || sudo apt-get install --assume-yes git
 hash lsb_release 2> /dev/null || sudo apt-get install --assume-yes lsb-release
 
 # Check if OS is Ubuntu
+# shellcheck disable=SC1091
 source /etc/lsb-release
 
 if [ "$DISTRIB_ID" != "Ubuntu" ]
@@ -29,25 +30,25 @@ case $DISTRIB_RELEASE in
 esac
 
 # Move old environments and installer
-if [ -d ~/.tue -a -z "$CI" ]
+if [ -d ~/.tue ] && [ -z "$CI" ]
 then
     FILES=$(find ~/.tue/user/envs -maxdepth 1 -type f)
     date_now=$(date +%F_%R)
     for env in $FILES
     do
-        mv -f $(cat $env) $(cat $env).$date_now
+        mv -f "$(cat "$env")" "$(cat "$env")"."$date_now"
     done
-    mv -f ~/.tue ~/.tue.$date_now
+    mv -f ~/.tue ~/.tue."$date_now"
 fi
 
 # If in CI with Docker, then clone tue-env with BRANCH when not testing a PR
-if [ "$CI" == "true" -a "$DOCKER" == "true" ]
+if [ "$CI" == "true" ] && [ "$DOCKER" == "true" ]
 then
     # Docker has a default value as false for PULL_REQUEST
     if [ "$PULL_REQUEST" == "false" ]
     then
         # Docker has a default value as master for BRANCH
-        if [ -n "$BRANCH" -a -n "$COMMIT" ]
+        if [ -n "$BRANCH" ] && [ -n "$COMMIT" ]
         then
             echo -e "[tue-env](bootstrap) Cloning tue-env repository with branch: $BRANCH at commit: $COMMIT"
             git clone -q --single-branch --branch "$BRANCH" https://github.com/tue-robotics/tue-env.git ~/.tue
@@ -69,6 +70,8 @@ else
 fi
 
 # Source the installer commands
+# No need to follow to a file which is already checked by CI
+# shellcheck disable=SC1091
 source ~/.tue/setup.bash
 
 # Create ros environment directory
@@ -82,6 +85,7 @@ mkdir -p ~/ros/$TUE_ROS_DISTRO/.env/setup
 echo "export TUE_ROS_DISTRO=$TUE_ROS_DISTRO" > ~/ros/$TUE_ROS_DISTRO/.env/setup/user_setup.bash
 
 # Add loading of TU/e tools (tue-env, tue-get, etc) to bashrc
+# shellcheck disable=SC2088
 if ! grep -q '~/.tue/setup.bash' ~/.bashrc;
 then
     echo '
@@ -93,4 +97,6 @@ fi
 tue-env set-default ros-$TUE_ROS_DISTRO
 
 # Activate the default environment
+# No need to follow to file which is already checked by CI
+# shellcheck disable=SC1091
 source ~/.tue/setup.bash
