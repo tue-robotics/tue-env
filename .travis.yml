@@ -4,9 +4,6 @@ language:
   - cpp
   - shell
 
-services:
-    - docker
-
 matrix:
   include:
     - language: cpp
