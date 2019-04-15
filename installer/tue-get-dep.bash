@@ -96,8 +96,8 @@ do
         --all) ALL=true
             ;;
         --level*)
-	# shellcheck disable=SC2001
-	LEVEL=$(echo "$1" | sed -e 's/^[^=]*=//g')
+            # shellcheck disable=SC2001
+            LEVEL=$(echo "$1" | sed -e 's/^[^=]*=//g')
             ;;
         --*) echo "unknown option $1"; exit 1;
             ;;
@@ -107,7 +107,8 @@ do
     shift
 done
 
-set -- "$targets"
+# shellcheck disable=SC2086
+set -- $targets
 if [[ -z "$targets" || "$ALL" = "true" ]]
 then
     for t in "$TUE_ENV_DIR"/.env/dependencies/*
