@@ -4,9 +4,9 @@ TUE_INSTALL_DEPENDENCIES_DIR=$TUE_ENV_DIR/.env/dependencies
 TUE_INSTALL_DEPENDENCIES_ON_DIR=$TUE_ENV_DIR/.env/dependencies-on
 TUE_INSTALL_INSTALLED_DIR=$TUE_ENV_DIR/.env/installed
 
-mkdir -p $TUE_INSTALL_DEPENDENCIES_DIR
-mkdir -p $TUE_INSTALL_DEPENDENCIES_ON_DIR
-mkdir -p $TUE_INSTALL_INSTALLED_DIR
+mkdir -p "$TUE_INSTALL_DEPENDENCIES_DIR"
+mkdir -p "$TUE_INSTALL_DEPENDENCIES_ON_DIR"
+mkdir -p "$TUE_INSTALL_INSTALLED_DIR"
 
 TUE_INSTALL_TARGETS_DIR=$TUE_ENV_TARGETS_DIR
 
@@ -17,7 +17,7 @@ TUE_REPOS_DIR=$TUE_ENV_DIR/repos
 
 function date_stamp
 {
-    echo $(date +%Y_%m_%d_%H_%M_%S)
+    date +%Y_%m_%d_%H_%M_%S
 }
 
 # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # #
@@ -43,16 +43,16 @@ Error while installing target '$TUE_INSTALL_CURRENT_TARGET':
 
 function tue-install-warning
 {
-    echo -e "\033[33;5;1m[$TUE_INSTALL_CURRENT_TARGET] WARNING: $1\033[0m" | tee --append $INSTALL_DETAILS_FILE
-    TUE_INSTALL_WARNINGS="    [$TUE_INSTALL_CURRENT_TARGET] $1\n${TUE_INSTALL_WARNINGS}"
+    echo -e "\033[33;5;1m[$TUE_INSTALL_CURRENT_TARGET] WARNING: $*\033[0m" | tee --append "$INSTALL_DETAILS_FILE"
+    TUE_INSTALL_WARNINGS="    [$TUE_INSTALL_CURRENT_TARGET] $*\n${TUE_INSTALL_WARNINGS}"
 }
 
 # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # #
 
 function tue-install-info
 {
-    echo -e "\e[0;36m[$TUE_INSTALL_CURRENT_TARGET] INFO: $1\033[0m"  | tee --append $INSTALL_DETAILS_FILE
-    TUE_INSTALL_INFOS="    [$TUE_INSTALL_CURRENT_TARGET] $1\n${TUE_INSTALL_INFOS}"
+    echo -e "\e[0;36m[$TUE_INSTALL_CURRENT_TARGET] INFO: $*\033[0m"  | tee --append "$INSTALL_DETAILS_FILE"
+    TUE_INSTALL_INFOS="    [$TUE_INSTALL_CURRENT_TARGET] $*\n${TUE_INSTALL_INFOS}"
 }
 
 # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # #
@@ -61,9 +61,9 @@ function tue-install-debug
 {
     if [ "$DEBUG" = "true" ]
     then
-        echo -e "\e[0;34m[$TUE_INSTALL_CURRENT_TARGET] DEBUG: $1\033[0m"  | tee --append $INSTALL_DETAILS_FILE
+        echo -e "\e[0;34m[$TUE_INSTALL_CURRENT_TARGET] DEBUG: $*\033[0m"  | tee --append "$INSTALL_DETAILS_FILE"
     else
-        echo -e "\e[0;34m[$TUE_INSTALL_CURRENT_TARGET] DEBUG: $1\033[0m"  | tee --append $INSTALL_DETAILS_FILE 1> /dev/null
+        echo -e "\e[0;34m[$TUE_INSTALL_CURRENT_TARGET] DEBUG: $*\033[0m"  | tee --append "$INSTALL_DETAILS_FILE" 1> /dev/null
     fi
 }
 
@@ -76,7 +76,7 @@ function tue-install-target
     tue-install-debug "Installing $target"
 
     # Check if valid target received as input
-    if [ ! -d $TUE_INSTALL_TARGETS_DIR/$target ]
+    if [ ! -d "$TUE_INSTALL_TARGETS_DIR/$target" ]
     then
         tue-install-debug "Target '$target' does not exist."
         return 1
@@ -89,14 +89,14 @@ function tue-install-target
     then
         if [ "$parent_target" != "$target" ]
         then
-            echo "$target" >> $TUE_INSTALL_DEPENDENCIES_DIR/$parent_target
-            echo "$parent_target" >> $TUE_INSTALL_DEPENDENCIES_ON_DIR/$target
-            sort $TUE_INSTALL_DEPENDENCIES_DIR/$parent_target -u -o $TUE_INSTALL_DEPENDENCIES_DIR/$parent_target
-            sort $TUE_INSTALL_DEPENDENCIES_ON_DIR/$target -u -o $TUE_INSTALL_DEPENDENCIES_ON_DIR/$target
+            echo "$target" >> "$TUE_INSTALL_DEPENDENCIES_DIR/$parent_target"
+            echo "$parent_target" >> "$TUE_INSTALL_DEPENDENCIES_ON_DIR/$target"
+            sort "$TUE_INSTALL_DEPENDENCIES_DIR/$parent_target" -u -o "$TUE_INSTALL_DEPENDENCIES_DIR/$parent_target"
+            sort "$TUE_INSTALL_DEPENDENCIES_ON_DIR/$target" -u -o "$TUE_INSTALL_DEPENDENCIES_ON_DIR/$target"
         fi
     fi
 
-    if [ ! -f $TUE_INSTALL_STATE_DIR/$target ]
+    if [ ! -f "$TUE_INSTALL_STATE_DIR/$target" ]
     then
         tue-install-debug "File $TUE_INSTALL_STATE_DIR/$target does not exist, going to installation procedure"
 
@@ -108,15 +108,15 @@ function tue-install-target
 
         # Empty the target's dependency file
         tue-install-debug "Emptying $TUE_INSTALL_DEPENDENCIES_DIR/$target"
-        truncate -s 0 $TUE_INSTALL_DEPENDENCIES_DIR/$target
+        truncate -s 0 "$TUE_INSTALL_DEPENDENCIES_DIR/$target"
         local target_processed=false
 
-        if [ -f $install_file.yaml ]
+        if [ -f "$install_file".yaml ]
         then
             tue-install-debug "Parsing $install_file.yaml"
             # Do not use 'local cmds=' because it does not preserve command output status ($?)
-            cmds=$($TUE_INSTALL_SCRIPTS_DIR/parse-install-yaml.py $install_file.yaml)
-            if [ $? -eq 0 ]
+            local cmds
+            if cmds=$("$TUE_INSTALL_SCRIPTS_DIR"/parse-install-yaml.py "$install_file".yaml)
             then
                 for cmd in $cmds
                 do
@@ -129,10 +129,11 @@ function tue-install-target
             fi
         fi
 
-        if [ -f $install_file.bash ]
+        if [ -f "$install_file".bash ]
         then
             tue-install-debug "Sourcing $install_file.bash"
-            source $install_file.bash
+            # shellcheck disable=SC1090
+            source "$install_file".bash
             target_processed=true
         fi
 
@@ -141,7 +142,7 @@ function tue-install-target
             tue-install-warning "Target $target does not contain a valid install.yaml/bash file"
         fi
 
-        touch $TUE_INSTALL_STATE_DIR/$target
+        touch "$TUE_INSTALL_STATE_DIR/$target"
 
     fi
 
@@ -155,15 +156,15 @@ function tue-install-target
 
 function _show_update_message
 {
-    if [ -n "$(echo $2)" ]
+    if [ -n "$2" ]
     then
-        echo -e "\n    \033[1m$1\033[0m"                          | tee --append $INSTALL_DETAILS_FILE
-        echo "--------------------------------------------------" | tee --append $INSTALL_DETAILS_FILE
-        echo -e "$2"                                              | tee --append $INSTALL_DETAILS_FILE
-        echo "--------------------------------------------------" | tee --append $INSTALL_DETAILS_FILE
-        echo ""                                                   | tee --append $INSTALL_DETAILS_FILE
+        echo -e "\n    \033[1m$1\033[0m"                          | tee --append "$INSTALL_DETAILS_FILE"
+        echo "--------------------------------------------------" | tee --append "$INSTALL_DETAILS_FILE"
+        echo -e "$2"                                              | tee --append "$INSTALL_DETAILS_FILE"
+        echo "--------------------------------------------------" | tee --append "$INSTALL_DETAILS_FILE"
+        echo ""                                                   | tee --append "$INSTALL_DETAILS_FILE"
     else
-        echo -e "\033[1m$1\033[0m: up-to-date"                    | tee --append $INSTALL_DETAILS_FILE
+        echo -e "\033[1m$1\033[0m: up-to-date"                    | tee --append "$INSTALL_DETAILS_FILE"
     fi
 }
 
@@ -172,18 +173,19 @@ function _show_update_message
 function tue-install-svn
 {
     tue-install-system-now subversion
-    if [ ! -d $2 ]
+    local res
+    if [ ! -d "$2" ]
     then
-        res=$(svn co $1 $2 --trust-server-cert --non-interactive 2>&1)
+        res=$(svn co "$1" "$2" --trust-server-cert --non-interactive 2>&1)
     else
-        res=$(svn up $2 --trust-server-cert --non-interactive 2>&1)
+        res=$(svn up "$2" --trust-server-cert --non-interactive 2>&1)
         if echo "$res" | grep -q "At revision";
         then
             res=
         fi
     fi
 
-    _show_update_message $TUE_INSTALL_CURRENT_TARGET "$res"
+    _show_update_message "$TUE_INSTALL_CURRENT_TARGET" "$res"
 }
 
 # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # #
@@ -215,12 +217,12 @@ function tue-install-git
     local version=$3
 
     # Change url to https/ssh
-    repo=$(_github_https_or_ssh $repo)
+    repo=$(_github_https_or_ssh "$repo")
 
-    if [ ! -d $targetdir ]
+    if [ ! -d "$targetdir" ]
     then
         tue-install-debug "git clone --recursive $repo $targetdir"
-        res=$(git clone --recursive $repo $targetdir 2>&1)
+        res=$(git clone --recursive "$repo" "$targetdir" 2>&1)
         TUE_INSTALL_GIT_PULL_Q+=$targetdir
     else
         # Check if we have already pulled the repo
@@ -232,19 +234,21 @@ function tue-install-git
         else
             # Switch url of origin to use https/ssh if different
             # Get current remote url
-            local current_url=$(git -C $targetdir config --get remote.origin.url)
+            local current_url
+            current_url=$(git -C "$targetdir" config --get remote.origin.url)
 
             # If different, switch url
             if [ ! "$current_url" == "$repo" ]
             then
                 tue-install-debug "git -C $targetdir remote set-url origin $repo"
-                git -C $targetdir remote set-url origin $repo
+                git -C "$targetdir" remote set-url origin "$repo"
                 tue-install-info "URL has switched to $repo"
             fi
 
             tue-install-debug "git -C $targetdir pull --ff-only --prune"
 
-            res=$(git -C $targetdir pull --ff-only --prune 2>&1)
+            local res
+            res=$(git -C "$targetdir" pull --ff-only --prune 2>&1)
 
             tue-install-debug "$res"
 
@@ -260,18 +264,18 @@ function tue-install-git
     tue-install-debug "Desired version: $version"
     if [ -n "$version" ];
     then
-        _try_branch $targetdir $version
+        _try_branch "$targetdir" "$version"
         res="$res $_try_branch_res"
     fi
 
     tue-install-debug "Desired branch: $BRANCH"
     if [ -n "$BRANCH" ]; #Cannot be combined with version-if because this one might not exist
     then
-        _try_branch $targetdir "$BRANCH"
+        _try_branch "$targetdir" "$BRANCH"
         res="$res $_try_branch_res"
     fi
 
-    _show_update_message $TUE_INSTALL_CURRENT_TARGET "$res"
+    _show_update_message "$TUE_INSTALL_CURRENT_TARGET" "$res"
 }
 
 # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # #
@@ -290,12 +294,12 @@ function tue-install-apply-patch
 
     patch_file=$TUE_INSTALL_CURRENT_TARGET_DIR/$1
 
-    if [ ! -f $patch_file ]
+    if [ ! -f "$patch_file" ]
     then
         tue-install-error "Invalid tue-install-apply-patch call: patch file '$1' does not exist."
     fi
 
-    patch -s -N -r - -p0 -d $TUE_INSTALL_PKG_DIR < $patch_file
+    patch -s -N -r - -p0 -d "$TUE_INSTALL_PKG_DIR" < "$patch_file"
 }
 
 # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # #
@@ -311,7 +315,7 @@ function tue-install-cp
 
     # Check if user is allowed to write on target destination
     local root_required=true
-    if namei -l "$2" | grep -q $(whoami)
+    if namei -l "$2" | grep -q "$(whoami)"
     then
         root_required=false
     fi
@@ -378,6 +382,7 @@ function tue-install-add-text
     tue-install-debug "tue-install-add-text $*"
 
     local source_file=$1
+    # shellcheck disable=SC2088
     if [[ "$source_file" == "/"* ]] || [[ "$source_file" == "~/"* ]]
     then
         tue-install-error "tue-install-add-text: Only relative source files to the target directory are allowed"
@@ -385,13 +390,14 @@ function tue-install-add-text
         source_file="$TUE_INSTALL_CURRENT_TARGET_DIR/$source_file"
     fi
     local target_file=$2
+    # shellcheck disable=SC2088
     if [[ "$target_file" != "/"* ]] && [[ "$source_file" != "~/"* ]]
     then
         tue-install-error "tue-install-add-text: target file needs to be absolute or relative to the home directory"
     fi
 
     local root_required=true
-    if namei -l $target_file | grep -q $(whoami)
+    if namei -l "$target_file" | grep -q "$(whoami)"
     then
         tue-install-debug "tue-install-add-text: NO root required"
         root_required=false
@@ -399,29 +405,30 @@ function tue-install-add-text
         tue-install-debug "tue-install-add-text: root required"
     fi
 
-    if [ ! -f $source_file ]
+    if [ ! -f "$source_file" ]
     then
         tue-install-error "tue-install-add-text: No such source file: $source_file"
     fi
 
-    if [ ! -f $target_file ]
+    if [ ! -f "$target_file" ]
     then
         tue-install-error "tue-install-add-text: No such target file: $target_file"
     fi
 
-    local begin_tag=$(head -n 1 $source_file)
-    local end_tag=$(awk '/./{line=$0} END{print line}' $source_file)
-    local text=$(sed -e :a -e '/^\n*$/{$d;N;};/\n&/ba' $source_file)
+    local begin_tag end_tag text
+    begin_tag=$(head -n 1 "$source_file")
+    end_tag=$(awk '/./{line=$0} END{print line}' "$source_file")
+    text=$(sed -e :a -e '/^\n*$/{$d;N;};/\n&/ba' "$source_file")
     tue-install-debug "tue-install-add-text: Lines to be added: \n$text"
 
-    if ! grep -q "$begin_tag" $target_file
+    if ! grep -q "$begin_tag" "$target_file"
     then
         tue-install-debug "tue-install-add-text: Appending $target_file"
         if $root_required
         then
-            echo -e "$text" | sudo tee --append $target_file > /dev/null
+            echo -e "$text" | sudo tee --append "$target_file" 1> /dev/null
         else
-            echo -e "$text" | tee --append $target_file > /dev/null
+            echo -e "$text" | tee --append "$target_file" 1> /dev/null
         fi
     else
         tue-install-debug "tue-install-add-text: Begin tag already in $target_file, so comparing the files for changed lines"
@@ -429,16 +436,16 @@ function tue-install-add-text
         local tmp_target_file="/tmp/tue-install-add-text_target_temp"
 
         echo "$text" | tee "$tmp_source_file" > /dev/null
-        sed -e "/^$end_tag/r $tmp_source_file" -e "/^$begin_tag/,/^$end_tag/d" $target_file | tee $tmp_target_file > /dev/null
+        sed -e "/^$end_tag/r $tmp_source_file" -e "/^$begin_tag/,/^$end_tag/d" "$target_file" | tee "$tmp_target_file" 1> /dev/null
 
         if ! cmp --quiet "$tmp_target_file" "$target_file"
         then
             tue-install-debug "tue-install-add-text: Lines are changed, so copying"
             if $root_required
             then
-                sudo mv $tmp_target_file $target_file
+                sudo mv "$tmp_target_file" "$target_file"
             else
-                mv $tmp_target_file $target_file
+                mv "$tmp_target_file" "$target_file"
             fi
         else
             tue-install-debug "tue-install-add-text: Lines have not changed, so not copying"
@@ -468,12 +475,13 @@ function tue-install-system-now
         tue-install-error "Invalid tue-install-system-now call: needs package as argument."
     fi
 
-    pkgs_to_install=""
+    local pkgs_to_install=""
+    # shellcheck disable=SC2048
     for pkg in $*
     do
         # Check if pkg is not already installed dpkg -S does not cover previously removed packages
         # Based on https://stackoverflow.com/questions/1298066
-        if ! dpkg-query -W -f='${Status}' $pkg 2>/dev/null | grep -q "ok installed"
+        if ! dpkg-query -W -f='${Status}' "$pkg" 2>/dev/null | grep -q "ok installed"
         then
             pkgs_to_install="$pkgs_to_install $pkg"
         else
@@ -491,7 +499,7 @@ function tue-install-system-now
         tput sc
         while fuser /var/lib/dpkg/lock >/dev/null 2>&1
         do
-            case $(($i % 4)) in
+            case $((i % 4)) in
                 0 ) j="-" ;;
                 1 ) j="\\" ;;
                 2 ) j="|" ;;
@@ -503,7 +511,7 @@ function tue-install-system-now
             ((i=i+1))
         done
 
-        sudo apt-get install --assume-yes $pkgs_to_install
+        sudo apt-get install --assume-yes "$pkgs_to_install"
         tue-install-debug "Installed $pkgs_to_install ($?)"
     fi
 }
@@ -558,7 +566,7 @@ function tue-install-dpkg
         tue-install-error "Invalid tue-install-dpkg call: needs package as argument."
     fi
     tue-install-debug "Installing dpkg $1"
-    sudo dpkg --install $1
+    sudo dpkg --install "$1"
     tue-install-debug "sudo apt-get --fix-broken --assume-yes install"
     sudo apt-get --fix-broken --assume-yes install
 }
@@ -567,10 +575,10 @@ function tue-install-dpkg
 
 function tue-install-ros
 {
-    install_type=$1
-    src=$2
-    sub_dir=$3
-    version=$4
+    local install_type=$1
+    local src=$2
+    local sub_dir=$3
+    local version=$4
 
     tue-install-debug "Installing ros package: type = $install_type, source = $src"
 
@@ -591,21 +599,21 @@ function tue-install-ros
             tue-install-target hsr-setup || tue-install-error "Failed to install target 'hsr-setup'"
         fi
 
-        tue-install-system ros-$TUE_ROS_DISTRO-$src
+        tue-install-system ros-"$TUE_ROS_DISTRO"-"$src"
         return 0
     fi
 
-    if [ -z $ROS_PACKAGE_INSTALL_DIR ]
+    if [ -z "$ROS_PACKAGE_INSTALL_DIR" ]
     then
         tue-install-error "Environment variable ROS_PACKAGE_INSTALL_DIR not set."
     fi
 
     # Make sure the ROS package install dir exists
     tue-install-debug "Creating ROS package install dir: $ROS_PACKAGE_INSTALL_DIR"
-    mkdir -p $ROS_PACKAGE_INSTALL_DIR
+    mkdir -p "$ROS_PACKAGE_INSTALL_DIR"
 
-    local ros_pkg_dir=$ROS_PACKAGE_INSTALL_DIR/$ros_pkg_name
-    local repos_dir=$TUE_REPOS_DIR/$src
+    local ros_pkg_dir="$ROS_PACKAGE_INSTALL_DIR/$ros_pkg_name"
+    local repos_dir="$TUE_REPOS_DIR/$src"
     # replace spaces with underscores
     repos_dir=${repos_dir// /_}
     # now, clean out anything that's not alphanumeric or an underscore
@@ -623,48 +631,48 @@ function tue-install-ros
 
     if [ "$install_type" = "git" ]
     then
-        tue-install-git $src $repos_dir $version
+        tue-install-git "$src" "$repos_dir" "$version"
         tue-install-debug "git clone $src"
     elif [ "$install_type" = "svn" ]
     then
-        tue-install-svn $src $repos_dir $version
+        tue-install-svn "$src" "$repos_dir" "$version"
     else
         tue-install-error "Unknown ros install type: '${install_type}'"
     fi
 
-    if [ -d $repos_dir ]
+    if [ -d "$repos_dir" ]
     then
-        if [ ! -d $repos_dir/$sub_dir ]
+        if [ ! -d "$repos_dir/$sub_dir" ]
         then
             tue-install-error "Subdirectory '$sub_dir' does not exist for URL '$src'."
         fi
 
-        if [ -L $ros_pkg_dir ]
+        if [ -L "$ros_pkg_dir" ]
         then
             # Test if the current symbolic link points to the same repository dir. If not, give a warning
             # because it means the source URL has changed
-            if [ ! $ros_pkg_dir -ef $repos_dir/$sub_dir ]
+            if [ ! "$ros_pkg_dir" -ef "$repos_dir/$sub_dir" ]
             then
-                tue-install-info "URL has changed to $src/$subdir"
-                rm $ros_pkg_dir
-                ln -s $repos_dir/$sub_dir $ros_pkg_dir
+                tue-install-info "URL has changed to $src/$sub_dir"
+                rm "$ros_pkg_dir"
+                ln -s "$repos_dir/$sub_dir" "$ros_pkg_dir"
             fi
-        elif [ ! -d $ros_pkg_dir ]
+        elif [ ! -d "$ros_pkg_dir" ]
         then
             # Create a symbolic link to the system workspace
-            ln -s $repos_dir/$sub_dir $ros_pkg_dir
+            ln -s "$repos_dir/$sub_dir" "$ros_pkg_dir"
         fi
 
-        if  [ -f $ros_pkg_dir/package.xml ]
+        if  [ -f "$ros_pkg_dir"/package.xml ]
         then
             # Catkin
-            deps=$($TUE_INSTALL_SCRIPTS_DIR/parse-ros-package-deps.py $ros_pkg_dir/package.xml)
+            deps=$("$TUE_INSTALL_SCRIPTS_DIR"/parse-ros-package-deps.py "$ros_pkg_dir"/package.xml)
             tue-install-debug "Parsed package.xml \n$deps"
 
             for dep in $deps
             do
                 # Preference given to target name starting with ros-
-                tue-install-target ros-$dep || tue-install-target $dep || \
+                tue-install-target ros-"$dep" || tue-install-target "$dep" || \
                     tue-install-error "Targets 'ros-$dep' and '$dep' does not exist."
             done
 
@@ -692,26 +700,26 @@ function generate_setup_file
     TUE_SETUP_TARGETS=" $1$TUE_SETUP_TARGETS"
 
     # Check if the dependency file exists. If not, return
-    if [ ! -f $TUE_INSTALL_DEPENDENCIES_DIR/$1 ]
+    if [ ! -f "$TUE_INSTALL_DEPENDENCIES_DIR/$1" ]
     then
         return 0
     fi
 
     # Recursively add a setup for each dependency
-    deps=`cat $TUE_INSTALL_DEPENDENCIES_DIR/$1`
+    deps=$(cat "$TUE_INSTALL_DEPENDENCIES_DIR/$1")
     for dep in $deps
     do
         # You shouldn't depend on yourself
         if [ "$1" != "$dep" ]
         then
-            generate_setup_file $dep
+            generate_setup_file "$dep"
         fi
     done
 
     local tue_setup_file=$TUE_INSTALL_TARGETS_DIR/$1/setup
-    if [ -f $tue_setup_file ]
+    if [ -f "$tue_setup_file" ]
     then
-        echo "source $tue_setup_file" >> $TUE_ENV_DIR/.env/setup/target_setup.bash
+        echo "source $tue_setup_file" >> "$TUE_ENV_DIR"/.env/setup/target_setup.bash
     fi
 }
 
@@ -719,12 +727,12 @@ function generate_setup_file
 #                                           MAIN LOOP
 # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # #
 
-# Make sure tools used by this installer are installed
-tue-install-system-now python-yaml git python-pip
-
 stamp=$(date_stamp)
 INSTALL_DETAILS_FILE=/tmp/tue-get-details-$stamp
-touch $INSTALL_DETAILS_FILE
+touch "$INSTALL_DETAILS_FILE"
+
+# Make sure tools used by this installer are installed
+tue-install-system-now python-yaml git python-pip
 
 # CATKIN PACKAGES
 ROS_PACKAGE_INSTALL_DIR=$TUE_SYSTEM_DIR/src
@@ -732,7 +740,7 @@ ROS_PACKAGE_INSTALL_DIR=$TUE_SYSTEM_DIR/src
 TUE_INSTALL_SCRIPTS_DIR=$TUE_DIR/installer
 
 TUE_INSTALL_STATE_DIR=/tmp/tue-installer/$stamp
-mkdir -p $TUE_INSTALL_STATE_DIR
+mkdir -p "$TUE_INSTALL_STATE_DIR"
 
 TUE_INSTALL_GIT_PULL_Q=()
 
@@ -756,7 +764,9 @@ do
     case "$1" in
         --debug) DEBUG=true
             ;;
-        --branch*) BRANCH=`echo $1 | sed -e 's/^[^=]*=//g'`
+        --branch*)
+            # shellcheck disable=SC2001
+            BRANCH=$(echo "$1" | sed -e 's/^[^=]*=//g')
             ;;
         --*) echo "unknown option $1"
             ;;
@@ -769,33 +779,33 @@ done
 if [[ -z "${targets// }" ]] #If only whitespace
 then
     # If no targets are provided, update all installed targets
-    targets=`ls $TUE_INSTALL_INSTALLED_DIR`
+    targets=$(ls "$TUE_INSTALL_INSTALLED_DIR")
 fi
 
 for target in $targets
 do
     tue-install-debug "Main loop: installing $target"
-    tue-install-target $target || tue-install-error "Installed target: '$target' doesn't exist (anymore)"
+    tue-install-target "$target" || tue-install-error "Installed target: '$target' doesn't exist (anymore)"
 
     if [[ "$tue_cmd" == "install" ]]
     then # Mark as installed
         tue-install-debug "[$target] marked as installed after a successful install"
-        touch $TUE_INSTALL_INSTALLED_DIR/$target
+        touch "$TUE_INSTALL_INSTALLED_DIR/$target"
     else
         tue-install-debug "[$target] succesfully updated"
     fi
 done
 
 # (Re-)generate setup file
-mkdir -p $TUE_ENV_DIR/.env/setup
-echo "# This file was auto-generated by tue-install. Do not change this file." > $TUE_ENV_DIR/.env/setup/target_setup.bash
+mkdir -p "$TUE_ENV_DIR"/.env/setup
+echo "# This file was auto-generated by tue-install. Do not change this file." > "$TUE_ENV_DIR"/.env/setup/target_setup.bash
 
-mkdir -p $TUE_INSTALL_DEPENDENCIES_DIR
-installed_targets=`ls $TUE_INSTALL_DEPENDENCIES_DIR`
+mkdir -p "$TUE_INSTALL_DEPENDENCIES_DIR"
+installed_targets=$(ls "$TUE_INSTALL_DEPENDENCIES_DIR")
 TUE_SETUP_TARGETS=" "
 for t in $installed_targets
 do
-    generate_setup_file $t
+    generate_setup_file "$t"
 done
 
 # Display infos
@@ -811,7 +821,7 @@ then
 fi
 
 # Remove temp directories
-rm -rf $TUE_INSTALL_STATE_DIR
+rm -rf "$TUE_INSTALL_STATE_DIR"
 
 # Installing all the ppa repo's, which are collected during install
 if [ -n "$TUE_INSTALL_PPA" ]
@@ -821,11 +831,11 @@ then
     PPA_ADDED=""
     for ppa in $TUE_INSTALL_PPA
     do
-        if [ -z "$(grep -h "^deb.*${ppa#ppa:}" /etc/apt/sources.list.d/* 2>&1)" ]
+        if ! grep -h "^deb.*${ppa#ppa:}" /etc/apt/sources.list.d/* 1>/dev/null 2>&1
         then
             tue-install-system-now software-properties-common
             tue-install-info "Adding ppa: $ppa"
-            sudo add-apt-repository --yes $ppa
+            sudo add-apt-repository --yes "$ppa"
             PPA_ADDED=true
         else
             tue-install-debug "$ppa is already added previously"
@@ -894,7 +904,7 @@ then
         do
             echo -e "yes | sudo snap install --classic $pkg\n"
             tue-install-debug "yes | sudo snap install --classic $pkg"
-            yes | sudo snap install --classic $pkg
+            yes | sudo snap install --classic "$pkg"
         done
     fi
 fi
