@@ -1,4 +1,4 @@
-#!/bin/bash
+#! /usr/bin/env bash
 #
 # Package installer (CI script)
 # This script uses the Docker image of tue-env and installs the current git

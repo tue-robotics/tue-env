@@ -1,4 +1,4 @@
-#!/bin/bash
+#! /usr/bin/env bash
 
 _TUE_CATKIN_DEV_DIR=$TUE_ENV_DIR/dev
 _TUE_CATKIN_SYSTEM_DIR=$TUE_ENV_DIR/system

@@ -1,4 +1,4 @@
-#!/bin/bash
+#! /usr/bin/env bash
 _tue-check-env-vars || return 1
 
 # Update installer
