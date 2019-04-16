@@ -1,4 +1,4 @@
-#! /bin/bash
+#! /usr/bin/env bash
 
 #  - TUE-GET: tool voor het weergeven van dependencies (a la rospack depends*)
 #     - Extra handig: aangeven via welke weg A en B van elkaar afhangen
