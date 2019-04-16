@@ -1,4 +1,4 @@
-#!/bin/bash
+#! /usr/bin/env bash
 #
 # Package builder (CI script)
 # This script can only be run after the install-package.sh
