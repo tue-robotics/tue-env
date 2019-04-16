@@ -512,7 +512,8 @@ function tue-install-system-now
             ((i=i+1))
         done
 
-        sudo apt-get install --assume-yes "$pkgs_to_install"
+        # shellcheck disable=SC2086
+        sudo apt-get install --assume-yes $pkgs_to_install
         tue-install-debug "Installed $pkgs_to_install ($?)"
     fi
 }
