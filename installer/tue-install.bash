@@ -1,6 +1,8 @@
 #!/bin/bash
 _tue-check-env-vars || return 1
 
+[[ -n "$CI" ]] && set -o errexit
+
 # Update installer
 if [ ! -d $TUE_DIR ]
 then
