@@ -12,7 +12,7 @@ function _list_subdirs
     fs=$(ls "$1")
     for f in $fs
     do
-        if [ -d "$1/$f" ]
+        if [ -d "$1"/"$f" ]
         then
             echo "$f"
         fi
@@ -155,14 +155,14 @@ function tue-dev
 
     for pkg in "$@"
     do
-        if [ ! -d "$_TUE_CATKIN_SYSTEM_DIR/src/$pkg" ]
+        if [ ! -d "$_TUE_CATKIN_SYSTEM_DIR"/src/"$pkg" ]
         then
             echo "[tue-dev] '$pkg' does not exist in the system workspace."
-        elif [ -d "$_TUE_CATKIN_DEV_DIR/src/$pkg" ]
+        elif [ -d "$_TUE_CATKIN_DEV_DIR"/src/"$pkg" ]
         then
             echo "[tue-dev] '$pkg' is already in the dev workspace."
         else
-            ln -s "$_TUE_CATKIN_SYSTEM_DIR/src/$pkg" "$_TUE_CATKIN_DEV_DIR/src/$pkg"
+            ln -s "$_TUE_CATKIN_SYSTEM_DIR"/src/"$pkg" "$_TUE_CATKIN_DEV_DIR"/src/"$pkg"
         fi
     done
 
@@ -178,7 +178,7 @@ function tue-dev-clean
         if [[ -L $_TUE_CATKIN_DEV_DIR/src/$f ]]
         then
             echo "Cleaned '$f'"
-            rm "$_TUE_CATKIN_DEV_DIR/src/$f"
+            rm "$_TUE_CATKIN_DEV_DIR"/src/"$f"
         fi
     done
 
@@ -377,9 +377,9 @@ function _show_file
         echo "--------------------------------------------------"
         if hash pygmentize 2> /dev/null
         then
-            pygmentize -g "$TUE_ENV_TARGETS_DIR/$1/$2"
+            pygmentize -g "$TUE_ENV_TARGETS_DIR"/"$1"/"$2"
         else
-            cat "$TUE_ENV_TARGETS_DIR/$1/$2"
+            cat "$TUE_ENV_TARGETS_DIR"/"$1"/"$2"
         fi
         echo "--------------------------------------------------"
     else
@@ -471,7 +471,7 @@ function tue-get
         error=0
         for target in "$@"
         do
-            if [ ! -f "$tue_installed_dir/$target" ]
+            if [ ! -f "$tue_installed_dir"/"$target" ]
             then
                 echo "[tue-get] Package '$target' is not installed."
                 error=1
@@ -487,7 +487,7 @@ function tue-get
 
         for target in "$@"
         do
-            rm "$tue_installed_dir/$target"
+            rm "$tue_installed_dir"/"$target"
         done
 
         echo ""
@@ -519,7 +519,7 @@ function tue-get
             then
                 echo ""
             fi
-            if [ ! -d "$TUE_ENV_TARGETS_DIR/$target" ]
+            if [ ! -d "$TUE_ENV_TARGETS_DIR"/"$target" ]
             then
                 echo "[tue-get](show) '$target' is not a valid target"
                 firsttarget=false
@@ -528,7 +528,7 @@ function tue-get
 
             local firstfile="true"
             local files
-            mapfile -t files < <(find "$TUE_ENV_TARGETS_DIR/$target" -type f)
+            mapfile -t files < <(find "$TUE_ENV_TARGETS_DIR"/"$target" -type f)
 
             # First show the common target files
             local main_target_files="install.yaml install.bash setup"
@@ -536,7 +536,7 @@ function tue-get
             do
                 for key in "${!files[@]}"
                 do
-                    if [ "${files[$key]}" == "$TUE_ENV_TARGETS_DIR/$target/$file" ]
+                    if [ "${files[$key]}" == "$TUE_ENV_TARGETS_DIR"/"$target"/"$file" ]
                     then
                         if [[ $firstfile == false ]]
                         then
@@ -558,7 +558,7 @@ function tue-get
                 then
                     echo ""
                 fi
-                _show_file "$target" "${file#*$TUE_ENV_TARGETS_DIR/$target/}"
+                _show_file "$target" "${file#*$TUE_ENV_TARGETS_DIR"/"$target/}"
                 firstfile=false
             done
             firsttarget=false
@@ -892,9 +892,9 @@ For example:
     if [ -n "$exists" ]
     then
         git checkout "$branch"
-        git branch -u "$remote/$branch" "$branch"
+        git branch -u "$remote"/"$branch" "$branch"
     else
-        git checkout --track -b "$branch" "$remote/$branch"
+        git checkout --track -b "$branch" "$remote"/"$branch"
     fi
 }
 
@@ -988,7 +988,7 @@ For example:
             git fetch "$remote"
             if [[ "$(git branch -a)" == *"${remote}/${branch}"* ]]
             then
-                git branch -u "$remote/$branch" "$branch"
+                git branch -u "$remote"/"$branch" "$branch"
             else
                 echo -e "no branch: $branch on remote: $remote"
             fi
