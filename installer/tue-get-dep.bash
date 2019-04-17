@@ -58,9 +58,9 @@ function _show_dep
             echo "$1"
         elif [[ "$VERBOSE" = "true" ]]
         then
-            echo "$indent_str""$1" "$version"
+            echo "$indent_str$1" "$version"
         else
-            echo "$indent_str""$1"
+            echo "$indent_str$1"
         fi
     fi
 
