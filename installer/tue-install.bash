@@ -60,7 +60,7 @@ else
 
     echo -en "[tue-env-targets] Updating targets... "
 
-    if ! git -C "$TUE_ENV_TARGETS_DIR" pull --ff-only --prune
+    if ! git -C "$TUE_ENV_TARGETS_DIR" pull --ff-only --prune && [ -z "$CI" ]
     then
         # prompt for conformation
         exec < /dev/tty
