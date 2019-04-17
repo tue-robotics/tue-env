@@ -108,6 +108,5 @@ then
     fi
 fi
 
-[ -n "$CI" ] && echo -e "[tue-get] Going to install packages '$@'"
 # Run installer
 source $TUE_DIR/installer/tue-install-impl.bash "$@"
