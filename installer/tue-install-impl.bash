@@ -76,7 +76,7 @@ function tue-install-target
     tue-install-debug "Installing $target"
 
     # Check if valid target received as input
-    if [ ! -d "$TUE_INSTALL_TARGETS_DIR/$target" ]
+    if [ ! -d "$TUE_INSTALL_TARGETS_DIR"/"$target" ]
     then
         tue-install-debug "Target '$target' does not exist."
         return 1
@@ -89,14 +89,14 @@ function tue-install-target
     then
         if [ "$parent_target" != "$target" ]
         then
-            echo "$target" >> "$TUE_INSTALL_DEPENDENCIES_DIR/$parent_target"
-            echo "$parent_target" >> "$TUE_INSTALL_DEPENDENCIES_ON_DIR/$target"
-            sort "$TUE_INSTALL_DEPENDENCIES_DIR/$parent_target" -u -o "$TUE_INSTALL_DEPENDENCIES_DIR/$parent_target"
-            sort "$TUE_INSTALL_DEPENDENCIES_ON_DIR/$target" -u -o "$TUE_INSTALL_DEPENDENCIES_ON_DIR/$target"
+            echo "$target" >> "$TUE_INSTALL_DEPENDENCIES_DIR"/"$parent_target"
+            echo "$parent_target" >> "$TUE_INSTALL_DEPENDENCIES_ON_DIR"/"$target"
+            sort "$TUE_INSTALL_DEPENDENCIES_DIR"/"$parent_target" -u -o "$TUE_INSTALL_DEPENDENCIES_DIR"/"$parent_target"
+            sort "$TUE_INSTALL_DEPENDENCIES_ON_DIR"/"$target" -u -o "$TUE_INSTALL_DEPENDENCIES_ON_DIR"/"$target"
         fi
     fi
 
-    if [ ! -f "$TUE_INSTALL_STATE_DIR/$target" ]
+    if [ ! -f "$TUE_INSTALL_STATE_DIR"/"$target" ]
     then
         tue-install-debug "File $TUE_INSTALL_STATE_DIR/$target does not exist, going to installation procedure"
 
@@ -108,7 +108,7 @@ function tue-install-target
 
         # Empty the target's dependency file
         tue-install-debug "Emptying $TUE_INSTALL_DEPENDENCIES_DIR/$target"
-        truncate -s 0 "$TUE_INSTALL_DEPENDENCIES_DIR/$target"
+        truncate -s 0 "$TUE_INSTALL_DEPENDENCIES_DIR"/"$target"
         local target_processed=false
 
         if [ -f "$install_file".yaml ]
@@ -142,7 +142,7 @@ function tue-install-target
             tue-install-warning "Target $target does not contain a valid install.yaml/bash file"
         fi
 
-        touch "$TUE_INSTALL_STATE_DIR/$target"
+        touch "$TUE_INSTALL_STATE_DIR"/"$target"
 
     fi
 
@@ -312,7 +312,7 @@ function tue-install-cp
         tue-install-error "Invalid tue-install-cp call: needs two arguments (source and target). The source must be relative to the installer target directory"
     fi
 
-    local source_files="$TUE_INSTALL_CURRENT_TARGET_DIR/$1"
+    local source_files="$TUE_INSTALL_CURRENT_TARGET_DIR"/"$1"
 
     # Check if user is allowed to write on target destination
     local root_required=true
@@ -388,7 +388,7 @@ function tue-install-add-text
     then
         tue-install-error "tue-install-add-text: Only relative source files to the target directory are allowed"
     else
-        source_file="$TUE_INSTALL_CURRENT_TARGET_DIR/$source_file"
+        source_file="$TUE_INSTALL_CURRENT_TARGET_DIR"/"$source_file"
     fi
     local target_file=$2
     # shellcheck disable=SC2088
@@ -614,8 +614,8 @@ function tue-install-ros
     tue-install-debug "Creating ROS package install dir: $ROS_PACKAGE_INSTALL_DIR"
     mkdir -p "$ROS_PACKAGE_INSTALL_DIR"
 
-    local ros_pkg_dir="$ROS_PACKAGE_INSTALL_DIR/$ros_pkg_name"
-    local repos_dir="$TUE_REPOS_DIR/$src"
+    local ros_pkg_dir="$ROS_PACKAGE_INSTALL_DIR"/"$ros_pkg_name"
+    local repos_dir="$TUE_REPOS_DIR"/"$src"
     # replace spaces with underscores
     repos_dir=${repos_dir// /_}
     # now, clean out anything that's not alphanumeric or an underscore
@@ -644,7 +644,7 @@ function tue-install-ros
 
     if [ -d "$repos_dir" ]
     then
-        if [ ! -d "$repos_dir/$sub_dir" ]
+        if [ ! -d "$repos_dir"/"$sub_dir" ]
         then
             tue-install-error "Subdirectory '$sub_dir' does not exist for URL '$src'."
         fi
@@ -653,16 +653,16 @@ function tue-install-ros
         then
             # Test if the current symbolic link points to the same repository dir. If not, give a warning
             # because it means the source URL has changed
-            if [ ! "$ros_pkg_dir" -ef "$repos_dir/$sub_dir" ]
+            if [ ! "$ros_pkg_dir" -ef "$repos_dir"/"$sub_dir" ]
             then
                 tue-install-info "URL has changed to $src/$sub_dir"
                 rm "$ros_pkg_dir"
-                ln -s "$repos_dir/$sub_dir" "$ros_pkg_dir"
+                ln -s "$repos_dir"/"$sub_dir" "$ros_pkg_dir"
             fi
         elif [ ! -d "$ros_pkg_dir" ]
         then
             # Create a symbolic link to the system workspace
-            ln -s "$repos_dir/$sub_dir" "$ros_pkg_dir"
+            ln -s "$repos_dir"/"$sub_dir" "$ros_pkg_dir"
         fi
 
         if  [ -f "$ros_pkg_dir"/package.xml ]
@@ -702,13 +702,13 @@ function generate_setup_file
     TUE_SETUP_TARGETS=" $1$TUE_SETUP_TARGETS"
 
     # Check if the dependency file exists. If not, return
-    if [ ! -f "$TUE_INSTALL_DEPENDENCIES_DIR/$1" ]
+    if [ ! -f "$TUE_INSTALL_DEPENDENCIES_DIR"/"$1" ]
     then
         return 0
     fi
 
     # Recursively add a setup for each dependency
-    deps=$(cat "$TUE_INSTALL_DEPENDENCIES_DIR/$1")
+    deps=$(cat "$TUE_INSTALL_DEPENDENCIES_DIR"/"$1")
     for dep in $deps
     do
         # You shouldn't depend on yourself
@@ -792,7 +792,7 @@ do
     if [[ "$tue_cmd" == "install" ]]
     then # Mark as installed
         tue-install-debug "[$target] marked as installed after a successful install"
-        touch "$TUE_INSTALL_INSTALLED_DIR/$target"
+        touch "$TUE_INSTALL_INSTALLED_DIR"/"$target"
     else
         tue-install-debug "[$target] succesfully updated"
     fi
