@@ -1,3 +1,5 @@
+#! /usr/bin/env bash
+
 # -----------------------------------------
 # Fix annoying perl language warnings
 export LC_ALL="C.UTF-8"
@@ -8,6 +10,7 @@ if hash pip 2> /dev/null
 then
     _pip_completion()
     {
+        # shellcheck disable=SC2207
         COMPREPLY=( $( COMP_WORDS="${COMP_WORDS[*]}" \
                        COMP_CWORD=$COMP_CWORD \
                        PIP_AUTO_COMPLETE=1 $1 ) )
