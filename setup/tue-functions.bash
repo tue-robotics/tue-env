@@ -25,6 +25,13 @@ function _list_subdirs
 
 function _tue-git-branch-clean
 {
+    # Function to remove stale branches from a git repository (which should
+    # either be the PWD or one of its parent directories). The function removes
+    # stale branches in two layers. First it removes all branches that have been
+    # merged in the remote, then it checks for unmerged branches that have been
+    # deleted from the remote and prompts for confirmation before removal. If
+    # the function is called with "--yes" flag, then no confirmation is asked
+
     local assume_yes=
     local error_code=
     local stale_branches=
@@ -123,8 +130,9 @@ function _tue-git-branch-clean
 
 function tue-git-branch-clean
 {
-    # Run _tue-git-branch-clean on tue-env and all tue-robotics repositories
-    _tue-repos-do "_tue-git-branch-clean --yes"
+    # Run _tue-git-branch-clean on tue-env and all current environment
+    # repositories safely
+    _tue-repos-do "_tue-git-branch-clean"
 }
 
 # ----------------------------------------------------------------------------------------------------
