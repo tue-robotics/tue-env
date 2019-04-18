@@ -25,120 +25,114 @@ function _list_subdirs
 
 function _tue-git-branch-clean
 {
-    if [ -z $1 ]
+    local assume_yes
+    local error_code
+
+    if [ "$1" == "--yes" ]
     then
-        echo -e "[tue-git-branch-clean] No target repository provided"
-        return 1
-    else
-        local assume_yes=
-        local error_code=
+        assume_yes=true
+    fi
 
-        if [ "$2" == "--yes" ]
+    local repo="$PWD"
+
+    git -C $repo fetch -p
+
+    local stale_branches=$(git -C "$repo" branch --list --format "%(if:equals=[gone])%(upstream:track)%(then)%(refname)%(end)" \
+| sed 's,^refs/heads/,,;/^$/d')
+
+    if [ -z "$stale_branches" ]
+    then
+        echo -e "[tue-git-branch-clean] No branches to remove in repository '$repo'. Cleanup complete."
+        return 0
+    fi
+
+    if [[ "$stale_branches" == *$(git -C "$repo" rev-parse --abbrev-ref HEAD)* ]]
+    then
+        if [ ! "$PWD" == "$repo" ]
         then
-            assume_yes=true
+            local mempwd=$PWD
+            cd $repo
+            __tue-robocup-default-branch
+            cd $mempwd
+        else
+            __tue-robocup-default-branch
         fi
 
-        local repo="$(realpath $1)"
+        git -C $repo pull --ff-only --prune > /dev/null 2>&1
+        error_code=$?
 
-        git -C $repo fetch -p
-
-        local stale_branches=$(git -C $dir branch --list --format "%(if:equals=[gone])%(upstream:track)%(then)%(refname)%(end)" \
-    | sed 's,^refs/heads/,,;/^$/d')
-
-        if [ -z "$stale_branches" ]
+        if [ ! $error_code -eq 0 ]
         then
-            echo -e "[tue-git-branch-clean] No branches to remove in repository '$repo'. Cleanup complete."
-            return 0
+            echo -en "[tue-git-branch-clean] Error pulling upstream on default branch of repository '$repo'. Cancelling branch cleanup."
+            return 1
         fi
+    fi
 
-        if [[ "$stale_branches" == *$(git -C $dir rev-parse --abbrev-ref HEAD)* ]]
+    echo -e "Removing branches:"
+    echo -e "------------------"
+    echo -e "$stale_branches"
+
+    local branch=
+    local unmerged_stale_branch=
+    for branch in $stale_branches
+    do
+        git -C $repo branch -d $branch > /dev/null 2>&1
+        local error_code=$?
+
+        if [ ! $error_code -eq 0 ]
         then
-            if [ ! "$PWD" == "$repo" ]
-            then
-                local mempwd=$PWD
-                cd $repo
-                __tue-robocup-default-branch
-                cd $mempwd
-            else
-                __tue-robocup-default-branch
-            fi
+            unmerged_stale_branch="$unmerged_stale_branch $branch"
+        fi
+    done
 
-            git -C $repo pull --ff-only --prune > /dev/null 2>&1
-            error_code=$?
+    if [ ! -z "$unmerged_stale_branch" ]
+    then
+        # If assume_yes is not true then prompt the user. If the user
+        # doesn't answer with Y/y then return from the function else execute
+        # the commands outside the if block
+        if [ ! "$assume_yes" == "true" ]
+        then
+            unmerged_stale_branch=$(echo "$unmerged_stale_branch" | tr " " "\n")
+            echo
+            echo -en "Found unmerged stale branches:"
+            echo -en "------------------------------"
+            echo -en "$unmerged_stale_branch"
+            echo
+            echo
 
-            if [ ! $error_code -eq 0 ]
+            local response=
+
+            read -p "[tue-git-branch-clean] Do you want to remove the unmerged stale branches [Y/n]? " -n 1 -r response
+
+            echo
+
+            if [[ ! $response =~ ^[Yy]$ ]]
             then
-                echo -en "[tue-git-branch-clean] Error pulling upstream on default branch of repository '$repo'. Cancelling branch cleanup."
+                echo -en "[tue-git-branch-clean] Not removing unmerged stale branches. Exiting command."
                 return 1
             fi
         fi
 
-        echo -e "Removing branches:"
-        echo -e "------------------"
-        echo -e "$stale_branches"
-
-        local branch=
-        local unmerged_stale_branch=
-        for branch in $stale_branches
+        local unmerged_branch=
+        for unmerged_branch in $unmerged_stale_branch
         do
-            git -C $repo branch -d $branch > /dev/null 2>&1
-            local error_code=$?
+            git -C $repo branch -D $unmerged_branch > /dev/null 2>&1
+            error_code=$?
 
             if [ ! $error_code -eq 0 ]
             then
-                unmerged_stale_branch="$unmerged_stale_branch $branch"
+                echo "[tue-git-branch-clean] In repository '$repo' error deleting branch: $unmerged_branch"
             fi
         done
-
-        if [ ! -z "$unmerged_stale_branch" ]
-        then
-            # If assume_yes is not true then prompt the user. If the user
-            # doesn't answer with Y/y then return from the function else execute
-            # the commands outside the if block
-            if [ ! "$assume_yes" == "true" ]
-            then
-                unmerged_stale_branch=$(echo "$unmerged_stale_branch" | tr " " "\n")
-                echo
-                echo -en "Found unmerged stale branches:"
-                echo -en "------------------------------"
-                echo -en "$unmerged_stale_branch"
-                echo
-                echo
-
-                local response=
-
-                read -p "[tue-git-branch-clean] Do you want to remove the unmerged stale branches [Y/n]? " -n 1 -r response
-
-                echo
-
-                if [[ ! $response =~ ^[Yy]$ ]]
-                then
-                    echo -en "[tue-git-branch-clean] Not removing unmerged stale branches. Exiting command."
-                    return 1
-                fi
-            fi
-
-            local unmerged_branch=
-            for unmerged_branch in $unmerged_stale_branch
-            do
-                git -C $repo branch -D $unmerged_branch > /dev/null 2>&1
-                error_code=$?
-
-                if [ ! $error_code -eq 0 ]
-                then
-                    echo "[tue-git-branch-clean] In repository '$repo' error deleting branch: $unmerged_branch"
-                fi
-            done
-            echo "[tue-git-branch-clean] Branch cleanup of repository '$repo' complete"
-            return 0
-        fi
+        echo "[tue-git-branch-clean] Branch cleanup of repository '$repo' complete"
+        return 0
     fi
 }
 
 function tue-git-branch-clean
 {
     # Run _tue-git-branch-clean on tue-env and all tue-robotics repositories
-    _tue-repos-do "_tue-git-branch-clean . --yes"
+    _tue-repos-do "_tue-git-branch-clean --yes"
 }
 
 # ----------------------------------------------------------------------------------------------------
