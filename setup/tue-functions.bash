@@ -54,6 +54,8 @@ function _tue-git-branch-clean
         return 0
     fi
 
+    # If the current branch is a stale branch then change to the default repo
+    # branch before cleanup
     if [[ "$stale_branches" == *$(git rev-parse --abbrev-ref HEAD)* ]]
     then
         __tue-robocup-default-branch
@@ -72,16 +74,19 @@ function _tue-git-branch-clean
     echo -e "------------------"
     echo -e "$stale_branches"
 
-    local branch=
+    local stale_branch=
     local unmerged_stale_branches=
-    for branch in $stale_branches
+    for stale_branch in $stale_branches
     do
-        git branch -d "$branch" > /dev/null 2>&1
+        git branch -d "$stale_branch" > /dev/null 2>&1
         error_code=$?
 
+        # If an error occured in safe deletion of a stale branch, add it to the
+        # list of unmerged stale branches which are to be forcefully removed
+        # upon confirmation by the user
         if [ ! $error_code -eq 0 ]
         then
-            unmerged_stale_branches="$unmerged_stale_branches $branch"
+            unmerged_stale_branches="$unmerged_stale_branches $stale_branch"
         fi
     done
 
@@ -103,9 +108,7 @@ function _tue-git-branch-clean
             echo
 
             local response=
-
             read -p "[tue-git-branch-clean] Do you want to remove the unmerged stale branches [Y/n]? " -n 1 -r response
-
             echo
 
             if [[ ! $response =~ ^[Yy]$ ]]
