@@ -19,6 +19,7 @@ function tue-data
 
     if [ -z "$1" ]
     then
+        # shellcheck disable=SC1078,SC1079
         echo """tue-data is a tool for uploading data to and downloading data from the TU/e robotics server.
 
     Usage: tue-data COMMAND [ARG1 ARG2 ...]
@@ -51,6 +52,7 @@ function tue-data
         # Determine current directory relative to local data dir root
         local rel_dir=${PWD#$LOCAL_DATA_DIR}
 
+        # shellcheck disable=SC2029
         ssh $ROBOTICSSRV_LOGIN "ls $REMOTE_DATA_DIR/$rel_dir -alh"
     elif [[ $cmd == "update" ]]
     then
@@ -64,11 +66,12 @@ function tue-data
         # Determine current directory relative to local data dir root
         local rel_dir=${PWD#$LOCAL_DATA_DIR}
 
-        rsync $ROBOTICSSRV_LOGIN:$REMOTE_DATA_DIR/$rel_dir/ . -av --progress --exclude=".svn"
+        rsync "$ROBOTICSSRV_LOGIN":"$REMOTE_DATA_DIR"/"$rel_dir"/ . -av --progress --exclude=".svn"
     elif [[ $cmd == "store" ]]
     then
         if [ -z "$1" ]
         then
+            # shellcheck disable=SC1078,SC1079
             echo """Usage: tue-data store <FILE-OR-FOLDER>
 
 For example, to store everything in the current folder, use:
@@ -94,18 +97,17 @@ For example, to store everything in the current folder, use:
         # Determine current directory relative to local data dir root
         local rel_dir=${target#$LOCAL_DATA_DIR}
 
-        rsync $LOCAL_DATA_DIR/./$rel_dir $ROBOTICSSRV_LOGIN:$REMOTE_DATA_DIR/ -av --relative --progress --exclude=".svn"
+        rsync "$LOCAL_DATA_DIR"/./"$rel_dir" "$ROBOTICSSRV_LOGIN":"$REMOTE_DATA_DIR"/ -av --relative --progress --exclude=".svn"
     fi
 }
 
 function _tue-data
 {
     local cur=${COMP_WORDS[COMP_CWORD]}
-    local prev=${COMP_WORDS[COMP_CWORD-1]}
 
-    if [ $COMP_CWORD -eq 1 ]
+    if [ "$COMP_CWORD" -eq 1 ]
     then
-        COMPREPLY=( $(compgen -W "update-dirs list update store" -- $cur) )
+        mapfile -t COMPREPLY < <(compgen -W "update-dirs list update store" -- "$cur")
     fi
 }
 complete -F _tue-data tue-data

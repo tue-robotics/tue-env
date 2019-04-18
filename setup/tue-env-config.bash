@@ -15,14 +15,14 @@ function _set_export_option
     value=${2//\//\\/}
     sed -i \
         -e '/^#\?\(\s*'"export ${key}"'\s*=\s*\).*/{s//\1'"${value}"'/;:a;n;ba;q}' \
-        -e '$a'"export ${key}"'='"${value}" $3
+        -e '$a'"export ${key}"'='"${value}" "$3"
 }
 
 function tue-env-use-ssh
 {
     local option="TUE_USE_SSH"
     local value="true"
-    _set_export_option "$option" "$value" $tue_env_dir/.env/setup/user_setup.bash
+    _set_export_option "$option" "$value" "$tue_env_dir"/.env/setup/user_setup.bash
 
     echo -e "[tue-env](config) Environment '$env' set to use SSH"
 }
@@ -31,7 +31,7 @@ function tue-env-use-https
 {
     local option="TUE_USE_SSH"
     local value="false"
-    _set_export_option "$option" "$value" $tue_env_dir/.env/setup/user_setup.bash
+    _set_export_option "$option" "$value" "$tue_env_dir"/.env/setup/user_setup.bash
 
     echo -e "[tue-env](config) Environment '$env' set to use HTTPS"
 }
@@ -44,7 +44,7 @@ else
     env=$1
     shift
 
-    tue_env_dir="$(cat $TUE_DIR/user/envs/$env)"
+    tue_env_dir="$(cat "$TUE_DIR"/user/envs/"$env")"
 
     if [ -z "$1" ]
     then
@@ -52,6 +52,7 @@ else
     else
         functions=$(compgen -A function | grep "tue-env-")
         functions=${functions//tue-env-/}
+        # shellcheck disable=SC2086
         functions=$(echo $functions | tr ' ' '|')
         while [ "$1" != "" ]
         do
