@@ -28,6 +28,8 @@ function _tue-git-branch-clean
     local assume_yes=
     local error_code=
     local stale_branches=
+    local repo=
+    repo="$PWD"
 
     if [ "$1" == "--yes" ]
     then
@@ -35,7 +37,7 @@ function _tue-git-branch-clean
     fi
 
     git fetch -p
-    stale_branches=$(git -C "$repo" branch --list --format "%(if:equals=[gone])%(upstream:track)%(then)%(refname)%(end)" \
+    stale_branches=$(git branch --list --format "%(if:equals=[gone])%(upstream:track)%(then)%(refname)%(end)" \
 | sed 's,^refs/heads/,,;/^$/d')
 
     if [ -z "$stale_branches" ]
@@ -44,7 +46,7 @@ function _tue-git-branch-clean
         return 0
     fi
 
-    if [[ "$stale_branches" == *$(git -C "$repo" rev-parse --abbrev-ref HEAD)* ]]
+    if [[ "$stale_branches" == *$(git rev-parse --abbrev-ref HEAD)* ]]
     then
         __tue-robocup-default-branch
 
