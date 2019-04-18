@@ -68,7 +68,7 @@ function _tue-git-branch-clean
     local unmerged_stale_branches=
     for branch in $stale_branches
     do
-        git branch -d $branch > /dev/null 2>&1
+        git branch -d "$branch" > /dev/null 2>&1
         error_code=$?
 
         if [ ! $error_code -eq 0 ]
@@ -77,7 +77,7 @@ function _tue-git-branch-clean
         fi
     done
 
-    if [ ! -z "$unmerged_stale_branches" ]
+    if [ -n "$unmerged_stale_branches" ]
     then
         # If assume_yes is not true then prompt the user. If the user
         # doesn't answer with Y/y then return from the function else execute
@@ -108,7 +108,7 @@ function _tue-git-branch-clean
         local unmerged_stale_branch=
         for unmerged_stale_branch in $unmerged_stale_branches
         do
-            git branch -D $unmerged_stale_branch > /dev/null 2>&1
+            git branch -D "$unmerged_stale_branch" > /dev/null 2>&1
             error_code=$?
 
             if [ ! $error_code -eq 0 ]
