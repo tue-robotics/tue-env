@@ -38,9 +38,15 @@ function _tue-git-branch-clean
     local repo=
     repo="$PWD"
 
-    if [ "$1" == "--force-remove" ]
+    if [ -n "$1" ]
     then
-        force_remove=true
+        if [ "$1" == "--force-remove" ]
+        then
+            force_remove=true
+        else
+            echo -e "[tue-git-branch-clean] Error! Unknown input argument '$1'. Only supported argument is '--force-remove' to forcefully remove unmerged stale branches"
+            return 1
+        fi
     fi
 
     git fetch -p || { echo -e "[tue-git-branch-clean] 'git fetch -p' failed in '$repo'."; return 1; }
@@ -143,8 +149,22 @@ function _tue-git-branch-clean
 function tue-git-branch-clean
 {
     # Run _tue-git-branch-clean on tue-env and all current environment
-    # repositories safely
-    _tue-repos-do "_tue-git-branch-clean"
+    # repositories safely when no input exists
+
+    local force_remove=
+
+    if [ -n "$1" ]
+    then
+        if [ "$1" == "--force-remove" ]
+        then
+            force_remove=true
+        else
+            echo -e "[tue-git-branch-clean] Error! Unknown input argument '$1'. Only supported argument is '--force-remove' to forcefully remove unmerged stale branches"
+            return 1
+        fi
+    fi
+
+    _tue-repos-do "_tue-git-branch-clean $force_remove"
 }
 
 # ----------------------------------------------------------------------------------------------------
