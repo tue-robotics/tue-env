@@ -9,7 +9,7 @@ _TUE_CATKIN_SYSTEM_DIR=$TUE_ENV_DIR/system
 
 function _list_subdirs
 {
-    fs="$(ls $1)"
+    fs=$(ls "$1")
     for f in $fs
     do
         if [ -d "$1"/"$f" ]
