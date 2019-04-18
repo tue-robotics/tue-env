@@ -23,6 +23,18 @@ function _list_subdirs
 #                                       GIT LOCAL HOUSEKEEPING
 # ----------------------------------------------------------------------------------------------------
 
+function __tue-default-branch
+{
+    local default_branch
+    default_branch=$(git remote show origin | grep HEAD | awk '{print $3}')
+    _git_remote_checkout origin "$default_branch"
+}
+
+function _tue-default-branch
+{
+    _tue-repos-do "__tue-default-branch"
+}
+
 function _tue-git-branch-clean
 {
     # Function to remove stale branches from a git repository (which should
@@ -1099,18 +1111,6 @@ function tue-robocup-remote-checkout
     local branch=$TUE_ROBOCUP_BRANCH
 
     _tue-repos-do "_tue-robocup-remote-checkout $remote $branch"
-}
-
-function __tue-robocup-default-branch
-{
-    local default_branch
-    default_branch=$(git remote show origin | grep HEAD | awk '{print $3}')
-    _git_remote_checkout origin "$default_branch"
-}
-
-function _tue-robocup-default-branch
-{
-    _tue-repos-do "__tue-robocup-default-branch"
 }
 
 function _tue-robocup-change-remote
