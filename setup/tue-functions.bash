@@ -36,7 +36,7 @@ function _tue-git-branch-clean
         assume_yes=true
     fi
 
-    git fetch -p
+    git fetch -p || { echo -e "[tue-git-branch-clean] 'git fetch -p' failed in '$repo'."; return 1; }
     stale_branches=$(git branch --list --format "%(if:equals=[gone])%(upstream:track)%(then)%(refname)%(end)" \
 | sed 's,^refs/heads/,,;/^$/d')
 
