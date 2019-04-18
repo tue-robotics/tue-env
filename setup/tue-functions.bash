@@ -44,6 +44,7 @@ function _tue-git-branch-clean
     fi
 
     git fetch -p || { echo -e "[tue-git-branch-clean] 'git fetch -p' failed in '$repo'."; return 1; }
+
     stale_branches=$(git branch --list --format "%(if:equals=[gone])%(upstream:track)%(then)%(refname)%(end)" \
 | sed 's,^refs/heads/,,;/^$/d')
 
@@ -84,6 +85,8 @@ function _tue-git-branch-clean
         fi
     done
 
+    # Removal of unmerged stale branches. Not a default operation with the high
+    # level command tue-git-branch-clean
     if [ -n "$unmerged_stale_branches" ]
     then
         # If assume_yes is not true then prompt the user. If the user
@@ -111,6 +114,12 @@ function _tue-git-branch-clean
                 return 1
             fi
         fi
+
+        echo
+        echo -e "Removing unmerged stale branches:"
+        echo -e "---------------------------------"
+        echo -e "$unmerged_stale_branches"
+        echo
 
         local unmerged_stale_branch=
         for unmerged_stale_branch in $unmerged_stale_branches
