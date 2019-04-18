@@ -30,17 +30,17 @@ function _tue-git-branch-clean
     # stale branches in two layers. First it removes all branches that have been
     # merged in the remote, then it checks for unmerged branches that have been
     # deleted from the remote and prompts for confirmation before removal. If
-    # the function is called with "--yes" flag, then no confirmation is asked
+    # the function is called with "--force-remove" flag, then no confirmation is asked
 
-    local assume_yes=
+    local force_remove=
     local error_code=
     local stale_branches=
     local repo=
     repo="$PWD"
 
-    if [ "$1" == "--yes" ]
+    if [ "$1" == "--force-remove" ]
     then
-        assume_yes=true
+        force_remove=true
     fi
 
     git fetch -p || { echo -e "[tue-git-branch-clean] 'git fetch -p' failed in '$repo'."; return 1; }
@@ -97,7 +97,7 @@ function _tue-git-branch-clean
         # If assume_yes is not true then prompt the user. If the user
         # doesn't answer with Y/y then return from the function else execute
         # the commands outside the if block
-        if [ ! "$assume_yes" == "true" ]
+        if [ ! "$force_remove" == "true" ]
         then
             unmerged_stale_branches=$(echo "$unmerged_stale_branches" | tr " " "\n")
             echo
@@ -114,7 +114,7 @@ function _tue-git-branch-clean
             if [[ ! $response =~ ^[Yy]$ ]]
             then
                 echo -e "[tue-git-branch-clean] Not removing unmerged stale branches. Exiting command."
-                return 1
+                return 0
             fi
         fi
 
