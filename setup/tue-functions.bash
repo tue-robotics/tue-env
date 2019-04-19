@@ -112,28 +112,21 @@ function _tue-git-branch-clean
     # level command tue-git-branch-clean
     if [ -n "$unmerged_stale_branches" ]
     then
-        # If assume_yes is not true then prompt the user. If the user
-        # doesn't answer with Y/y then return from the function else execute
-        # the commands outside the if block
+        unmerged_stale_branches=$(echo "$unmerged_stale_branches" | tr " " "\n")
+
+        # If force_remove is not true then echo the list of unmerged stale
+        # branches and echo that the user needs to call the command with
+        # --force-remove to remove these branches
         if [ ! "$force_remove" == "true" ]
         then
-            unmerged_stale_branches=$(echo "$unmerged_stale_branches" | tr " " "\n")
             echo
             echo -e "Found unmerged stale branches:"
             echo -e "------------------------------"
             echo -e "$unmerged_stale_branches"
             echo
-            echo
+            echo -e "[tue-git-branch-clean] To remove these branches call the command with '--force-remove'"
 
-            local response
-            read -p "[tue-git-branch-clean] Do you want to remove the unmerged stale branches [Y/n]? " -n 1 -r response
-            echo
-
-            if [[ ! $response =~ ^[Yy]$ ]]
-            then
-                echo -e "[tue-git-branch-clean] Not removing unmerged stale branches. Exiting command."
-                return 0
-            fi
+            return 0
         fi
 
         echo
@@ -153,9 +146,10 @@ function _tue-git-branch-clean
                 echo "[tue-git-branch-clean] In repository '$repo' error deleting branch: $unmerged_stale_branch"
             fi
         done
-        echo "[tue-git-branch-clean] Branch cleanup of repository '$repo' complete"
-        return 0
     fi
+
+    echo "[tue-git-branch-clean] Branch cleanup of repository '$repo' complete"
+    return 0
 }
 
 function tue-git-branch-clean
