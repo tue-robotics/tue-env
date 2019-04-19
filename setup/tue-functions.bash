@@ -44,10 +44,10 @@ function _tue-git-branch-clean
     # deleted from the remote and prompts for confirmation before removal. If
     # the function is called with "--force-remove" flag, then no confirmation is asked
 
-    local force_remove=
-    local error_code=
-    local stale_branches=
-    local repo=
+    local force_remove
+    local error_code
+    local stale_branches
+    local repo
     repo="$PWD"
 
     if [ -n "$1" ]
@@ -92,8 +92,8 @@ function _tue-git-branch-clean
     echo -e "------------------"
     echo -e "$stale_branches"
 
-    local stale_branch=
-    local unmerged_stale_branches=
+    local stale_branch
+    local unmerged_stale_branches
     for stale_branch in $stale_branches
     do
         git branch -d "$stale_branch" > /dev/null 2>&1
@@ -125,7 +125,7 @@ function _tue-git-branch-clean
             echo
             echo
 
-            local response=
+            local response
             read -p "[tue-git-branch-clean] Do you want to remove the unmerged stale branches [Y/n]? " -n 1 -r response
             echo
 
@@ -142,7 +142,7 @@ function _tue-git-branch-clean
         echo -e "$unmerged_stale_branches"
         echo
 
-        local unmerged_stale_branch=
+        local unmerged_stale_branch
         for unmerged_stale_branch in $unmerged_stale_branches
         do
             git branch -D "$unmerged_stale_branch" > /dev/null 2>&1
@@ -163,7 +163,7 @@ function tue-git-branch-clean
     # Run _tue-git-branch-clean on tue-env and all current environment
     # repositories safely when no input exists
 
-    local force_remove=
+    local force_remove
 
     if [ -n "$1" ]
     then
