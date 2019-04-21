@@ -547,6 +547,16 @@ function tue-install-pip
     TUE_INSTALL_PIPS="$1 $TUE_INSTALL_PIPS"
 }
 
+function tue-install-pip3
+{
+    if [ -z "$1" ]
+    then
+        tue-install-error "Invalid tue-install-pip3 call: needs package as argument."
+    fi
+    tue-install-debug "Adding $1 to pip3 list"
+    TUE_INSTALL_PIP3S="$1 $TUE_INSTALL_PIP3S"
+}
+
 # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # #
 
 function tue-install-snap
@@ -734,7 +744,7 @@ INSTALL_DETAILS_FILE=/tmp/tue-get-details-$stamp
 touch "$INSTALL_DETAILS_FILE"
 
 # Make sure tools used by this installer are installed
-tue-install-system-now python-yaml git python-pip
+tue-install-system-now python-yaml git python-pip python3-pip
 
 # CATKIN PACKAGES
 ROS_PACKAGE_INSTALL_DIR=$TUE_SYSTEM_DIR/src
@@ -749,6 +759,7 @@ TUE_INSTALL_GIT_PULL_Q=()
 TUE_INSTALL_SYSTEMS=
 TUE_INSTALL_PPA=
 TUE_INSTALL_PIPS=
+TUE_INSTALL_PIP3S=
 TUE_INSTALL_SNAPS=
 
 TUE_INSTALL_WARNINGS=
@@ -878,6 +889,27 @@ then
     echo -e "Going to run the following command:\n"
     echo -e "yes | pip2 install --user $TUE_INSTALL_PIPS\n"
     yes | pip2 install --user $TUE_INSTALL_PIPS
+fi
+
+# Installing all python3 (pip3) targets, which are collected during the install
+if [ -n "$TUE_INSTALL_PIP3S" ]
+then
+    TUE_INSTALL_CURRENT_TARGET="PIP3"
+
+    pip3_version=$(pip3 --version | awk '{print $2}')
+    if version_gt "9" "$pip3_version"
+    then
+        tue-install-debug "pip3 not yet version >=9, but $pip3_version"
+        sudo -H pip3 install --upgrade pip
+        hash -r
+    else
+        tue-install-debug "Already pip3>=9\n"
+    fi
+
+    # Just install the packages because checking for installation is not faster
+    echo -e "Going to run the following command:\n"
+    echo -e "yes | pip3 install --user $TUE_INSTALL_PIP3S\n"
+    yes | pip3 install --user $TUE_INSTALL_PIP3S
 fi
 
 # Installing all snap targets, which are collected during the install
