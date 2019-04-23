@@ -60,7 +60,10 @@ function tue-env
         fi
 
         echo "$dir" > "$TUE_DIR"/user/envs/"$1"
-        mkdir -p "$dir"/.env
+        # Create .env and .env/setup directories
+        mkdir -p "$dir"/.env/setup
+        touch "$dir"/.env/setup/user_setup.bash
+
         echo "[tue-env] Created new environment $1"
 
         if [ -n "$3" ]
