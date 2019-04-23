@@ -81,7 +81,6 @@ mkdir -p ~/ros/$TUE_ROS_DISTRO
 tue-env init ros-$TUE_ROS_DISTRO ~/ros/$TUE_ROS_DISTRO https://github.com/tue-robotics/tue-env-targets.git
 
 # Set the correct ROS version for this environment
-mkdir -p ~/ros/$TUE_ROS_DISTRO/.env/setup
 echo "export TUE_ROS_DISTRO=$TUE_ROS_DISTRO" > ~/ros/$TUE_ROS_DISTRO/.env/setup/user_setup.bash
 
 # Add loading of TU/e tools (tue-env, tue-get, etc) to bashrc
