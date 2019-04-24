@@ -11,8 +11,8 @@ function _set_export_option
     # Add the following line: 'export KEY=VALUE' to FILE
     # Or changes the VALUE to current value if line already in FILE.
 
-    key=${1//\//\\/}
-    value=${2//\//\\/}
+    local key=${1//\//\\/}
+    local value=${2//\//\\/}
     sed -i \
         -e '/^#\?\(\s*'"export ${key}"'\s*=\s*\).*/{s//\1'"${value}"'/;:a;n;ba;q}' \
         -e '$a'"export ${key}"'='"${value}" "$3"
