@@ -224,7 +224,7 @@ function _tue-repo-status
     local status=
     local vctype=
 
-    if [ -d "$pkg_dir"/.git ]
+    if git -C "$pkg_dir" rev-parse --git-dir > /dev/null 2>&1
     then
         # Try git
 
