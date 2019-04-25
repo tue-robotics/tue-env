@@ -545,7 +545,7 @@ function tue-get
                         _show_file "$target" "$file"
                         firstfile=false
                         unset "files[$key]"
-                        mapfile -t files < <("${files[@]}")
+                        files=("${files[@]}")
                         break
                     fi
                 done
