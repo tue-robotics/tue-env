@@ -22,7 +22,9 @@ fi
 DOCKER_FILE="$1"
 
 # Create tag based on branch name
-IMAGE_NAME=tuerobotics/tue-env:$(echo "$TRAVIS_BRANCH" | tr '[:upper:]' '[:lower:]' | sed -e 's:/:_:g')
+IMAGE_NAME_SUBSTRING=$(basename "$DOCKER_FILE")
+IMAGE_NAME_SUBSTRING=${IMAGE_NAME_SUBSTRING%.Dockerfile}
+IMAGE_NAME=tuerobotics/"$IMAGE_NAME_SUBSTRING":$(echo "$TRAVIS_BRANCH" | tr '[:upper:]' '[:lower:]' | sed -e 's:/:_:g')
 
 echo -e "\e[35m\e[1m Creating docker $IMAGE_NAME \e[0m"
 
