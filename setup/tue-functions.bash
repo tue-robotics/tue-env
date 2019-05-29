@@ -164,7 +164,7 @@ function tue-git-branch-clean
         fi
     fi
 
-    _tue-repos-do "_tue-git-branch-clean $@"
+    _tue-repos-do "_tue-git-branch-clean $*"
 }
 
 function __tue-git-branch-clean
