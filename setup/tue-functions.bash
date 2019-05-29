@@ -23,16 +23,16 @@ function _list_subdirs
 #                                       GIT LOCAL HOUSEKEEPING
 # ----------------------------------------------------------------------------------------------------
 
-function __tue-default-branch
+function __tue-git-default-branch
 {
     local default_branch
     default_branch=$(git remote show origin | grep HEAD | awk '{print $3}')
     _git_remote_checkout origin "$default_branch"
 }
 
-function _tue-default-branch
+function _tue-git-default-branch
 {
-    _tue-repos-do "__tue-default-branch"
+    _tue-repos-do "__tue-git-default-branch"
 }
 
 function _tue-git-clean-local
@@ -74,7 +74,7 @@ function _tue-git-clean-local
     # branch before cleanup
     if [[ "$stale_branches" == *$(git rev-parse --abbrev-ref HEAD)* ]]
     then
-        __tue-default-branch
+        __tue-git-default-branch
 
         git pull --ff-only --prune > /dev/null 2>&1
         error_code=$?
