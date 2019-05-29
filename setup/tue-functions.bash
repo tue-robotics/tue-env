@@ -174,6 +174,16 @@ function tue-git-branch-clean
     _tue-repos-do "_tue-git-branch-clean $force_remove"
 }
 
+function __tue-git-branch-clean
+{
+    local IFS=$'\n'
+    options="'--force-remove'"
+    # shellcheck disable=SC2178
+    mapfile -t COMPREPLY < <(compgen -W "$(echo -e "$options")" -- "$cur")
+}
+complete -F __tue-git-branch-clean tue-git-branch-clean
+complete -F __tue-git-branch-clean _tue-git-branch-clean
+
 # ----------------------------------------------------------------------------------------------------
 #                                              SSH
 # ----------------------------------------------------------------------------------------------------
