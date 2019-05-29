@@ -20,6 +20,164 @@ function _list_subdirs
 }
 
 # ----------------------------------------------------------------------------------------------------
+#                                       GIT LOCAL HOUSEKEEPING
+# ----------------------------------------------------------------------------------------------------
+
+function __tue-git-default-branch
+{
+    local default_branch
+    default_branch=$(git remote show origin | grep HEAD | awk '{print $3}')
+    _git_remote_checkout origin "$default_branch"
+}
+
+function _tue-git-default-branch
+{
+    _tue-repos-do "__tue-git-default-branch"
+}
+
+function _tue-git-clean-local
+{
+    # Function to remove stale branches from a git repository (which should
+    # either be the PWD or one of its parent directories). The function removes
+    # stale branches in two layers. First it removes all branches that have been
+    # merged in the remote, then it checks for unmerged branches that have been
+    # deleted from the remote and prompts for confirmation before removal. If
+    # the function is called with "--force-remove" flag, then no confirmation is asked
+
+    local force_remove
+    local error_code
+    local stale_branches
+    local repo_path
+    repo_path="$PWD"
+    local repo
+    repo=$(basename "$repo_path")
+
+    if [ -n "$1" ]
+    then
+        if [ "$1" == "--force-remove" ]
+        then
+            force_remove=true
+        else
+            echo -e "[tue-git-clean-local][Error] Unknown input argument '$1'. Only supported argument is '--force-remove' to forcefully remove unmerged stale branches"
+            return 1
+        fi
+    fi
+
+    git fetch -p || { echo -e "[tue-git-clean-local] 'git fetch -p' failed in '$repo'."; return 1; }
+
+    stale_branches=$(git branch --list --format "%(if:equals=[gone])%(upstream:track)%(then)%(refname)%(end)" \
+| sed 's,^refs/heads/,,;/^$/d')
+
+    [ -z "$stale_branches" ] && return 0
+
+    # If the current branch is a stale branch then change to the default repo
+    # branch before cleanup
+    if [[ "$stale_branches" == *$(git rev-parse --abbrev-ref HEAD)* ]]
+    then
+        __tue-git-default-branch
+
+        git pull --ff-only --prune > /dev/null 2>&1
+        error_code=$?
+
+        if [ ! $error_code -eq 0 ]
+        then
+            echo -e "[tue-git-clean-local] Error pulling upstream on default branch of repository '$repo'. Cancelling branch cleanup."
+            return 1
+        fi
+    fi
+
+    echo -e "Removing branches:"
+    echo -e "------------------"
+    echo -e "$stale_branches"
+
+    local stale_branch
+    local unmerged_stale_branches=""
+    for stale_branch in $stale_branches
+    do
+        git branch -d "$stale_branch" > /dev/null 2>&1
+        error_code=$?
+
+        # If an error occured in safe deletion of a stale branch, add it to the
+        # list of unmerged stale branches which are to be forcefully removed
+        # upon confirmation by the user
+        if [ ! $error_code -eq 0 ]
+        then
+            unmerged_stale_branches="${unmerged_stale_branches:+${unmerged_stale_branches} } $stale_branch"
+        fi
+    done
+
+    # Removal of unmerged stale branches. Not a default operation with the high
+    # level command tue-git-clean-local
+    if [ -n "$unmerged_stale_branches" ]
+    then
+        unmerged_stale_branches=$(echo "$unmerged_stale_branches" | sed -e 's/^[[:space:]]*//' | tr " " "\n")
+
+        # If force_remove is not true then echo the list of unmerged stale
+        # branches and echo that the user needs to call the command with
+        # --force-remove to remove these branches
+        if [ ! "$force_remove" == "true" ]
+        then
+            echo
+            echo -e "Found unmerged stale branches:"
+            echo -e "------------------------------"
+            echo -e "$unmerged_stale_branches"
+            echo
+            echo -e "[tue-git-clean-local] To remove these branches call the command with '--force-remove'"
+
+            return 0
+        fi
+
+        echo
+        echo -e "Removing unmerged stale branches:"
+        echo -e "---------------------------------"
+        echo -e "$unmerged_stale_branches"
+        echo
+
+        local unmerged_stale_branch
+        for unmerged_stale_branch in $unmerged_stale_branches
+        do
+            git branch -D "$unmerged_stale_branch" > /dev/null 2>&1
+            error_code=$?
+
+            if [ ! $error_code -eq 0 ]
+            then
+                echo "[tue-git-clean-local] In repository '$repo' error deleting branch: $unmerged_stale_branch"
+            fi
+        done
+    fi
+
+    echo "[tue-git-clean-local] Branch cleanup of repository '$repo' complete"
+    return 0
+}
+
+function tue-git-clean-local
+{
+    # Run _tue-git-clean-local on tue-env, tue-env-targets and all current environment
+    # repositories safely when no input exists
+
+    if [ -n "$1" ]
+    then
+        if [ "$1" != "--force-remove" ]
+        then
+            echo -e "[tue-git-clean-local][Error] Unknown input argument '$1'. Only supported argument is '--force-remove' to forcefully remove unmerged stale branches"
+            return 1
+        fi
+    fi
+
+    _tue-repos-do "_tue-git-clean-local $*"
+}
+
+function __tue-git-clean-local
+{
+    local IFS=$'\n'
+    options="'--force-remove'"
+    # shellcheck disable=SC2178
+    mapfile -t COMPREPLY < <(compgen -W "$(echo -e "$options")" -- "$cur")
+}
+complete -F __tue-git-clean-local tue-git-clean-local
+complete -F __tue-git-clean-local _tue-git-clean-local
+
+# ----------------------------------------------------------------------------------------------------
 #                                              SSH
 # ----------------------------------------------------------------------------------------------------
 
@@ -711,7 +869,7 @@ export TUE_ROBOCUP_BRANCH="rgo2019"
 
 function _tue-repos-do
 {
-    # Evaluates the command of the input for tue-env and all repo's of tue-robotics.
+    # Evaluates the command of the input for tue-env, tue-env-targets and all repo's of tue-robotics.
     # The input can be multiple arguments, but if the input consists of multiple commands
     # seperated by ';' or '&&' the input needs to be captured in a string.
 
@@ -953,18 +1111,6 @@ function tue-robocup-remote-checkout
     _tue-repos-do "_tue-robocup-remote-checkout $remote $branch"
 }
 
-function __tue-robocup-default-branch
-{
-    local default_branch
-    default_branch=$(git remote show origin | grep HEAD | awk '{print $3}')
-    _git_remote_checkout origin "$default_branch"
-}
-
-function _tue-robocup-default-branch
-{
-    _tue-repos-do "__tue-robocup-default-branch"
-}
-
 function _tue-robocup-change-remote
 {
     if [ -z "$2" ]
@@ -1034,7 +1180,7 @@ function tue-robocup-ssh-copy-id
 function tue-robocup-set-github
 {
     tue-robocup-change-remote $TUE_ROBOCUP_BRANCH origin
-    _tue-robocup-default-branch
+    _tue-git-default-branch
     # disallow TUE_ROBOCUP_BRANCH as branch in tue-status
     if [ -f "$TUE_DIR"/user/config/robocup ]
     then
