@@ -47,16 +47,21 @@ function _tue-git-branch-clean
     local force_remove
     local error_code
     local stale_branches
+    local repo_path
+    repo_path="$PWD"
     local repo
-    repo="$PWD"
+    repo=$(basename "$repo_path")
 
     if [ -n "$1" ]
     then
         if [ "$1" == "--force-remove" ]
         then
             force_remove=true
+        elif [ -z "$2" ] && [ "$1" == "true" ]
+        then
+            force_remove=true
         else
-            echo -e "[tue-git-branch-clean] Error! Unknown input argument '$1'. Only supported argument is '--force-remove' to forcefully remove unmerged stale branches"
+            echo -e "[tue-git-branch-clean][Error] Unknown input argument '$1'. Only supported argument is '--force-remove' to forcefully remove unmerged stale branches"
             return 1
         fi
     fi
@@ -66,11 +71,7 @@ function _tue-git-branch-clean
     stale_branches=$(git branch --list --format "%(if:equals=[gone])%(upstream:track)%(then)%(refname)%(end)" \
 | sed 's,^refs/heads/,,;/^$/d')
 
-    if [ -z "$stale_branches" ]
-    then
-        echo -e "[tue-git-branch-clean] No branches to remove in repository '$repo'. Cleanup complete."
-        return 0
-    fi
+    [ -z "$stale_branches" ] && return 0
 
     # If the current branch is a stale branch then change to the default repo
     # branch before cleanup
@@ -93,7 +94,7 @@ function _tue-git-branch-clean
     echo -e "$stale_branches"
 
     local stale_branch
-    local unmerged_stale_branches
+    local unmerged_stale_branches=""
     for stale_branch in $stale_branches
     do
         git branch -d "$stale_branch" > /dev/null 2>&1
@@ -104,7 +105,7 @@ function _tue-git-branch-clean
         # upon confirmation by the user
         if [ ! $error_code -eq 0 ]
         then
-            unmerged_stale_branches="$unmerged_stale_branches $stale_branch"
+            unmerged_stale_branches="${unmerged_stale_branches:+${unmerged_stale_branches} } $stale_branch"
         fi
     done
 
@@ -112,7 +113,7 @@ function _tue-git-branch-clean
     # level command tue-git-branch-clean
     if [ -n "$unmerged_stale_branches" ]
     then
-        unmerged_stale_branches=$(echo "$unmerged_stale_branches" | tr " " "\n")
+        unmerged_stale_branches=$(echo "$unmerged_stale_branches" | sed -e 's/^[[:space:]]*//' | tr " " "\n")
 
         # If force_remove is not true then echo the list of unmerged stale
         # branches and echo that the user needs to call the command with
