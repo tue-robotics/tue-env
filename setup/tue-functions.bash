@@ -154,7 +154,7 @@ function _tue-git-branch-clean
 
 function tue-git-branch-clean
 {
-    # Run _tue-git-branch-clean on tue-env and all current environment
+    # Run _tue-git-branch-clean on tue-env, tue-env-targets and all current environment
     # repositories safely when no input exists
 
     local force_remove
