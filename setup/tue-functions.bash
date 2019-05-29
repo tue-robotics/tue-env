@@ -35,7 +35,7 @@ function _tue-default-branch
     _tue-repos-do "__tue-default-branch"
 }
 
-function _tue-git-branch-clean
+function _tue-git-clean-local
 {
     # Function to remove stale branches from a git repository (which should
     # either be the PWD or one of its parent directories). The function removes
@@ -58,12 +58,12 @@ function _tue-git-branch-clean
         then
             force_remove=true
         else
-            echo -e "[tue-git-branch-clean][Error] Unknown input argument '$1'. Only supported argument is '--force-remove' to forcefully remove unmerged stale branches"
+            echo -e "[tue-git-clean-local][Error] Unknown input argument '$1'. Only supported argument is '--force-remove' to forcefully remove unmerged stale branches"
             return 1
         fi
     fi
 
-    git fetch -p || { echo -e "[tue-git-branch-clean] 'git fetch -p' failed in '$repo'."; return 1; }
+    git fetch -p || { echo -e "[tue-git-clean-local] 'git fetch -p' failed in '$repo'."; return 1; }
 
     stale_branches=$(git branch --list --format "%(if:equals=[gone])%(upstream:track)%(then)%(refname)%(end)" \
 | sed 's,^refs/heads/,,;/^$/d')
@@ -81,7 +81,7 @@ function _tue-git-branch-clean
 
         if [ ! $error_code -eq 0 ]
         then
-            echo -e "[tue-git-branch-clean] Error pulling upstream on default branch of repository '$repo'. Cancelling branch cleanup."
+            echo -e "[tue-git-clean-local] Error pulling upstream on default branch of repository '$repo'. Cancelling branch cleanup."
             return 1
         fi
     fi
@@ -107,7 +107,7 @@ function _tue-git-branch-clean
     done
 
     # Removal of unmerged stale branches. Not a default operation with the high
-    # level command tue-git-branch-clean
+    # level command tue-git-clean-local
     if [ -n "$unmerged_stale_branches" ]
     then
         unmerged_stale_branches=$(echo "$unmerged_stale_branches" | sed -e 's/^[[:space:]]*//' | tr " " "\n")
@@ -122,7 +122,7 @@ function _tue-git-branch-clean
             echo -e "------------------------------"
             echo -e "$unmerged_stale_branches"
             echo
-            echo -e "[tue-git-branch-clean] To remove these branches call the command with '--force-remove'"
+            echo -e "[tue-git-clean-local] To remove these branches call the command with '--force-remove'"
 
             return 0
         fi
@@ -141,41 +141,41 @@ function _tue-git-branch-clean
 
             if [ ! $error_code -eq 0 ]
             then
-                echo "[tue-git-branch-clean] In repository '$repo' error deleting branch: $unmerged_stale_branch"
+                echo "[tue-git-clean-local] In repository '$repo' error deleting branch: $unmerged_stale_branch"
             fi
         done
     fi
 
-    echo "[tue-git-branch-clean] Branch cleanup of repository '$repo' complete"
+    echo "[tue-git-clean-local] Branch cleanup of repository '$repo' complete"
     return 0
 }
 
-function tue-git-branch-clean
+function tue-git-clean-local
 {
-    # Run _tue-git-branch-clean on tue-env, tue-env-targets and all current environment
+    # Run _tue-git-clean-local on tue-env, tue-env-targets and all current environment
     # repositories safely when no input exists
 
     if [ -n "$1" ]
     then
         if [ "$1" != "--force-remove" ]
         then
-            echo -e "[tue-git-branch-clean][Error] Unknown input argument '$1'. Only supported argument is '--force-remove' to forcefully remove unmerged stale branches"
+            echo -e "[tue-git-clean-local][Error] Unknown input argument '$1'. Only supported argument is '--force-remove' to forcefully remove unmerged stale branches"
             return 1
         fi
     fi
 
-    _tue-repos-do "_tue-git-branch-clean $*"
+    _tue-repos-do "_tue-git-clean-local $*"
 }
 
-function __tue-git-branch-clean
+function __tue-git-clean-local
 {
     local IFS=$'\n'
     options="'--force-remove'"
     # shellcheck disable=SC2178
     mapfile -t COMPREPLY < <(compgen -W "$(echo -e "$options")" -- "$cur")
 }
-complete -F __tue-git-branch-clean tue-git-branch-clean
-complete -F __tue-git-branch-clean _tue-git-branch-clean
+complete -F __tue-git-clean-local tue-git-clean-local
+complete -F __tue-git-clean-local _tue-git-clean-local
 
 # ----------------------------------------------------------------------------------------------------
 #                                              SSH
