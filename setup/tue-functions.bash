@@ -1180,7 +1180,7 @@ function tue-robocup-ssh-copy-id
 function tue-robocup-set-github
 {
     tue-robocup-change-remote $TUE_ROBOCUP_BRANCH origin
-    _tue-robocup-default-branch
+    _tue-git-default-branch
     # disallow TUE_ROBOCUP_BRANCH as branch in tue-status
     if [ -f "$TUE_DIR"/user/config/robocup ]
     then
