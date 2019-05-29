@@ -57,9 +57,6 @@ function _tue-git-branch-clean
         if [ "$1" == "--force-remove" ]
         then
             force_remove=true
-        elif [ -z "$2" ] && [ "$1" == "true" ]
-        then
-            force_remove=true
         else
             echo -e "[tue-git-branch-clean][Error] Unknown input argument '$1'. Only supported argument is '--force-remove' to forcefully remove unmerged stale branches"
             return 1
@@ -158,20 +155,16 @@ function tue-git-branch-clean
     # Run _tue-git-branch-clean on tue-env, tue-env-targets and all current environment
     # repositories safely when no input exists
 
-    local force_remove
-
     if [ -n "$1" ]
     then
-        if [ "$1" == "--force-remove" ]
+        if [ "$1" != "--force-remove" ]
         then
-            force_remove=true
-        else
-            echo -e "[tue-git-branch-clean] Error! Unknown input argument '$1'. Only supported argument is '--force-remove' to forcefully remove unmerged stale branches"
+            echo -e "[tue-git-branch-clean][Error] Unknown input argument '$1'. Only supported argument is '--force-remove' to forcefully remove unmerged stale branches"
             return 1
         fi
     fi
 
-    _tue-repos-do "_tue-git-branch-clean $force_remove"
+    _tue-repos-do "_tue-git-branch-clean $force_remove $@"
 }
 
 function __tue-git-branch-clean
