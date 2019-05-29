@@ -101,9 +101,9 @@ Taking the above into account, the following combinations for `install.yaml` are
       url: <Repository URL>
 ```
 
-#### Target / System / PIP / PPA / Snap / DPKG / Empty
+#### Target / System / PIP / PIP3 / PPA / Snap / DPKG / Empty
 ```yaml
-- type: [target/system/pip/ppa/snap/dpkg/empty]
+- type: [target/system/pip/pip3/ppa/snap/dpkg/empty]
   name: <Name of the candidate>
 ```
 
@@ -118,6 +118,7 @@ generally used methods of installing packages:
 | `tue-install-dpkg`       | To install a debian dpkg file                                                        |
 | `tue-install-git`        | To install a git repository                                                          |
 | `tue-install-pip`        | To install a python pip package                                                      |
+| `tue-install-pip3`       | To install a python3 pip package                                                     |
 | `tue-install-ppa`        | To add PPA with `apt-add-repository`                                                 |
 | `tue-install-snap`       | To install a snap                                                                    |
 | `tue-install-svn`        | To install a svn repository                                                          |
@@ -130,4 +131,4 @@ installed).
 
 A general remark about the order of preference of package repositories:
 
-system > ppa > git > svn > pip > snap > dpkg
+system > ppa > git > svn > pip = pip3 > snap > dpkg

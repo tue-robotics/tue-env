@@ -378,7 +378,7 @@ function _tue-repo-status
     local status=
     local vctype=
 
-    if [ -d "$pkg_dir"/.git ]
+    if git -C "$pkg_dir" rev-parse --git-dir > /dev/null 2>&1
     then
         # Try git
 
@@ -699,7 +699,7 @@ function tue-get
                         _show_file "$target" "$file"
                         firstfile=false
                         unset "files[$key]"
-                        mapfile -t files < <("${files[@]}")
+                        files=("${files[@]}")
                         break
                     fi
                 done
