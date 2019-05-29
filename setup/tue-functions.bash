@@ -74,7 +74,7 @@ function _tue-git-clean-local
     # branch before cleanup
     if [[ "$stale_branches" == *$(git rev-parse --abbrev-ref HEAD)* ]]
     then
-        __tue-robocup-default-branch
+        __tue-default-branch
 
         git pull --ff-only --prune > /dev/null 2>&1
         error_code=$?
