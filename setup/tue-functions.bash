@@ -58,12 +58,12 @@ function _tue-git-clean-local
         then
             force_remove=true
         else
-            echo -e "[tue-git-clean-local][Error] Unknown input argument '$1'. Only supported argument is '--force-remove' to forcefully remove unmerged stale branches"
+            echo -e "\e[31m[tue-git-clean-local][Error] Unknown input argument '$1'. Only supported argument is '--force-remove' to forcefully remove unmerged stale branches\e[0m"
             return 1
         fi
     fi
 
-    git fetch -p || { echo -e "[tue-git-clean-local] 'git fetch -p' failed in '$repo'."; return 1; }
+    git fetch -p || { echo -e "\e[31m[tue-git-clean-local] 'git fetch -p' failed in '$repo'.\e[0m"; return 1; }
 
     stale_branches=$(git branch --list --format "%(if:equals=[gone])%(upstream:track)%(then)%(refname)%(end)" \
 | sed 's,^refs/heads/,,;/^$/d')
@@ -81,7 +81,7 @@ function _tue-git-clean-local
 
         if [ ! $error_code -eq 0 ]
         then
-            echo -e "[tue-git-clean-local] Error pulling upstream on default branch of repository '$repo'. Cancelling branch cleanup."
+            echo -e "\e[31m[tue-git-clean-local] Error pulling upstream on default branch of repository '$repo'. Cancelling branch cleanup.\e[0m"
             return 1
         fi
     fi
@@ -142,7 +142,7 @@ function _tue-git-clean-local
 
             if [ ! $error_code -eq 0 ]
             then
-                echo -e "\e[38m[tue-git-clean-local] In repository '$repo' error deleting branch: $unmerged_stale_branch\e[0m"
+                echo -e "\e[31m[tue-git-clean-local] In repository '$repo' error deleting branch: $unmerged_stale_branch\e[0m"
             else
                 echo -e "\e[36m$unmerged_stale_branch"
             fi
