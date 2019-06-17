@@ -736,6 +736,33 @@ function generate_setup_file
 }
 
 # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # #
+
+function _missing_targets_check
+{
+    # Check if valid target received as input
+    local targets="$1"
+    local missing_targets=""
+    local target
+
+    for target in $targets
+    do
+        if [ ! -d "$TUE_INSTALL_TARGETS_DIR"/"$target" ]
+        then
+            missing_targets="$target${missing_targets:+ ${missing_targets}}"
+        fi
+    done
+
+    if [ -n "$missing_targets" ]
+    then
+        missing_targets=$(echo "$missing_targets" | tr " " "\n" | sort)
+        echo -e "\e[31m Error! The following installed targets do not exist (anymore):\n$missing_targets \e[0m"
+        exit 1
+    fi
+
+    return 0
+}
+
+# # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # #
 #                                           MAIN LOOP
 # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # #
 
@@ -794,6 +821,9 @@ then
     # If no targets are provided, update all installed targets
     targets=$(ls "$TUE_INSTALL_INSTALLED_DIR")
 fi
+
+# Check if all installed targets exist in the targets repo
+_missing_targets_check "$targets"
 
 for target in $targets
 do
