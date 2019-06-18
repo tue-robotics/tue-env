@@ -828,6 +828,7 @@ _missing_targets_check "$targets"
 for target in $targets
 do
     tue-install-debug "Main loop: installing $target"
+    # Next line shouldn't error anymore with _missing_targets_check
     tue-install-target "$target" || tue-install-error "Installed target: '$target' doesn't exist (anymore)"
 
     if [[ "$tue_cmd" == "install" ]]
