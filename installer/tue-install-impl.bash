@@ -755,7 +755,7 @@ function _missing_targets_check
     if [ -n "$missing_targets" ]
     then
         missing_targets=$(echo "$missing_targets" | tr " " "\n" | sort)
-        echo -e "\e[31m Error! The following installed targets do not exist (anymore):\n$missing_targets \e[0m"
+        echo -e "\e[31mThe following installed targets don't exist (anymore):\n$missing_targets \e[0m"
         exit 1
     fi
 
