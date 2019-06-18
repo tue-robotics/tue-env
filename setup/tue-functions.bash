@@ -86,11 +86,8 @@ function _tue-git-clean-local
         fi
     fi
 
-    echo -e "\e[36m"
-    echo -e "Removing stale branches:"
-    echo -e "------------------------"
-
     local stale_branch
+    local stale_branch_count=0
     local unmerged_stale_branches=""
     for stale_branch in $stale_branches
     do
@@ -104,6 +101,13 @@ function _tue-git-clean-local
         then
             unmerged_stale_branches="${unmerged_stale_branches:+${unmerged_stale_branches} } $stale_branch"
         else
+            ((stale_branch_count++))
+            if [ $stale_branch_count -eq 1 ]
+            then
+                echo -e "\e[36m"
+                echo -e "Removing stale branches:"
+                echo -e "------------------------"
+            fi
             echo -e "$stale_branch"
         fi
     done
