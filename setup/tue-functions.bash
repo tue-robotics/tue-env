@@ -58,12 +58,12 @@ function _tue-git-clean-local
         then
             force_remove=true
         else
-            echo -e "[tue-git-clean-local][Error] Unknown input argument '$1'. Only supported argument is '--force-remove' to forcefully remove unmerged stale branches"
+            echo -e "\e[31m[tue-git-clean-local][Error] Unknown input argument '$1'. Only supported argument is '--force-remove' to forcefully remove unmerged stale branches\e[0m"
             return 1
         fi
     fi
 
-    git fetch -p || { echo -e "[tue-git-clean-local] 'git fetch -p' failed in '$repo'."; return 1; }
+    git fetch -p || { echo -e "\e[31m[tue-git-clean-local] 'git fetch -p' failed in '$repo'.\e[0m"; return 1; }
 
     stale_branches=$(git branch --list --format "%(if:equals=[gone])%(upstream:track)%(then)%(refname)%(end)" \
 | sed 's,^refs/heads/,,;/^$/d')
@@ -81,16 +81,13 @@ function _tue-git-clean-local
 
         if [ ! $error_code -eq 0 ]
         then
-            echo -e "[tue-git-clean-local] Error pulling upstream on default branch of repository '$repo'. Cancelling branch cleanup."
+            echo -e "\e[31m[tue-git-clean-local] Error pulling upstream on default branch of repository '$repo'. Cancelling branch cleanup.\e[0m"
             return 1
         fi
     fi
 
-    echo -e "Removing branches:"
-    echo -e "------------------"
-    echo -e "$stale_branches"
-
     local stale_branch
+    local stale_branch_count=0
     local unmerged_stale_branches=""
     for stale_branch in $stale_branches
     do
@@ -103,6 +100,15 @@ function _tue-git-clean-local
         if [ ! $error_code -eq 0 ]
         then
             unmerged_stale_branches="${unmerged_stale_branches:+${unmerged_stale_branches} } $stale_branch"
+        else
+            ((stale_branch_count++))
+            if [ $stale_branch_count -eq 1 ]
+            then
+                echo -e "\e[36m"
+                echo -e "Removing stale branches:"
+                echo -e "------------------------"
+            fi
+            echo -e "$stale_branch"
         fi
     done
 
@@ -117,12 +123,13 @@ function _tue-git-clean-local
         # --force-remove to remove these branches
         if [ ! "$force_remove" == "true" ]
         then
-            echo
+            echo -e "\e[33m"
             echo -e "Found unmerged stale branches:"
             echo -e "------------------------------"
             echo -e "$unmerged_stale_branches"
             echo
             echo -e "[tue-git-clean-local] To remove these branches call the command with '--force-remove'"
+            echo -e "\e[0m"
 
             return 0
         fi
@@ -130,8 +137,6 @@ function _tue-git-clean-local
         echo
         echo -e "Removing unmerged stale branches:"
         echo -e "---------------------------------"
-        echo -e "$unmerged_stale_branches"
-        echo
 
         local unmerged_stale_branch
         for unmerged_stale_branch in $unmerged_stale_branches
@@ -141,12 +146,15 @@ function _tue-git-clean-local
 
             if [ ! $error_code -eq 0 ]
             then
-                echo "[tue-git-clean-local] In repository '$repo' error deleting branch: $unmerged_stale_branch"
+                echo -e "\e[31m[tue-git-clean-local] In repository '$repo' error deleting branch: $unmerged_stale_branch\e[0m"
+            else
+                echo -e "\e[36m$unmerged_stale_branch"
             fi
         done
     fi
 
-    echo "[tue-git-clean-local] Branch cleanup of repository '$repo' complete"
+    echo
+    echo -e "[tue-git-clean-local] Branch cleanup of repository '$repo' complete\e[0m"
     return 0
 }
 
