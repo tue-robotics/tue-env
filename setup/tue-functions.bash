@@ -1160,8 +1160,8 @@ function tue-robocup-change-remote
     # After this, you local working copies may be behind what was fetched from REMOTE, so run a $ tue-get update
 
     # for packages that have a REMOTE as a remote:
-        # do a git fetch origin: git fetch
-        # Change remote of branch 'BRANCH' to REMOTE: git branch -u REMOTE/BRANCH BRANCH
+    # do a git fetch origin: git fetch
+    # Change remote of branch 'BRANCH' to REMOTE: git branch -u REMOTE/BRANCH BRANCH
 
     if [ -z "$2" ]
     then
