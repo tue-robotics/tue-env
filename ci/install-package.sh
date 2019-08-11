@@ -52,6 +52,15 @@ tue-get install docker
 Optionally fix your compilation errors and re-run only the last command
 \e[0m"
 
+# If packages is non-zero, this is a multi-package repo. In multi-package repo, check if this package needs CI.
+# If a single-package repo, CI is always needed.
+# shellcheck disable=SC2153
+if [ -n "$PACKAGES" ] && ! echo "$PACKAGES" | grep -sqw "$PACKAGE"
+then
+    echo -e "\e[35m\e[1m No changes in this package, so no need to run CI \e[0m"
+    exit 0
+fi
+
 # Name of the docker image
 IMAGE_NAME=tuerobotics/tue-env
 # Determine docker tag if the same branch exists there
