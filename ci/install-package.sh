@@ -52,8 +52,6 @@ tue-get install docker
 Optionally fix your compilation errors and re-run only the last command
 \e[0m"
 
-echo -e "\e[35m\e[1m PACKAGES     = ${PACKAGES} \e[0m"
-
 # If packages is non-zero, this is a multi-package repo. In multi-package repo, check if this package needs CI.
 # If a single-package repo, CI is always needed.
 # shellcheck disable=SC2153
