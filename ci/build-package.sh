@@ -38,7 +38,7 @@ echo -e "\e[35m\e[1m PACKAGES     = ${PACKAGES} \e[0m"
 if [ -n "$PACKAGES" ] && ! echo "$PACKAGES" | grep -sqw "$PACKAGE"
 then
     echo -e "\e[35m\e[1m No changes in this package, so no need to run CI \e[0m"
-    return 0
+    exit 0
 fi
 
 # Use docker environment variables in all exec commands instead of script variables
