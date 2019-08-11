@@ -13,6 +13,9 @@ before_install:
   - source packages.sh # add all folders which need to be excluded as an argument
 
 env:
+  # Run following in root of repo:
+  # for item in $(ls | xargs ls -dl 2>/dev/null |  grep "^d" | grep -v "\." | awk '{print $NF}'); do echo "  - PACKAGE=$item"; done
+  # Copy it below and remove unnecessary items
   - PACKAGE=package1
   - PACKAGE=package2
   - PACKAGE=package3
