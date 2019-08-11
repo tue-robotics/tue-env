@@ -30,6 +30,15 @@ done
 
 echo -e "\e[35m\e[1m PACKAGE     = ${PACKAGE} \e[0m"
 
+# If packages is non-zero, this is a multi-package repo. In multi-package repo, check if this package needs CI.
+# If a single-package repo, CI is always needed.
+# shellcheck disable=SC2153
+if [ -n "$PACKAGES" ] && ! echo "$PACKAGES" | grep -sqw "$PACKAGE"
+then
+    echo -e "\e[35m\e[1m No changes in this package, so no need to run CI \e[0m"
+    return 0
+fi
+
 # Use docker environment variables in all exec commands instead of script variables
 # Compile the package
 echo -e "\e[35m\e[1m Compile the package (catkin build -DCATKIN_ENABLE_TESTING=OFF) \e[0m"
