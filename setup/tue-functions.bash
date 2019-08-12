@@ -1160,8 +1160,8 @@ function tue-robocup-change-remote
     # After this, you local working copies may be behind what was fetched from REMOTE, so run a $ tue-get update
 
     # for packages that have a REMOTE as a remote:
-        # do a git fetch origin: git fetch
-        # Change remote of branch 'BRANCH' to REMOTE: git branch -u REMOTE/BRANCH BRANCH
+    # do a git fetch origin: git fetch
+    # Change remote of branch 'BRANCH' to REMOTE: git branch -u REMOTE/BRANCH BRANCH
 
     if [ -z "$2" ]
     then
@@ -1185,10 +1185,17 @@ function tue-robocup-ssh-copy-id
     ssh-copy-id amigo@roboticssrv.local
 }
 
-function tue-robocup-set-github
+function _allow_robocup_branch
 {
-    tue-robocup-change-remote $TUE_ROBOCUP_BRANCH origin
-    _tue-git-default-branch
+    # allow TUE_ROBOCUP_BRANCH as branch in tue-status
+    if [ ! -f "$TUE_DIR"/user/config/robocup ]
+    then
+        echo $TUE_ROBOCUP_BRANCH > "$TUE_DIR"/user/config/robocup
+    fi
+}
+
+function _disallow_robocup_branch
+{
     # disallow TUE_ROBOCUP_BRANCH as branch in tue-status
     if [ -f "$TUE_DIR"/user/config/robocup ]
     then
@@ -1196,15 +1203,18 @@ function tue-robocup-set-github
     fi
 }
 
+function tue-robocup-set-github
+{
+    tue-robocup-change-remote $TUE_ROBOCUP_BRANCH origin
+    _tue-git-default-branch
+    _disallow_robocup_branch
+}
+
 function tue-robocup-set-roboticssrv
 {
     tue-add-git-remote roboticssrv amigo@roboticssrv.local:
     tue-robocup-remote-checkout
-    # allow TUE_ROBOCUP_BRANCH as branch in tue-status
-    if [ ! -f "$TUE_DIR"/user/config/robocup ]
-    then
-        echo $TUE_ROBOCUP_BRANCH > "$TUE_DIR"/user/config/robocup
-    fi
+    _allow_robocup_branch
 }
 
 function tue-robocup-set-timezone-robocup
