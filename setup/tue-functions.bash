@@ -227,7 +227,7 @@ function tue-make
     then
         case $(cat "$TUE_SYSTEM_DIR"/devel/.built_by) in
         'catkin_make')
-            catkin_make --directory "$TUE_SYSTEM_DIR" -DCMAKE_BUILD_TYPE=RelWithDebInfo "$@"
+            echo -e "\e[33mcatkin_make is not supported anymore, use catkin tools\e[0m"
             ;;
         'catkin build')
             catkin build --workspace "$TUE_SYSTEM_DIR" -DCMAKE_BUILD_TYPE=RelWithDebInfo "$@"
@@ -244,7 +244,7 @@ function tue-make-system
 {
     case $(cat "$TUE_SYSTEM_DIR"/devel/.built_by) in
     'catkin_make')
-        catkin_make --directory "$TUE_SYSTEM_DIR" -DCMAKE_BUILD_TYPE=RelWithDebInfo "$@"
+        echo -e "\e[33mcatkin_make is not supported anymore, use catkin tools\e[0m"
         ;;
     'catkin build')
         catkin build --workspace "$TUE_SYSTEM_DIR" -DCMAKE_BUILD_TYPE=RelWithDebInfo "$@"
@@ -270,7 +270,7 @@ function tue-make-dev
 {
     case $(cat "$TUE_DEV_DIR"/devel/.built_by) in
     'catkin_make')
-        catkin_make --directory "$TUE_DEV_DIR" -DCMAKE_BUILD_TYPE=RelWithDebInfo "$@"
+        echo -e "\e[33mcatkin_make is not supported anymore, use catkin tools\e[0m"
         ;;
     'catkin build')
         catkin build --workspace "$TUE_DEV_DIR" -DCMAKE_BUILD_TYPE=RelWithDebInfo "$@"
@@ -286,7 +286,7 @@ function tue-make-dev-isolated
 {
     case $(cat "$TUE_DEV_DIR"/devel/.built_by) in
     'catkin_make')
-        catkin_make_isolated --directory "$TUE_DEV_DIR" -DCMAKE_BUILD_TYPE=RelWithDebInfo "$@"
+        echo -e "\e[33mcatkin_make is not supported anymore, use catkin tools\e[0m"
         ;;
     'catkin build')
         catkin build --workspace "$TUE_DEV_DIR" -DCMAKE_BUILD_TYPE=RelWithDebInfo "$@"
