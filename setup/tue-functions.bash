@@ -230,11 +230,11 @@ function tue-make
             catkin_make --directory "$_TUE_CATKIN_SYSTEM_DIR" -DCMAKE_BUILD_TYPE=RelWithDebInfo "$@"
             ;;
         'catkin build')
-            catkin build --workspace "$_TUE_CATKIN_SYSTEM_DIR" --cmake-args -DCMAKE_BUILD_TYPE=RelWithDebInfo "$@"
+            catkin build --workspace "$_TUE_CATKIN_SYSTEM_DIR" -DCMAKE_BUILD_TYPE=RelWithDebInfo "$@"
             ;;
         '')
             catkin init --workspace "$_TUE_CATKIN_SYSTEM_DIR" "$@"
-            catkin build --workspace "$_TUE_CATKIN_SYSTEM_DIR" --cmake-args -DCMAKE_BUILD_TYPE=RelWithDebInfo "$@"
+            catkin build --workspace "$_TUE_CATKIN_SYSTEM_DIR" -DCMAKE_BUILD_TYPE=RelWithDebInfo "$@"
             ;;
         esac
     fi
@@ -247,11 +247,11 @@ function tue-make-system
         catkin_make --directory "$_TUE_CATKIN_SYSTEM_DIR" -DCMAKE_BUILD_TYPE=RelWithDebInfo "$@"
         ;;
     'catkin build')
-        catkin build --workspace "$_TUE_CATKIN_SYSTEM_DIR" "$@"
+        catkin build --workspace "$_TUE_CATKIN_SYSTEM_DIR" -DCMAKE_BUILD_TYPE=RelWithDebInfo "$@"
         ;;
     '')
         catkin init --workspace "$_TUE_CATKIN_SYSTEM_DIR" "$@"
-        catkin build --workspace "$_TUE_CATKIN_SYSTEM_DIR" "$@"
+        catkin build --workspace "$_TUE_CATKIN_SYSTEM_DIR" -DCMAKE_BUILD_TYPE=RelWithDebInfo "$@"
         ;;
     esac
 }
@@ -273,11 +273,11 @@ function tue-make-dev
         catkin_make --directory "$_TUE_CATKIN_DEV_DIR" -DCMAKE_BUILD_TYPE=RelWithDebInfo "$@"
         ;;
     'catkin build')
-        catkin build --workspace "$_TUE_CATKIN_DEV_DIR" "$@"
+        catkin build --workspace "$_TUE_CATKIN_DEV_DIR" -DCMAKE_BUILD_TYPE=RelWithDebInfo "$@"
         ;;
     '')
         catkin init --workspace "$_TUE_CATKIN_DEV_DIR" "$@"
-        catkin build --workspace "$_TUE_CATKIN_DEV_DIR" "$@"
+        catkin build --workspace "$_TUE_CATKIN_DEV_DIR" -DCMAKE_BUILD_TYPE=RelWithDebInfo "$@"
         ;;
     esac
 }
@@ -289,11 +289,11 @@ function tue-make-dev-isolated
         catkin_make_isolated --directory "$_TUE_CATKIN_DEV_DIR" -DCMAKE_BUILD_TYPE=RelWithDebInfo "$@"
         ;;
     'catkin build')
-        catkin build --workspace "$_TUE_CATKIN_DEV_DIR" "$@"
+        catkin build --workspace "$_TUE_CATKIN_DEV_DIR" -DCMAKE_BUILD_TYPE=RelWithDebInfo "$@"
         ;;
     '')
         catkin init --workspace "$_TUE_CATKIN_DEV_DIR" "$@"
-        catkin build --workspace "$_TUE_CATKIN_DEV_DIR" "$@"
+        catkin build --workspace "$_TUE_CATKIN_DEV_DIR" -DCMAKE_BUILD_TYPE=RelWithDebInfo "$@"
         ;;
     esac
 }
