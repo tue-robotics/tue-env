@@ -230,11 +230,11 @@ function tue-make
             echo -e "\e[33mcatkin_make is not supported anymore, use catkin tools\e[0m"
             ;;
         'catkin build')
-            catkin build --workspace "$TUE_SYSTEM_DIR" -DCMAKE_BUILD_TYPE=RelWithDebInfo "$@"
+            catkin build --workspace "$TUE_SYSTEM_DIR" "$@"
             ;;
         '')
-            catkin config --init --mkdirs --workspace "$TUE_SYSTEM_DIR" "$@"
-            catkin build --workspace "$TUE_SYSTEM_DIR" -DCMAKE_BUILD_TYPE=RelWithDebInfo "$@"
+            catkin config --init --mkdirs --workspace "$TUE_SYSTEM_DIR" -DCMAKE_BUILD_TYPE=RelWithDebInfo "$@"
+            catkin build --workspace "$TUE_SYSTEM_DIR" "$@"
             ;;
         esac
     fi
@@ -247,11 +247,11 @@ function tue-make-system
         echo -e "\e[33mcatkin_make is not supported anymore, use catkin tools\e[0m"
         ;;
     'catkin build')
-        catkin build --workspace "$TUE_SYSTEM_DIR" -DCMAKE_BUILD_TYPE=RelWithDebInfo "$@"
+        catkin build --workspace "$TUE_SYSTEM_DIR" "$@"
         ;;
     '')
-        catkin config --init --mkdirs --workspace "$TUE_SYSTEM_DIR" "$@"
-        catkin build --workspace "$TUE_SYSTEM_DIR" -DCMAKE_BUILD_TYPE=RelWithDebInfo "$@"
+        catkin config --init --mkdirs --workspace "$TUE_SYSTEM_DIR" -DCMAKE_BUILD_TYPE=RelWithDebInfo "$@"
+        catkin build --workspace "$TUE_SYSTEM_DIR" "$@"
         ;;
     esac
 }
@@ -273,11 +273,11 @@ function tue-make-dev
         echo -e "\e[33mcatkin_make is not supported anymore, use catkin tools\e[0m"
         ;;
     'catkin build')
-        catkin build --workspace "$TUE_DEV_DIR" -DCMAKE_BUILD_TYPE=RelWithDebInfo "$@"
+        catkin build --workspace "$TUE_DEV_DIR" "$@"
         ;;
     '')
-        catkin config --init --mkdirs --workspace "$TUE_DEV_DIR" "$@"
-        catkin build --workspace "$TUE_DEV_DIR" -DCMAKE_BUILD_TYPE=RelWithDebInfo "$@"
+        catkin config --init --mkdirs --workspace "$TUE_DEV_DIR" -DCMAKE_BUILD_TYPE=RelWithDebInfo "$@"
+        catkin build --workspace "$TUE_DEV_DIR" "$@"
         ;;
     esac
 }
@@ -289,11 +289,11 @@ function tue-make-dev-isolated
         echo -e "\e[33mcatkin_make is not supported anymore, use catkin tools\e[0m"
         ;;
     'catkin build')
-        catkin build --workspace "$TUE_DEV_DIR" -DCMAKE_BUILD_TYPE=RelWithDebInfo "$@"
+        catkin build --workspace "$TUE_DEV_DIR" "$@"
         ;;
     '')
-        catkin config --init --mkdirs --workspace "$TUE_DEV_DIR" "$@"
-        catkin build --workspace "$TUE_DEV_DIR" -DCMAKE_BUILD_TYPE=RelWithDebInfo "$@"
+        catkin config --init --mkdirs --workspace "$TUE_DEV_DIR" -DCMAKE_BUILD_TYPE=RelWithDebInfo "$@"
+        catkin build --workspace "$TUE_DEV_DIR" "$@"
         ;;
     esac
 }
