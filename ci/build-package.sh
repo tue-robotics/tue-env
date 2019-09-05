@@ -41,8 +41,8 @@ fi
 
 # Use docker environment variables in all exec commands instead of script variables
 # Compile the package
-echo -e "\e[35m\e[1m Compile the package (catkin build -DCATKIN_ENABLE_TESTING=OFF) \e[0m"
-docker exec tue-env bash -c 'source ~/.bashrc; cd ~/ros/"$ROS_DISTRO"/system/src/"$PACKAGE" && catkin build --this --no-status -DCATKIN_ENABLE_TESTING=OFF'
+echo -e "\e[35m\e[1m Compile the package (catkin build -DCMAKE_BUILD_TYPE=RelWithDebInfo -DCATKIN_ENABLE_TESTING=OFF) \e[0m"
+docker exec tue-env bash -c 'source ~/.bashrc; cd ~/ros/"$ROS_DISTRO"/system/src/"$PACKAGE" && catkin build --this --no-status -DCMAKE_BUILD_TYPE=RelWithDebInfo -DCATKIN_ENABLE_TESTING=OFF'
 
 # Run unit tests
 echo -e "\e[35m\e[1m Run tests on this package (catkin run_tests --this --no-deps -DCATKIN_ENABLE_TESTING=ON) \e[0m"
