@@ -233,7 +233,7 @@ function tue-make
             catkin build --workspace "$TUE_SYSTEM_DIR" -DCMAKE_BUILD_TYPE=RelWithDebInfo "$@"
             ;;
         '')
-            catkin init --workspace "$TUE_SYSTEM_DIR" "$@"
+            catkin config --init --mkdirs --workspace "$TUE_SYSTEM_DIR" "$@"
             catkin build --workspace "$TUE_SYSTEM_DIR" -DCMAKE_BUILD_TYPE=RelWithDebInfo "$@"
             ;;
         esac
@@ -250,7 +250,7 @@ function tue-make-system
         catkin build --workspace "$TUE_SYSTEM_DIR" -DCMAKE_BUILD_TYPE=RelWithDebInfo "$@"
         ;;
     '')
-        catkin init --workspace "$TUE_SYSTEM_DIR" "$@"
+        catkin config --init --mkdirs --workspace "$TUE_SYSTEM_DIR" "$@"
         catkin build --workspace "$TUE_SYSTEM_DIR" -DCMAKE_BUILD_TYPE=RelWithDebInfo "$@"
         ;;
     esac
@@ -276,7 +276,7 @@ function tue-make-dev
         catkin build --workspace "$TUE_DEV_DIR" -DCMAKE_BUILD_TYPE=RelWithDebInfo "$@"
         ;;
     '')
-        catkin init --workspace "$TUE_DEV_DIR" "$@"
+        catkin config --init --mkdirs --workspace "$TUE_DEV_DIR" "$@"
         catkin build --workspace "$TUE_DEV_DIR" -DCMAKE_BUILD_TYPE=RelWithDebInfo "$@"
         ;;
     esac
@@ -292,7 +292,7 @@ function tue-make-dev-isolated
         catkin build --workspace "$TUE_DEV_DIR" -DCMAKE_BUILD_TYPE=RelWithDebInfo "$@"
         ;;
     '')
-        catkin init --workspace "$TUE_DEV_DIR" "$@"
+        catkin config --init --mkdirs --workspace "$TUE_DEV_DIR" "$@"
         catkin build --workspace "$TUE_DEV_DIR" -DCMAKE_BUILD_TYPE=RelWithDebInfo "$@"
         ;;
     esac
