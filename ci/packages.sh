@@ -2,7 +2,9 @@
 
 exclude_dirs=$(echo "$@" | xargs ls -dl 2>/dev/null |  grep "^d" | grep -v "\." | awk '{print $NF}')
 
-if [[ $TRAVIS_PULL_REQUEST == "false" ]]
+PULL_REQUEST=${TRAVIS_PULL_REQUEST:-${SYSTEM_PULLREQUEST_PULLREQUESTNUMBER:-false}} # Compatible with both travis and azure
+
+if [[ $PULL_REQUEST == "false" ]]
 then
     diff_tag="HEAD^"
 else
