@@ -13,7 +13,7 @@ do
     shift
 done
 
-exclude_dirs=$(echo "$@" | xargs ls -dl 2>/dev/null |  grep "^d" | grep -v "\." | awk '{print $NF}')
+exclude_dirs=$(echo "$exclude_dirs" | xargs ls -dl 2>/dev/null |  grep "^d" | grep -v "\." | awk '{print $NF}')
 
 if [[ $PULL_REQUEST == "false" ]]
 then
