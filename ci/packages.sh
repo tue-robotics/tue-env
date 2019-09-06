@@ -28,7 +28,7 @@ do
 	then
 		PACKAGES_DICT+=", "
 	fi
-	PACKAGES_DICT+="${PKG}: {PACKAGE: ${PKG}}"
+	PACKAGES_DICT+="'${PKG}': {'PACKAGE': '${PKG}'}"
 done
 PACKAGES_DICT+="}"
 
