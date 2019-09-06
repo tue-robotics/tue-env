@@ -24,7 +24,7 @@ export PACKAGES
 PACKAGES_DICT="{"
 for PKG in $PACKAGES
 do
-	if [ $PACKAGES_DICT != "{" ]
+	if [ PACKAGES_DICT != "{" ]
 	then
 		PACKAGES_DICT+=", "
 	fi
