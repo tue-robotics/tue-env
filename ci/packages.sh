@@ -1,8 +1,19 @@
 #! /usr/bin/env bash
 
-exclude_dirs=$(echo "$@" | xargs ls -dl 2>/dev/null |  grep "^d" | grep -v "\." | awk '{print $NF}')
+exclude_dirs=""
+for i in "$@"
+do
+    case $i in
+        -r=* | --pullrequest=* )
+            PULL_REQUEST="${i#*=}"
+	    ;;
+        * ) exclude_dirs="$exclude_dirs $1"
+	    ;;
+    esac
+    shift
+done
 
-PULL_REQUEST=${TRAVIS_PULL_REQUEST:-${SYSTEM_PULLREQUEST_PULLREQUESTNUMBER:-false}} # Compatible with both travis and azure
+exclude_dirs=$(echo "$@" | xargs ls -dl 2>/dev/null |  grep "^d" | grep -v "\." | awk '{print $NF}')
 
 if [[ $PULL_REQUEST == "false" ]]
 then
