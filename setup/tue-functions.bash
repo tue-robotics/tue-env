@@ -1,5 +1,6 @@
 #! /usr/bin/env bash
 
+# shellcheck disable=SC2153
 TUE_DEV_DIR=$TUE_ENV_DIR/dev
 TUE_SYSTEM_DIR=$TUE_ENV_DIR/system
 
