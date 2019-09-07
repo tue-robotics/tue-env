@@ -242,23 +242,6 @@ function tue-make
 }
 export -f tue-make
 
-function tue-make-system
-{
-    case $(cat "$TUE_SYSTEM_DIR"/devel/.built_by) in
-    'catkin_make')
-        echo -e "\e[33mcatkin_make is not supported anymore, use catkin tools\e[0m"
-        ;;
-    'catkin build')
-        catkin build --workspace "$TUE_SYSTEM_DIR" "$@"
-        ;;
-    '')
-        catkin config --init --mkdirs --workspace "$TUE_SYSTEM_DIR" -DCMAKE_BUILD_TYPE=RelWithDebInfo "$@"
-        catkin build --workspace "$TUE_SYSTEM_DIR" "$@"
-        ;;
-    esac
-}
-export -f tue-make-system
-
 function _tue-make
 {
     local cur=${COMP_WORDS[COMP_CWORD]}
@@ -267,7 +250,6 @@ function _tue-make
 }
 
 complete -F _tue-make tue-make
-complete -F _tue-make tue-make-system
 
 function tue-make-dev
 {
@@ -286,23 +268,6 @@ function tue-make-dev
 }
 export -f tue-make-dev
 
-function tue-make-dev-isolated
-{
-    case $(cat "$TUE_DEV_DIR"/devel/.built_by) in
-    'catkin_make')
-        echo -e "\e[33mcatkin_make is not supported anymore, use catkin tools\e[0m"
-        ;;
-    'catkin build')
-        catkin build --workspace "$TUE_DEV_DIR" "$@"
-        ;;
-    '')
-        catkin config --init --mkdirs --workspace "$TUE_DEV_DIR" -DCMAKE_BUILD_TYPE=RelWithDebInfo "$@"
-        catkin build --workspace "$TUE_DEV_DIR" "$@"
-        ;;
-    esac
-}
-export -f tue-make-dev-isolated
-
 function _tue-make-dev
 {
     local cur=${COMP_WORDS[COMP_CWORD]}
@@ -310,7 +275,6 @@ function _tue-make-dev
     mapfile -t COMPREPLY < <(compgen -W "$(_list_subdirs "$TUE_DEV_DIR"/src)" -- "$cur")
 }
 complete -F _tue-make-dev tue-make-dev
-complete -F _tue-make-dev tue-make-dev-isolated
 
 # ----------------------------------------------------------------------------------------------------
 #                                              TUE-DEV
