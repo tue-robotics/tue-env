@@ -10,7 +10,6 @@ mkdir -p "$TUE_INSTALL_INSTALLED_DIR"
 
 TUE_INSTALL_TARGETS_DIR=$TUE_ENV_TARGETS_DIR
 
-TUE_SYSTEM_DIR=$TUE_ENV_DIR/system
 TUE_REPOS_DIR=$TUE_ENV_DIR/repos
 
 # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # #
