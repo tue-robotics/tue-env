@@ -253,18 +253,21 @@ complete -F _tue-make tue-make
 
 function tue-make-dev
 {
-    case $(cat "$TUE_DEV_DIR"/devel/.built_by) in
-    'catkin_make')
-        echo -e "\e[33mcatkin_make is not supported anymore, use catkin tools\e[0m"
-        ;;
-    'catkin build')
-        catkin build --workspace "$TUE_DEV_DIR" "$@"
-        ;;
-    '')
-        catkin config --init --mkdirs --workspace "$TUE_DEV_DIR" -DCMAKE_BUILD_TYPE=RelWithDebInfo "$@"
-        catkin build --workspace "$TUE_DEV_DIR" "$@"
-        ;;
-    esac
+	if [ -n "$TUE_ROS_DISTRO" ] && [ -d "$TUE_DEV_DIR" ]
+    then
+		case $(cat "$TUE_DEV_DIR"/devel/.built_by) in
+		'catkin_make')
+			echo -e "\e[33mcatkin_make is not supported anymore, use catkin tools\e[0m"
+			;;
+		'catkin build')
+			catkin build --workspace "$TUE_DEV_DIR" "$@"
+			;;
+		'')
+			catkin config --init --mkdirs --workspace "$TUE_DEV_DIR" -DCMAKE_BUILD_TYPE=RelWithDebInfo "$@"
+			catkin build --workspace "$TUE_DEV_DIR" "$@"
+			;;
+		esac
+    fi
 }
 export -f tue-make-dev
 
