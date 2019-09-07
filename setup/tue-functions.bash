@@ -240,6 +240,7 @@ function tue-make
         esac
     fi
 }
+export -f tue-make
 
 function tue-make-system
 {
@@ -256,6 +257,7 @@ function tue-make-system
         ;;
     esac
 }
+export -f tue-make-system
 
 function _tue-make
 {
@@ -282,6 +284,7 @@ function tue-make-dev
         ;;
     esac
 }
+export -f tue-make-dev
 
 function tue-make-dev-isolated
 {
@@ -298,6 +301,7 @@ function tue-make-dev-isolated
         ;;
     esac
 }
+export -f tue-make-dev-isolated
 
 function _tue-make-dev
 {
