@@ -228,16 +228,19 @@ function tue-make
 {
     if [ -n "$TUE_ROS_DISTRO" ] && [ -d "$TUE_SYSTEM_DIR" ]
     then
-        case $(cat "$TUE_SYSTEM_DIR"/devel/.built_by) in
-        'catkin_make')
-            echo -e "\e[33mcatkin_make is not supported anymore, use catkin tools\e[0m"
-            ;;
+        local build_tool
+        build_tool=$(cat "$TUE_SYSTEM_DIR"/devel/.built_by)
+        case $build_tool in
         'catkin build')
             catkin build --workspace "$TUE_SYSTEM_DIR" "$@"
             ;;
         '')
             catkin config --init --mkdirs --workspace "$TUE_SYSTEM_DIR" -DCMAKE_BUILD_TYPE=RelWithDebInfo "$@"
             catkin build --workspace "$TUE_SYSTEM_DIR" "$@"
+            ;;
+        *)
+            echo -e "\e$build_tool is not supported (anymore), use catkin tools\e[0m"
+            return 1
             ;;
         esac
     fi
@@ -255,20 +258,23 @@ complete -F _tue-make tue-make
 
 function tue-make-dev
 {
-	if [ -n "$TUE_ROS_DISTRO" ] && [ -d "$TUE_DEV_DIR" ]
+    if [ -n "$TUE_ROS_DISTRO" ] && [ -d "$TUE_DEV_DIR" ]
     then
-		case $(cat "$TUE_DEV_DIR"/devel/.built_by) in
-		'catkin_make')
-			echo -e "\e[33mcatkin_make is not supported anymore, use catkin tools\e[0m"
-			;;
-		'catkin build')
-			catkin build --workspace "$TUE_DEV_DIR" "$@"
-			;;
-		'')
-			catkin config --init --mkdirs --workspace "$TUE_DEV_DIR" -DCMAKE_BUILD_TYPE=RelWithDebInfo "$@"
-			catkin build --workspace "$TUE_DEV_DIR" "$@"
-			;;
-		esac
+        local build_tool
+        build_tool=$(cat "$TUE_DEV_DIR"/devel/.built_by)
+        case $build_tool in
+        'catkin build')
+            catkin build --workspace "$TUE_DEV_DIR" "$@"
+            ;;
+        '')
+            catkin config --init --mkdirs --workspace "$TUE_DEV_DIR" -DCMAKE_BUILD_TYPE=RelWithDebInfo "$@"
+            catkin build --workspace "$TUE_DEV_DIR" "$@"
+            ;;
+        *)
+            echo -e "\e$build_tool is not supported (anymore), use catkin tools\e[0m"
+            return 1
+            ;;
+        esac
     fi
 }
 export -f tue-make-dev
