@@ -23,6 +23,31 @@ function _list_subdirs
 }
 
 # ----------------------------------------------------------------------------------------------------
+#                                       APT MIRROR SELECTION
+# ----------------------------------------------------------------------------------------------------
+
+function tue-apt-select-mirror
+{
+	hash pip || sudo apt-get install python-pip
+	hash apt-select || pip install --user apt-select
+
+	local mem_pwd=$PWD
+	cd /tmp
+	local err_code
+	apt-select -t1 -C NL
+	err_code=$?
+	if [ $err_code == 4 ]
+	then
+		echo -e "Best apt mirror is the current one"
+	else
+		echo -e "Overiding the apt mirror with the fastest one"
+		sudo cp /etc/apt/sources.list /etc/apt/sources.list.bk
+		sudo cp /tmp/sources.list /etc/apt/sources.list
+	fi
+	cd $mem_pwd
+}
+
+# ----------------------------------------------------------------------------------------------------
 #                                       GIT LOCAL HOUSEKEEPING
 # ----------------------------------------------------------------------------------------------------
 
