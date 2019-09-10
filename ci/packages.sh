@@ -1,8 +1,21 @@
 #! /usr/bin/env bash
 
-exclude_dirs=$(echo "$@" | xargs ls -dl 2>/dev/null |  grep "^d" | grep -v "\." | awk '{print $NF}')
+exclude_dirs=""
+for i in "$@"
+do
+    case $i in
+        -r=* | --pullrequest=* )
+            PULL_REQUEST="${i#*=}"
+	    ;;
+        * ) exclude_dirs="$exclude_dirs $1"
+	    ;;
+    esac
+    shift
+done
 
-if [[ $TRAVIS_PULL_REQUEST == "false" ]]
+exclude_dirs=$(echo "$exclude_dirs" | xargs ls -dl 2>/dev/null |  grep "^d" | grep -v "\." | awk '{print $NF}')
+
+if [[ $PULL_REQUEST == "false" ]]
 then
     diff_tag="HEAD^"
 else
@@ -20,6 +33,17 @@ fi
 
 PACKAGES=$(echo "$PACKAGES" | xargs ls -dl 2>/dev/null |  grep "^d" | grep -v "\." | awk '{print $NF}'| grep -v -w "$exclude_dirs")
 export PACKAGES
+
+PACKAGES_DICT="{"
+for PKG in $PACKAGES
+do
+	if [[ "$PACKAGES_DICT" != "{" ]]
+	then
+		PACKAGES_DICT+=", "
+	fi
+	PACKAGES_DICT+="'${PKG}': {'PACKAGE': '${PKG}'}"
+done
+PACKAGES_DICT+="}"
 
 echo -e "\e[35m\e[1m PACKAGES: \e[0m"
 for PKG in $PACKAGES
