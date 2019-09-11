@@ -7,6 +7,9 @@ do
         -r=* | --pullrequest=* )
             PULL_REQUEST="${i#*=}"
 	    ;;
+        -b=* | --branch=* )
+            BRANCH="${i#*=}"
+	    ;;
         * ) exclude_dirs="$exclude_dirs $1"
 	    ;;
     esac
@@ -19,7 +22,7 @@ if [[ $PULL_REQUEST == "false" ]]
 then
     diff_tag="HEAD^"
 else
-    diff_tag=$(git merge-base HEAD "$TRAVIS_BRANCH")
+    diff_tag=$(git merge-base HEAD "$BRANCH")
 fi
 
 dir_mod=$(git diff-tree --name-only HEAD "$diff_tag" | xargs ls -dl 2>/dev/null |  grep "^d" | grep -v "\." | awk '{print $NF}')
