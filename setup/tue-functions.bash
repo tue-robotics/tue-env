@@ -28,14 +28,14 @@ function _list_subdirs
 
 function tue-apt-select-mirror
 {
-	hash pip2 || sudo apt-get install python-pip
-	hash apt-select || pip2 install --user apt-select
+	hash pip2 2> /dev/null|| sudo apt-get install python-pip
+	hash apt-select 2> /dev/null|| pip2 install --user apt-select
 
 	local mem_pwd=$PWD
     # shellcheck disable=SC2164
 	cd /tmp
 	local err_code
-	apt-select -t1 -C NL
+	apt-select -t1 -C NL 1> /dev/null
 	err_code=$?
 	if [ $err_code == 4 ]
 	then
