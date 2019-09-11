@@ -32,6 +32,7 @@ function tue-apt-select-mirror
 	hash apt-select || pip install --user apt-select
 
 	local mem_pwd=$PWD
+    # shellcheck disable=SC2164
 	cd /tmp
 	local err_code
 	apt-select -t1 -C NL
@@ -44,7 +45,8 @@ function tue-apt-select-mirror
 		sudo cp /etc/apt/sources.list /etc/apt/sources.list.bk
 		sudo cp /tmp/sources.list /etc/apt/sources.list
 	fi
-	cd $mem_pwd
+    # shellcheck disable=SC2164
+	cd "$mem_pwd"
 }
 
 # ----------------------------------------------------------------------------------------------------
