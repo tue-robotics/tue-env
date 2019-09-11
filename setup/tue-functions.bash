@@ -39,7 +39,7 @@ function tue-apt-select-mirror
     # shellcheck disable=SC2164
 	cd /tmp
 	local err_code
-	apt-select "$@" 1> /dev/null
+	apt-select "$@" 2> /dev/null
 	err_code=$?
 	if [ $err_code == 4 ]
 	then
