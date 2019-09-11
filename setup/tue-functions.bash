@@ -28,6 +28,10 @@ function _list_subdirs
 
 function tue-apt-select-mirror
 {
+    # Function to set the fastest APT mirror
+    # It uses apt-select to generate a new sources.list, based on the current one.
+    # All Arguments to this functions are passed on to apt-select, so check the
+    # apt-select documentation for all options.
 	hash pip2 2> /dev/null|| sudo apt-get install python-pip
 	hash apt-select 2> /dev/null|| pip2 install --user apt-select
 
