@@ -28,8 +28,8 @@ function _list_subdirs
 
 function tue-apt-select-mirror
 {
-	hash pip || sudo apt-get install python-pip
-	hash apt-select || pip install --user apt-select
+	hash pip2 || sudo apt-get install python-pip
+	hash apt-select || pip2 install --user apt-select
 
 	local mem_pwd=$PWD
     # shellcheck disable=SC2164
