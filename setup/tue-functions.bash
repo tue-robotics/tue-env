@@ -23,6 +23,40 @@ function _list_subdirs
 }
 
 # ----------------------------------------------------------------------------------------------------
+#                                       APT MIRROR SELECTION
+# ----------------------------------------------------------------------------------------------------
+
+function tue-apt-select-mirror
+{
+    # Function to set the fastest APT mirror
+    # It uses apt-select to generate a new sources.list, based on the current one.
+    # All Arguments to this functions are passed on to apt-select, so check the
+    # apt-select documentation for all options.
+	hash pip2 2> /dev/null|| sudo apt-get install python-pip
+	hash apt-select 2> /dev/null|| pip2 install --user apt-select
+
+	local mem_pwd=$PWD
+    # shellcheck disable=SC2164
+	cd /tmp
+	local err_code
+	apt-select "$@" 2> /dev/null
+	err_code=$?
+	if [ $err_code == 4 ]
+	then
+		echo -e "Fastest apt mirror is the current one"
+	elif [ $err_code != 0 ]
+    then
+        echo -e "Non zero error code return by apt-select: $err_code"
+    else
+		echo -e "Updating the apt mirror with the fastest one"
+		sudo cp /etc/apt/sources.list /etc/apt/sources.list.bk
+		sudo cp /tmp/sources.list /etc/apt/sources.list
+	fi
+    # shellcheck disable=SC2164
+	cd "$mem_pwd"
+}
+
+# ----------------------------------------------------------------------------------------------------
 #                                       GIT LOCAL HOUSEKEEPING
 # ----------------------------------------------------------------------------------------------------
 
