@@ -44,7 +44,10 @@ function tue-apt-select-mirror
 	if [ $err_code == 4 ]
 	then
 		echo -e "Fastest apt mirror is the current one"
-	else
+	elif [ $err_code != 0 ]
+    then
+        echo -e "Non zero error code return by apt-select: $err_code"
+    else
 		echo -e "Updating the apt mirror with the fastest one"
 		sudo cp /etc/apt/sources.list /etc/apt/sources.list.bk
 		sudo cp /tmp/sources.list /etc/apt/sources.list
