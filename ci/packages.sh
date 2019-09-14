@@ -33,6 +33,8 @@ echo "diff_tag"
 echo "$diff_tag"
 
 mod_files=$(git diff-tree --name-only HEAD "$diff_tag")
+echo "mod files"
+echo "$mod_files"
 dir_mod=$(echo "$mod_files" | xargs ls -dl 2>/dev/null |  grep "^d" | grep -v "\." | awk '{print $NF}')
 echo "dir_mod"
 echo "$dir_mod"
