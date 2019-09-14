@@ -22,7 +22,7 @@ if [[ $PULL_REQUEST == "false" ]]
 then
     diff_tag="HEAD^"
 else
-    diff_tag=$(git merge-base HEAD "$BRANCH")
+    diff_tag=$(git merge-base HEAD remotes/origin/"$BRANCH")
 fi
 echo "branches"
 git branch -a
