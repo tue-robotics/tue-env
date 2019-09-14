@@ -89,7 +89,7 @@ docker run --detach --interactive -e CI=true -e PACKAGE="$PACKAGE" -e BRANCH="$B
 docker exec tue-env bash -c 'source ~/.bashrc; tue-apt-select-mirror'
 
 # Refresh the apt cache in the docker image
-docker exec tue-env bash -c "sudo apt-get update -qq"
+docker exec tue-env bash -c 'sudo apt-get update -qq'
 
 # Use docker environment variables in all exec commands instead of script variables
 # Catch the ROS_DISTRO of the docker container
