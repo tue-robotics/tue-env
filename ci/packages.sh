@@ -6,12 +6,12 @@ do
     case $i in
         -r=* | --pullrequest=* )
             PULL_REQUEST="${i#*=}"
-	    ;;
+        ;;
         -b=* | --branch=* )
             BRANCH="${i#*=}"
-	    ;;
+        ;;
         * ) exclude_dirs="$exclude_dirs $1"
-	    ;;
+        ;;
     esac
     shift
 done
@@ -34,10 +34,10 @@ then
     PACKAGES=$(printf "%s\n" ./*/ | cut -f2 -d '/')
 elif [ "$dir_mod" ]
 then
-	# Else only the modified pkgs
+    # Else only the modified pkgs
     PACKAGES=$dir_mod
 else
-	PACKAGES=""
+    PACKAGES=""
 fi
 
 PACKAGES=$(echo "$PACKAGES" | xargs ls -dl 2>/dev/null |  grep "^d" | grep -v "\." | awk '{print $NF}'| grep -v -w "$exclude_dirs")
@@ -46,11 +46,11 @@ export PACKAGES
 PACKAGES_DICT="{"
 for PKG in $PACKAGES
 do
-	if [[ "$PACKAGES_DICT" != "{" ]]
-	then
-		PACKAGES_DICT+=", "
-	fi
-	PACKAGES_DICT+="'${PKG}': {'PACKAGE': '${PKG}'}"
+    if [[ "$PACKAGES_DICT" != "{" ]]
+    then
+        PACKAGES_DICT+=", "
+    fi
+    PACKAGES_DICT+="'${PKG}': {'PACKAGE': '${PKG}'}"
 done
 PACKAGES_DICT+="}"
 export PACKAGES_DICT
