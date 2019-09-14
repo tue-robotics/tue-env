@@ -24,8 +24,12 @@ then
 else
     diff_tag=$(git merge-base HEAD "$BRANCH")
 fi
+echo "diff_tag"
+echo "$diff_tag"
 
 dir_mod=$(git diff-tree --name-only HEAD "$diff_tag" | xargs ls -dl 2>/dev/null |  grep "^d" | grep -v "\." | awk '{print $NF}')
+echo "dir_mod"
+echo "$dir_mod"
 if [ "$dir_mod" ]
 then
     PACKAGES=$dir_mod
@@ -33,9 +37,13 @@ else
     # When no pkg is modified, build all pkgs (=all sub directories)
     PACKAGES=$(printf "%s\n" ./*/ | cut -f2 -d '/')
 fi
+echo "PACKAGES1"
+echo "$PACKAGES"
 
 PACKAGES=$(echo "$PACKAGES" | xargs ls -dl 2>/dev/null |  grep "^d" | grep -v "\." | awk '{print $NF}'| grep -v -w "$exclude_dirs")
 export PACKAGES
+echo "PACKAGES2"
+echo "$PACKAGES"
 
 PACKAGES_DICT="{"
 for PKG in $PACKAGES
@@ -47,6 +55,7 @@ do
 	PACKAGES_DICT+="'${PKG}': {'PACKAGE': '${PKG}'}"
 done
 PACKAGES_DICT+="}"
+export PACKAGES_DICT
 
 echo -e "\e[35m\e[1m PACKAGES: \e[0m"
 for PKG in $PACKAGES
