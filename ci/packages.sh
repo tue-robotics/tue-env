@@ -32,7 +32,8 @@ echo "git merge-base HEAD "$BRANCH""
 echo "diff_tag"
 echo "$diff_tag"
 
-dir_mod=$(git diff-tree --name-only HEAD "$diff_tag" | xargs ls -dl 2>/dev/null |  grep "^d" | grep -v "\." | awk '{print $NF}')
+mod_files=$(git diff-tree --name-only HEAD "$diff_tag")
+dir_mod=$(echo "$mod_files" | xargs ls -dl 2>/dev/null |  grep "^d" | grep -v "\." | awk '{print $NF}')
 echo "dir_mod"
 echo "$dir_mod"
 if [ "$dir_mod" ]
