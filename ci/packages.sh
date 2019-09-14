@@ -24,6 +24,9 @@ then
 else
     diff_tag=$(git merge-base HEAD "$BRANCH")
 fi
+echo "diff tag command"
+echo "git merge-base HEAD "$BRANCH""
+
 echo "diff_tag"
 echo "$diff_tag"
 
