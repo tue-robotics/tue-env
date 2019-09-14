@@ -24,8 +24,6 @@ then
 else
     diff_tag=$(git merge-base HEAD remotes/origin/"$BRANCH")
 fi
-echo "branches"
-git branch -a
 echo "diff tag command"
 echo "git merge-base HEAD "$BRANCH""
 
