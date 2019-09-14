@@ -47,7 +47,7 @@ RUN sed -e s/return//g -i ~/.bashrc && \
     export BRANCH=$BRANCH && \
     export PULL_REQUEST=$PULL_REQUEST && \
     export COMMIT=$COMMIT && \
-    # Run the standard installation script if not in a PR
+    # Run the standard installation script
     source <(wget -q -O - https://raw.githubusercontent.com/tue-robotics/tue-env/"$BRANCH"/installer/bootstrap.bash) && \
     # Make tue-env to be available to the environment
     source ~/.bashrc && \
