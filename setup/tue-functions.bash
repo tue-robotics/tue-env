@@ -32,8 +32,8 @@ function tue-apt-select-mirror
     # It uses apt-select to generate a new sources.list, based on the current one.
     # All Arguments to this functions are passed on to apt-select, so check the
     # apt-select documentation for all options.
-	hash pip2 2> /dev/null|| sudo apt-get install python-pip
-	hash apt-select 2> /dev/null|| pip2 install --user apt-select
+	hash pip2 2> /dev/null|| sudo apt-get install --assume-yes python-pip
+	hash apt-select 2> /dev/null|| sudo -H pip2 install apt-select
 
 	local mem_pwd=$PWD
     # shellcheck disable=SC2164
@@ -51,6 +51,8 @@ function tue-apt-select-mirror
 		echo -e "Updating the apt mirror with the fastest one"
 		sudo cp /etc/apt/sources.list /etc/apt/sources.list.bk
 		sudo cp /tmp/sources.list /etc/apt/sources.list
+		echo -e "Running: sudo apt-get update -qq"
+		sudo apt-get update -qq
 	fi
     # shellcheck disable=SC2164
 	cd "$mem_pwd"
