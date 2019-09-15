@@ -37,7 +37,7 @@ CI="$CI" -t "$IMAGE_NAME" -f "$DOCKER_FILE" .
 if [ "$TRAVIS_PULL_REQUEST" == "false" ]
 then
     # authenticate with the Docker Hub registry
-    docker login -u="$DOCKER_HUB_USERNAME" -p="$DOCKER_HUB_PASSWORD"
+	echo "$DOCKER_HUB_PASSWORD" | docker login -u "$DOCKER_HUB_USERNAME" --password-stdin
 
     echo -e "\e[35m\e[1m docker push $IMAGE_NAME \e[0m"
     docker push "$IMAGE_NAME"
