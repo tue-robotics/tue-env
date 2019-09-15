@@ -47,10 +47,12 @@ RUN sed -e s/return//g -i ~/.bashrc && \
     export BRANCH=$BRANCH && \
     export PULL_REQUEST=$PULL_REQUEST && \
     export COMMIT=$COMMIT && \
-    # Run the standard installation script if not in a PR
+    # Run the standard installation script
     source <(wget -q -O - https://raw.githubusercontent.com/tue-robotics/tue-env/"$BRANCH"/installer/bootstrap.bash) && \
     # Make tue-env to be available to the environment
     source ~/.bashrc && \
+    # Select fastest apt mirror
+    tue-apt-select-mirror && \
     # Set all git repositories to use HTTPS urls (Needed for local image builds)
     tue-env config ros-"$TUE_ROS_DISTRO" use-https && \
     # Install target ros
