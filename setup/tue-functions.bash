@@ -1,7 +1,10 @@
 #! /usr/bin/env bash
 
-_TUE_CATKIN_DEV_DIR=$TUE_ENV_DIR/dev
-_TUE_CATKIN_SYSTEM_DIR=$TUE_ENV_DIR/system
+# shellcheck disable=SC2153
+TUE_DEV_DIR=$TUE_ENV_DIR/dev
+TUE_SYSTEM_DIR=$TUE_ENV_DIR/system
+export TUE_DEV_DIR
+export TUE_SYSTEM_DIR
 
 # ----------------------------------------------------------------------------------------------------
 #                                        HELPER FUNCTIONS
@@ -17,6 +20,42 @@ function _list_subdirs
             echo "$f"
         fi
     done
+}
+
+# ----------------------------------------------------------------------------------------------------
+#                                       APT MIRROR SELECTION
+# ----------------------------------------------------------------------------------------------------
+
+function tue-apt-select-mirror
+{
+    # Function to set the fastest APT mirror
+    # It uses apt-select to generate a new sources.list, based on the current one.
+    # All Arguments to this functions are passed on to apt-select, so check the
+    # apt-select documentation for all options.
+	hash pip2 2> /dev/null|| sudo apt-get install --assume-yes python-pip
+	hash apt-select 2> /dev/null|| sudo -H pip2 install apt-select
+
+	local mem_pwd=$PWD
+    # shellcheck disable=SC2164
+	cd /tmp
+	local err_code
+	apt-select "$@" 2> /dev/null
+	err_code=$?
+	if [ $err_code == 4 ]
+	then
+		echo -e "Fastest apt mirror is the current one"
+	elif [ $err_code != 0 ]
+    then
+        echo -e "Non zero error code return by apt-select: $err_code"
+    else
+		echo -e "Updating the apt mirror with the fastest one"
+		sudo cp /etc/apt/sources.list /etc/apt/sources.list.bk
+		sudo cp /tmp/sources.list /etc/apt/sources.list
+		echo -e "Running: sudo apt-get update -qq"
+		sudo apt-get update -qq
+	fi
+    # shellcheck disable=SC2164
+	cd "$mem_pwd"
 }
 
 # ----------------------------------------------------------------------------------------------------
@@ -223,89 +262,66 @@ export -f _github_https_or_ssh # otherwise not available in sourced files
 
 function tue-make
 {
-    if [ -n "$TUE_ROS_DISTRO" ] && [ -d "$_TUE_CATKIN_SYSTEM_DIR" ]
+    if [ -n "$TUE_ROS_DISTRO" ] && [ -d "$TUE_SYSTEM_DIR" ]
     then
-        case $(cat "$_TUE_CATKIN_SYSTEM_DIR"/devel/.built_by) in
-        'catkin_make')
-            catkin_make --directory "$_TUE_CATKIN_SYSTEM_DIR" -DCMAKE_BUILD_TYPE=RelWithDebInfo "$@"
-            ;;
+        local build_tool
+        build_tool=$(cat "$TUE_SYSTEM_DIR"/devel/.built_by)
+        case $build_tool in
         'catkin build')
-            catkin build --workspace "$_TUE_CATKIN_SYSTEM_DIR" "$@"
+            catkin build --workspace "$TUE_SYSTEM_DIR" "$@"
             ;;
         '')
-            catkin init --workspace "$_TUE_CATKIN_SYSTEM_DIR" "$@"
-            catkin build --workspace "$_TUE_CATKIN_SYSTEM_DIR" "$@"
+            catkin config --init --mkdirs --workspace "$TUE_SYSTEM_DIR" -DCMAKE_BUILD_TYPE=RelWithDebInfo "$@"
+            catkin build --workspace "$TUE_SYSTEM_DIR" "$@"
+            ;;
+        *)
+            echo -e "\e$build_tool is not supported (anymore), use catkin tools\e[0m"
+            return 1
             ;;
         esac
     fi
 }
-
-function tue-make-system
-{
-    case $(cat "$_TUE_CATKIN_SYSTEM_DIR"/devel/.built_by) in
-    'catkin_make')
-        catkin_make --directory "$_TUE_CATKIN_SYSTEM_DIR" -DCMAKE_BUILD_TYPE=RelWithDebInfo "$@"
-        ;;
-    'catkin build')
-        catkin build --workspace "$_TUE_CATKIN_SYSTEM_DIR" "$@"
-        ;;
-    '')
-        catkin init --workspace "$_TUE_CATKIN_SYSTEM_DIR" "$@"
-        catkin build --workspace "$_TUE_CATKIN_SYSTEM_DIR" "$@"
-        ;;
-    esac
-}
+export -f tue-make
 
 function _tue-make
 {
     local cur=${COMP_WORDS[COMP_CWORD]}
 
-    mapfile -t COMPREPLY < <(compgen -W "$(_list_subdirs "$_TUE_CATKIN_SYSTEM_DIR"/src)" -- "$cur")
+    mapfile -t COMPREPLY < <(compgen -W "$(_list_subdirs "$TUE_SYSTEM_DIR"/src)" -- "$cur")
 }
 
 complete -F _tue-make tue-make
-complete -F _tue-make tue-make-system
 
 function tue-make-dev
 {
-    case $(cat "$_TUE_CATKIN_DEV_DIR"/devel/.built_by) in
-    'catkin_make')
-        catkin_make --directory "$_TUE_CATKIN_DEV_DIR" -DCMAKE_BUILD_TYPE=RelWithDebInfo "$@"
-        ;;
-    'catkin build')
-        catkin build --workspace "$_TUE_CATKIN_DEV_DIR" "$@"
-        ;;
-    '')
-        catkin init --workspace "$_TUE_CATKIN_DEV_DIR" "$@"
-        catkin build --workspace "$_TUE_CATKIN_DEV_DIR" "$@"
-        ;;
-    esac
+    if [ -n "$TUE_ROS_DISTRO" ] && [ -d "$TUE_DEV_DIR" ]
+    then
+        local build_tool
+        build_tool=$(cat "$TUE_DEV_DIR"/devel/.built_by)
+        case $build_tool in
+        'catkin build')
+            catkin build --workspace "$TUE_DEV_DIR" "$@"
+            ;;
+        '')
+            catkin config --init --mkdirs --workspace "$TUE_DEV_DIR" -DCMAKE_BUILD_TYPE=RelWithDebInfo "$@"
+            catkin build --workspace "$TUE_DEV_DIR" "$@"
+            ;;
+        *)
+            echo -e "\e$build_tool is not supported (anymore), use catkin tools\e[0m"
+            return 1
+            ;;
+        esac
+    fi
 }
-
-function tue-make-dev-isolated
-{
-    case $(cat "$_TUE_CATKIN_SYSTEM_DIR"/devel/.built_by) in
-    'catkin_make')
-        catkin_make_isolated --directory "$_TUE_CATKIN_DEV_DIR" -DCMAKE_BUILD_TYPE=RelWithDebInfo "$@"
-        ;;
-    'catkin build')
-        catkin build --workspace "$_TUE_CATKIN_DEV_DIR" "$@"
-        ;;
-    '')
-        catkin init --workspace "$_TUE_CATKIN_DEV_DIR" "$@"
-        catkin build --workspace "$_TUE_CATKIN_DEV_DIR" "$@"
-        ;;
-    esac
-}
+export -f tue-make-dev
 
 function _tue-make-dev
 {
     local cur=${COMP_WORDS[COMP_CWORD]}
 
-    mapfile -t COMPREPLY < <(compgen -W "$(_list_subdirs "$_TUE_CATKIN_DEV_DIR"/src)" -- "$cur")
+    mapfile -t COMPREPLY < <(compgen -W "$(_list_subdirs "$TUE_DEV_DIR"/src)" -- "$cur")
 }
 complete -F _tue-make-dev tue-make-dev
-complete -F _tue-make-dev tue-make-dev-isolated
 
 # ----------------------------------------------------------------------------------------------------
 #                                              TUE-DEV
@@ -315,20 +331,20 @@ function tue-dev
 {
     if [ -z "$1" ]
     then
-        _list_subdirs "$_TUE_CATKIN_DEV_DIR"/src
+        _list_subdirs "$TUE_DEV_DIR"/src
         return 0
     fi
 
     for pkg in "$@"
     do
-        if [ ! -d "$_TUE_CATKIN_SYSTEM_DIR"/src/"$pkg" ]
+        if [ ! -d "$TUE_SYSTEM_DIR"/src/"$pkg" ]
         then
             echo "[tue-dev] '$pkg' does not exist in the system workspace."
-        elif [ -d "$_TUE_CATKIN_DEV_DIR"/src/"$pkg" ]
+        elif [ -d "$TUE_DEV_DIR"/src/"$pkg" ]
         then
             echo "[tue-dev] '$pkg' is already in the dev workspace."
         else
-            ln -s "$_TUE_CATKIN_SYSTEM_DIR"/src/"$pkg" "$_TUE_CATKIN_DEV_DIR"/src/"$pkg"
+            ln -s "$TUE_SYSTEM_DIR"/src/"$pkg" "$TUE_DEV_DIR"/src/"$pkg"
         fi
     done
 
@@ -338,28 +354,28 @@ function tue-dev
 
 function tue-dev-clean
 {
-    for f in $(_list_subdirs "$_TUE_CATKIN_DEV_DIR"/src)
+    for f in $(_list_subdirs "$TUE_DEV_DIR"/src)
     do
         # Test if f is a symbolic link
-        if [[ -L $_TUE_CATKIN_DEV_DIR/src/$f ]]
+        if [[ -L $TUE_DEV_DIR/src/$f ]]
         then
             echo "Cleaned '$f'"
-            rm "$_TUE_CATKIN_DEV_DIR"/src/"$f"
+            rm "$TUE_DEV_DIR"/src/"$f"
         fi
     done
 
-    rm -rf "$_TUE_CATKIN_DEV_DIR"/devel/share
-    rm -rf "$_TUE_CATKIN_DEV_DIR"/devel/etc
-    rm -rf "$_TUE_CATKIN_DEV_DIR"/devel/include
-    rm -rf "$_TUE_CATKIN_DEV_DIR"/devel/lib
-    rm -rf "$_TUE_CATKIN_DEV_DIR"/build
+    rm -rf "$TUE_DEV_DIR"/devel/share
+    rm -rf "$TUE_DEV_DIR"/devel/etc
+    rm -rf "$TUE_DEV_DIR"/devel/include
+    rm -rf "$TUE_DEV_DIR"/devel/lib
+    rm -rf "$TUE_DEV_DIR"/build
 }
 
 function _tue-dev
 {
     local cur=${COMP_WORDS[COMP_CWORD]}
 
-    mapfile -t COMPREPLY < <(compgen -W "$(_list_subdirs "$_TUE_CATKIN_SYSTEM_DIR"/src)" -- "$cur")
+    mapfile -t COMPREPLY < <(compgen -W "$(_list_subdirs "$TUE_SYSTEM_DIR"/src)" -- "$cur")
 }
 complete -F _tue-dev tue-dev
 
@@ -455,7 +471,7 @@ function _tue-dir-status
 
 function tue-status
 {
-    _tue-dir-status "$_TUE_CATKIN_SYSTEM_DIR"/src
+    _tue-dir-status "$TUE_SYSTEM_DIR"/src
     _tue-repo-status "tue-env" "$TUE_DIR"
     _tue-repo-status "tue-env-targets" "$TUE_ENV_TARGETS_DIR"
 }
@@ -464,7 +480,7 @@ function tue-status
 
 function tue-git-status
 {
-    for pkg_dir in "$_TUE_CATKIN_SYSTEM_DIR"/src/*/
+    for pkg_dir in "$TUE_SYSTEM_DIR"/src/*/
     do
         pkg=$(basename "$pkg_dir")
 
@@ -484,7 +500,7 @@ function tue-revert
 {
     human_time="$*"
 
-    for pkg_dir in "$_TUE_CATKIN_SYSTEM_DIR"/src/*/
+    for pkg_dir in "$TUE_SYSTEM_DIR"/src/*/
     do
         pkg=$(basename "$pkg_dir")
 
@@ -517,7 +533,7 @@ function tue-revert
 
 function tue-revert-undo
 {
-    for pkg_dir in "$_TUE_CATKIN_SYSTEM_DIR"/src/*/
+    for pkg_dir in "$TUE_SYSTEM_DIR"/src/*/
     do
         pkg=$(basename "$pkg_dir")
 
@@ -817,14 +833,14 @@ function tue-checkout
         shift
     done
 
-    fs=$(ls -d -1 "$_TUE_CATKIN_SYSTEM_DIR"/src/**)
+    fs=$(ls -d -1 "$TUE_SYSTEM_DIR"/src/**)
     if [ -z "$NO_TUE_ENV" ]
     then
         fs="$TUE_DIR $TUE_ENV_TARGETS_DIR $fs"
     fi
     for pkg_dir in $fs
     do
-        pkg=${pkg_dir#$_TUE_CATKIN_SYSTEM_DIR/src/}
+        pkg=${pkg_dir#$TUE_SYSTEM_DIR/src/}
         if [ -z "$NO_TUE_ENV" ]
         then
             if [[ $pkg =~ .tue ]]
@@ -1160,8 +1176,8 @@ function tue-robocup-change-remote
     # After this, you local working copies may be behind what was fetched from REMOTE, so run a $ tue-get update
 
     # for packages that have a REMOTE as a remote:
-        # do a git fetch origin: git fetch
-        # Change remote of branch 'BRANCH' to REMOTE: git branch -u REMOTE/BRANCH BRANCH
+    # do a git fetch origin: git fetch
+    # Change remote of branch 'BRANCH' to REMOTE: git branch -u REMOTE/BRANCH BRANCH
 
     if [ -z "$2" ]
     then
@@ -1185,10 +1201,17 @@ function tue-robocup-ssh-copy-id
     ssh-copy-id amigo@roboticssrv.local
 }
 
-function tue-robocup-set-github
+function _allow_robocup_branch
 {
-    tue-robocup-change-remote $TUE_ROBOCUP_BRANCH origin
-    _tue-git-default-branch
+    # allow TUE_ROBOCUP_BRANCH as branch in tue-status
+    if [ ! -f "$TUE_DIR"/user/config/robocup ]
+    then
+        echo $TUE_ROBOCUP_BRANCH > "$TUE_DIR"/user/config/robocup
+    fi
+}
+
+function _disallow_robocup_branch
+{
     # disallow TUE_ROBOCUP_BRANCH as branch in tue-status
     if [ -f "$TUE_DIR"/user/config/robocup ]
     then
@@ -1196,15 +1219,18 @@ function tue-robocup-set-github
     fi
 }
 
+function tue-robocup-set-github
+{
+    tue-robocup-change-remote $TUE_ROBOCUP_BRANCH origin
+    _tue-git-default-branch
+    _disallow_robocup_branch
+}
+
 function tue-robocup-set-roboticssrv
 {
     tue-add-git-remote roboticssrv amigo@roboticssrv.local:
     tue-robocup-remote-checkout
-    # allow TUE_ROBOCUP_BRANCH as branch in tue-status
-    if [ ! -f "$TUE_DIR"/user/config/robocup ]
-    then
-        echo $TUE_ROBOCUP_BRANCH > "$TUE_DIR"/user/config/robocup
-    fi
+    _allow_robocup_branch
 }
 
 function tue-robocup-set-timezone-robocup

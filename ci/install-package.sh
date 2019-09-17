@@ -52,6 +52,15 @@ tue-get install docker
 Optionally fix your compilation errors and re-run only the last command
 \e[0m"
 
+# If packages is non-zero, this is a multi-package repo. In multi-package repo, check if this package needs CI.
+# If a single-package repo, CI is always needed.
+# shellcheck disable=SC2153
+if [ -n "$PACKAGES" ] && ! echo "$PACKAGES" | grep -sqw "$PACKAGE"
+then
+    echo -e "\e[35m\e[1m No changes in this package, so no need to run CI \e[0m"
+    exit 0
+fi
+
 # Name of the docker image
 IMAGE_NAME=tuerobotics/tue-env
 # Determine docker tag if the same branch exists there
@@ -76,8 +85,11 @@ fi
 # Run the docker image along with setting new environment variables
 docker run --detach --interactive -e CI=true -e PACKAGE="$PACKAGE" -e BRANCH="$BRANCH" -e COMMIT="$COMMIT" -e PULL_REQUEST="$PULL_REQUEST" --name tue-env "$IMAGE_NAME:$BRANCH_TAG"
 
+# Select fastest apt mirror
+docker exec tue-env bash -c 'source ~/.bashrc; tue-apt-select-mirror'
+
 # Refresh the apt cache in the docker image
-docker exec tue-env bash -c "sudo apt-get update -qq"
+docker exec tue-env bash -c 'sudo apt-get update -qq'
 
 # Use docker environment variables in all exec commands instead of script variables
 # Catch the ROS_DISTRO of the docker container
