@@ -10,6 +10,9 @@ do
         -b=* | --branch=* )
             BRANCH="${i#*=}"
         ;;
+        -a=* | --all=* )
+            ALL="${i#*=}"
+        ;;
         * ) exclude_dirs="$exclude_dirs $1"
         ;;
     esac
@@ -28,7 +31,7 @@ fi
 mod_files=$(git diff-tree --name-only HEAD "$diff_tag")
 dir_mod=$(echo "$mod_files" | xargs ls -dl 2>/dev/null |  grep "^d" | grep -v "\." | awk '{print $NF}')
 
-if [[ $mod_files == *".travis.yml"* ]] || [[ $mod_files == *"azure-pipelines.yml"* ]]
+if [[ $mod_files == *".travis.yml"* ]] || [[ $mod_files == *"azure-pipelines.yml"* ]] || [ "$ALL" == "true" ]
 then
     # If CI config is modified, build all pkgs (=all sub directories)
     PACKAGES=$(printf "%s\n" ./*/ | cut -f2 -d '/')
