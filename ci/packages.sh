@@ -4,6 +4,9 @@ exclude_dirs=""
 for i in "$@"
 do
     case $i in
+        -c=* | --commit-range=* )
+            COMMIT_RANGE="${i#*=}"
+        ;;
         -r=* | --pullrequest=* )
             PULL_REQUEST="${i#*=}"
         ;;
@@ -21,14 +24,24 @@ done
 
 exclude_dirs=$(echo "$exclude_dirs" | xargs ls -dl 2>/dev/null |  grep "^d" | grep -v "\." | awk '{print $NF}')
 
-if [[ $PULL_REQUEST == "false" ]]
+if [ -n "$COMMIT_RANGE" ]
 then
-    diff_tag="HEAD^"
+    newest_commit=${COMMIT_RANGE%...*}
+    oldest_commit=${COMMIT_RANGE#*...}
+
+    mod_files=$(git diff-tree --name-only "$newest_commit" "$oldest_commit")
 else
-    diff_tag=$(git merge-base HEAD remotes/origin/"$BRANCH")
+    # For compatibility
+    if [[ $PULL_REQUEST == "false" ]]
+    then
+        diff_tag="HEAD^"
+    else
+        diff_tag=$(git merge-base HEAD remotes/origin/"$BRANCH")
+    fi
+
+    mod_files=$(git diff-tree --name-only HEAD "$diff_tag")
 fi
 
-mod_files=$(git diff-tree --name-only HEAD "$diff_tag")
 dir_mod=$(echo "$mod_files" | xargs ls -dl 2>/dev/null |  grep "^d" | grep -v "\." | awk '{print $NF}')
 
 if [[ $mod_files == *".travis.yml"* ]] || [[ $mod_files == *"azure-pipelines.yml"* ]] || [ "$ALL" == "true" ]
