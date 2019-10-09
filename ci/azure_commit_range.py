@@ -5,6 +5,16 @@ import os
 import sys
 import urllib
 
+"""
+Script to determine the commit range of a build in azure pipelines.
+
+The output of this script should be captured in bash. The output
+will match the format of TRAVIS_COMMIT_RANGE, which is
+newest_commit...oldest_commit
+
+If the range is just 1 commit, an empty string is printed.
+"""
+
 TEAM_FOUNDATION_URI = os.getenv("SYSTEM_TEAMFOUNDATIONCOLLECTIONURI")
 TEAM_PROJECT = os.getenv("SYSTEM_TEAMPROJECT")
 BUILD_ID = os.getenv("BUILD_BUILDID")
