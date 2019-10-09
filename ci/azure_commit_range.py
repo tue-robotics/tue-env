@@ -18,6 +18,9 @@ json_url = "{}/{}/_apis/build/builds/{}/changes?&$top=500&includeSourceChange=tr
 json_response = urllib.urlopen(json_url)
 json_data = json.loads(json_response.read())
 number_commits = json_data["count"]
+if number_commits == 1:
+    print("")
+    exit(0)
 newest_commit = json_data["value"][0]["id"]
 oldest_commit = json_data["value"][number_commits-1]["id"]
 commit_range = "{}...{}".format(newest_commit, oldest_commit)
