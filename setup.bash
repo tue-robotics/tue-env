@@ -58,12 +58,6 @@ then
     source "$TUE_ENV_DIR"/.env/setup/user_setup.bash
 fi
 
-if [ -f "$TUE_ENV_DIR"/.env/setup/target_setup.bash ]
-then
-    # shellcheck disable=SC1090
-    source "$TUE_ENV_DIR"/.env/setup/target_setup.bash
-fi
-
 # -----------------------------------------
 # Load all the bash functions
 # shellcheck disable=SC1090
@@ -78,3 +72,8 @@ fi
 export TUE_BIN=$TUE_DIR/bin
 export PATH=$TUE_BIN${PATH:+:${PATH}}
 
+if [ -f "$TUE_ENV_DIR"/.env/setup/target_setup.bash ]
+then
+    # shellcheck disable=SC1090
+    source "$TUE_ENV_DIR"/.env/setup/target_setup.bash
+fi
