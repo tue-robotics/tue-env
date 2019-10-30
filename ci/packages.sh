@@ -69,6 +69,10 @@ do
     PACKAGES_DICT+="'${PKG}': {'PACKAGE': '${PKG}'}"
 done
 PACKAGES_DICT+="}"
+if [[ "$PACKAGES_DICT" == "{}" ]]
+then
+	PACKAGES_DICT=""
+fi
 export PACKAGES_DICT
 
 echo -e "\e[35m\e[1m PACKAGES: \e[0m"
