@@ -44,11 +44,7 @@ fi
 
 dir_mod=$(echo "$mod_files" | xargs ls -dl 2>/dev/null |  grep "^d" | grep -v "\." | awk '{print $NF}')
 
-if [[ $mod_files == *".travis.yml"* ]] || [[ $mod_files == *"azure-pipelines.yml"* ]] || [ "$ALL" == "true" ]
-then
-    # If CI config is modified, build all pkgs (=all sub directories)
-    PACKAGES=$(printf "%s\n" ./*/ | cut -f2 -d '/')
-elif [ "$dir_mod" ]
+if [ "$dir_mod" ]
 then
     # Else only the modified pkgs
     PACKAGES=$dir_mod
