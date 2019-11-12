@@ -51,6 +51,8 @@ function tue-apt-select-mirror
         echo -e "Updating the apt mirror with the fastest one"
         sudo cp /etc/apt/sources.list /etc/apt/sources.list.bk
         sudo cp /tmp/sources.list /etc/apt/sources.list
+        echo -e "Cleaning up existing apt lists in /var/lib/apt/lists"
+        sudo rm -rf /var/lib/apt/lists/*
         echo -e "Running: sudo apt-get update -qq"
         sudo apt-get update -qq
     fi
