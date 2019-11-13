@@ -49,5 +49,5 @@ echo -e "\e[35m\e[1m Run tests on this package (catkin run_tests --this --no-dep
 docker exec tue-env bash -c 'source ~/.bashrc; cd "$TUE_SYSTEM_DIR"/src/"$PACKAGE" && catkin run_tests --this --no-status --no-deps -DCATKIN_ENABLE_TESTING=ON'
 
 # Check results of unit tests
-echo -e "\e[35m\e[1m Check results of the tests on this package (catkin_test_results build/$PACKAGE) \e[0m"
-docker exec tue-env bash -c 'source ~/.bashrc; cd "$TUE_SYSTEM_DIR" && [ ! -d build/"$PACKAGE" ] || catkin_test_results build/"$PACKAGE"'
+echo -e "\e[35m\e[1m Check results of the tests on this package (catkin_test_results build/$PACKAGE --all) \e[0m"
+docker exec tue-env bash -c 'source ~/.bashrc; cd "$TUE_SYSTEM_DIR" && [ ! -d build/"$PACKAGE" ] || catkin_test_results build/"$PACKAGE" --all'
