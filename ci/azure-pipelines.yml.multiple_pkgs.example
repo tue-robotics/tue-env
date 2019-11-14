@@ -1,6 +1,13 @@
 trigger:
   batch: true
 
+schedules:
+  - cron: "MM HH * * *" # Update cron string
+    displayName: "Nightly"
+    branches:
+      include:
+        - master # Update to default branch
+
 variables:
   CI: true
 
