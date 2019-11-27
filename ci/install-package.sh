@@ -85,9 +85,6 @@ fi
 # Run the docker image along with setting new environment variables
 docker run --detach --interactive -e CI=true -e PACKAGE="$PACKAGE" -e BRANCH="$BRANCH" -e COMMIT="$COMMIT" -e PULL_REQUEST="$PULL_REQUEST" --name tue-env "$IMAGE_NAME:$BRANCH_TAG"
 
-# Select fastest apt mirror
-docker exec tue-env bash -c 'source ~/.bashrc; tue-apt-select-mirror'
-
 # Refresh the apt cache in the docker image
 docker exec tue-env bash -c 'sudo apt-get update -qq'
 
