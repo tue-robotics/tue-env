@@ -28,6 +28,8 @@ if [ -n "$COMMIT_RANGE" ]
 then
     oldest_commit=${COMMIT_RANGE%...*}
     newest_commit=${COMMIT_RANGE#*...}
+    echo -e "\e[35m\e[1m Oldest commit: ${oldest_commit}\e[0m"
+    echo -e "\e[35m\e[1m Newest commit: ${newest_commit}\e[0m"
 
     mod_files=$(git diff-tree --name-only "$oldest_commit" "$newest_commit")
 else
