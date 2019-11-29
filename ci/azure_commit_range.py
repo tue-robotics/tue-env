@@ -32,5 +32,5 @@ if number_commits == 1:
     exit(0)
 newest_commit = json_data["value"][0]["id"]
 oldest_commit = json_data["value"][number_commits-1]["id"]
-commit_range = "{}...{}".format(newest_commit, oldest_commit)
+commit_range = "{}^...{}".format(oldest_commit, newest_commit)
 print(commit_range)
