@@ -26,10 +26,12 @@ exclude_dirs=$(echo "$exclude_dirs" | xargs ls -dl 2>/dev/null |  grep "^d" | gr
 
 if [ -n "$COMMIT_RANGE" ]
 then
-    newest_commit=${COMMIT_RANGE%...*}
-    oldest_commit=${COMMIT_RANGE#*...}
+    oldest_commit=${COMMIT_RANGE%...*}
+    newest_commit=${COMMIT_RANGE#*...}
+    echo -e "\e[35m\e[1m Oldest commit: ${oldest_commit}\e[0m"
+    echo -e "\e[35m\e[1m Newest commit: ${newest_commit}\e[0m"
 
-    mod_files=$(git diff-tree --name-only "$newest_commit" "$oldest_commit")
+    mod_files=$(git diff-tree --name-only "$oldest_commit" "$newest_commit")
 else
     # For compatibility
     if [[ $PULL_REQUEST == "false" ]]
