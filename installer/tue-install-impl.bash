@@ -765,6 +765,30 @@ function _missing_targets_check
 #                                           MAIN LOOP
 # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # #
 
+TUE_INSTALL_CURRENT_TARGET="main-loop"
+
+tue_cmd=$1
+shift
+
+# idiomatic parameter and option handling in sh
+targets=""
+while test $# -gt 0
+do
+    case "$1" in
+        --debug) DEBUG=true
+            ;;
+        --branch*)
+            # shellcheck disable=SC2001
+            BRANCH=$(echo "$1" | sed -e 's/^[^=]*=//g')
+            ;;
+        --*) echo "unknown option $1"
+            ;;
+        *) targets="$targets $1"
+            ;;
+    esac
+    shift
+done
+
 stamp=$(date_stamp)
 INSTALL_DETAILS_FILE=/tmp/tue-get-details-$stamp
 touch "$INSTALL_DETAILS_FILE"
@@ -792,28 +816,6 @@ TUE_INSTALL_WARNINGS=
 TUE_INSTALL_INFOS=
 
 # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # #
-
-tue_cmd=$1
-shift
-
-# idiomatic parameter and option handling in sh
-targets=""
-while test $# -gt 0
-do
-    case "$1" in
-        --debug) DEBUG=true
-            ;;
-        --branch*)
-            # shellcheck disable=SC2001
-            BRANCH=$(echo "$1" | sed -e 's/^[^=]*=//g')
-            ;;
-        --*) echo "unknown option $1"
-            ;;
-        *) targets="$targets $1"
-            ;;
-    esac
-    shift
-done
 
 if [[ -z "${targets// }" ]] #If only whitespace
 then
