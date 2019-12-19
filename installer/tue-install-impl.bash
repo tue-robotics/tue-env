@@ -432,8 +432,8 @@ function tue-install-add-text
         fi
     else
         tue-install-debug "tue-install-add-text: Begin tag already in $target_file, so comparing the files for changed lines"
-        local tmp_source_file="/tmp/tue-install-add-text_source_temp"
-        local tmp_target_file="/tmp/tue-install-add-text_target_temp"
+        local tmp_source_file="/tmp/tue-install-add-text_source_temp_${USER}_${TUE_INSTALL_CURRENT_TARGET}_${stamp}"
+        local tmp_target_file="/tmp/tue-install-add-text_target_temp_${USER}_${TUE_INSTALL_CURRENT_TARGET}_${stamp}"
 
         echo "$text" | tee "$tmp_source_file" > /dev/null
         sed -e "/^$end_tag/r $tmp_source_file" -e "/^$begin_tag/,/^$end_tag/d" "$target_file" | tee "$tmp_target_file" 1> /dev/null
@@ -450,6 +450,7 @@ function tue-install-add-text
         else
             tue-install-debug "tue-install-add-text: Lines have not changed, so not copying"
         fi
+        rm "$tmp_source_file" "$tmp_target_file"
     fi
 }
 
