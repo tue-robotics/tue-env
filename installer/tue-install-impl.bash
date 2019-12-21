@@ -364,6 +364,8 @@ function tue-install-cp
             else
                 mkdir --parents --verbose "$cp_target_parent_dir" && cp --verbose "$file" "$cp_target"
             fi
+        else
+            tue-install-debug "File $file and $cp_target are the same, no action needed"
         fi
 
     done
