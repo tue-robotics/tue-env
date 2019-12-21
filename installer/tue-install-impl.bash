@@ -70,6 +70,8 @@ function tue-install-debug
 
 function tue-install-target
 {
+    tue-install-debug "tue-install-target $*"
+
     local target=$1
 
     tue-install-debug "Installing $target"
@@ -172,6 +174,8 @@ function _show_update_message
 
 function tue-install-svn
 {
+    tue-install-debug "tue-install-svn $*"
+
     tue-install-system-now subversion
     local res
     if [ ! -d "$2" ]
@@ -192,7 +196,8 @@ function tue-install-svn
 
 function _try_branch
 {
-    tue-install-debug "_try_branch $1 $2"
+    tue-install-debug "_try_branch $*"
+
     if [ -z "$2" ]
     then
         tue-install-error "Invalid _try_branch: needs two arguments (repo and branch)."
@@ -212,6 +217,7 @@ function _try_branch
 function tue-install-git
 {
     tue-install-debug "tue-install-git $*"
+
     local repo=$1
     local targetdir=$2
     local version=$3
@@ -282,6 +288,8 @@ function tue-install-git
 
 function tue-install-apply-patch
 {
+    tue-install-debug "tue-install-apply-patch $*"
+
     if [ -z "$1" ]
     then
         tue-install-error "Invalid tue-install-apply-patch call: needs patch file as argument."
@@ -306,6 +314,8 @@ function tue-install-apply-patch
 
 function tue-install-cp
 {
+    tue-install-debug "tue-install-cp $*"
+
     if [ -z "$2" ]
     then
         tue-install-error "Invalid tue-install-cp call: needs two arguments (source and target). The source must be relative to the installer target directory"
@@ -374,6 +384,8 @@ function tue-install-cp
 #
 function tue-install-add-text
 {
+    tue-install-debug "tue-install-add-text $*"
+
     if [ -z "$2" ]
     then
         tue-install-error "Invalid tue-install-add-text call. Usage: tue-install-add-text SOURCE_FILE TARGET_FILE"
@@ -458,6 +470,8 @@ function tue-install-add-text
 
 function tue-install-system
 {
+    tue-install-debug "tue-install-system $*"
+
     if [ -z "$1" ]
     then
         tue-install-error "Invalid tue-install-system call: needs package as argument."
@@ -471,6 +485,7 @@ function tue-install-system
 function tue-install-system-now
 {
     tue-install-debug "tue-install-system-now $*"
+
     if [ -z "$1" ]
     then
         tue-install-error "Invalid tue-install-system-now call: needs package as argument."
@@ -522,6 +537,8 @@ function tue-install-system-now
 
 function tue-install-ppa
 {
+    tue-install-debug "tue-install-ppa $*"
+
     if [ -z "$1" ]
     then
         tue-install-error "Invalid tue-install-ppa call: needs ppa as argument."
@@ -539,6 +556,8 @@ function tue-install-ppa
 
 function tue-install-pip
 {
+    tue-install-debug "tue-install-pip $*"
+
     if [ -z "$1" ]
     then
         tue-install-error "Invalid tue-install-pip call: needs package as argument."
@@ -549,6 +568,8 @@ function tue-install-pip
 
 function tue-install-pip3
 {
+    tue-install-debug "tue-install-pip3 $*"
+
     if [ -z "$1" ]
     then
         tue-install-error "Invalid tue-install-pip3 call: needs package as argument."
@@ -561,6 +582,8 @@ function tue-install-pip3
 
 function tue-install-snap
 {
+    tue-install-debug "tue-install-snap $*"
+
     if [ -z "$1" ]
     then
         tue-install-error "Invalid tue-install-snap call: needs package as argument."
@@ -573,6 +596,8 @@ function tue-install-snap
 
 function tue-install-dpkg
 {
+    tue-install-debug "tue-install-dpkg $*"
+
     if [ -z "$1" ]
     then
         tue-install-error "Invalid tue-install-dpkg call: needs package as argument."
@@ -587,6 +612,8 @@ function tue-install-dpkg
 
 function tue-install-ros
 {
+    tue-install-debug "tue-install-ros $*"
+
     local install_type=$1
     local src=$2
     local sub_dir=$3
@@ -739,6 +766,8 @@ function generate_setup_file
 
 function _missing_targets_check
 {
+    tue-install-debug "_missing_targets_check $*"
+
     # Check if valid target received as input
     local targets="$1"
     local missing_targets=""
