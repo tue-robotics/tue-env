@@ -906,7 +906,7 @@ then
     TUE_INSTALL_CURRENT_TARGET="PIP"
 
     pip_version=$(pip2 --version | awk '{print $2}')
-    if version_gt "9" "$pip_version"
+    if version_gt "19" "$pip_version"
     then
         tue-install-debug "pip2 not yet version >=9, but $pip_version"
         sudo -H pip2 install --upgrade pip
@@ -927,7 +927,7 @@ then
     TUE_INSTALL_CURRENT_TARGET="PIP3"
 
     pip3_version=$(pip3 --version | awk '{print $2}')
-    if version_gt "9" "$pip3_version"
+    if version_gt "19" "$pip3_version"
     then
         tue-install-debug "pip3 not yet version >=9, but $pip3_version"
         sudo -H pip3 install --upgrade pip
