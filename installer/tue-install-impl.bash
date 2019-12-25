@@ -124,7 +124,7 @@ function tue-install-target
                 done
                 target_processed=true
             else
-                tue-install-error "Invalid install.yaml: $cmd"
+                tue-install-error "Invalid install.yaml: $cmds"
             fi
         fi
 
