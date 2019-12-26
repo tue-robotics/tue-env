@@ -2,8 +2,9 @@
 #       Dockerfile to build working Ubuntu image with tue-env
 # ----------------------------------------------------------------
 
-# Set the base image to Ubuntu 16.04 with CUDA 10.0 and CuDNN 7.5
-FROM nvidia/cuda:10.0-cudnn7-devel-ubuntu16.04
+# Set default base image to Ubuntu 16.04
+ARG BASE_IMAGE=ubuntu:16.04
+FROM $BASE_IMAGE
 
 # Build time arguments
 # BRANCH is the PULL_REQUEST_BRANCH if in PULL_REQUEST mode else it is the
