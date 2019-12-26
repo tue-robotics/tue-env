@@ -8,9 +8,9 @@ matrix:
   include:
     - language: cpp
       services: docker
-      script: ci/build-docker-image.sh dockerfiles/tue-env.Dockerfile
+      script: ci/build-docker-image.sh tue-env
     - language: cpp
       services: docker
-      script: ci/build-docker-image.sh dockerfiles/tue-env-cuda-10.0.Dockerfile
+      script: ci/build-docker-image.sh tue-env-cuda
     - language: shell
       script: bash -c 'shopt -s globstar; shellcheck **/*.bash **/*.sh'
