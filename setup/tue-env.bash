@@ -295,7 +295,7 @@ function _tue-env
         then
             if [ "$COMP_CWORD" -eq 2 ]
             then
-                local envs=
+                local envs
                 [ -d "$TUE_DIR/user/envs" ] && envs=$(ls "$TUE_DIR"/user/envs)
                 mapfile -t COMPREPLY < <(compgen -W "$envs" -- "$cur")
             fi
