@@ -285,12 +285,17 @@ function _tue-env
                 [ -d "$TUE_DIR"/user/envs ] && envs=$(ls "$TUE_DIR"/user/envs)
 
                 mapfile -t COMPREPLY < <(compgen -W "$envs" -- "$cur")
+
+            elif [[ $cmd == "remove" ]] && [ "$COMP_CWORD" -eq 3 ]
+            then
+                local IFS=$'\n'
+                mapfile -t COMPREPLY < <(compgen -W "'--purge'" -- "$cur")
             fi
         elif [[ $cmd == "config" ]]
         then
             if [ "$COMP_CWORD" -eq 2 ]
             then
-                local envs=
+                local envs
                 [ -d "$TUE_DIR/user/envs" ] && envs=$(ls "$TUE_DIR"/user/envs)
                 mapfile -t COMPREPLY < <(compgen -W "$envs" -- "$cur")
             fi
