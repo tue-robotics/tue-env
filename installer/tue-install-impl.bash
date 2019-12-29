@@ -799,7 +799,7 @@ function _missing_targets_check
 
 TUE_INSTALL_CURRENT_TARGET="main-loop"
 
-tue_cmd=$1
+tue_get_cmd=$1
 shift
 
 # idiomatic parameter and option handling in sh
@@ -874,7 +874,7 @@ do
     # Next line shouldn't error anymore with _missing_targets_check
     tue-install-target "$target" || tue-install-error "Installed target: '$target' doesn't exist (anymore)"
 
-    if [[ "$tue_cmd" == "install" ]]
+    if [[ "$tue_get_cmd" == "install" ]]
     then # Mark as installed
         tue-install-debug "[$target] marked as installed after a successful install"
         touch "$TUE_INSTALL_INSTALLED_DIR"/"$target"
