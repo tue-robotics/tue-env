@@ -799,8 +799,6 @@ function _missing_targets_check
 
 TUE_INSTALL_CURRENT_TARGET="main-loop"
 
-# # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # #
-
 tue_cmd=$1
 shift
 
@@ -823,8 +821,8 @@ do
     shift
 done
 
-# # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # #
 
+# Create log file
 stamp=$(date_stamp)
 INSTALL_DETAILS_FILE=/tmp/tue-get-details-$stamp
 touch "$INSTALL_DETAILS_FILE"
@@ -860,7 +858,6 @@ TUE_INSTALL_SNAPS=
 TUE_INSTALL_WARNINGS=
 TUE_INSTALL_INFOS=
 
-# # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # #
 
 if [[ -z "${targets// }" ]] #If only whitespace
 then
@@ -886,7 +883,6 @@ do
     fi
 done
 
-# # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # #
 
 # (Re-)generate setup file
 mkdir -p "$TUE_ENV_DIR"/.env/setup
@@ -900,7 +896,6 @@ do
     generate_setup_file "$t"
 done
 
-# # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # #
 
 # Display infos
 if [ -n "$TUE_INSTALL_INFOS" ]
@@ -914,12 +909,10 @@ then
     echo -e "\033[33;5;1m\nOverview of warnings:\n\n$TUE_INSTALL_WARNINGS\033[0m"
 fi
 
-# # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # #
 
 # Remove temp directories
 rm -rf "$TUE_INSTALL_STATE_DIR"
 
-# # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # #
 
 # Installing all the ppa repo's, which are collected during install
 if [ -n "$TUE_INSTALL_PPA" ]
@@ -946,7 +939,6 @@ then
     fi
 fi
 
-# # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # #
 
 # Installing all system (apt-get) targets, which are collected during the install
 if [ -n "$TUE_INSTALL_SYSTEMS" ]
@@ -957,7 +949,6 @@ then
     tue-install-system-now "$TUE_INSTALL_SYSTEMS"
 fi
 
-# # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # #
 
 # Installing all python (pip) targets, which are collected during the install
 if [ -n "$TUE_INSTALL_PIPS" ]
@@ -980,7 +971,6 @@ then
     yes | pip2 install --user $TUE_INSTALL_PIPS
 fi
 
-# # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # #
 
 # Installing all python3 (pip3) targets, which are collected during the install
 if [ -n "$TUE_INSTALL_PIP3S" ]
@@ -1003,7 +993,6 @@ then
     yes | pip3 install --user $TUE_INSTALL_PIP3S
 fi
 
-# # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # #
 
 # Installing all snap targets, which are collected during the install
 if [ -n "$TUE_INSTALL_SNAPS" ]
