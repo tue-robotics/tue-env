@@ -70,6 +70,8 @@ function tue-install-debug
 
 function tue-install-target
 {
+    tue-install-debug "tue-install-target $*"
+
     local target=$1
 
     tue-install-debug "Installing $target"
@@ -124,7 +126,7 @@ function tue-install-target
                 done
                 target_processed=true
             else
-                tue-install-error "Invalid install.yaml: $cmd"
+                tue-install-error "Invalid install.yaml: $cmds"
             fi
         fi
 
@@ -172,6 +174,8 @@ function _show_update_message
 
 function tue-install-svn
 {
+    tue-install-debug "tue-install-svn $*"
+
     tue-install-system-now subversion
     local res
     if [ ! -d "$2" ]
@@ -192,7 +196,8 @@ function tue-install-svn
 
 function _try_branch
 {
-    tue-install-debug "_try_branch $1 $2"
+    tue-install-debug "_try_branch $*"
+
     if [ -z "$2" ]
     then
         tue-install-error "Invalid _try_branch: needs two arguments (repo and branch)."
@@ -212,6 +217,7 @@ function _try_branch
 function tue-install-git
 {
     tue-install-debug "tue-install-git $*"
+
     local repo=$1
     local targetdir=$2
     local version=$3
@@ -282,6 +288,8 @@ function tue-install-git
 
 function tue-install-apply-patch
 {
+    tue-install-debug "tue-install-apply-patch $*"
+
     if [ -z "$1" ]
     then
         tue-install-error "Invalid tue-install-apply-patch call: needs patch file as argument."
@@ -306,6 +314,8 @@ function tue-install-apply-patch
 
 function tue-install-cp
 {
+    tue-install-debug "tue-install-cp $*"
+
     if [ -z "$2" ]
     then
         tue-install-error "Invalid tue-install-cp call: needs two arguments (source and target). The source must be relative to the installer target directory"
@@ -354,6 +364,8 @@ function tue-install-cp
             else
                 mkdir --parents --verbose "$cp_target_parent_dir" && cp --verbose "$file" "$cp_target"
             fi
+        else
+            tue-install-debug "File $file and $cp_target are the same, no action needed"
         fi
 
     done
@@ -374,6 +386,8 @@ function tue-install-cp
 #
 function tue-install-add-text
 {
+    tue-install-debug "tue-install-add-text $*"
+
     if [ -z "$2" ]
     then
         tue-install-error "Invalid tue-install-add-text call. Usage: tue-install-add-text SOURCE_FILE TARGET_FILE"
@@ -432,8 +446,8 @@ function tue-install-add-text
         fi
     else
         tue-install-debug "tue-install-add-text: Begin tag already in $target_file, so comparing the files for changed lines"
-        local tmp_source_file="/tmp/tue-install-add-text_source_temp"
-        local tmp_target_file="/tmp/tue-install-add-text_target_temp"
+        local tmp_source_file="/tmp/tue-install-add-text_source_temp_${USER}_${TUE_INSTALL_CURRENT_TARGET}_${stamp}"
+        local tmp_target_file="/tmp/tue-install-add-text_target_temp_${USER}_${TUE_INSTALL_CURRENT_TARGET}_${stamp}"
 
         echo "$text" | tee "$tmp_source_file" > /dev/null
         sed -e "/^$end_tag/r $tmp_source_file" -e "/^$begin_tag/,/^$end_tag/d" "$target_file" | tee "$tmp_target_file" 1> /dev/null
@@ -450,6 +464,7 @@ function tue-install-add-text
         else
             tue-install-debug "tue-install-add-text: Lines have not changed, so not copying"
         fi
+        rm "$tmp_source_file" "$tmp_target_file"
     fi
 }
 
@@ -457,6 +472,8 @@ function tue-install-add-text
 
 function tue-install-system
 {
+    tue-install-debug "tue-install-system $*"
+
     if [ -z "$1" ]
     then
         tue-install-error "Invalid tue-install-system call: needs package as argument."
@@ -470,6 +487,7 @@ function tue-install-system
 function tue-install-system-now
 {
     tue-install-debug "tue-install-system-now $*"
+
     if [ -z "$1" ]
     then
         tue-install-error "Invalid tue-install-system-now call: needs package as argument."
@@ -521,6 +539,8 @@ function tue-install-system-now
 
 function tue-install-ppa
 {
+    tue-install-debug "tue-install-ppa $*"
+
     if [ -z "$1" ]
     then
         tue-install-error "Invalid tue-install-ppa call: needs ppa as argument."
@@ -538,6 +558,8 @@ function tue-install-ppa
 
 function tue-install-pip
 {
+    tue-install-debug "tue-install-pip $*"
+
     if [ -z "$1" ]
     then
         tue-install-error "Invalid tue-install-pip call: needs package as argument."
@@ -548,6 +570,8 @@ function tue-install-pip
 
 function tue-install-pip3
 {
+    tue-install-debug "tue-install-pip3 $*"
+
     if [ -z "$1" ]
     then
         tue-install-error "Invalid tue-install-pip3 call: needs package as argument."
@@ -560,6 +584,8 @@ function tue-install-pip3
 
 function tue-install-snap
 {
+    tue-install-debug "tue-install-snap $*"
+
     if [ -z "$1" ]
     then
         tue-install-error "Invalid tue-install-snap call: needs package as argument."
@@ -572,6 +598,8 @@ function tue-install-snap
 
 function tue-install-dpkg
 {
+    tue-install-debug "tue-install-dpkg $*"
+
     if [ -z "$1" ]
     then
         tue-install-error "Invalid tue-install-dpkg call: needs package as argument."
@@ -586,6 +614,8 @@ function tue-install-dpkg
 
 function tue-install-ros
 {
+    tue-install-debug "tue-install-ros $*"
+
     local install_type=$1
     local src=$2
     local sub_dir=$3
@@ -603,12 +633,6 @@ function tue-install-ros
     if [ "$install_type" = "system" ]
     then
         tue-install-debug "tue-install-system ros-$TUE_ROS_DISTRO-$src"
-
-        # all HSR system targets from Toyota need extra apt sources
-        if [[ $src == *"hsr"* ||  "$src" == *"tmc"* ]]
-        then
-            tue-install-target hsr-setup || tue-install-error "Failed to install target 'hsr-setup'"
-        fi
 
         tue-install-system ros-"$TUE_ROS_DISTRO"-"$src"
         return 0
@@ -738,6 +762,8 @@ function generate_setup_file
 
 function _missing_targets_check
 {
+    tue-install-debug "_missing_targets_check $*"
+
     # Check if valid target received as input
     local targets="$1"
     local missing_targets=""
@@ -765,35 +791,9 @@ function _missing_targets_check
 #                                           MAIN LOOP
 # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # #
 
-stamp=$(date_stamp)
-INSTALL_DETAILS_FILE=/tmp/tue-get-details-$stamp
-touch "$INSTALL_DETAILS_FILE"
+TUE_INSTALL_CURRENT_TARGET="main-loop"
 
-# Make sure tools used by this installer are installed
-tue-install-system-now python-yaml git python-pip python3-pip
-
-# CATKIN PACKAGES
-ROS_PACKAGE_INSTALL_DIR=$TUE_SYSTEM_DIR/src
-
-TUE_INSTALL_SCRIPTS_DIR=$TUE_DIR/installer
-
-TUE_INSTALL_STATE_DIR=/tmp/tue-installer/$stamp
-mkdir -p "$TUE_INSTALL_STATE_DIR"
-
-TUE_INSTALL_GIT_PULL_Q=()
-
-TUE_INSTALL_SYSTEMS=
-TUE_INSTALL_PPA=
-TUE_INSTALL_PIPS=
-TUE_INSTALL_PIP3S=
-TUE_INSTALL_SNAPS=
-
-TUE_INSTALL_WARNINGS=
-TUE_INSTALL_INFOS=
-
-# # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # #
-
-tue_cmd=$1
+tue_get_cmd=$1
 shift
 
 # idiomatic parameter and option handling in sh
@@ -815,6 +815,44 @@ do
     shift
 done
 
+
+# Create log file
+stamp=$(date_stamp)
+INSTALL_DETAILS_FILE=/tmp/tue-get-details-$stamp
+touch "$INSTALL_DETAILS_FILE"
+
+# Make sure tools used by this installer are installed
+tue-install-system-now python-yaml git python-pip python3-pip
+
+# CATKIN PACKAGES
+ROS_PACKAGE_INSTALL_DIR=$TUE_SYSTEM_DIR/src
+
+TUE_INSTALL_SCRIPTS_DIR=$TUE_DIR/installer
+
+TUE_INSTALL_GENERAL_STATE_DIR=/tmp/tue-installer
+if [ ! -d $TUE_INSTALL_GENERAL_STATE_DIR ]
+then
+    tue-install-debug "mkdir $TUE_INSTALL_GENERAL_STATE_DIR"
+    mkdir "$TUE_INSTALL_GENERAL_STATE_DIR"
+    tue-install-debug "chmod a+rwx $TUE_INSTALL_GENERAL_STATE_DIR"
+    chmod a+rwx "$TUE_INSTALL_GENERAL_STATE_DIR"
+fi
+
+TUE_INSTALL_STATE_DIR=$TUE_INSTALL_GENERAL_STATE_DIR/$stamp
+mkdir -p "$TUE_INSTALL_STATE_DIR"
+
+TUE_INSTALL_GIT_PULL_Q=()
+
+TUE_INSTALL_SYSTEMS=
+TUE_INSTALL_PPA=
+TUE_INSTALL_PIPS=
+TUE_INSTALL_PIP3S=
+TUE_INSTALL_SNAPS=
+
+TUE_INSTALL_WARNINGS=
+TUE_INSTALL_INFOS=
+
+
 if [[ -z "${targets// }" ]] #If only whitespace
 then
     # If no targets are provided, update all installed targets
@@ -830,7 +868,7 @@ do
     # Next line shouldn't error anymore with _missing_targets_check
     tue-install-target "$target" || tue-install-error "Installed target: '$target' doesn't exist (anymore)"
 
-    if [[ "$tue_cmd" == "install" ]]
+    if [[ "$tue_get_cmd" == "install" ]]
     then # Mark as installed
         tue-install-debug "[$target] marked as installed after a successful install"
         touch "$TUE_INSTALL_INSTALLED_DIR"/"$target"
@@ -838,6 +876,7 @@ do
         tue-install-debug "[$target] succesfully updated"
     fi
 done
+
 
 # (Re-)generate setup file
 mkdir -p "$TUE_ENV_DIR"/.env/setup
@@ -851,6 +890,7 @@ do
     generate_setup_file "$t"
 done
 
+
 # Display infos
 if [ -n "$TUE_INSTALL_INFOS" ]
 then
@@ -863,8 +903,10 @@ then
     echo -e "\033[33;5;1m\nOverview of warnings:\n\n$TUE_INSTALL_WARNINGS\033[0m"
 fi
 
+
 # Remove temp directories
 rm -rf "$TUE_INSTALL_STATE_DIR"
+
 
 # Installing all the ppa repo's, which are collected during install
 if [ -n "$TUE_INSTALL_PPA" ]
@@ -891,6 +933,7 @@ then
     fi
 fi
 
+
 # Installing all system (apt-get) targets, which are collected during the install
 if [ -n "$TUE_INSTALL_SYSTEMS" ]
 then
@@ -899,6 +942,7 @@ then
     tue-install-debug "tue-install-system-now $TUE_INSTALL_SYSTEMS"
     tue-install-system-now "$TUE_INSTALL_SYSTEMS"
 fi
+
 
 # Installing all python (pip) targets, which are collected during the install
 if [ -n "$TUE_INSTALL_PIPS" ]
@@ -921,6 +965,7 @@ then
     yes | pip2 install --user $TUE_INSTALL_PIPS
 fi
 
+
 # Installing all python3 (pip3) targets, which are collected during the install
 if [ -n "$TUE_INSTALL_PIP3S" ]
 then
@@ -941,6 +986,7 @@ then
     echo -e "yes | pip3 install --user $TUE_INSTALL_PIP3S\n"
     yes | pip3 install --user $TUE_INSTALL_PIP3S
 fi
+
 
 # Installing all snap targets, which are collected during the install
 if [ -n "$TUE_INSTALL_SNAPS" ]

@@ -274,7 +274,7 @@ function tue-make
             ;;
         '')
             catkin config --init --mkdirs --workspace "$TUE_SYSTEM_DIR" -DCMAKE_BUILD_TYPE=RelWithDebInfo "$@"
-            catkin build --workspace "$TUE_SYSTEM_DIR" "$@"
+            catkin build --workspace "$TUE_SYSTEM_DIR" -DCATKIN_ENABLE_TESTING=OFF "$@"
             ;;
         *)
             echo -e "\e$build_tool is not supported (anymore), use catkin tools\e[0m"
@@ -306,7 +306,7 @@ function tue-make-dev
             ;;
         '')
             catkin config --init --mkdirs --workspace "$TUE_DEV_DIR" -DCMAKE_BUILD_TYPE=RelWithDebInfo "$@"
-            catkin build --workspace "$TUE_DEV_DIR" "$@"
+            catkin build --workspace "$TUE_DEV_DIR" -DCATKIN_ENABLE_TESTING=OFF "$@"
             ;;
         *)
             echo -e "\e$build_tool is not supported (anymore), use catkin tools\e[0m"
