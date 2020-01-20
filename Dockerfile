@@ -25,6 +25,9 @@ ENV DEBIAN_FRONTEND=noninteractive \
 # Set default shell to be bash
 SHELL ["/bin/bash", "-c"]
 
+# Set Timezone for tzdata
+RUN ln -fs /usr/share/zoneinfo/Europe/Amsterdam /etc/localtime
+
 # Install commands used in our scripts and standard present on a clean ubuntu
 # installation and setup a user with sudo priviledges
 RUN apt-get update -qq && \
@@ -62,4 +65,3 @@ RUN sed -e s/return//g -i ~/.bashrc && \
     git -C ~/.tue remote -v && \
     # Show the branches of tue-env
     git -C ~/.tue branch
-
