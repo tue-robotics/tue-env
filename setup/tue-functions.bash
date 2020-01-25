@@ -619,6 +619,7 @@ function tue-get
 
     if [[ $cmd == "install" ]]
     then
+        local error_code=0
         "$TUE_DIR"/installer/tue-install.bash "$cmd" "$@"
         error_code=$?
 
@@ -628,7 +629,7 @@ function tue-get
         return $error_code
     elif [[ $cmd == "update" ]]
     then
-        error_code=0
+        local error_code=0
         for target in "$@"
         do
             #Skip options
@@ -652,21 +653,21 @@ function tue-get
         return $error_code
     elif [[ $cmd == "remove" ]]
     then
-        error=0
+        local error_code=0
         for target in "$@"
         do
             if [ ! -f "$tue_installed_dir"/"$target" ]
             then
                 echo "[tue-get] Package '$target' is not installed."
-                error=1
+                error_code=1
             fi
         done
 
-        if [ $error -gt 0 ];
+        if [ $error_code -gt 0 ];
         then
             echo ""
             echo "[tue-get] No packages where removed."
-            return $error;
+            return $error_code;
         fi
 
         for target in "$@"
