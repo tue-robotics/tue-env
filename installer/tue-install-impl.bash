@@ -86,7 +86,7 @@ function tue-install-target
     local parent_target=$TUE_INSTALL_CURRENT_TARGET
 
     # If the target has a parent target, add target as a dependency to the parent target
-    if [ -n "$parent_target" ]
+    if [ -n "$parent_target" ] && [ "$parent_target" != "main-loop" ]
     then
         if [ "$parent_target" != "$target" ]
         then
