@@ -572,6 +572,76 @@ function _show_file
     fi
 }
 
+function _remove_recursively
+{
+    if [ -z "$1" ] || [ -n "$2" ]
+    then
+        echo "_remove_recursively requires and accepts one target"
+        echo "provided arguments: $*"
+        return 1
+    fi
+
+    local target=$1
+    local tue_dependencies_dir="$TUE_ENV_DIR"/.env/dependencies
+    local tue_dependencies_on_dir="$TUE_ENV_DIR"/.env/dependencies-on
+    local error_code=0
+
+    # If packages depend on the target to be removed, just remove the installed status.
+    if [ -f "$tue_dependencies_on_dir"/"$target" ]
+    then
+        if [[ -n $(cat "$tue_dependencies_on_dir"/"$target") ]]
+        then
+            # depend-on is not empty, so removing the installed status
+            echo "[tue-get] Other targets still depend on $target, so ignoring it"
+            return 0
+        else
+            # depend-on is empty, so remove it and continue to actual removing of the target
+            echo "[tue-get] Deleting empty depend-on file of: $target"
+            rm -f "$tue_dependencies_on_dir"/"$target"
+        fi
+    fi
+
+    # If no packages depend on this target, remove it and its dependcies.
+    if [ -f "$tue_dependencies_dir"/"$target" ]
+    then
+        # Iterate over all depencies of target, which is removed.
+        while read -r dep
+        do
+            # Target is removed, so remove yourself from depend-on files of deps
+            local dep_dep_on_file="$tue_dependencies_on_dir"/"$dep"
+            local tmp_file=/tmp/temp_depend_on
+            if [ -f "$dep_dep_on_file" ]
+            then
+                while read -r line
+                do
+                    [[ $line != "$target" ]] && echo "$line"
+                done <"$dep_dep_on_file" >"$tmp_file"
+                mv "$tmp_file" "$dep_dep_on_file"
+                echo "[tue-get] Removed '$target' from depend-on file of '$dep'"
+            else
+                echo "$target depends on $dep, so $dep_dep_on_file should exist with $target in it"
+                error_code=1
+            fi
+
+            # Actually remove the deps
+            local dep_error
+            _remove_recursively "$dep"
+            dep_error=$?
+            if [ $dep_error -gt 0 ]
+            then
+                error_code=1
+            fi
+
+        done < "$tue_dependencies_dir"/"$target"
+        rm -f "$tue_dependencies_dir"/"$target"
+    else
+        echo "[tue-get] No depencies file exist for target: $target"
+    fi
+
+    echo "[tue-get] Fully uninstalled $target and its dependencies"
+    return $error_code
+}
+
 function tue-get
 {
     if [ -z "$1" ]
@@ -663,7 +733,7 @@ function tue-get
             fi
         done
 
-        if [ $error_code -gt 0 ];
+        if [ $error_code -gt 0 ]
         then
             echo ""
             echo "[tue-get] No packages where removed."
@@ -672,7 +742,17 @@ function tue-get
 
         for target in "$@"
         do
-            rm "$tue_installed_dir"/"$target"
+            local target_error=0
+            _remove_recursively "$target"
+            target_error=$?
+            if [ $target_error -gt 0 ]
+            then
+                error_code=1
+                echo "[tue-get] Problems during uninstalling $target"
+            else
+                rm "$tue_installed_dir"/"$target"
+                echo "[tue-get] Succesfully uninstalled: $target"
+            fi
         done
 
         echo ""
