@@ -842,10 +842,6 @@ do
 done
 
 
-# (Re-)generate setup file
-_generate_setup_file
-
-
 # Display infos
 if [ -n "$TUE_INSTALL_INFOS" ]
 then
@@ -974,3 +970,5 @@ then
         done
     fi
 fi
+
+return 0
