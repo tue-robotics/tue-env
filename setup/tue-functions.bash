@@ -724,6 +724,8 @@ function tue-get
     local tue_dep_dir=$TUE_ENV_DIR/.env/dependencies
     local tue_installed_dir=$TUE_ENV_DIR/.env/installed
 
+    local error_code=0
+
     local cmd=$1
     shift
 
@@ -742,8 +744,6 @@ function tue-get
 
     if [[ $cmd == "install" || $cmd == "update" ]]
     then
-        local error_code=0
-
         if [[ $cmd == "update" ]]
         then
             for target in "$@"
@@ -773,7 +773,6 @@ function tue-get
         return $error_code
     elif [[ $cmd == "remove" ]]
     then
-        local error_code=0
         for target in "$@"
         do
             if [ ! -f "$tue_installed_dir"/"$target" ]
