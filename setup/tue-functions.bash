@@ -606,8 +606,6 @@ function __generate_setup_file
     fi
 }
 
-export -f __generate_setup_file
-
 function _generate_setup_file
 {
     mkdir -p "$TUE_ENV_DIR"/.env/setup
@@ -626,8 +624,6 @@ function _generate_setup_file
     unset TUE_SETUP_TARGETS
     unset tue_dependencies_dir
 }
-
-export -f _generate_setup_file
 
 function _remove_recursively
 {
@@ -744,37 +740,34 @@ function tue-get
        return 1
     fi
 
-    if [[ $cmd == "install" ]]
+    if [[ $cmd == "install" || $cmd == "update" ]]
     then
         local error_code=0
-        "$TUE_DIR"/installer/tue-install.bash "$cmd" "$@"
-        error_code=$?
 
-        # shellcheck disable=SC1090
-        [ $error_code -eq 0 ] && source ~/.bashrc
+        if [[ $cmd == "update" ]]
+        then
+            for target in "$@"
+            do
+                #Skip options
+                [[ $target = '--'* ]] && continue
 
-        return $error_code
-    elif [[ $cmd == "update" ]]
-    then
-        local error_code=0
-        for target in "$@"
-        do
-            #Skip options
-            [[ $target = '--'* ]] && continue
-
-            if [ ! -f "$TUE_ENV_DIR"/.env/dependencies/"$target" ]
-            then
-                echo "[tue-get] Package '$target' is not installed."
-                error_code=1
-            fi
-        done
+                if [ ! -f "$TUE_ENV_DIR"/.env/dependencies/"$target" ]
+                then
+                    echo "[tue-get] Package '$target' is not installed."
+                    error_code=1
+                fi
+            done
+        fi
 
         if [ $error_code -eq 0 ]
         then
             "$TUE_DIR"/installer/tue-install.bash "$cmd" "$@"
             error_code=$?
-            # shellcheck disable=SC1090
-            [ $error_code -eq 0 ] && source ~/.bashrc
+            if [ $error_code -eq 0 ]
+            then
+                _generate_setup_file
+                source ~/.bashrc
+            fi
         fi
 
         return $error_code
