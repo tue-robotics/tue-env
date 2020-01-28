@@ -616,7 +616,8 @@ function _generate_setup_file
     tue_dependencies_dir="$TUE_ENV_DIR"/.env/dependencies
 
     mkdir -p "$tue_dependencies_dir"
-    local installed_targets=$(ls "$tue_dependencies_dir")
+    local local installed_targets
+    installed_targets=$(ls "$tue_dependencies_dir")
     TUE_SETUP_TARGETS=" "
     for t in $installed_targets
     do
