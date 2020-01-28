@@ -766,6 +766,7 @@ function tue-get
             if [ $error_code -eq 0 ]
             then
                 _generate_setup_file
+                # shellcheck disable=SC1090
                 source ~/.bashrc
             fi
         fi
