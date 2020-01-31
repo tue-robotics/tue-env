@@ -1,5 +1,5 @@
 #! /usr/bin/env bash
-_tue-check-env-vars || return 1
+_tue-check-env-vars || exit 1
 
 # Update installer
 if [ ! -d "$TUE_DIR" ]
