@@ -922,7 +922,7 @@ function _tue-get
         then
             local IFS=$'\n'
             # shellcheck disable=SC2178
-            mapfile -t COMPREPLY < <(compgen -W "$(echo -e "$(find "$TUE_ENV_DIR"/.env/dependencies -mindepth 1 -maxdepth 1 -type f -not -name ".*" -printf "%f\n" | sed "s/.*/'& '/g")\n'--debug '\n''--no-ros-deps '\n'--branch='")" -- "$cur")
+            mapfile -t COMPREPLY < <(compgen -W "$(echo -e "$(find "$TUE_ENV_DIR"/.env/dependencies -mindepth 1 -maxdepth 1 -type f -not -name ".*" -printf "%f\n" | sed "s/.*/'& '/g")\n'--debug '\n'--no-ros-deps '\n'--branch='")" -- "$cur")
         elif [[ $cmd == "remove" ]]
         then
             local IFS=$'\n'
