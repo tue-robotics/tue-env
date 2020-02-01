@@ -616,7 +616,7 @@ function _generate_setup_file
     if [ -d "$tue_dependencies_dir" ]
     then
         local installed_targets
-        installed_targets=$(ls "$tue_dependencies_dir")
+        installed_targets=$(ls "$TUE_ENV_DIR"/.env/installed)
         local TUE_SETUP_TARGETS=" "
         for t in $installed_targets
         do
