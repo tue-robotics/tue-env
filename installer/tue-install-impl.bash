@@ -618,7 +618,6 @@ function tue-install-snap-now
     # shellcheck disable=SC2068
     for pkg in $@
     do
-        echo "$pkg"
         if [[ ! $snaps_installed == *$pkg* ]] # Check if pkg is not already installed
         then
             snaps_to_install="$snaps_to_install $pkg"
