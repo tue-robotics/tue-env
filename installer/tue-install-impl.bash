@@ -34,7 +34,7 @@ function tue-install-error
 Error while installing target '$TUE_INSTALL_CURRENT_TARGET':
 
     $1
-\033[0m" | tee --append $INSTALL_DETAILS_FILE
+\033[0m" | tee --append "$INSTALL_DETAILS_FILE"
     exit 1
 }
 
@@ -532,6 +532,7 @@ function tue-install-system-now
 
         # shellcheck disable=SC2086
         sudo apt-get install --assume-yes -qq --no-install-recommends $pkgs_to_install || sudo apt-get update  # Update and try again
+        # shellcheck disable=SC2086
         sudo apt-get install --assume-yes -qq --no-install-recommends $pkgs_to_install || exit 1
         tue-install-debug "Installed $pkgs_to_install ($?)"
     fi
@@ -610,10 +611,14 @@ function tue-install-snap-now
 
     tue-install-system-now snapd
 
+
+    local snaps_to_install snaps_installed
     snaps_to_install=""
     snaps_installed=$(snap list)
+    # shellcheck disable=SC2068
     for pkg in $@
     do
+        echo "$pkg"
         if [[ ! $snaps_installed == *$pkg* ]] # Check if pkg is not already installed
         then
             snaps_to_install="$snaps_to_install $pkg"
@@ -630,7 +635,7 @@ function tue-install-snap-now
         do
             echo -e "yes | sudo snap install --classic $pkg\n"
             tue-install-debug "yes | sudo snap install --classic $pkg"
-            yes | sudo snap install --classic $pkg
+            yes | sudo snap install --classic "$pkg"
         done
     fi
 }
@@ -922,7 +927,7 @@ then
     for ppa in ${TUE_INSTALL_PPA}
     do
         ppa=${ppa//#/ }  # Replace # back to spaces
-        if [ -z "$(grep -h "^deb.*${ppa#ppa:}" /etc/apt/sources.list.d/* 2>&1)" ] && ! grep -q "$ppa" /etc/apt/sources.list
+        if ! grep -h "^deb.*${ppa#ppa:}" /etc/apt/sources.list.d/* 1>/dev/null 2>&1 && ! grep -q "$ppa" /etc/apt/sources.list
         then
             tue-install-system-now software-properties-common
             tue-install-info "Adding ppa: $ppa"
