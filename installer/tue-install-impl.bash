@@ -901,13 +901,14 @@ then
     TUE_INSTALL_CURRENT_TARGET="PIP"
 
     pip_version=$(pip2 --version | awk '{print $2}')
-    if version_gt "20" "$pip_version"
+    desired_pip_version="20"
+    if version_gt "$desired_pip_version" "$pip_version"
     then
-        tue-install-debug "pip2 not yet version >=9, but $pip_version"
+        tue-install-debug "pip2 not yet version >=$desired_pip_version, but $pip_version"
         sudo -H pip2 install --upgrade pip
         hash -r
     else
-        tue-install-debug "Already pip2>=9\n"
+        tue-install-debug "Already pip2>=$desired_pip_version\n"
     fi
 
     # Just install the packages because checking for installation is not faster
@@ -923,13 +924,14 @@ then
     TUE_INSTALL_CURRENT_TARGET="PIP3"
 
     pip3_version=$(pip3 --version | awk '{print $2}')
-    if version_gt "20" "$pip3_version"
+    desired_pip3_version="20"
+    if version_gt "$desired_pip3_version" "$pip3_version"
     then
-        tue-install-debug "pip3 not yet version >=9, but $pip3_version"
+        tue-install-debug "pip3 not yet version >=$desired_pip3_version, but $pip3_version"
         sudo -H pip3 install --upgrade pip
         hash -r
     else
-        tue-install-debug "Already pip3>=9\n"
+        tue-install-debug "Already pip3>=$desired_pip3_version\n"
     fi
 
     # Just install the packages because checking for installation is not faster
