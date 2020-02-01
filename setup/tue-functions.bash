@@ -427,8 +427,8 @@ function _tue-repo-status
             local current_branch
             current_branch=$(git -C "$pkg_dir" rev-parse --abbrev-ref HEAD)
             case $current_branch in
-                master|develop|indigo_dev|indigo-devel|hydro-devel|jade-devel|kinetic_dev|kinetic-devel|melodic-devel|toolchain-2.9) ;;
-                *) echo -e "\033[1m$name\033[0m is on branch '$current_branch'";;
+                master|develop|indigo-devel|hydro-devel|jade-devel|kinetic-devel|toolchain-2.9) ;;
+                *) _robocup_branch_allowed "$current_branch" || echo -e "\033[1m$name\033[0m is on branch '$current_branch'";;
             esac
         fi
 
