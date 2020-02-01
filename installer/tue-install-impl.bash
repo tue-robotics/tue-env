@@ -511,7 +511,7 @@ function tue-install-system-now
     if [ -n "$pkgs_to_install" ]
     then
         echo -e "Going to run the following command:\n"
-        echo -e "sudo apt-get install --assume-yes $pkgs_to_install\n"
+        echo -e "sudo apt-get install --assume-yes -qq --no-install-recommends $pkgs_to_install\n"
 
         # Wait for apt-lock first (https://askubuntu.com/a/375031)
         i=0
@@ -531,7 +531,8 @@ function tue-install-system-now
         done
 
         # shellcheck disable=SC2086
-        sudo apt-get install --assume-yes $pkgs_to_install
+        sudo apt-get install --assume-yes -qq --no-install-recommends $pkgs_to_install || sudo apt-get update  # Update and try again
+        sudo apt-get install --assume-yes -qq --no-install-recommends $pkgs_to_install || exit 1
         tue-install-debug "Installed $pkgs_to_install ($?)"
     fi
 }
@@ -645,8 +646,8 @@ function tue-install-dpkg
     fi
     tue-install-debug "Installing dpkg $1"
     sudo dpkg --install "$1"
-    tue-install-debug "sudo apt-get --fix-broken --assume-yes install"
-    sudo apt-get --fix-broken --assume-yes install
+    tue-install-debug "sudo apt-get --fix-broken --assume-yes install --no-install-recommends"
+    sudo apt-get --fix-broken --assume-yes install --no-install-recommends
 }
 
 # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # #
@@ -677,7 +678,6 @@ function tue-install-ros
     if [ "$install_type" = "system" ]
     then
         tue-install-debug "tue-install-system ros-$TUE_ROS_DISTRO-$src"
-
         tue-install-system ros-"$TUE_ROS_DISTRO"-"$src"
         return 0
     fi
