@@ -1,5 +1,6 @@
 #!/usr/bin/python
 
+import os
 import sys
 
 def main():
@@ -32,11 +33,12 @@ def main():
     deps = doc.findall('exec_depend')
     dep_set |= set([dep.text for dep in deps])
 
-    deps = doc.findall('test_depend')
-    dep_set |= set([dep.text for dep in deps])
+    if os.getenv('ROBOT_REAL', 'false') != 'true':  # Skip test and doc dependencies on actual bots
+        deps = doc.findall('test_depend')
+        dep_set |= set([dep.text for dep in deps])
 
-    deps = doc.findall('doc_depend')
-    dep_set |= set([dep.text for dep in deps])
+        deps = doc.findall('doc_depend')
+        dep_set |= set([dep.text for dep in deps])
 
     print '\n'.join(dep_set)
 
