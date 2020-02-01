@@ -767,7 +767,6 @@ function tue-get
             if [ $error_code -eq 0 ]
             then
                 _generate_setup_file
-                echo "[tue-get] Installing '$*' finished ($?), sourcing your ~/.bashrc file for you"
                 # shellcheck disable=SC1090
                 source ~/.bashrc
             fi
