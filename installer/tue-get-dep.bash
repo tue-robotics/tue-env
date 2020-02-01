@@ -41,26 +41,35 @@ function _show_dep
         if [[ "$VERBOSE" = "true" ]]
         then
             #get package version
-            packagexml="$(rospack find "${1//ros-}" 2> /dev/null)/package.xml"
+            pkgdir="$(rospack find "${1//ros-}" 2> /dev/null)"
+            packagexml="${pkgdir}/package.xml"
             if [ -f "$packagexml" ]
             then
                 version=$(xmlstarlet sel -t -m '//version[1]' -v . -n <"$packagexml")
                 #xmlstarlet ed --inplace --update '//version[1]' -v 0.4.0 $packagexml
             else
-                version=""
+                version="-"
             fi
+
+            if ! githash=$(git -C "$pkgdir" rev-parse --short HEAD 2>&1)
+            then
+                githash=""
+            fi
+            # echo "$githash"
         fi
 
         #echo output
-        if [[ "$PLAIN" = "true" ]]
+        outstr=""
+        if [[ "$PLAIN" != "true" ]]
         then
-            echo "$1"
-        elif [[ "$VERBOSE" = "true" ]]
-        then
-            echo "$indent_str$1" "$version"
-        else
-            echo "$indent_str$1"
+            outstr="$indent_str"  # Add indentation
         fi
+        outstr="${outstr}$1"  # Add package
+        if [[ "$VERBOSE" = "true" ]]
+        then
+            outstr="${outstr} ${version} ${githash}"  # Add version
+        fi
+        echo "$outstr"
     fi
 
     while read -r t
