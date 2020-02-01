@@ -704,7 +704,13 @@ function tue-install-ros
             ln -s "$repos_dir"/"$sub_dir" "$ros_pkg_dir"
         fi
 
-        if  [ -f "$ros_pkg_dir"/package.xml ]
+        if [[ "$NO_ROS_DEPS" = "true" ]]
+        then
+            tue-install-debug "No need to parse package.xml for dependencies"
+            return 0
+        fi
+
+        if [ -f "$ros_pkg_dir"/package.xml ]
         then
             # Catkin
             deps=$("$TUE_INSTALL_SCRIPTS_DIR"/parse-ros-package-deps.py "$ros_pkg_dir"/package.xml)
@@ -772,6 +778,8 @@ while test $# -gt 0
 do
     case "$1" in
         --debug) DEBUG=true
+            ;;
+        --no-ros-deps) NO_ROS_DEPS=true
             ;;
         --branch*)
             # shellcheck disable=SC2001
