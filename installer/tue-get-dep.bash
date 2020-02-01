@@ -6,10 +6,9 @@
 
 function _show_dep
 {
-    if [[ "$1" == "ros" ]]
-    then
-        return
-    fi
+    [[ "$1" == "ros" ]] && return
+
+    [[ "$ROS_ONLY" = "true" && "$1" != ros-* ]] && return
 
     local indent=$3
     local tmp=$4
@@ -86,6 +85,7 @@ do
         --verbose      - Also show the versions of every package
         --all          - Show the dependencies of all installed targets
         --level        - Show the dependencies with a max depth(ignored, if TARGET_TO is provided)
+        --ros-only     - Only show ROS dependencies
 """
             exit 0
             ;;
@@ -98,6 +98,8 @@ do
         --level*)
             # shellcheck disable=SC2001
             LEVEL=$(echo "$1" | sed -e 's/^[^=]*=//g')
+            ;;
+        --ros-only) ROS_ONLY=true
             ;;
         --*) echo "unknown option $1"; exit 1;
             ;;
