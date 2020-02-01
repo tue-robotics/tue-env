@@ -547,13 +547,14 @@ function tue-install-ppa
     then
         tue-install-error "Invalid tue-install-ppa call: needs ppa as argument."
     fi
+    ppa="$*"
 
-    if [[ ! $1 == ppa:* ]]
+    if [[ $ppa != ppa:* && $ppa != deb* ]]
     then
-        tue-install-error "Invalid tue-install-ppa call: needs to start with ppa:"
+        tue-install-error "Invalid tue-install-ppa call: needs to start with 'ppa:' or 'deb '"
     fi
-    tue-install-debug "Adding $1 to PPA list"
-    TUE_INSTALL_PPA="$1 $TUE_INSTALL_PPA"
+    tue-install-debug "Adding $ppa to PPA list"
+    TUE_INSTALL_PPA="${TUE_INSTALL_PPA} ${ppa// /#}"  # Replace space by # to support for-loops later
 }
 
 # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # #
@@ -918,9 +919,10 @@ then
     TUE_INSTALL_CURRENT_TARGET="PPA-ADD"
 
     PPA_ADDED=""
-    for ppa in $TUE_INSTALL_PPA
+    for ppa in ${TUE_INSTALL_PPA}
     do
-        if ! grep -h "^deb.*${ppa#ppa:}" /etc/apt/sources.list.d/* 1>/dev/null 2>&1
+        ppa=${ppa//#/ }  # Replace # back to spaces
+        if [ -z "$(grep -h "^deb.*${ppa#ppa:}" /etc/apt/sources.list.d/* 2>&1)" ] && ! grep -q "$ppa" /etc/apt/sources.list
         then
             tue-install-system-now software-properties-common
             tue-install-info "Adding ppa: $ppa"
