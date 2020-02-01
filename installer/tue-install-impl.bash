@@ -318,7 +318,8 @@ function tue-install-cp
 
     if [ -z "$2" ]
     then
-        tue-install-error "Invalid tue-install-cp call: needs two arguments (source and target). The source must be relative to the installer target directory"
+        tue-install-error "Invalid tue-install-cp call: needs two arguments (source and target). The source must be relative to the installer target directory
+        Command: tue-install-cp $*"
     fi
 
     local source_files="$TUE_INSTALL_CURRENT_TARGET_DIR"/"$1"
@@ -626,6 +627,11 @@ function tue-install-ros
     [ -n "$TUE_ROS_DISTRO" ] || tue-install-error "Environment variable 'TUE_ROS_DISTRO' is not set."
 
     local ros_pkg_name=${TUE_INSTALL_CURRENT_TARGET#ros-}
+    if [[ $ros_pkg_name == *-* ]]
+    then
+        tue-install-error "A rospackage cannot contain dashes (${ros_pkg_name})"
+        return 1
+    fi
 
     # First of all, make sure ROS itself is installed
     tue-install-target ros || tue-install-error "Failed to install target 'ROS'"
@@ -833,7 +839,8 @@ do
     tue-install-target "$target" || tue-install-error "Installed target: '$target' doesn't exist (anymore)"
 
     if [[ "$tue_get_cmd" == "install" ]]
-    then # Mark as installed
+    then
+        # Mark as installed
         tue-install-debug "[$target] marked as installed after a successful install"
         touch "$TUE_INSTALL_INSTALLED_DIR"/"$target"
     else
