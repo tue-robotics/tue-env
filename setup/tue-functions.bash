@@ -715,6 +715,7 @@ function tue-get
 
     Possible options:
         --debug        - Shows more debugging information
+        --no-ros-deps  - Do not attempt to install ROS dependencies
         --branch=name  - Try to checkout this branch if exists
 
 """
@@ -911,17 +912,17 @@ function _tue-get
         then
             local IFS=$'\n'
             # shellcheck disable=SC2178
-            mapfile -t COMPREPLY < <(compgen -W "$(echo -e "$(find "$TUE_ENV_TARGETS_DIR" -mindepth 1 -maxdepth 1 -type d -not -name ".*" -printf "%f\n" | sed "s/.*/'& '/g")\n'--debug '\n'--branch='")" -- "$cur")
+            mapfile -t COMPREPLY < <(compgen -W "$(echo -e "$(find "$TUE_ENV_TARGETS_DIR" -mindepth 1 -maxdepth 1 -type d -not -name ".*" -printf "%f\n" | sed "s/.*/'& '/g")\n'--debug '\n'--no-ros-deps '\n'--branch='")" -- "$cur")
         elif [[ $cmd == "dep" ]]
         then
             local IFS=$'\n'
             # shellcheck disable=SC2178
-            mapfile -t COMPREPLY < <(compgen -W "$(echo -e "$(find "$TUE_ENV_DIR"/.env/dependencies -mindepth 1 -maxdepth 1 -type f -not -name ".*" -printf "%f\n" | sed "s/.*/'& '/g")\n'--plain '\n'--verbose '\n'--all '\n'--level='")" -- "$cur")
+            mapfile -t COMPREPLY < <(compgen -W "$(echo -e "$(find "$TUE_ENV_DIR"/.env/dependencies -mindepth 1 -maxdepth 1 -type f -not -name ".*" -printf "%f\n" | sed "s/.*/'& '/g")\n'--plain '\n'--verbose '\n'--ros-only '\n'--all '\n'--level='")" -- "$cur")
         elif [[ $cmd == "update" ]]
         then
             local IFS=$'\n'
             # shellcheck disable=SC2178
-            mapfile -t COMPREPLY < <(compgen -W "$(echo -e "$(find "$TUE_ENV_DIR"/.env/dependencies -mindepth 1 -maxdepth 1 -type f -not -name ".*" -printf "%f\n" | sed "s/.*/'& '/g")\n'--debug '\n'--branch='")" -- "$cur")
+            mapfile -t COMPREPLY < <(compgen -W "$(echo -e "$(find "$TUE_ENV_DIR"/.env/dependencies -mindepth 1 -maxdepth 1 -type f -not -name ".*" -printf "%f\n" | sed "s/.*/'& '/g")\n'--debug '\n''--no-ros-deps '\n'--branch='")" -- "$cur")
         elif [[ $cmd == "remove" ]]
         then
             local IFS=$'\n'
@@ -1470,4 +1471,3 @@ function tue-robocup-unset-apt-get-proxy
 {
     sudo rm /etc/apt/apt.conf.d/01proxy
 }
-
