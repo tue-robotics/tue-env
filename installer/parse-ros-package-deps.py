@@ -17,6 +17,9 @@ def main():
     deps = doc.findall('build_depend')
     dep_set |= set([dep.text for dep in deps])
 
+    deps = doc.findall('buildtool_depend')
+    dep_set |= set([dep.text for dep in deps])
+
     deps = doc.findall('run_depend')
     dep_set |= set([dep.text for dep in deps])
 
