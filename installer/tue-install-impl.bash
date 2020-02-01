@@ -34,7 +34,7 @@ function tue-install-error
 Error while installing target '$TUE_INSTALL_CURRENT_TARGET':
 
     $1
-\033[0m"
+\033[0m" | tee --append $INSTALL_DETAILS_FILE
     exit 1
 }
 
