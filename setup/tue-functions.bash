@@ -993,7 +993,7 @@ function tue-checkout
 
         if [ -d "$pkg_dir" ]
         then
-            if git -C "$pkg_dir" branch -a 2> /dev/null | grep -q "$branch"
+            if git -C "$pkg_dir" rev-parse --quiet --verify origin/"$branch" 1>/dev/null
             then
                 local current_branch
                 current_branch=$(git -C "$pkg_dir" rev-parse --abbrev-ref HEAD)
