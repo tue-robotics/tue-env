@@ -408,15 +408,14 @@ function _tue-repo-status
     local status=
     local vctype=
 
+    # Try git
     if git -C "$pkg_dir" rev-parse --git-dir > /dev/null 2>&1
     then
-        # Try git
-
+        # Is git
         local res
 
         if res=$(git -C "$pkg_dir" status . --short --branch 2>&1)
         then
-            # Is git
             if echo "$res" | grep -q -E 'behind|ahead' # Check if behind or ahead of branch
             then
                 status=$res
