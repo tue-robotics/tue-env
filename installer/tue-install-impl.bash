@@ -557,6 +557,33 @@ function tue-install-ppa
 
 # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # #
 
+function tue-install-ppa-now
+{
+    tue-install-debug "tue-install-ppa-now $*"
+
+    local PPA_ADDED=""
+    # shellcheck disable=SC2048
+    for ppa in $*
+    do
+        if ! grep -h "^deb.*${ppa#ppa:}" /etc/apt/sources.list.d/* 1>/dev/null 2>&1
+        then
+            tue-install-system-now software-properties-common
+            tue-install-info "Adding ppa: $ppa"
+            sudo add-apt-repository --yes "$ppa"
+            PPA_ADDED=true
+        else
+            tue-install-debug "$ppa is already added previously"
+        fi
+    done
+    if [ -n "$PPA_ADDED" ]
+    then
+        tue-install-debug "Updating apt-get"
+        sudo apt-get update -qq
+    fi
+}
+
+# # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # #
+
 function tue-install-pip
 {
     tue-install-debug "tue-install-pip $*"
@@ -865,24 +892,8 @@ if [ -n "$TUE_INSTALL_PPA" ]
 then
     TUE_INSTALL_CURRENT_TARGET="PPA-ADD"
 
-    PPA_ADDED=""
-    for ppa in $TUE_INSTALL_PPA
-    do
-        if ! grep -h "^deb.*${ppa#ppa:}" /etc/apt/sources.list.d/* 1>/dev/null 2>&1
-        then
-            tue-install-system-now software-properties-common
-            tue-install-info "Adding ppa: $ppa"
-            sudo add-apt-repository --yes "$ppa"
-            PPA_ADDED=true
-        else
-            tue-install-debug "$ppa is already added previously"
-        fi
-    done
-    if [ -n "$PPA_ADDED" ]
-    then
-        tue-install-debug "Updating apt-get"
-        sudo apt-get update -qq
-    fi
+    tue-install-debug "tue-install-ppa-now $TUE_INSTALL_PPA"
+    tue-install-ppa-now "$TUE_INSTALL_PPA"
 fi
 
 
