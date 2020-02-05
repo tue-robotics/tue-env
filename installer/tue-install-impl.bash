@@ -245,7 +245,7 @@ function tue-install-git
             current_url=$(git -C "$targetdir" config --get remote.origin.url)
 
             # If different, switch url
-            if [ ! "$current_url" == "$repo" ]
+            if [ "$current_url" != "$repo" ]
             then
                 tue-install-debug "git -C $targetdir remote set-url origin $repo"
                 git -C "$targetdir" remote set-url origin "$repo"
