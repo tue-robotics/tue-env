@@ -744,6 +744,41 @@ function tue-install-snap
 
 # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # #
 
+function tue-install-snap-now
+{
+    tue-install-debug "tue-install-snap-now $*"
+
+    tue-install-system-now snapd
+
+    local snaps_to_install snaps_installed
+    snaps_to_install=""
+    snaps_installed=$(snap list)
+    # shellcheck disable=SC2048
+    for pkg in $*
+    do
+        if [[ ! $snaps_installed == *$pkg* ]] # Check if pkg is not already installed
+        then
+            snaps_to_install="$snaps_to_install $pkg"
+            tue-install-debug "snap pkg: $pkg is not yet installed"
+        else
+            tue-install-debug "snap pkg: $pkg is already installed"
+        fi
+    done
+
+    if [ -n "$snaps_to_install" ]
+    then
+        echo -e "Going to run the following command:\n"
+        for pkg in $snaps_to_install
+        do
+            echo -e "yes | sudo snap install --classic $pkg\n"
+            tue-install-debug "yes | sudo snap install --classic $pkg"
+            yes | sudo snap install --classic "$pkg"
+        done
+    fi
+}
+
+# # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # #
+
 function tue-install-dpkg
 {
     tue-install-debug "tue-install-dpkg $*"
@@ -1052,31 +1087,8 @@ if [ -n "$TUE_INSTALL_SNAPS" ]
 then
     TUE_INSTALL_CURRENT_TARGET="SNAP"
 
-    tue-install-system-now snapd
-
-    snaps_to_install=""
-    snaps_installed=$(snap list)
-    for pkg in $TUE_INSTALL_SNAPS
-    do
-        if [[ ! $snaps_installed == *$pkg* ]] # Check if pkg is not already installed
-        then
-            snaps_to_install="$snaps_to_install $pkg"
-            tue-install-debug "snap pkg: $pkg is not yet installed"
-        else
-            tue-install-debug "snap pkg: $pkg is already installed"
-        fi
-    done
-
-    if [ -n "$snaps_to_install" ]
-    then
-        echo -e "Going to run the following command:\n"
-        for pkg in $snaps_to_install
-        do
-            echo -e "yes | sudo snap install --classic $pkg\n"
-            tue-install-debug "yes | sudo snap install --classic $pkg"
-            yes | sudo snap install --classic "$pkg"
-        done
-    fi
+    tue-install-debug "tue-install-snap-now $TUE_INSTALL_SNAPS"
+    tue-install-snap-now "$TUE_INSTALL_SNAPS"
 fi
 
 return 0
