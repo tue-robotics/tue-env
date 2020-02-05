@@ -194,16 +194,17 @@ function tue-install-svn
 
 # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # #
 
-function _try_branch
+function _try_branch_git
 {
-    tue-install-debug "_try_branch $*"
+    tue-install-debug "_try_branch_git $*"
 
     if [ -z "$2" ]
     then
-        tue-install-error "Invalid _try_branch: needs two arguments (repo and branch)."
+        tue-install-error "Invalid _try_branch_git: needs two arguments (repo and branch)."
     fi
 
     tue-install-debug "git -C $1 checkout $2"
+    local _try_branch_res
     _try_branch_res=$(git -C "$1" checkout "$2" 2>&1)
     tue-install-debug "$_try_branch_res"
     if [[ $_try_branch_res == "Already on "* || $_try_branch_res == "error: pathspec"* ]]
@@ -270,14 +271,14 @@ function tue-install-git
     tue-install-debug "Desired version: $version"
     if [ -n "$version" ];
     then
-        _try_branch "$targetdir" "$version"
+        _try_branch_git "$targetdir" "$version"
         res="$res $_try_branch_res"
     fi
 
     tue-install-debug "Desired branch: $BRANCH"
     if [ -n "$BRANCH" ]; #Cannot be combined with version-if because this one might not exist
     then
-        _try_branch "$targetdir" "$BRANCH"
+        _try_branch_git "$targetdir" "$BRANCH"
         res="$res $_try_branch_res"
     fi
 
