@@ -436,6 +436,10 @@ function _tue-repo-status
     then
         status=$(svn status "$pkg_dir")
         vctype=svn
+    elif [ -d "$pkg_dir"/.hg ]
+    then
+        status=$(hg --cwd "$pkg_dir" status .)
+        vctype=hg
     else
         vctype=unknown
     fi
