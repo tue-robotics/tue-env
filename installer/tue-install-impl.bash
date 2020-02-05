@@ -287,6 +287,97 @@ function tue-install-git
 
 # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # #
 
+function tue-install-hg
+{
+    tue-install-debug "tue-install-hg $*"
+
+    local repo=$1
+    local targetdir=$2
+    local version=$3
+
+    if [ ! -d "$targetdir" ]
+    then
+        tue-install-debug "hg clone $repo $targetdir"
+        res=$(hg clone "$repo" "$targetdir" 2>&1)
+        TUE_INSTALL_HG_PULL_Q+=$targetdir
+    else
+        # Check if we have already pulled the repo
+        if [[ $TUE_INSTALL_HG_PULL_Q =~ $targetdir ]]
+        then
+            tue-install-debug "Repo previously pulled, skipping"
+            # We have already pulled this repo, skip it
+            res=
+        else
+            # Switch url of origin to use https/ssh if different
+            # Get current remote url
+            local current_url
+            current_url=$(hg -R "$targetdir" cfg paths.default | awk '{print $2}')
+
+            # If different, switch url
+            if [ "$current_url" != "$repo" ]
+            then
+                tue-install-debug "hg -R $targetdir config paths.default $repo"
+                hg -R "$targetdir" config paths.default "$repo"
+                tue-install-info "URL has switched to $repo"
+            fi
+
+            tue-install-debug "hg -R $targetdir pull -u"
+
+            local res
+            res=$(hg -R "$targetdir" pull -u 2>&1)
+
+            tue-install-debug "$res"
+
+            TUE_INSTALL_HG_PULL_Q+=$targetdir
+
+            if [[ $res == *"no changes found" ]]
+            then
+                res=
+            fi
+        fi
+    fi
+
+    tue-install-debug "Desired version: $version"
+    if [ -n "$version" ];
+    then
+        _try_branch_hg "$targetdir" "$version"
+        res="$res $_try_branch_res"
+    fi
+
+    tue-install-debug "Desired branch: $BRANCH"
+    if [ -n "$BRANCH" ]; #Cannot be combined with version-if because this one might not exist
+    then
+        _try_branch_hg "$targetdir" "$BRANCH"
+        res="$res $_try_branch_res"
+    fi
+
+    _show_update_message "$TUE_INSTALL_CURRENT_TARGET" "$res"
+}
+
+# # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # #
+
+function _try_branch_hg
+{
+    tue-install-debug "_try_branch_hg $*"
+
+    if [ -z "$2" ]
+    then
+        tue-install-error "Invalid _try_branch_hg: needs two arguments (repo and branch)."
+    fi
+
+    tue-install-debug "hg -R $1 checkout $2"
+    local _try_branch_res
+    _try_branch_res=$(hg -R "$1" checkout "$2" 2>&1)
+    tue-install-debug "$_try_branch_res"
+    if [[ $_try_branch_res == "1 files updated, 0 files merged, 1 files removed, 0 files unresolved" || $_try_branch_res == "abort: unknown revision"* ]]
+    then
+        _try_branch_res=
+    fi
+}
+
+
+# # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # #
+
 function tue-install-apply-patch
 {
     tue-install-debug "tue-install-apply-patch $*"
@@ -850,7 +941,9 @@ function tue-install-ros
     if [ "$install_type" = "git" ]
     then
         tue-install-git "$src" "$repos_dir" "$version"
-        tue-install-debug "git clone $src"
+    elif [ "$install_type" = "hg" ]
+    then
+        tue-install-hg "$src" "$repos_dir" "$version"
     elif [ "$install_type" = "svn" ]
     then
         tue-install-svn "$src" "$repos_dir" "$version"
@@ -969,7 +1062,27 @@ INSTALL_DETAILS_FILE=/tmp/tue-get-details-$stamp
 touch "$INSTALL_DETAILS_FILE"
 
 # Make sure tools used by this installer are installed
-tue-install-system-now python-yaml git python-pip python3-pip
+tue-install-system-now git python-pip python3-pip python-yaml
+
+tue-install-pip-now-filtered mercurial
+
+# Mercurial config extension to write configs from cli
+hgcfg_folder="$HOME"/src/hgcfg
+hgcfg_pulled=/tmp/hgcfg_pulled
+if [ ! -f "$hgcfg_pulled" ]
+then
+    parent_target=TUE_INSTALL_CURRENT_TARGET
+    TUE_INSTALL_CURRENT_TARGET="hgcfg"
+    tue-install-git "https://github.com/tue-robotics/hgconfig.git" "$hgcfg_folder"
+    TUE_INSTALL_CURRENT_TARGET=$parent_target
+    if [ -z "$(hg cfg extensions.hgcfg)" ]
+    then
+        echo -e "\n[extensions]" >> ~/.hgrc
+        echo -e "hgcfg = $hgcfg_folder/hgext/hgcfg.py" >> ~/.hgrc
+        hg cfg --user config.delete_on_replace True
+    fi
+    touch $hgcfg_pulled
+fi
 
 # CATKIN PACKAGES
 ROS_PACKAGE_INSTALL_DIR=$TUE_SYSTEM_DIR/src
@@ -989,6 +1102,7 @@ TUE_INSTALL_STATE_DIR=$TUE_INSTALL_GENERAL_STATE_DIR/$stamp
 mkdir -p "$TUE_INSTALL_STATE_DIR"
 
 TUE_INSTALL_GIT_PULL_Q=()
+TUE_INSTALL_HG_PULL_Q=()
 
 TUE_INSTALL_SYSTEMS=
 TUE_INSTALL_PPA=

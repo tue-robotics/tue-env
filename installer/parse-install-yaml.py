@@ -48,7 +48,7 @@ def main():
                         return show_error("ROS distro {} or 'default' not specified in install.yaml".format(release))
 
                 source_type = source["type"]
-                if source_type == "svn" or source_type == "git":
+                if source_type == "svn" or source_type == "git" or source_type == "hg":
                     if "sub-dir" in source:
                         sub_dir = source["sub-dir"]
                     else:
