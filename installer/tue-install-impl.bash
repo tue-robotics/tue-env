@@ -610,6 +610,64 @@ function tue-install-pip3
 
 # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # #
 
+function tue-install-pip-now
+{
+    tue-install-debug "tue-install-pip-now $*"
+
+    if [ -z "$1" ]
+    then
+        tue-install-error "Invalid tue-install-pip-now call: needs package as argument."
+    fi
+
+    local pip_version desired_pip_version
+    pip_version=$(pip2 --version | awk '{print $2}')
+    desired_pip_version="20"
+    if version_gt "$desired_pip_version" "$pip_version"
+    then
+        tue-install-debug "pip2 not yet version >=$desired_pip_version, but $pip_version"
+        sudo -H pip2 install --upgrade pip
+        hash -r
+    else
+        tue-install-debug "Already pip2>=$desired_pip_version\n"
+    fi
+
+    # Just install the packages because checking for installation is not faster
+    echo -e "Going to run the following command:\n"
+    echo -e "yes | pip2 install --user $*\n"
+    # shellcheck disable=SC2048,SC2086
+    yes | pip2 install --user $*
+}
+
+function tue-install-pip3-now
+{
+    tue-install-debug "tue-install-pip3-now $*"
+
+    if [ -z "$1" ]
+    then
+        tue-install-error "Invalid tue-install-pip3-now call: needs package as argument."
+    fi
+
+    local pip3_version desired_pip3_version
+    pip3_version=$(pip3 --version | awk '{print $2}')
+    desired_pip3_version="20"
+    if version_gt "$desired_pip3_version" "$pip3_version"
+    then
+        tue-install-debug "pip3 not yet version >=$desired_pip3_version, but $pip3_version"
+        sudo -H pip3 install --upgrade pip
+        hash -r
+    else
+        tue-install-debug "Already pip3>=$desired_pip3_version\n"
+    fi
+
+    # Just install the packages because checking for installation is not faster
+    echo -e "Going to run the following command:\n"
+    echo -e "yes | pip3 install --user $*\n"
+    # shellcheck disable=SC2048,SC2086
+    yes | pip3 install --user $*
+}
+
+# # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # #
+
 function tue-install-snap
 {
     tue-install-debug "tue-install-snap $*"
@@ -912,21 +970,8 @@ if [ -n "$TUE_INSTALL_PIPS" ]
 then
     TUE_INSTALL_CURRENT_TARGET="PIP"
 
-    pip_version=$(pip2 --version | awk '{print $2}')
-    desired_pip_version="20"
-    if version_gt "$desired_pip_version" "$pip_version"
-    then
-        tue-install-debug "pip2 not yet version >=$desired_pip_version, but $pip_version"
-        sudo -H pip2 install --upgrade pip
-        hash -r
-    else
-        tue-install-debug "Already pip2>=$desired_pip_version\n"
-    fi
-
-    # Just install the packages because checking for installation is not faster
-    echo -e "Going to run the following command:\n"
-    echo -e "yes | pip2 install --user $TUE_INSTALL_PIPS\n"
-    yes | pip2 install --user $TUE_INSTALL_PIPS
+    tue-install-debug "tue-install-pip-now $TUE_INSTALL_PIPS"
+    tue-install-pip-now "$TUE_INSTALL_PIPS"
 fi
 
 
@@ -935,21 +980,8 @@ if [ -n "$TUE_INSTALL_PIP3S" ]
 then
     TUE_INSTALL_CURRENT_TARGET="PIP3"
 
-    pip3_version=$(pip3 --version | awk '{print $2}')
-    desired_pip3_version="20"
-    if version_gt "$desired_pip3_version" "$pip3_version"
-    then
-        tue-install-debug "pip3 not yet version >=$desired_pip3_version, but $pip3_version"
-        sudo -H pip3 install --upgrade pip
-        hash -r
-    else
-        tue-install-debug "Already pip3>=$desired_pip3_version\n"
-    fi
-
-    # Just install the packages because checking for installation is not faster
-    echo -e "Going to run the following command:\n"
-    echo -e "yes | pip3 install --user $TUE_INSTALL_PIP3S\n"
-    yes | pip3 install --user $TUE_INSTALL_PIP3S
+    tue-install-debug "tue-install-pip3-now $TUE_INSTALL_PIP3S"
+    tue-install-pip3-now "$TUE_INSTALL_PIP3S"
 fi
 
 
