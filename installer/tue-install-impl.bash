@@ -668,6 +668,68 @@ function tue-install-pip3-now
 
 # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # #
 
+function tue-install-pip-now-filtered
+{
+    tue-install-debug "tue-install-pip-now-filtered $*"
+
+    if [ -z "$1" ]
+    then
+        tue-install-error "Invalid tue-install-pip-now call: needs package as argument."
+    fi
+
+    local pips_to_install=""
+    local pip_list
+    pip_list=$(pip list 2>/dev/null | awk '{print $1}')
+    # shellcheck disable=SC2048
+    for pkg in $*
+    do
+        if ! echo "$pip_list" | grep -qFx "$pkg"
+        then
+            pips_to_install="$pips_to_install $pkg"
+        else
+            tue-install-debug "$pkg is already installed"
+        fi
+    done
+
+    if [ -n "$pips_to_install" ]
+    then
+        tue-install-debug "tue-install-pip-now $pips_to_install"
+        tue-install-pip-now "$pips_to_install"
+    fi
+}
+
+function tue-install-pip3-now-filtered
+{
+    tue-install-debug "tue-install-pip3-now-filtered $*"
+
+    if [ -z "$1" ]
+    then
+        tue-install-error "Invalid tue-install-pip3-now call: needs package as argument."
+    fi
+
+    local pip3s_to_install=""
+    local pip3_list
+    pip3_list=$(pip3 list 2>/dev/null | awk '{print $1}')
+    # shellcheck disable=SC2048
+    for pkg in $*
+    do
+        if ! echo "$pip3_list" | grep -qFx "$pkg"
+        then
+            pips3_to_install="$pip3s_to_install $pkg"
+        else
+            tue-install-debug "$pkg is already installed"
+        fi
+    done
+
+    if [ -n "$pips3_to_install" ]
+    then
+        tue-install-debug "tue-install-pip3-now $pip3s_to_install"
+        tue-install-pip3-now "$pips3_to_install"
+    fi
+}
+
+# # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # #
+
 function tue-install-snap
 {
     tue-install-debug "tue-install-snap $*"
