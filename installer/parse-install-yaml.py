@@ -1,10 +1,15 @@
-#! /usr/bin/env python
+#! /usr/bin/env python3
 
 from __future__ import print_function
 
 from os import environ
 import sys
 import yaml
+
+from distro import linux_distribution
+
+ros_release = environ["TUE_ROS_DISTRO"]
+ubuntu_release = linux_distribution()[2]
 
 
 def show_error(error):
@@ -33,49 +38,61 @@ def main():
 
         try:
             install_type = install_item["type"]
+
             if install_type == "empty":
                 return 0
+
             elif install_type == "ros":
                 if "source" in install_item:
                     source = install_item["source"]
                 else:
-                    release = environ["ROS_DISTRO"]
-                    if release in install_item:
-                        source = install_item[release]["source"]
+                    if ros_release in install_item:
+                        source = install_item[ros_release]["source"]
                     elif "default" in install_item:
                         source = install_item["default"]["source"]
                     else:
-                        return show_error("ROS distro {} or 'default' not specified in install.yaml".format(release))
+                        return show_error("ROS distro {} or 'default' not specified in install.yaml".
+                                          format(ros_release))
+                    # Both release and default as allowed to be None
+                    if source is None:
+                        continue
 
                 source_type = source["type"]
                 if source_type == "svn" or source_type == "git" or source_type == "hg":
                     sub_dir = source.get("sub-dir", ".")
 
-                    command = "tue-install-{0} {1} {2} {3}".format(install_type, source_type, source["url"], sub_dir)
+                    command = "tue-install-ros {0} {1} {2}".format(source_type, source["url"], sub_dir)
                     if "version" in source:
                         command += " {0}".format(source["version"])
                 elif source_type == "system":
                     command = "tue-install-ros system {0}".format(source["name"])
                 else:
                     return show_error("Unknown ROS install type: '{0}'".format(source_type))
+
             elif install_type == "svn" or install_type == "git" or install_type == "hg":
                 command = "tue-install-{0} {1} {2}".format(install_type, install_item["url"], install_item["path"])
                 if "version" in install_item:
-                        command += " {0}".format(install_item["version"])
-            elif install_type == "target":
-                command = "tue-install-target {0}".format(install_item["name"])
-            elif install_type == "system":
-                command = "tue-install-system {0}".format(install_item["name"])
-            elif install_type == "pip":
-                command = "tue-install-pip {0}".format(install_item["name"])
-            elif install_type == "pip3":
-                command = "tue-install-pip3 {0}".format(install_item["name"])
-            elif install_type == "ppa":
-                command = "tue-install-ppa {0}".format(install_item["name"])
-            elif install_type == "snap":
-                command = "tue-install-snap {0}".format(install_item["name"])
-            elif install_type == "dpkg":
-                command = "tue-install-dpkg {0}".format(install_item["name"])
+                    command += " {0}".format(install_item["version"])
+
+            elif install_type == "target" or install_type == "system" or install_type == "pip" or \
+                install_type == "pip3" or install_type == "ppa" or install_type == "snap" or \
+                    install_type == "dpkg":
+                if "name" in install_item:
+                    pkg_name = install_item["name"]
+                else:
+                    if ubuntu_release in install_item:
+                        pkg_name = install_item[ubuntu_release]["name"]
+                    elif "default" in install_item:
+                        pkg_name = install_item["default"]["name"]
+                    else:
+                        return show_error("Ubuntu distro {} or 'default' not specified in install.yaml".
+                                          format(ubuntu_release))
+                    # Both release and default as allowed to be None
+                    if pkg_name is None:
+                        continue
+
+                command = "tue-install-{0} {1}".format(install_type, pkg_name)
+
             else:
                 return show_error("Unknown install type: '{0}'".format(install_type))
 
