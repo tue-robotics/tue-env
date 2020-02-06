@@ -769,16 +769,15 @@ function tue-install-pip-now-filtered
     fi
 
     local pips_to_install=""
-    local pip_list
-    pip_list=$(pip list 2>/dev/null | awk '{print $1}')
     # shellcheck disable=SC2048
     for pkg in $*
     do
-        if ! echo "$pip_list" | grep -qFx "$pkg"
+        local installed_version
+        if ! installed_version=$(python "$TUE_INSTALL_SCRIPTS_DIR"/pip-correctly-installed.py "$pkg")
         then
             pips_to_install="$pips_to_install $pkg"
         else
-            tue-install-debug "$pkg is already installed"
+            tue-install-debug "$pkg is already installed, $installed_version"
         fi
     done
 
@@ -799,16 +798,15 @@ function tue-install-pip3-now-filtered
     fi
 
     local pip3s_to_install=""
-    local pip3_list
-    pip3_list=$(pip3 list 2>/dev/null | awk '{print $1}')
     # shellcheck disable=SC2048
     for pkg in $*
     do
-        if ! echo "$pip3_list" | grep -qFx "$pkg"
+        local installed_version
+        if ! installed_version=$(python3 "$TUE_INSTALL_SCRIPTS_DIR"/pip-correctly-installed.py "$pkg")
         then
-            pip3s_to_install="$pip3s_to_install $pkg"
+            pips_to_install="$pips_to_install $pkg"
         else
-            tue-install-debug "$pkg is already installed"
+            tue-install-debug "$pkg is already installed, $installed_version"
         fi
     done
 
@@ -1066,32 +1064,7 @@ stamp=$(date_stamp)
 INSTALL_DETAILS_FILE=/tmp/tue-get-details-$stamp
 touch "$INSTALL_DETAILS_FILE"
 
-# Make sure tools used by this installer are installed
-tue-install-system-now git python-pip python3-pip python-yaml
-
-tue-install-pip-now-filtered mercurial
-
-tue-install-pip3-now-filtered distro
-
-# Mercurial config extension to write configs from cli
-hgcfg_folder="$HOME"/src/hgcfg
-hgcfg_pulled=/tmp/hgcfg_pulled
-if [ ! -f "$hgcfg_pulled" ]
-then
-    parent_target=TUE_INSTALL_CURRENT_TARGET
-    TUE_INSTALL_CURRENT_TARGET="hgcfg"
-    tue-install-git "https://github.com/tue-robotics/hgconfig.git" "$hgcfg_folder"
-    TUE_INSTALL_CURRENT_TARGET=$parent_target
-    if [ -z "$(hg config extensions.hgcfg)" ]
-    then
-        echo -e "\n[extensions]" >> ~/.hgrc
-        echo -e "hgcfg = $hgcfg_folder/hgext/hgcfg.py" >> ~/.hgrc
-        hg cfg --user config.delete_on_replace True
-    fi
-    touch $hgcfg_pulled
-fi
-
-# CATKIN PACKAGES
+# Initialize
 ROS_PACKAGE_INSTALL_DIR=$TUE_SYSTEM_DIR/src
 
 TUE_INSTALL_SCRIPTS_DIR=$TUE_DIR/installer
@@ -1120,7 +1093,33 @@ TUE_INSTALL_SNAPS=
 TUE_INSTALL_WARNINGS=
 TUE_INSTALL_INFOS=
 
+# Make sure tools used by this installer are installed
+tue-install-system-now git python-pip python3-pip python-yaml
 
+tue-install-pip-now-filtered mercurial
+
+tue-install-pip3-now-filtered distro
+
+# Mercurial config extension to write configs from cli
+hgcfg_folder="$HOME"/src/hgcfg
+hgcfg_pulled=/tmp/hgcfg_pulled
+if [ ! -f "$hgcfg_pulled" ]
+then
+    parent_target=TUE_INSTALL_CURRENT_TARGET
+    TUE_INSTALL_CURRENT_TARGET="hgcfg"
+    tue-install-git "https://github.com/tue-robotics/hgconfig.git" "$hgcfg_folder"
+    TUE_INSTALL_CURRENT_TARGET=$parent_target
+    if [ -z "$(hg config extensions.hgcfg)" ]
+    then
+        echo -e "\n[extensions]" >> ~/.hgrc
+        echo -e "hgcfg = $hgcfg_folder/hgext/hgcfg.py" >> ~/.hgrc
+        hg cfg --user config.delete_on_replace True
+    fi
+    touch $hgcfg_pulled
+fi
+
+
+# Handling of targets
 if [[ -z "${targets// }" ]] #If only whitespace
 then
     # If no targets are provided, update all installed targets
