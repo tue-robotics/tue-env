@@ -1071,6 +1071,8 @@ tue-install-system-now git python-pip python3-pip python-yaml
 
 tue-install-pip-now-filtered mercurial
 
+tue-install-pip3-now-filtered distro
+
 # Mercurial config extension to write configs from cli
 hgcfg_folder="$HOME"/src/hgcfg
 hgcfg_pulled=/tmp/hgcfg_pulled
