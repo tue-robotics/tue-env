@@ -95,17 +95,29 @@ Taking the above into account, the following combinations for `install.yaml` are
     source:
       type: system
       name: <Package name>
-  default:
+  indigo:
     source:
       type: git
       url: <Repository URL>
+  default:
+    source: null
 ```
+Both ROS distro specific as default can be 'null'. Prevered usage is default for current and feature distributions and exceptions for old distributions.
 
 #### Target / System / PIP / PIP3 / PPA / Snap / DPKG / Empty
 ```yaml
 - type: [target/system/pip/pip3/ppa/snap/dpkg/empty]
   name: <Name of the candidate>
 ```
+Depending on Ubuntu distribution:
+```yaml
+- type: [target/system/pip/pip3/ppa/snap/dpkg/empty]
+  xenial:
+    name: [null/<Name of the candidate>]
+  default:
+    name: [null/<Name of the candidate>]
+```
+Both Ubuntu distribution specific as default can be 'null'. Prevered usage is default for current and feature distributions and exceptions for old distributions.
 
 #### GIT / HG / SVN
 ```yaml
