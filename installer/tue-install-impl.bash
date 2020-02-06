@@ -1094,7 +1094,7 @@ TUE_INSTALL_WARNINGS=
 TUE_INSTALL_INFOS=
 
 # Make sure tools used by this installer are installed
-tue-install-system-now git python-pip python3-pip python-yaml
+tue-install-system-now git python-pip python3-pip python3-yaml
 
 tue-install-pip-now-filtered mercurial
 
