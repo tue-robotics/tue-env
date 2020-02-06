@@ -1075,7 +1075,7 @@ then
     TUE_INSTALL_CURRENT_TARGET="hgcfg"
     tue-install-git "https://github.com/tue-robotics/hgconfig.git" "$hgcfg_folder"
     TUE_INSTALL_CURRENT_TARGET=$parent_target
-    if [ -z "$(hg cfg extensions.hgcfg)" ]
+    if [ -z "$(hg config extensions.hgcfg)" ]
     then
         echo -e "\n[extensions]" >> ~/.hgrc
         echo -e "hgcfg = $hgcfg_folder/hgext/hgcfg.py" >> ~/.hgrc
