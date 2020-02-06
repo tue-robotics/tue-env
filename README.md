@@ -76,7 +76,7 @@ Taking the above into account, the following combinations for `install.yaml` are
 ```yaml
 - type: ros
   source:
-    type: git [svn]
+    type: [git/hg/svn]
     url: <Repository URL>
     sub-dir: <Sub directory of the repository> (Optional field)
     version: <Version to be installed> (Optional field)
@@ -107,23 +107,37 @@ Taking the above into account, the following combinations for `install.yaml` are
   name: <Name of the candidate>
 ```
 
+#### GIT / HG / SVN
+```yaml
+- type: [git/hg/svn]
+  url: <url>
+  path: <path/where/to/clone>
+  version: [branch/commit/tag] (Optional field)
+```
+
 ### `tue-install` functions for `install.bash`
 The following functions provided with `tue-env` must be preferred over any
 generally used methods of installing packages:
 
-| Function Name            | Description                                                                          |
-|--------------------------|--------------------------------------------------------------------------------------|
-| `tue-install-add-text`   | To add/replace text in a file with `sudo` taken into account                         |
-| `tue-install-cp`         | Analogous to `cp` but takes `sudo` into account and the source should be relative to target |
-| `tue-install-dpkg`       | To install a debian dpkg file                                                        |
-| `tue-install-git`        | To install a git repository                                                          |
-| `tue-install-pip`        | To install a python pip package                                                      |
-| `tue-install-pip3`       | To install a python3 pip package                                                     |
-| `tue-install-ppa`        | To add PPA with `apt-add-repository`                                                 |
-| `tue-install-snap`       | To install a snap                                                                    |
-| `tue-install-svn`        | To install a svn repository                                                          |
-| `tue-install-system`     | To add `deb` package to a list of packages to be installed at the end with `apt-get` |
-| `tue-install-system-now` | To install `deb` packages with `apt-get` right away                                  |
+| Function Name                   | Description                                                                                 |
+|---------------------------------|---------------------------------------------------------------------------------------------|
+| `tue-install-add-text`          | To add/replace text in a file with `sudo` taken into account                                |
+| `tue-install-cp`                | Analogous to `cp` but takes `sudo` into account and the source should be relative to target |
+| `tue-install-dpkg`              | To install a debian dpkg file                                                               |
+| `tue-install-git`               | To install a git repository                                                                 |
+| `tue-install-pip`               | To add a python pip package to a list to be installed at the end                            |
+| `tue-install-pip3`              | To add a python pip3 package to a list to be installed at the end                           |
+| `tue-install-pip-now`           | To install python pip package                                                               |
+| `tue-install-pip3-now`          | To install python pip3 package                                                              |
+| `tue-install-pip-now-filtered`  | To install python pip package, but ignores it if already installed                          |
+| `tue-install-pip3-now-filtered` | To install python pip3 package, but ignores it if already installed                         |
+| `tue-install-ppa`               | To add a PPA to a list to be add with `apt-add-repository` at the end, before apt-get       |
+| `tue-install-ppa-now`           | To add a PPA with `apt-add-repository`                                                      |
+| `tue-install-snap`              | To add a snap package to a list to be installed at the end                                  |
+| `tue-install-snap-now`          | To install a snap                                                                           |
+| `tue-install-svn`               | To install a svn repository                                                                 |
+| `tue-install-system`            | To add `deb` package to a list of packages to be installed at the end with `apt-get`        |
+| `tue-install-system-now`        | To install `deb` packages with `apt-get` right away, but ignores it if already installed    |
 
 The input arguments for each of the above mentioned commands can be found by
 simply executing the command in a bash session (provided tue-env is correctly
@@ -131,4 +145,4 @@ installed).
 
 A general remark about the order of preference of package repositories:
 
-system > ppa > git > svn > pip = pip3 > snap > dpkg
+system > ppa > pip = pip3 > snap > git > hg > svn > dpkg
