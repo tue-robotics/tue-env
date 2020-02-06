@@ -773,7 +773,7 @@ function _tue-install-pip-now-filtered
     for pkg in $*
     do
         local installed_version
-        if ! installed_version=$(python${pv} "$TUE_INSTALL_SCRIPTS_DIR"/pip-correctly-installed.py "$pkg")
+        if ! installed_version=$(python"${pv}" "$TUE_INSTALL_SCRIPTS_DIR"/pip-correctly-installed.py "$pkg")
         then
             pips_to_install="$pips_to_install $pkg"
         else
@@ -1184,7 +1184,7 @@ if [ -n "$TUE_INSTALL_PIP3S" ]
 then
     TUE_INSTALL_CURRENT_TARGET="PIP3"
 
-    tue-install-debug "calling: tue-install-pip3-now $TUE_INSTALL_PIP3S2"
+    tue-install-debug "calling: tue-install-pip3-now $TUE_INSTALL_PIP3S"
     tue-install-pip3-now "$TUE_INSTALL_PIP3S"
 fi
 
