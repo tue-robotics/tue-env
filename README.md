@@ -104,14 +104,14 @@ Taking the above into account, the following combinations for `install.yaml` are
 ```
 Both ROS distro specific as default can be 'null'. Prevered usage is default for current and feature distributions and exceptions for old distributions.
 
-#### Target / System / PIP / PIP3 / PPA / Snap / DPKG / Empty
+#### Target / System / PIP / PIP2 / PIP3 / PPA / Snap / DPKG / Empty
 ```yaml
-- type: [target/system/pip/pip3/ppa/snap/dpkg/empty]
+- type: [target/system/pip/pip2/pip3/ppa/snap/dpkg/empty]
   name: <Name of the candidate>
 ```
 Depending on Ubuntu distribution:
 ```yaml
-- type: [target/system/pip/pip3/ppa/snap/dpkg/empty]
+- type: [target/system/pip/pip2/pip3/ppa/snap/dpkg/empty]
   xenial:
     name: [null/<Name of the candidate>]
   default:
@@ -137,11 +137,14 @@ generally used methods of installing packages:
 | `tue-install-cp`                | Analogous to `cp` but takes `sudo` into account and the source should be relative to target |
 | `tue-install-dpkg`              | To install a debian dpkg file                                                               |
 | `tue-install-git`               | To install a git repository                                                                 |
-| `tue-install-pip`               | To add a python pip package to a list to be installed at the end                            |
+| `tue-install-pip`               | To add a python pip2 package to a list to be installed at the end (deprecated)              |
+| `tue-install-pip2`              | To add a python pip2 package to a list to be installed at the end                           |
 | `tue-install-pip3`              | To add a python pip3 package to a list to be installed at the end                           |
-| `tue-install-pip-now`           | To install python pip package                                                               |
+| `tue-install-pip-now`           | To install python pip2 package (deprecated)                                                 |
+| `tue-install-pip2-now`          | To install python pip2 package                                                              |
 | `tue-install-pip3-now`          | To install python pip3 package                                                              |
-| `tue-install-pip-now-filtered`  | To install python pip package, but ignores it if already installed                          |
+| `tue-install-pip-now-filtered`  | To install python pip2 package, but ignores it if already installed (deprecated)            |
+| `tue-install-pip2-now-filtered` | To install python pip2 package, but ignores it if already installed                         |
 | `tue-install-pip3-now-filtered` | To install python pip3 package, but ignores it if already installed                         |
 | `tue-install-ppa`               | To add a PPA to a list to be add with `apt-add-repository` at the end, before apt-get       |
 | `tue-install-ppa-now`           | To add a PPA with `apt-add-repository`                                                      |
@@ -157,4 +160,4 @@ installed).
 
 A general remark about the order of preference of package repositories:
 
-system > ppa > pip = pip3 > snap > git > hg > svn > dpkg
+system > ppa > pip2 = pip3 > snap > git > hg > svn > dpkg (> pip, deprecated)
