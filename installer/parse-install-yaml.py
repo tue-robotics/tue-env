@@ -49,10 +49,7 @@ def main():
 
                 source_type = source["type"]
                 if source_type == "svn" or source_type == "git" or source_type == "hg":
-                    if "sub-dir" in source:
-                        sub_dir = source["sub-dir"]
-                    else:
-                        sub_dir = "."
+                    sub_dir = source.get("sub-dir", ".")
 
                     command = "tue-install-{0} {1} {2} {3}".format(install_type, source_type, source["url"], sub_dir)
                     if "version" in source:
