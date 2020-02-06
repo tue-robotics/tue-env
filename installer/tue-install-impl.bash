@@ -765,7 +765,7 @@ function tue-install-pip-now-filtered
 
     if [ -z "$1" ]
     then
-        tue-install-error "Invalid tue-install-pip-now call: needs package as argument."
+        tue-install-error "Invalid tue-install-pip-now-filtered call: needs package as argument."
     fi
 
     local pips_to_install=""
@@ -784,7 +784,7 @@ function tue-install-pip-now-filtered
 
     if [ -n "$pips_to_install" ]
     then
-        tue-install-debug "tue-install-pip-now $pips_to_install"
+        tue-install-debug "calling: tue-install-pip-now $pips_to_install"
         tue-install-pip-now "$pips_to_install"
     fi
 }
@@ -795,7 +795,7 @@ function tue-install-pip3-now-filtered
 
     if [ -z "$1" ]
     then
-        tue-install-error "Invalid tue-install-pip3-now call: needs package as argument."
+        tue-install-error "Invalid tue-install-pip3-now-filtered call: needs package as argument."
     fi
 
     local pip3s_to_install=""
@@ -806,16 +806,16 @@ function tue-install-pip3-now-filtered
     do
         if ! echo "$pip3_list" | grep -qFx "$pkg"
         then
-            pips3_to_install="$pip3s_to_install $pkg"
+            pip3s_to_install="$pip3s_to_install $pkg"
         else
             tue-install-debug "$pkg is already installed"
         fi
     done
 
-    if [ -n "$pips3_to_install" ]
+    if [ -n "$pip3s_to_install" ]
     then
-        tue-install-debug "tue-install-pip3-now $pip3s_to_install"
-        tue-install-pip3-now "$pips3_to_install"
+        tue-install-debug "calling: tue-install-pip3-now $pip3s_to_install"
+        tue-install-pip3-now "$pip3s_to_install"
     fi
 }
 
@@ -838,6 +838,11 @@ function tue-install-snap
 function tue-install-snap-now
 {
     tue-install-debug "tue-install-snap-now $*"
+
+    if [ -z "$1" ]
+    then
+        tue-install-error "Invalid tue-install-snap-now call: needs package as argument."
+    fi
 
     tue-install-system-now snapd
 
@@ -1161,7 +1166,7 @@ if [ -n "$TUE_INSTALL_PPA" ]
 then
     TUE_INSTALL_CURRENT_TARGET="PPA-ADD"
 
-    tue-install-debug "tue-install-ppa-now $TUE_INSTALL_PPA"
+    tue-install-debug "calling: tue-install-ppa-now $TUE_INSTALL_PPA"
     tue-install-ppa-now "$TUE_INSTALL_PPA"
 fi
 
@@ -1171,7 +1176,7 @@ if [ -n "$TUE_INSTALL_SYSTEMS" ]
 then
     TUE_INSTALL_CURRENT_TARGET="APT-GET"
 
-    tue-install-debug "tue-install-system-now $TUE_INSTALL_SYSTEMS"
+    tue-install-debug "calling: tue-install-system-now $TUE_INSTALL_SYSTEMS"
     tue-install-system-now "$TUE_INSTALL_SYSTEMS"
 fi
 
@@ -1181,7 +1186,7 @@ if [ -n "$TUE_INSTALL_PIPS" ]
 then
     TUE_INSTALL_CURRENT_TARGET="PIP"
 
-    tue-install-debug "tue-install-pip-now $TUE_INSTALL_PIPS"
+    tue-install-debug "calling: tue-install-pip-now $TUE_INSTALL_PIPS"
     tue-install-pip-now "$TUE_INSTALL_PIPS"
 fi
 
@@ -1191,7 +1196,7 @@ if [ -n "$TUE_INSTALL_PIP3S" ]
 then
     TUE_INSTALL_CURRENT_TARGET="PIP3"
 
-    tue-install-debug "tue-install-pip3-now $TUE_INSTALL_PIP3S"
+    tue-install-debug "calling: tue-install-pip3-now $TUE_INSTALL_PIP3S"
     tue-install-pip3-now "$TUE_INSTALL_PIP3S"
 fi
 
@@ -1201,7 +1206,7 @@ if [ -n "$TUE_INSTALL_SNAPS" ]
 then
     TUE_INSTALL_CURRENT_TARGET="SNAP"
 
-    tue-install-debug "tue-install-snap-now $TUE_INSTALL_SNAPS"
+    tue-install-debug "calling: tue-install-snap-now $TUE_INSTALL_SNAPS"
     tue-install-snap-now "$TUE_INSTALL_SNAPS"
 fi
 
