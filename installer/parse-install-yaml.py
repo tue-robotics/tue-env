@@ -75,8 +75,8 @@ def main():
                     command += " {0}".format(install_item["version"])
 
             elif install_type == "target" or install_type == "system" or install_type == "pip" or \
-                install_type == "pip3" or install_type == "ppa" or install_type == "snap" or \
-                    install_type == "dpkg":
+                    install_type == "pip2" or install_type == "pip3" or install_type == "ppa" or \
+                    install_type == "snap" or install_type == "dpkg":
                 if "name" in install_item:
                     pkg_name = install_item["name"]
                 else:
