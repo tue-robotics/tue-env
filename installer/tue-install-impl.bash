@@ -773,7 +773,7 @@ function tue-install-pip-now-filtered
     for pkg in $*
     do
         local installed_version
-        if ! installed_version=$(python "$TUE_INSTALL_SCRIPTS_DIR"/pip-correctly-installed.py "$pkg")
+        if ! installed_version=$(python2 "$TUE_INSTALL_SCRIPTS_DIR"/pip-correctly-installed.py "$pkg")
         then
             pips_to_install="$pips_to_install $pkg"
         else
