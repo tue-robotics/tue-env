@@ -58,6 +58,10 @@ def main():
                     command = "tue-install-ros system {0}".format(source["name"])
                 else:
                     return show_error("Unknown ROS install type: '{0}'".format(source_type))
+            elif install_type == "svn" or install_type == "git" or install_type == "hg":
+                command = "tue-install-{0} {1} {2}".format(install_type, install_item["url"], install_item["path"])
+                if "version" in install_item:
+                        command += " {0}".format(install_item["version"])
             elif install_type == "target":
                 command = "tue-install-target {0}".format(install_item["name"])
             elif install_type == "system":
