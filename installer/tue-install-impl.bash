@@ -1081,11 +1081,11 @@ TUE_INSTALL_WARNINGS=
 TUE_INSTALL_INFOS=
 
 # Make sure tools used by this installer are installed
-tue-install-system-now git python-pip python3-pip python3-yaml
+tue-install-system-now git python-pip python3-pip
 
 tue-install-pip2-now-filtered mercurial
 
-tue-install-pip3-now-filtered distro
+tue-install-pip3-now-filtered distro PyYAML
 
 # Mercurial config extension to write configs from cli
 hgcfg_folder="$HOME"/src/hgcfg
