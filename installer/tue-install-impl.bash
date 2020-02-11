@@ -725,7 +725,7 @@ function _tue-install-pip-now
     for pkg in $*
     do
         local installed_version
-        if ! installed_version=$(python"${pv}" "$TUE_INSTALL_SCRIPTS_DIR"/pip-correctly-installed.py "$pkg")
+        if [[ "$pkg" == "git+"* ]] || ! installed_version=$(python"${pv}" "$TUE_INSTALL_SCRIPTS_DIR"/pip-correctly-installed.py "$pkg")
         then
             pips_to_install="$pips_to_install $pkg"
         else
