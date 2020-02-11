@@ -1050,9 +1050,9 @@ TUE_INSTALL_INFOS=
 # Make sure tools used by this installer are installed
 tue-install-system-now git python-pip python3-pip
 
-tue-install-pip2-now-filtered mercurial
+tue-install-pip2-now mercurial
 
-tue-install-pip3-now-filtered distro PyYAML
+tue-install-pip3-now distro PyYAML
 
 # Mercurial config extension to write configs from cli
 hgcfg_folder="$HOME"/src/hgcfg
