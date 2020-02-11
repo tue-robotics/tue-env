@@ -749,9 +749,9 @@ function _tue-install-pip-now
 
         # Just install the packages because checking for installation is not faster
         echo -e "Going to run the following command:\n"
-        echo -e "yes | pip${pv} install --user $*\n"
+        echo -e "yes | pip${pv} install --user $pips_to_install\n"
         # shellcheck disable=SC2048,SC2086
-        yes | pip"${pv}" install --user $*
+        yes | pip"${pv}" install --user $pips_to_install
     fi
 }
 
