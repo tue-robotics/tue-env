@@ -720,23 +720,39 @@ function _tue-install-pip-now
         tue-install-error "Invalid tue-install-pip${pv}-now call: needs package as argument."
     fi
 
-    local pip_version desired_pip_version
-    pip_version=$(pip"${pv}" --version | awk '{print $2}')
-    desired_pip_version="20"
-    if version_gt "$desired_pip_version" "$pip_version"
-    then
-        tue-install-debug "pip${pv} not yet version >=$desired_pip_version, but $pip_version"
-        sudo -H pip"${pv}" install --upgrade pip
-        hash -r
-    else
-        tue-install-debug "Already pip${pv}>=$desired_pip_version\n"
-    fi
+    local pips_to_install=""
+    # shellcheck disable=SC2048
+    for pkg in $*
+    do
+        local installed_version
+        if ! installed_version=$(python"${pv}" "$TUE_INSTALL_SCRIPTS_DIR"/pip-correctly-installed.py "$pkg")
+        then
+            pips_to_install="$pips_to_install $pkg"
+        else
+            tue-install-debug "$pkg is already installed, $installed_version"
+        fi
+    done
 
-    # Just install the packages because checking for installation is not faster
-    echo -e "Going to run the following command:\n"
-    echo -e "yes | pip${pv} install --user $*\n"
-    # shellcheck disable=SC2048,SC2086
-    yes | pip"${pv}" install --user $*
+    if [ -n "$pips_to_install" ]
+    then
+        local pip_version desired_pip_version
+        pip_version=$(pip"${pv}" --version | awk '{print $2}')
+        desired_pip_version="20"
+        if version_gt "$desired_pip_version" "$pip_version"
+        then
+            tue-install-debug "pip${pv} not yet version >=$desired_pip_version, but $pip_version"
+            sudo -H pip"${pv}" install --upgrade pip
+            hash -r
+        else
+            tue-install-debug "Already pip${pv}>=$desired_pip_version\n"
+        fi
+
+        # Just install the packages because checking for installation is not faster
+        echo -e "Going to run the following command:\n"
+        echo -e "yes | pip${pv} install --user $*\n"
+        # shellcheck disable=SC2048,SC2086
+        yes | pip"${pv}" install --user $*
+    fi
 }
 
 # Needed for backward compatibility
@@ -753,55 +769,6 @@ function tue-install-pip2-now
 function tue-install-pip3-now
 {
     _tue-install-pip-now "3" "$@"
-}
-
-# # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # #
-
-function _tue-install-pip-now-filtered
-{
-    local pv=$1
-    shift
-    tue-install-debug "tue-install-pip${pv}-now-filtered $*"
-
-    if [ -z "$1" ]
-    then
-        tue-install-error "Invalid tue-install-pip${pv}-now-filtered call: needs package as argument."
-    fi
-
-    local pips_to_install=""
-    # shellcheck disable=SC2048
-    for pkg in $*
-    do
-        local installed_version
-        if ! installed_version=$(python"${pv}" "$TUE_INSTALL_SCRIPTS_DIR"/pip-correctly-installed.py "$pkg")
-        then
-            pips_to_install="$pips_to_install $pkg"
-        else
-            tue-install-debug "$pkg is already installed, $installed_version"
-        fi
-    done
-
-    if [ -n "$pips_to_install" ]
-    then
-        tue-install-debug "calling: tue-install-pip${pv}-now $pips_to_install"
-        tue-install-pip"${pv}"-now "$pips_to_install"
-    fi
-}
-
-# Needed for backward compatibility
-function tue-install-pip-now-filtered
-{
-    _tue-install-pip-now-filtered "2" "$@"
-}
-
-function tue-install-pip2-now-filtered
-{
-    _tue-install-pip-now-filtered "2" "$@"
-}
-
-function tue-install-pip3-now-filtered
-{
-    _tue-install-pip-now-filtered "3" "$@"
 }
 
 # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # #
