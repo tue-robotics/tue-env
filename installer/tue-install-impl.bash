@@ -295,6 +295,24 @@ function tue-install-hg
     local targetdir=$2
     local version=$3
 
+    # Mercurial config extension to write configs from cli
+    local hgcfg_folder="$HOME"/src/hgcfg
+    local hgcfg_pulled=/tmp/hgcfg_pulled
+    if [ ! -f "$hgcfg_pulled" ]
+    then
+        parent_target=TUE_INSTALL_CURRENT_TARGET
+        TUE_INSTALL_CURRENT_TARGET="hgcfg"
+        tue-install-git "https://github.com/tue-robotics/hgconfig.git" "$hgcfg_folder"
+        TUE_INSTALL_CURRENT_TARGET=$parent_target
+        if [ -z "$(hg config extensions.hgcfg)" ]
+        then
+            echo -e "\n[extensions]" >> ~/.hgrc
+            echo -e "hgcfg = $hgcfg_folder/hgext/hgcfg.py" >> ~/.hgrc
+            hg cfg --user config.delete_on_replace True
+        fi
+        touch $hgcfg_pulled
+    fi
+
     if [ ! -d "$targetdir" ]
     then
         tue-install-debug "hg clone $repo $targetdir"
@@ -1053,24 +1071,6 @@ tue-install-system-now git python-pip python3-pip
 tue-install-pip2-now mercurial
 
 tue-install-pip3-now distro PyYAML
-
-# Mercurial config extension to write configs from cli
-hgcfg_folder="$HOME"/src/hgcfg
-hgcfg_pulled=/tmp/hgcfg_pulled
-if [ ! -f "$hgcfg_pulled" ]
-then
-    parent_target=TUE_INSTALL_CURRENT_TARGET
-    TUE_INSTALL_CURRENT_TARGET="hgcfg"
-    tue-install-git "https://github.com/tue-robotics/hgconfig.git" "$hgcfg_folder"
-    TUE_INSTALL_CURRENT_TARGET=$parent_target
-    if [ -z "$(hg config extensions.hgcfg)" ]
-    then
-        echo -e "\n[extensions]" >> ~/.hgrc
-        echo -e "hgcfg = $hgcfg_folder/hgext/hgcfg.py" >> ~/.hgrc
-        hg cfg --user config.delete_on_replace True
-    fi
-    touch $hgcfg_pulled
-fi
 
 
 # Handling of targets
