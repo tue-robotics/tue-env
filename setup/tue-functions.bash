@@ -408,15 +408,14 @@ function _tue-repo-status
     local status=
     local vctype=
 
+    # Try git
     if git -C "$pkg_dir" rev-parse --git-dir > /dev/null 2>&1
     then
-        # Try git
-
+        # Is git
         local res
 
         if res=$(git -C "$pkg_dir" status . --short --branch 2>&1)
         then
-            # Is git
             if echo "$res" | grep -q -E 'behind|ahead' # Check if behind or ahead of branch
             then
                 status=$res
@@ -437,6 +436,10 @@ function _tue-repo-status
     then
         status=$(svn status "$pkg_dir")
         vctype=svn
+    elif [ -d "$pkg_dir"/.hg ]
+    then
+        status=$(hg --cwd "$pkg_dir" status .)
+        vctype=hg
     else
         vctype=unknown
     fi
@@ -790,6 +793,14 @@ function tue-get
             return $error_code;
         fi
 
+        if [ -f /tmp/tue_get_remove_lock ]
+        then
+            echo "[tue-get] Can't execute 'remove' as an other run is still busy"
+            echo "[tue-get] If this keeps happening, excute: rm /tmp/tue_get_remove_lock"
+            return 1
+        fi
+
+        touch /tmp/tue_get_remove_lock
         for target in "$@"
         do
             local target_error=0
@@ -810,6 +821,8 @@ function tue-get
             echo "[tue-get] Re-generating the target setup file"
             _generate_setup_file
         fi
+
+        rm /tmp/tue_get_remove_lock
 
         echo ""
         if [ -n "$2" ]
