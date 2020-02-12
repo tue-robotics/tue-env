@@ -8,7 +8,7 @@ from pip._internal.req.constructors import install_req_from_req_string
 
 def main():
     if len(sys.argv) != 2:
-        print("Usage: pip-correct-installed.py requirement")
+        print("Usage: check-pip-pkg-installed-version.py requirement")
         return 1
 
     req = install_req_from_req_string(sys.argv[1])
