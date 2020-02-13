@@ -15,7 +15,7 @@ jobs:
   - job: package_selection
     displayName: 'Package selection'
     pool:
-      vmImage: 'ubuntu latest'  
+      vmImage: 'ubuntu latest'
     steps:
       - task: Bash@3
         displayName: 'Determine packages to be build'
@@ -29,7 +29,7 @@ jobs:
             ALL=$([ $BUILD_REASON == "Schedule" ] && echo "true")
             source ./packages.sh --pullrequest=${SYSTEM_PULLREQUEST_PULLREQUESTNUMBER:-false} --branch=$SYSTEM_PULLREQUEST_TARGETBRANCH --commit-range=$COMMIT_RANGE --all=$ALL # add all folders which need to be excluded as an argument
             echo "##vso[task.setVariable variable=json_string;isOutput=true]$PACKAGES_DICT"
-    
+
   - job: install_build_test
     displayName: 'Install, build & test:'
     pool:
@@ -48,11 +48,13 @@ jobs:
       displayName: 'Get CI scripts'
     - task: Bash@3
       inputs:
-        filePath: 'install-package.sh'
-        arguments: '--package=$PACKAGE --branch=${SYSTEM_PULLREQUEST_SOURCEBRANCH:-${SYSTEM_PULLREQUEST_TARGETBRANCH:-${BUILD_SOURCEBRANCH#refs/heads/}}} --commit=${BUILD_SOURCEVERSION} --pullrequest=${SYSTEM_PULLREQUEST_PULLREQUESTNUMBER:-false}'
+        targetType: 'inline'
+        script: |
+          bash install-package.sh --package=$PACKAGE --branch=${SYSTEM_PULLREQUEST_SOURCEBRANCH:-${SYSTEM_PULLREQUEST_TARGETBRANCH:-${BUILD_SOURCEBRANCH#refs/heads/}}} --commit=${BUILD_SOURCEVERSION} --pullrequest=${SYSTEM_PULLREQUEST_PULLREQUESTNUMBER:-false}
       displayName: 'Install'
     - task: Bash@3
       inputs:
-        filePath: 'build-package.sh'
-        arguments: '--package=$PACKAGE'
+        targetType: 'inline'
+        script: |
+          bash build-package.sh --package=$PACKAGE
       displayName: 'Build & test'
