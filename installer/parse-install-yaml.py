@@ -53,7 +53,7 @@ def main():
                     else:
                         return show_error("ROS distro {} or 'default' not specified in install.yaml".
                                           format(ros_release))
-                    # Both release and default as allowed to be None
+                    # Both release and default are allowed to be None
                     if source is None:
                         continue
 
@@ -87,7 +87,7 @@ def main():
                     else:
                         return show_error("Ubuntu distro {} or 'default' not specified in install.yaml".
                                           format(ubuntu_release))
-                    # Both release and default as allowed to be None
+                    # Both release and default are allowed to be None
                     if pkg_name is None:
                         continue
 
@@ -108,6 +108,8 @@ def main():
     commands = " ".join(commands)
 
     print(commands)
+
+    return 0
 
 
 if __name__ == "__main__":
