@@ -300,7 +300,7 @@ function tue-install-hg
     local hgcfg_pulled=/tmp/hgcfg_pulled
     if [ ! -f "$hgcfg_pulled" ]
     then
-        parent_target=TUE_INSTALL_CURRENT_TARGET
+        parent_target=$TUE_INSTALL_CURRENT_TARGET
         TUE_INSTALL_CURRENT_TARGET="hgcfg"
         tue-install-git "https://github.com/tue-robotics/hgconfig.git" "$hgcfg_folder"
         TUE_INSTALL_CURRENT_TARGET=$parent_target
