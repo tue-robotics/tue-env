@@ -1068,7 +1068,7 @@ TUE_INSTALL_INFOS=
 # Make sure tools used by this installer are installed
 tue-install-system-now git python-pip python3-pip
 
-tue-install-pip2-now mercurial
+tue-install-pip2-now "mercurial>=5.3"
 
 tue-install-pip3-now distro PyYAML
 
