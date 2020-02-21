@@ -13,6 +13,6 @@ jobs:
       services: docker
       name: tue-env
       script: ci/build-docker-image.sh tue-env
-    - <<: *Docker-generation
+    - <<: *docker-generation
       name: tue-env-cuda
       script: ci/build-docker-image.sh tue-env-cuda
