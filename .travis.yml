@@ -1,12 +1,11 @@
 os: linux
 dist: xenial
-language: minimal
+language: shell
 
 jobs:
   include:
     - stage: Linting
       name: shellcheck
-      language: shell
       script: bash -c 'shopt -s globstar; shellcheck **/*.bash **/*.sh'
     - stage: Docker generation
       name: tue-env
