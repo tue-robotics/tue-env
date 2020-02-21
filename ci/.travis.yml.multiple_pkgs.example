@@ -1,5 +1,4 @@
-sudo: true
-
+os: linux
 language: cpp
 
 services:
