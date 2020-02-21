@@ -1,16 +1,20 @@
 os: linux
 dist: xenial
-language: generic
-
-script: bash -c 'shopt -s globstar; shellcheck **/*.bash **/*.sh'
+language: minimal
 
 jobs:
   include:
-    - stage: docker generation
+    - stage: Linting
+      name: shellcheck
+      language: shell
+      script: bash -c 'shopt -s globstar; shellcheck **/*.bash **/*.sh'
+    - stage: Docker generation
       name: tue-env
+      language: generic
       services: docker
       script: ci/build-docker-image.sh tue-env
-    - stage: docker generation
+    - stage: Docker generation
       name: tue-env-cuda
+      language: generic
       services: docker
       script: ci/build-docker-image.sh tue-env-cuda
