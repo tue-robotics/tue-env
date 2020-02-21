@@ -7,13 +7,11 @@ jobs:
     - stage: Linting
       name: shellcheck
       script: bash -c 'shopt -s globstar; shellcheck **/*.bash **/*.sh'
-    - stage: Docker generation
+    - &Docker-generation
+      language: generic
+      services: docker
       name: tue-env
-      language: generic
-      services: docker
       script: ci/build-docker-image.sh tue-env
-    - stage: Docker generation
+    - <<: *Docker-generation
       name: tue-env-cuda
-      language: generic
-      services: docker
       script: ci/build-docker-image.sh tue-env-cuda
