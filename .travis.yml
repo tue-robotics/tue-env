@@ -1,13 +1,16 @@
 os: linux
 dist: xenial
+language: generic
+
+script: bash -c 'shopt -s globstar; shellcheck **/*.bash **/*.sh'
 
 jobs:
   include:
-    - language: cpp
+    - stage: docker generation
+      name: tue-env
       services: docker
       script: ci/build-docker-image.sh tue-env
-    - language: cpp
+    - stage: docker generation
+      name: tue-env-cuda
       services: docker
       script: ci/build-docker-image.sh tue-env-cuda
-    - language: shell
-      script: bash -c 'shopt -s globstar; shellcheck **/*.bash **/*.sh'
