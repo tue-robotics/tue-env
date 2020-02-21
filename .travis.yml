@@ -1,10 +1,7 @@
-sudo: true
+os: linux
 dist: xenial
-language:
-  - cpp
-  - shell
 
-matrix:
+jobs:
   include:
     - language: cpp
       services: docker
