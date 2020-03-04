@@ -1082,7 +1082,7 @@ TUE_INSTALL_WARNINGS=
 TUE_INSTALL_INFOS=
 
 # Make sure tools used by this installer are installed
-tue-install-system-now git python-pip python3-pip
+tue-install-system-now git python-pip python-pkg-resources python3-pip python3-pkg-resources
 
 tue-install-pip2-now "mercurial>=5.3"
 
