@@ -678,7 +678,7 @@ function tue-install-ppa-now
     # shellcheck disable=SC2048
     for ppa in $*
     do
-        if ! grep -h "^deb.*${ppa#ppa:}" /etc/apt/sources.list.d/* 1>/dev/null 2>&1
+        if ! grep -q -h "^deb.*${ppa#ppa:}" /etc/apt/sources.list.d/* 2>&1
         then
             tue-install-system-now software-properties-common
             tue-install-info "Adding ppa: $ppa"
