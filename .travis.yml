@@ -1,16 +1,18 @@
-sudo: true
+os: linux
 dist: xenial
-language:
-  - cpp
-  - shell
+language: shell
 
-matrix:
+jobs:
   include:
-    - language: cpp
-      services: docker
-      script: ci/build-docker-image.sh tue-env
-    - language: cpp
-      services: docker
-      script: ci/build-docker-image.sh tue-env-cuda
-    - language: shell
+    - stage: Linting
+      name: shellcheck
       script: bash -c 'shopt -s globstar; shellcheck **/*.bash **/*.sh'
+    - &docker-generation
+      stage: Docker generation
+      language: generic
+      services: docker
+      name: tue-env
+      script: ci/build-docker-image.sh tue-env
+    - <<: *docker-generation
+      name: tue-env-cuda
+      script: ci/build-docker-image.sh tue-env-cuda
