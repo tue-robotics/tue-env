@@ -591,7 +591,7 @@ function tue-install-get-releases
     then
         tag="-l"
     else
-        tag="-t $4"
+        tag="-t=$4"
     fi
 
     $TUE_INSTALL_SCRIPTS_DIR/github-releases.py --get -u "$repo_short_url" "$tag" -o "$output_dir" "$filename"
