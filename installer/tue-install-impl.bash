@@ -957,27 +957,26 @@ function tue-install-ros
             ln -s "$repos_dir"/"$sub_dir" "$ros_pkg_dir"
         fi
 
-        if [[ "$NO_ROS_DEPS" = "true" ]]
+        if [[ "$NO_ROS_DEPS" != "true" ]]
         then
-            tue-install-debug "No need to parse package.xml for dependencies"
-            return 0
-        fi
+            if [ -f "$ros_pkg_dir"/package.xml ]
+            then
+                # Catkin
+                deps=$("$TUE_INSTALL_SCRIPTS_DIR"/parse-ros-package-deps.py "$ros_pkg_dir"/package.xml)
+                tue-install-debug "Parsed package.xml \n$deps"
 
-        if [ -f "$ros_pkg_dir"/package.xml ]
-        then
-            # Catkin
-            deps=$("$TUE_INSTALL_SCRIPTS_DIR"/parse-ros-package-deps.py "$ros_pkg_dir"/package.xml)
-            tue-install-debug "Parsed package.xml \n$deps"
+                for dep in $deps
+                do
+                    # Preference given to target name starting with ros-
+                    tue-install-target ros-"$dep" || tue-install-target "$dep" || \
+                        tue-install-error "Targets 'ros-$dep' and '$dep' does not exist."
+                done
 
-            for dep in $deps
-            do
-                # Preference given to target name starting with ros-
-                tue-install-target ros-"$dep" || tue-install-target "$dep" || \
-                    tue-install-error "Targets 'ros-$dep' and '$dep' does not exist."
-            done
-
+            else
+                tue-install-warning "Does not contain a valid ROS package.xml."
+            fi
         else
-            tue-install-warning "Does not contain a valid ROS package.xml."
+            tue-install-debug "No need to parse package.xml for dependencies"
         fi
 
     else
