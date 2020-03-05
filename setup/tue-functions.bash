@@ -277,8 +277,8 @@ function tue-make
             ;;
         '')
             catkin config --init --mkdirs --workspace "$TUE_SYSTEM_DIR" --extend /opt/ros/"$TUE_ROS_DISTRO" -DCMAKE_BUILD_TYPE=RelWithDebInfo "$@"
-            touch "$TUE_SYSTEM_DIR"/devel/.catkin # hack to allow overlaying to this ws while being empty
             catkin build --workspace "$TUE_SYSTEM_DIR" -DCATKIN_ENABLE_TESTING=OFF "$@"
+            touch "$TUE_SYSTEM_DIR"/devel/.catkin # hack to allow overlaying to this ws while being empty
             ;;
         *)
             echo -e "\e$build_tool is not supported (anymore), use catkin tools\e[0m"
@@ -313,8 +313,8 @@ function tue-make-dev
             ;;
         '')
             catkin config --init --mkdirs --workspace "$TUE_DEV_DIR" --extend "$TUE_SYSTEM_DIR"/devel -DCMAKE_BUILD_TYPE=RelWithDebInfo "$@"
-            touch "$TUE_DEV_DIR"/devel/.catkin # hack to allow overlaying to this ws while being empty
             catkin build --workspace "$TUE_DEV_DIR" -DCATKIN_ENABLE_TESTING=OFF "$@"
+            touch "$TUE_DEV_DIR"/devel/.catkin # hack to allow overlaying to this ws while being empty
             ;;
         *)
             echo -e "\e$build_tool is not supported (anymore), use catkin tools\e[0m"
