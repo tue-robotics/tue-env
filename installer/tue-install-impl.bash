@@ -582,9 +582,9 @@ function tue-install-add-text
 
 function tue-install-get-releases
 {
-    local repo_short_url="$1"
-    local filename="$2"
-    local output_dir="$3"
+    local repo_short_url=$1
+    local filename=$2
+    local output_dir=$3
     local tag=
 
     if [ -z "$4" ]
