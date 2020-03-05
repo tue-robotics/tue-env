@@ -55,20 +55,13 @@ def download_url(url, root, filename=None, md5=None):
     else:   # download the file
         try:
             print('Downloading ' + url + ' to ' + fpath)
-            urllib.request.urlretrieve(
-                url, fpath,
-                reporthook=reporthook
-            )
+            urllib.request.urlretrieve(url, fpath, reporthook=reporthook)
             print()
         except (urllib.error.URLError, IOError) as error:
             if url[:5] == 'https':
                 url = url.replace('https:', 'http:')
-                print('Failed download. Trying https -> http instead.'
-                      ' Downloading ' + url + ' to ' + fpath)
-                urllib.request.urlretrieve(
-                    url, fpath,
-                    reporthook=reporthook
-                )
+                print('Failed download. Trying https -> http instead. Downloading ' + url + ' to ' + fpath)
+                urllib.request.urlretrieve(url, fpath, reporthook=reporthook)
                 print()
             else:
                 raise error
@@ -87,8 +80,8 @@ def reporthook(count, block_size, total_size):
     progress_size = int(count * block_size)
     speed = int(progress_size / (1024 * duration))
     percent = int(count * block_size * 100 / total_size)
-    sys.stdout.write("\r...%d%%, %d MB, %d KB/s, %d seconds passed" %
-                     (percent, progress_size / (1024 * 1024), speed, duration))
+    sys.stdout.write("\r...%d%%, %d MB, %d KB/s, %d seconds passed" % (percent, progress_size / (1024 * 1024),
+                                                                       speed, duration))
     sys.stdout.flush()
 
 
