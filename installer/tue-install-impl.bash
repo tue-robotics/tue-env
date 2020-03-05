@@ -582,6 +582,13 @@ function tue-install-add-text
 
 function tue-install-get-releases
 {
+    tue-install-debug "tue-install-get-releases $*"
+
+    if test $# -lt 3
+    then
+        tue-install-error "Invalid tue-install-get-releases call: needs at least 3 input parameters"
+    fi
+
     local repo_short_url=$1
     local filename=$2
     local output_dir=$3
@@ -594,7 +601,8 @@ function tue-install-get-releases
         tag="-t=$4"
     fi
 
-    "$TUE_INSTALL_SCRIPTS_DIR"/github-releases.py --get -u "$repo_short_url" "$tag" -o "$output_dir" "$filename"
+    "$TUE_INSTALL_SCRIPTS_DIR"/github-releases.py --get -u "$repo_short_url" "$tag" -o "$output_dir" "$filename" || \
+        tue-install-error "Failed to get '$filename' from '$repo_short_url'"
 }
 
 # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # #
