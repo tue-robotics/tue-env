@@ -881,7 +881,7 @@ function tue-install-ros
     local ros_pkg_name=${TUE_INSTALL_CURRENT_TARGET#ros-}
     if [[ $ros_pkg_name == *-* ]]
     then
-        tue-install-error "A rospackage cannot contain dashes (${ros_pkg_name})"
+        tue-install-error "A ROS package cannot contain dashes (${ros_pkg_name})"
         return 1
     fi
 
