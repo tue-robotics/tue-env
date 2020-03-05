@@ -24,8 +24,13 @@ def get_release(url, filename, output):
 
     browser_download_urls = [asset['browser_download_url'] for asset in assets]
 
+    if not browser_download_urls:
+        return 1
+
     for web_url in browser_download_urls:
         download_url(web_url, output)
+
+    return 0
 
 
 def download_url(url, root, filename=None, md5=None):
@@ -156,6 +161,7 @@ def main():
 
     url = "https://api.github.com/repos/{}/releases".format(args.url)
 
+    # Get release
     if args.get:
         if args.latest:
             url += '/latest'
@@ -165,18 +171,16 @@ def main():
             print("With --get option either specify --latest or a specific tag using --tag")
             return 1
 
-        get_release(url, args.filename, args.output)
+        return get_release(url, args.filename, args.output)
 
+    # Create release
+    if args.tag:
+        url += '/tags/{}'.format(args.tag)
     else:
-        if args.tag:
-            url += '/tags/{}'.format(args.tag)
-        else:
-            print("With --create option, --tag is a required argument")
-            return 1
+        print("With --create option, --tag is a required argument")
+        return 1
 
-        create_release(url, args.tag, args.filename, args.output)
-
-    return 0
+    return create_release(url, args.tag, args.filename, args.output)
 
 
 if __name__ == "__main__":
