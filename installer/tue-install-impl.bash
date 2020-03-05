@@ -1033,6 +1033,14 @@ do
             ;;
         --no-ros-deps) NO_ROS_DEPS=true
             ;;
+        --doc-depend) TUE_INSTALL_DOC_DEPEND=true
+            ;;
+        --no-doc-depend) TUE_INSTALL_DOC_DEPEND=false
+            ;;
+        --test-depend) TUE_INSTALL_TEST_DEPEND=true
+            ;;
+        --no-test-depend) TUE_INSTALL_TEST_DEPEND=false
+            ;;
         --branch*)
             # shellcheck disable=SC2001
             BRANCH=$(echo "$1" | sed -e 's/^[^=]*=//g')
