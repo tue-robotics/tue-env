@@ -42,11 +42,11 @@ def main():
                                help="Get the latest release if no version is specified",
                                action="store_true")
 
-    tags_group.add_argument("--latest",
+    tags_group.add_argument("-l", "--latest",
                             help="Get the latest release",
                             action="store_true")
 
-    tags_group.add_argument("--tag",
+    tags_group.add_argument("-t", "--tag",
                             help="Release tag (default=latest for --get)",
                             type=str)
 
