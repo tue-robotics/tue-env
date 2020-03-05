@@ -580,6 +580,25 @@ function tue-install-add-text
 
 # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # #
 
+function tue-install-get-releases
+{
+    local repo_short_url="$1"
+    local filename="$2"
+    local output_dir="$3"
+    local tag=
+
+    if [ -z "$4" ]
+    then
+        tag="-l"
+    else
+        tag="-t $4"
+    fi
+
+    $TUE_INSTALL_SCRIPTS_DIR/github-releases.py --get -u "$repo_short_url" "$tag" -o "$output_dir" "$filename"
+}
+
+# # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # #
+
 function tue-install-system
 {
     tue-install-debug "tue-install-system $*"
