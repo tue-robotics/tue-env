@@ -717,17 +717,21 @@ function tue-get
 
     Possible commands:
 
-        dep            - Shows target dependencies
-        install        - Installs a package
-        update         - Updates currently installed packages
-        remove         - Removes installed package
-        list-installed - Lists all manually installed packages
-        show           - Show the contents of (a) package(s)
+        dep              - Shows target dependencies
+        install          - Installs a package
+        update           - Updates currently installed packages
+        remove           - Removes installed package
+        list-installed   - Lists all manually installed packages
+        show             - Show the contents of (a) package(s)
 
     Possible options:
-        --debug        - Shows more debugging information
-        --no-ros-deps  - Do not attempt to install ROS dependencies
-        --branch=name  - Try to checkout this branch if exists
+        --debug          - Shows more debugging information
+        --no-ros-deps    - Do not install ROS dependencies
+        --doc-depend     - Do install doc dependencies, overules config
+        --no-doc-depend  - Do not install doc dependencies, overules config
+        --test-depend    - Do install test dependencies, overules config
+        --no-test-depend - Do not install test dependencies, overules config
+        --branch=name    - Try to checkout this branch if exists
 
 """
         return 1
@@ -932,7 +936,7 @@ function _tue-get
         then
             local IFS=$'\n'
             # shellcheck disable=SC2178
-            mapfile -t COMPREPLY < <(compgen -W "$(echo -e "$(find "$TUE_ENV_TARGETS_DIR" -mindepth 1 -maxdepth 1 -type d -not -name ".*" -printf "%f\n" | sed "s/.*/'& '/g")\n'--debug '\n'--no-ros-deps '\n'--branch='")" -- "$cur")
+            mapfile -t COMPREPLY < <(compgen -W "$(echo -e "$(find "$TUE_ENV_TARGETS_DIR" -mindepth 1 -maxdepth 1 -type d -not -name ".*" -printf "%f\n" | sed "s/.*/'& '/g")\n'--debug '\n'--no-ros-deps '\n'--doc-depend '\n'--no-doc-depend '\n'--test-depend '\n'--no-test-depend '\n'--branch='")" -- "$cur")
         elif [[ $cmd == "dep" ]]
         then
             local IFS=$'\n'
@@ -942,7 +946,7 @@ function _tue-get
         then
             local IFS=$'\n'
             # shellcheck disable=SC2178
-            mapfile -t COMPREPLY < <(compgen -W "$(echo -e "$(find "$TUE_ENV_DIR"/.env/dependencies -mindepth 1 -maxdepth 1 -type f -not -name ".*" -printf "%f\n" | sed "s/.*/'& '/g")\n'--debug '\n'--no-ros-deps '\n'--branch='")" -- "$cur")
+            mapfile -t COMPREPLY < <(compgen -W "$(echo -e "$(find "$TUE_ENV_DIR"/.env/dependencies -mindepth 1 -maxdepth 1 -type f -not -name ".*" -printf "%f\n" | sed "s/.*/'& '/g")\n'--debug '\n'--no-ros-deps '\n'--doc-depend '\n'--no-doc-depend '\n'--test-depend '\n'--no-test-depend '\n'--branch='")" -- "$cur")
         elif [[ $cmd == "remove" ]]
         then
             local IFS=$'\n'
