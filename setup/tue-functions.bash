@@ -266,8 +266,11 @@ function tue-make
 {
     if [ -n "$TUE_ROS_DISTRO" ] && [ -d "$TUE_SYSTEM_DIR" ]
     then
-        local build_tool
-        build_tool=$(cat "$TUE_SYSTEM_DIR"/devel/.built_by)
+        local build_tool=""
+        if [ -f "$TUE_SYSTEM_DIR"/devel/.built_by ]
+        then
+            build_tool=$(cat "$TUE_SYSTEM_DIR"/devel/.built_by)
+        fi
         case $build_tool in
         'catkin build')
             catkin build --workspace "$TUE_SYSTEM_DIR" "$@"
@@ -298,8 +301,11 @@ function tue-make-dev
 {
     if [ -n "$TUE_ROS_DISTRO" ] && [ -d "$TUE_DEV_DIR" ]
     then
-        local build_tool
-        build_tool=$(cat "$TUE_DEV_DIR"/devel/.built_by)
+        local build_tool=""
+        if [ -f "$TUE_DEV_DIR"/devel/.built_by ]
+        then
+            build_tool=$(cat "$TUE_DEV_DIR"/devel/.built_by)
+        fi
         case $build_tool in
         'catkin build')
             catkin build --workspace "$TUE_DEV_DIR" "$@"
