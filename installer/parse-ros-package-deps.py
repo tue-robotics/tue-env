@@ -35,10 +35,11 @@ def main():
     deps = doc.findall('exec_depend')
     dep_set |= {dep.text for dep in deps}
 
-    if os.getenv('ROBOT_REAL', 'false') != 'true':  # Skip test and doc dependencies on actual bots
+    if os.getenv('TUE_INSTALL_TEST_DEPEND', 'false') == 'true':
         deps = doc.findall('test_depend')
         dep_set |= {dep.text for dep in deps}
 
+    if os.getenv('TUE_INSTALL_DOC_DEPEND', 'false') == 'true':
         deps = doc.findall('doc_depend')
         dep_set |= {dep.text for dep in deps}
 
