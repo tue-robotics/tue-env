@@ -643,7 +643,7 @@ function tue-install-system-now
         # Wait for apt-lock first (https://askubuntu.com/a/375031)
         i=0
         tput sc
-        while fuser /var/lib/dpkg/lock >/dev/null 2>&1
+        while sudo fuser /var/lib/dpkg/lock-frontend >/dev/null 2>&1
         do
             case $((i % 4)) in
                 0 ) j="-" ;;
