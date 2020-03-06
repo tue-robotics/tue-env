@@ -213,13 +213,19 @@ function _try_branch_git
     fi
 
     tue-install-debug "git -C $1 checkout $2"
-    local _try_branch_res
     _try_branch_res=$(git -C "$1" checkout "$2" 2>&1)
-    tue-install-debug "$_try_branch_res"
+    tue-install-debug "_try_branch_res: $_try_branch_res"
+
+    local _submodule_res
+    tue-install-debug "git -C $1 submodule update --init --recursive"
+    _submodule_res=$(git -C "$1" submodule update --init --recursive 2>&1)
+    tue-install-debug "_submodule_res: $_submodule_res"
+
     if [[ $_try_branch_res == "Already on "* || $_try_branch_res == "error: pathspec"* ]]
     then
         _try_branch_res=
     fi
+    [ -n "$_submodule_res" ] && _try_branch_res="$_try_branch_res $_submodule_res"
 }
 
 # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # #
@@ -278,17 +284,19 @@ function tue-install-git
     fi
 
     tue-install-debug "Desired version: $version"
-    if [ -n "$version" ];
+    if [ -n "$version" ]
     then
+        local _try_branch_res
         _try_branch_git "$targetdir" "$version"
-        res="$res $_try_branch_res"
+        [ -n "$_try_branch_res" ] && res="$res $_try_branch_res"
     fi
 
     tue-install-debug "Desired branch: $BRANCH"
-    if [ -n "$BRANCH" ]; #Cannot be combined with version-if because this one might not exist
+    if [ -n "$BRANCH" ] #Cannot be combined with version-if because this one might not exist
     then
+        local _try_branch_res
         _try_branch_git "$targetdir" "$BRANCH"
-        res="$res $_try_branch_res"
+        [ -n "$_try_branch_res" ] && res="$res $_try_branch_res"
     fi
 
     _show_update_message "$TUE_INSTALL_CURRENT_TARGET" "$res"
