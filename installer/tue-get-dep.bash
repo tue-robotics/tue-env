@@ -4,6 +4,8 @@
 #     - Extra handig: aangeven via welke weg A en B van elkaar afhangen
 #     - Bijv: tue-get dep A B --level 1       (Waarbij A en B ook ? of * mogen zijn)
 
+hash xmlstarlet 2> /dev/null || sudo apt-get install --assume-yes --no-install-recommends xmlstarlet
+
 function _show_dep
 {
     [[ "$1" == "ros" ]] && return
