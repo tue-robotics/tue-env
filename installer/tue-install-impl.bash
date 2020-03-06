@@ -721,7 +721,7 @@ function tue-install-ppa-now
     done
     if [ -n "$PPA_ADDED" ]
     then
-        tue-install-debug "Updating apt-get"
+        tue-install-debug "sudo apt-get update -qq"
         sudo apt-get update -qq
     fi
 }
