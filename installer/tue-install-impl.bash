@@ -780,7 +780,7 @@ function _tue-install-pip-now
     if version_gt "$desired_pip_version" "$pip_version"
     then
         tue-install-debug "pip${pv} not yet version >=$desired_pip_version, but $pip_version"
-        pip"${pv}" install --upgrade pip
+        pip"${pv}" install --user --upgrade pip
         hash -r
     else
         tue-install-debug "Already pip${pv}>=$desired_pip_version\n"
