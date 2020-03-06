@@ -657,8 +657,15 @@ function tue-install-system-now
             ((i=i+1))
         done
 
-        # shellcheck disable=SC2086
-        sudo apt-get install --assume-yes -qq --no-install-recommends $pkgs_to_install || sudo apt-get update  # Update and try again
+
+        if [ ! -f /tmp/apt_get_update ]
+        then
+            # Update once every boot. Or delete the tmp file if you need an update before installing a pkg.
+            tue-install-debug "sudo apt-get update -qq"
+            sudo apt-get update -qq
+            /tmp/apt_get_update
+        fi
+
         # shellcheck disable=SC2086
         sudo apt-get install --assume-yes -qq --no-install-recommends $pkgs_to_install || exit 1
         tue-install-debug "Installed $pkgs_to_install ($?)"
