@@ -667,14 +667,14 @@ function tue-install-ppa
     then
         tue-install-error "Invalid tue-install-ppa call: needs ppa as argument."
     fi
-    ppa="$*"
+    local ppa="$*"
 
     if [[ $ppa != ppa:* && $ppa != deb* ]]
     then
         tue-install-error "Invalid tue-install-ppa call: needs to start with 'ppa:' or 'deb '"
     fi
     tue-install-debug "Adding $ppa to PPA list"
-    TUE_INSTALL_PPA="${TUE_INSTALL_PPA} ${ppa// /#}"  # Replace space by # to support for-loops later
+    TUE_INSTALL_PPA="${TUE_INSTALL_PPA} ${ppa// /^}"  # Replace space by ^ to support for-loops later
 }
 
 # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # #
@@ -683,14 +683,21 @@ function tue-install-ppa-now
 {
     tue-install-debug "tue-install-ppa-now $*"
 
+    if [ -z "$1" ]
+    then
+        tue-install-error "Invalid tue-install-ppa-now call: needs ppa as argument."
+    fi
+
     local PPA_ADDED=""
     # shellcheck disable=SC2048
     for ppa in $*
     do
+        ppa="${ppa//^/ }"
         if ! grep -q -h "^deb.*${ppa#ppa:}" /etc/apt/sources.list.d/* 2>&1
         then
             tue-install-system-now software-properties-common
             tue-install-info "Adding ppa: $ppa"
+            tue-install-debug "sudo add-apt-repository --yes $ppa"
             sudo add-apt-repository --yes "$ppa"
             PPA_ADDED=true
         else
