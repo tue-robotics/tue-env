@@ -8,9 +8,9 @@ hash xmlstarlet 2> /dev/null || sudo apt-get install --assume-yes --no-install-r
 
 function _show_dep
 {
-    [[ "$1" == "ros" ]] && return
+    [[ "$1" == "ros" ]] && return 0
 
-    [[ "$ROS_ONLY" = "true" && "$1" != ros-* ]] && return
+    [[ "$ROS_ONLY" = "true" && "$1" != ros-* ]] && return 0
 
     local indent=$3
     local tmp=$4
@@ -48,16 +48,14 @@ function _show_dep
             if [ -f "$packagexml" ]
             then
                 version=$(xmlstarlet sel -t -m '//version[1]' -v . -n <"$packagexml")
-                #xmlstarlet ed --inplace --update '//version[1]' -v 0.4.0 $packagexml
             else
-                version="-"
+                version=""
             fi
 
-            if ! githash=$(git -C "$pkgdir" rev-parse --short HEAD 2>&1)
+            if [ -z "$pkgdir" ] || ! githash=$(git -C "$pkgdir" rev-parse --short HEAD 2>&1)
             then
                 githash=""
             fi
-            # echo "$githash"
         fi
 
         #echo output
@@ -69,7 +67,7 @@ function _show_dep
         outstr="${outstr}$1"  # Add package
         if [[ "$VERBOSE" = "true" ]]
         then
-            outstr="${outstr} ${version} ${githash}"  # Add version
+            outstr="$outstr $version $githash"  # Add version
         fi
         echo "$outstr"
     fi
