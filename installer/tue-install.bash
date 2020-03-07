@@ -24,7 +24,7 @@ else
     else
         echo -en "[tue-get] Updating tue-get... "
 
-        if ! git -C "$TUE_DIR" pull --ff-only --prune
+        if ! git -C "$TUE_DIR" pull --ff-only --prune --rebase
         then
             # prompt for conformation
             exec < /dev/tty
@@ -60,7 +60,7 @@ else
 
     echo -en "[tue-env-targets] Updating targets... "
 
-    if ! git -C "$TUE_ENV_TARGETS_DIR" pull --ff-only --prune --recurse-submodules && [ -z "$CI" ]
+    if ! git -C "$TUE_ENV_TARGETS_DIR" pull --ff-only --prune --recurse-submodules --rebase && [ -z "$CI" ]
     then
         # prompt for conformation
         exec < /dev/tty
