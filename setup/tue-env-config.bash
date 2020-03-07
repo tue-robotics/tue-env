@@ -36,6 +36,42 @@ function tue-env-use-https
     echo -e "[tue-env](config) Environment '$env' set to use HTTPS"
 }
 
+function tue-env-install-test-depend
+{
+    local option="TUE_INSTALL_TEST_DEPEND"
+    local value="true"
+    _set_export_option "$option" "$value" "$tue_env_dir"/.env/setup/user_setup.bash
+
+    echo -e "[tue-env](config) Environment '$env' set to install test dependencies"
+}
+
+function tue-env-not-install-test-depend
+{
+    local option="TUE_INSTALL_TEST_DEPEND"
+    local value="false"
+    _set_export_option "$option" "$value" "$tue_env_dir"/.env/setup/user_setup.bash
+
+    echo -e "[tue-env](config) Environment '$env' set to not install test dependencies"
+}
+
+function tue-env-install-doc-depend
+{
+    local option="TUE_INSTALL_DOC_DEPEND"
+    local value="true"
+    _set_export_option "$option" "$value" "$tue_env_dir"/.env/setup/user_setup.bash
+
+    echo -e "[tue-env](config) Environment '$env' set to install doc dependencies"
+}
+
+function tue-env-not-install-doc-depend
+{
+    local option="TUE_INSTALL_DOC_DEPEND"
+    local value="false"
+    _set_export_option "$option" "$value" "$tue_env_dir"/.env/setup/user_setup.bash
+
+    echo -e "[tue-env](config) Environment '$env' set to not install doc dependencies"
+}
+
 if [ -z "$1" ]
 then
     echo -e "[tue-env](config) no environment set or provided"

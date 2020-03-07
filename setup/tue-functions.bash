@@ -266,15 +266,19 @@ function tue-make
 {
     if [ -n "$TUE_ROS_DISTRO" ] && [ -d "$TUE_SYSTEM_DIR" ]
     then
-        local build_tool
-        build_tool=$(cat "$TUE_SYSTEM_DIR"/devel/.built_by)
+        local build_tool=""
+        if [ -f "$TUE_SYSTEM_DIR"/devel/.built_by ]
+        then
+            build_tool=$(cat "$TUE_SYSTEM_DIR"/devel/.built_by)
+        fi
         case $build_tool in
         'catkin build')
             catkin build --workspace "$TUE_SYSTEM_DIR" "$@"
             ;;
         '')
-            catkin config --init --mkdirs --workspace "$TUE_SYSTEM_DIR" -DCMAKE_BUILD_TYPE=RelWithDebInfo "$@"
-            catkin build --workspace "$TUE_SYSTEM_DIR" -DCATKIN_ENABLE_TESTING=OFF "$@"
+            catkin config --init --mkdirs --workspace "$TUE_SYSTEM_DIR" --extend /opt/ros/"$TUE_ROS_DISTRO" -DCMAKE_BUILD_TYPE=RelWithDebInfo -DCATKIN_ENABLE_TESTING=OFF "$@"
+            catkin build --workspace "$TUE_SYSTEM_DIR" "$@"
+            touch "$TUE_SYSTEM_DIR"/devel/.catkin # hack to allow overlaying to this ws while being empty
             ;;
         *)
             echo -e "\e$build_tool is not supported (anymore), use catkin tools\e[0m"
@@ -298,15 +302,19 @@ function tue-make-dev
 {
     if [ -n "$TUE_ROS_DISTRO" ] && [ -d "$TUE_DEV_DIR" ]
     then
-        local build_tool
-        build_tool=$(cat "$TUE_DEV_DIR"/devel/.built_by)
+        local build_tool=""
+        if [ -f "$TUE_DEV_DIR"/devel/.built_by ]
+        then
+            build_tool=$(cat "$TUE_DEV_DIR"/devel/.built_by)
+        fi
         case $build_tool in
         'catkin build')
             catkin build --workspace "$TUE_DEV_DIR" "$@"
             ;;
         '')
-            catkin config --init --mkdirs --workspace "$TUE_DEV_DIR" -DCMAKE_BUILD_TYPE=RelWithDebInfo "$@"
-            catkin build --workspace "$TUE_DEV_DIR" -DCATKIN_ENABLE_TESTING=OFF "$@"
+            catkin config --init --mkdirs --workspace "$TUE_DEV_DIR" --extend "$TUE_SYSTEM_DIR"/devel -DCMAKE_BUILD_TYPE=RelWithDebInfo -DCATKIN_ENABLE_TESTING=OFF "$@"
+            catkin build --workspace "$TUE_DEV_DIR" "$@"
+            touch "$TUE_DEV_DIR"/devel/.catkin # hack to allow overlaying to this ws while being empty
             ;;
         *)
             echo -e "\e$build_tool is not supported (anymore), use catkin tools\e[0m"
@@ -709,16 +717,21 @@ function tue-get
 
     Possible commands:
 
-        dep            - Shows target dependencies
-        install        - Installs a package
-        update         - Updates currently installed packages
-        remove         - Removes installed package
-        list-installed - Lists all manually installed packages
-        show           - Show the contents of (a) package(s)
+        dep              - Shows target dependencies
+        install          - Installs a package
+        update           - Updates currently installed packages
+        remove           - Removes installed package
+        list-installed   - Lists all manually installed packages
+        show             - Show the contents of (a) package(s)
 
     Possible options:
-        --debug        - Shows more debugging information
-        --branch=name  - Try to checkout this branch if exists
+        --debug          - Shows more debugging information
+        --no-ros-deps    - Do not install ROS dependencies
+        --doc-depend     - Do install doc dependencies, overules config
+        --no-doc-depend  - Do not install doc dependencies, overules config
+        --test-depend    - Do install test dependencies, overules config
+        --no-test-depend - Do not install test dependencies, overules config
+        --branch=name    - Try to checkout this branch if exists
 
 """
         return 1
@@ -923,17 +936,17 @@ function _tue-get
         then
             local IFS=$'\n'
             # shellcheck disable=SC2178
-            mapfile -t COMPREPLY < <(compgen -W "$(echo -e "$(find "$TUE_ENV_TARGETS_DIR" -mindepth 1 -maxdepth 1 -type d -not -name ".*" -printf "%f\n" | sed "s/.*/'& '/g")\n'--debug '\n'--branch='")" -- "$cur")
+            mapfile -t COMPREPLY < <(compgen -W "$(echo -e "$(find "$TUE_ENV_TARGETS_DIR" -mindepth 1 -maxdepth 1 -type d -not -name ".*" -printf "%f\n" | sed "s/.*/'& '/g")\n'--debug '\n'--no-ros-deps '\n'--doc-depend '\n'--no-doc-depend '\n'--test-depend '\n'--no-test-depend '\n'--branch='")" -- "$cur")
         elif [[ $cmd == "dep" ]]
         then
             local IFS=$'\n'
             # shellcheck disable=SC2178
-            mapfile -t COMPREPLY < <(compgen -W "$(echo -e "$(find "$TUE_ENV_DIR"/.env/dependencies -mindepth 1 -maxdepth 1 -type f -not -name ".*" -printf "%f\n" | sed "s/.*/'& '/g")\n'--plain '\n'--verbose '\n'--all '\n'--level='")" -- "$cur")
+            mapfile -t COMPREPLY < <(compgen -W "$(echo -e "$(find "$TUE_ENV_DIR"/.env/dependencies -mindepth 1 -maxdepth 1 -type f -not -name ".*" -printf "%f\n" | sed "s/.*/'& '/g")\n'--plain '\n'--verbose '\n'--ros-only '\n'--all '\n'--level='")" -- "$cur")
         elif [[ $cmd == "update" ]]
         then
             local IFS=$'\n'
             # shellcheck disable=SC2178
-            mapfile -t COMPREPLY < <(compgen -W "$(echo -e "$(find "$TUE_ENV_DIR"/.env/dependencies -mindepth 1 -maxdepth 1 -type f -not -name ".*" -printf "%f\n" | sed "s/.*/'& '/g")\n'--debug '\n'--branch='")" -- "$cur")
+            mapfile -t COMPREPLY < <(compgen -W "$(echo -e "$(find "$TUE_ENV_DIR"/.env/dependencies -mindepth 1 -maxdepth 1 -type f -not -name ".*" -printf "%f\n" | sed "s/.*/'& '/g")\n'--debug '\n'--no-ros-deps '\n'--doc-depend '\n'--no-doc-depend '\n'--test-depend '\n'--no-test-depend '\n'--branch='")" -- "$cur")
         elif [[ $cmd == "remove" ]]
         then
             local IFS=$'\n'
@@ -1482,4 +1495,3 @@ function tue-robocup-unset-apt-get-proxy
 {
     sudo rm /etc/apt/apt.conf.d/01proxy
 }
-

@@ -14,6 +14,16 @@ TUE_REPOS_DIR=$TUE_ENV_DIR/repos
 
 # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # #
 
+function _skip_in_ci
+{
+    # use as followed:
+    # _skip_in_ci && return 0
+    [[ "$CI" == "true" ]] && return 0
+    return 1
+}
+
+# # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # #
+
 function date_stamp
 {
     date +%Y_%m_%d_%H_%M_%S
@@ -34,7 +44,7 @@ function tue-install-error
 Error while installing target '$TUE_INSTALL_CURRENT_TARGET':
 
     $1
-\033[0m"
+\033[0m" | tee --append "$INSTALL_DETAILS_FILE"
     exit 1
 }
 
@@ -204,13 +214,19 @@ function _try_branch_git
     fi
 
     tue-install-debug "git -C $1 checkout $2"
-    local _try_branch_res
-    _try_branch_res=$(git -C "$1" checkout "$2" 2>&1)
-    tue-install-debug "$_try_branch_res"
+    _try_branch_res=$(git -C "$1" checkout "$2" 2>&1) # This is a "global" variable from tue-install-git
+    tue-install-debug "_try_branch_res: $_try_branch_res"
+
+    local _submodule_res
+    tue-install-debug "git -C $1 submodule update --init --recursive"
+    _submodule_res=$(git -C "$1" submodule update --init --recursive 2>&1)
+    tue-install-debug "_submodule_res: $_submodule_res"
+
     if [[ $_try_branch_res == "Already on "* || $_try_branch_res == "error: pathspec"* ]]
     then
         _try_branch_res=
     fi
+    [ -n "$_submodule_res" ] && _try_branch_res="$_try_branch_res $_submodule_res"
 }
 
 # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # #
@@ -252,16 +268,16 @@ function tue-install-git
                 tue-install-info "URL has switched to $repo"
             fi
 
-            tue-install-debug "git -C $targetdir pull --ff-only --prune"
+            tue-install-debug "git -C $targetdir pull --ff-only --prune --recurse-submodules"
 
             local res
-            res=$(git -C "$targetdir" pull --ff-only --prune 2>&1)
+            res=$(git -C "$targetdir" pull --ff-only --prune --recurse-submodules 2>&1)
 
             tue-install-debug "$res"
 
             TUE_INSTALL_GIT_PULL_Q+=$targetdir
 
-            if [[ $res == "Already up to date"* ]]
+            if [[ $(echo "$res" | grep -v "Fetching submodule") == "Already up to date." ]]
             then
                 res=
             fi
@@ -269,17 +285,20 @@ function tue-install-git
     fi
 
     tue-install-debug "Desired version: $version"
-    if [ -n "$version" ];
+    local _try_branch_res # Will be used in _try_branch_git
+    if [ -n "$version" ]
     then
+        _try_branch_res=""
         _try_branch_git "$targetdir" "$version"
-        res="$res $_try_branch_res"
+        [ -n "$_try_branch_res" ] && res="$res $_try_branch_res"
     fi
 
     tue-install-debug "Desired branch: $BRANCH"
-    if [ -n "$BRANCH" ]; #Cannot be combined with version-if because this one might not exist
+    if [ -n "$BRANCH" ] # Cannot be combined with version-if because this one might not exist
     then
+        _try_branch_res=""
         _try_branch_git "$targetdir" "$BRANCH"
-        res="$res $_try_branch_res"
+        [ -n "$_try_branch_res" ] && res="$res $_try_branch_res"
     fi
 
     _show_update_message "$TUE_INSTALL_CURRENT_TARGET" "$res"
@@ -356,17 +375,20 @@ function tue-install-hg
     fi
 
     tue-install-debug "Desired version: $version"
-    if [ -n "$version" ];
+    local _try_branch_res # Will be used in _try_branch_hg
+    if [ -n "$version" ]
     then
+        _try_branch_res=""
         _try_branch_hg "$targetdir" "$version"
-        res="$res $_try_branch_res"
+        [ -n "$_try_branch_res" ] && res="$res $_try_branch_res"
     fi
 
     tue-install-debug "Desired branch: $BRANCH"
-    if [ -n "$BRANCH" ]; #Cannot be combined with version-if because this one might not exist
+    if [ -n "$BRANCH" ] # Cannot be combined with version-if because this one might not exist
     then
+        _try_branch_res=""
         _try_branch_hg "$targetdir" "$BRANCH"
-        res="$res $_try_branch_res"
+        [ -n "$_try_branch_res" ] && res="$res $_try_branch_res"
     fi
 
     _show_update_message "$TUE_INSTALL_CURRENT_TARGET" "$res"
@@ -384,9 +406,8 @@ function _try_branch_hg
     fi
 
     tue-install-debug "hg -R $1 checkout $2"
-    local _try_branch_res
-    _try_branch_res=$(hg -R "$1" checkout "$2" 2>&1)
-    tue-install-debug "$_try_branch_res"
+    _try_branch_res=$(hg -R "$1" checkout "$2" 2>&1) # This is a "global" variable from tue-install-hg
+    tue-install-debug "_try_branch_res: $_try_branch_res"
     if [[ $_try_branch_res == "1 files updated, 0 files merged, 1 files removed, 0 files unresolved" || $_try_branch_res == "abort: unknown revision"* ]]
     then
         _try_branch_res=
@@ -428,7 +449,8 @@ function tue-install-cp
 
     if [ -z "$2" ]
     then
-        tue-install-error "Invalid tue-install-cp call: needs two arguments (source and target). The source must be relative to the installer target directory"
+        tue-install-error "Invalid tue-install-cp call: needs two arguments (source and target). The source must be relative to the installer target directory
+Command: tue-install-cp $*"
     fi
 
     local source_files="$TUE_INSTALL_CURRENT_TARGET_DIR"/"$1"
@@ -620,12 +642,12 @@ function tue-install-system-now
     if [ -n "$pkgs_to_install" ]
     then
         echo -e "Going to run the following command:\n"
-        echo -e "sudo apt-get install --assume-yes $pkgs_to_install\n"
+        echo -e "sudo apt-get install --assume-yes -qq --no-install-recommends $pkgs_to_install\n"
 
         # Wait for apt-lock first (https://askubuntu.com/a/375031)
         i=0
         tput sc
-        while fuser /var/lib/dpkg/lock >/dev/null 2>&1
+        while sudo fuser /var/lib/dpkg/lock-frontend >/dev/null 2>&1
         do
             case $((i % 4)) in
                 0 ) j="-" ;;
@@ -639,8 +661,17 @@ function tue-install-system-now
             ((i=i+1))
         done
 
+
+        if [ ! -f /tmp/apt_get_update ]
+        then
+            # Update once every boot. Or delete the tmp file if you need an update before installing a pkg.
+            tue-install-debug "sudo apt-get update -qq"
+            sudo apt-get update -qq
+            touch /tmp/apt_get_update
+        fi
+
         # shellcheck disable=SC2086
-        sudo apt-get install --assume-yes $pkgs_to_install
+        sudo apt-get install --assume-yes -qq --no-install-recommends $pkgs_to_install || tue-install-error "An error occurred while installing system packages."
         tue-install-debug "Installed $pkgs_to_install ($?)"
     fi
 }
@@ -655,13 +686,14 @@ function tue-install-ppa
     then
         tue-install-error "Invalid tue-install-ppa call: needs ppa as argument."
     fi
+    local ppa="$*"
 
-    if [[ ! $1 == ppa:* ]]
+    if [[ $ppa != "ppa:"* && $ppa != "deb"* ]]
     then
-        tue-install-error "Invalid tue-install-ppa call: needs to start with ppa:"
+        tue-install-error "Invalid tue-install-ppa call: needs to start with 'ppa:' or 'deb ' ($ppa)"
     fi
-    tue-install-debug "Adding $1 to PPA list"
-    TUE_INSTALL_PPA="$1 $TUE_INSTALL_PPA"
+    tue-install-debug "Adding $ppa to PPA list"
+    TUE_INSTALL_PPA="${TUE_INSTALL_PPA} ${ppa// /^}"  # Replace space by ^ to support for-loops later
 }
 
 # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # #
@@ -670,14 +702,43 @@ function tue-install-ppa-now
 {
     tue-install-debug "tue-install-ppa-now $*"
 
+    if [ -z "$1" ]
+    then
+        tue-install-error "Invalid tue-install-ppa-now call: needs ppa as argument."
+    fi
+
     local PPA_ADDED=""
+    local needs_to_be_added
     # shellcheck disable=SC2048
     for ppa in $*
     do
-        if ! grep -h "^deb.*${ppa#ppa:}" /etc/apt/sources.list.d/* 1>/dev/null 2>&1
+        ppa="${ppa//^/ }"
+        if [[ $ppa != "ppa:"* && $ppa != "deb "* ]]
+        then
+            tue-install-error "Invalid tue-install-ppa-now call: needs to start with 'ppa:' or 'deb ' ($ppa)"
+        fi
+        needs_to_be_added="false"
+        if [[ "$ppa" == "ppa:"* ]]
+        then
+            if ! grep -q "^deb.*${ppa#ppa:}" /etc/apt/sources.list.d/* 2>&1
+            then
+                needs_to_be_added="true"
+            fi
+        elif [[ "$ppa" == "deb "* ]]
+        then
+            if ! grep -qF "$ppa" /etc/apt/sources.list 2>&1
+            then
+                needs_to_be_added="true"
+            fi
+        else
+            tue-install-warning "tue-install-ppa-now: We shouldn't end up here ($ppa)"
+        fi
+
+        if [ "$needs_to_be_added" == "true" ]
         then
             tue-install-system-now software-properties-common
             tue-install-info "Adding ppa: $ppa"
+            tue-install-debug "sudo add-apt-repository --yes $ppa"
             sudo add-apt-repository --yes "$ppa"
             PPA_ADDED=true
         else
@@ -686,7 +747,7 @@ function tue-install-ppa-now
     done
     if [ -n "$PPA_ADDED" ]
     then
-        tue-install-debug "Updating apt-get"
+        tue-install-debug "sudo apt-get update -qq"
         sudo apt-get update -qq
     fi
 }
@@ -738,12 +799,29 @@ function _tue-install-pip-now
         tue-install-error "Invalid tue-install-pip${pv}-now call: needs package as argument."
     fi
 
+    # Make sure pip is up-to-date before checking version and installing
+    local pip_version desired_pip_version
+    pip_version=$(pip"${pv}" --version | awk '{print $2}')
+    desired_pip_version="20"
+    if version_gt "$desired_pip_version" "$pip_version"
+    then
+        tue-install-debug "pip${pv} not yet version >=$desired_pip_version, but $pip_version"
+        pip"${pv}" install --user --upgrade pip
+        hash -r
+    else
+        tue-install-debug "Already pip${pv}>=$desired_pip_version\n"
+    fi
+
     local pips_to_install=""
+    local git_pips_to_install=""
     # shellcheck disable=SC2048
     for pkg in $*
     do
         local installed_version
-        if [[ "$pkg" == "git+"* ]] || ! installed_version=$(python"${pv}" "$TUE_INSTALL_SCRIPTS_DIR"/check-pip-pkg-installed-version.py "$pkg")
+        if [[ "$pkg" == "git+"* ]]
+        then
+            git_pips_to_install="$git_pips_to_install $pkg"
+        elif ! installed_version=$(python"${pv}" "$TUE_INSTALL_SCRIPTS_DIR"/check-pip-pkg-installed-version.py "$pkg")
         then
             pips_to_install="$pips_to_install $pkg"
         else
@@ -753,23 +831,21 @@ function _tue-install-pip-now
 
     if [ -n "$pips_to_install" ]
     then
-        local pip_version desired_pip_version
-        pip_version=$(pip"${pv}" --version | awk '{print $2}')
-        desired_pip_version="20"
-        if version_gt "$desired_pip_version" "$pip_version"
-        then
-            tue-install-debug "pip${pv} not yet version >=$desired_pip_version, but $pip_version"
-            sudo -H pip"${pv}" install --upgrade pip
-            hash -r
-        else
-            tue-install-debug "Already pip${pv}>=$desired_pip_version\n"
-        fi
-
-        # Just install the packages because checking for installation is not faster
         echo -e "Going to run the following command:\n"
         echo -e "yes | pip${pv} install --user $pips_to_install\n"
         # shellcheck disable=SC2048,SC2086
         yes | pip"${pv}" install --user $pips_to_install
+    fi
+
+    if [ -n "$git_pips_to_install" ]
+    then
+        for pkg in $git_pips_to_install
+        do
+            echo -e "Going to run the following command:\n"
+            echo -e "yes | pip${pv} install --user $pkg\n"
+            # shellcheck disable=SC2048,SC2086
+            yes | pip"${pv}" install --user $pkg
+        done
     fi
 }
 
@@ -855,8 +931,8 @@ function tue-install-dpkg
     fi
     tue-install-debug "Installing dpkg $1"
     sudo dpkg --install "$1"
-    tue-install-debug "sudo apt-get --fix-broken --assume-yes install"
-    sudo apt-get --fix-broken --assume-yes install
+    tue-install-debug "sudo apt-get --fix-broken --assume-yes -qq --no-install-recommends install"
+    sudo apt-get --fix-broken --assume-yes -qq --no-install-recommends install
 }
 
 # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # #
@@ -875,6 +951,11 @@ function tue-install-ros
     [ -n "$TUE_ROS_DISTRO" ] || tue-install-error "Environment variable 'TUE_ROS_DISTRO' is not set."
 
     local ros_pkg_name=${TUE_INSTALL_CURRENT_TARGET#ros-}
+    if [[ $ros_pkg_name == *-* ]]
+    then
+        tue-install-error "A ROS package cannot contain dashes (${ros_pkg_name}), make sure the package is named '${ros_pkg_name//-/_}' and rename the target to 'ros-${ros_pkg_name//-/_}'"
+        return 1
+    fi
 
     # First of all, make sure ROS itself is installed
     tue-install-target ros || tue-install-error "Failed to install target 'ROS'"
@@ -882,7 +963,6 @@ function tue-install-ros
     if [ "$install_type" = "system" ]
     then
         tue-install-debug "tue-install-system ros-$TUE_ROS_DISTRO-$src"
-
         tue-install-system ros-"$TUE_ROS_DISTRO"-"$src"
         return 0
     fi
@@ -949,21 +1029,26 @@ function tue-install-ros
             ln -s "$repos_dir"/"$sub_dir" "$ros_pkg_dir"
         fi
 
-        if  [ -f "$ros_pkg_dir"/package.xml ]
+        if [[ "$NO_ROS_DEPS" != "true" ]]
         then
-            # Catkin
-            deps=$("$TUE_INSTALL_SCRIPTS_DIR"/parse-ros-package-deps.py "$ros_pkg_dir"/package.xml)
-            tue-install-debug "Parsed package.xml \n$deps"
+            if [ -f "$ros_pkg_dir"/package.xml ]
+            then
+                # Catkin
+                deps=$("$TUE_INSTALL_SCRIPTS_DIR"/parse-ros-package-deps.py "$ros_pkg_dir"/package.xml)
+                tue-install-debug "Parsed package.xml \n$deps"
 
-            for dep in $deps
-            do
-                # Preference given to target name starting with ros-
-                tue-install-target ros-"$dep" || tue-install-target "$dep" || \
-                    tue-install-error "Targets 'ros-$dep' and '$dep' does not exist."
-            done
+                for dep in $deps
+                do
+                    # Preference given to target name starting with ros-
+                    tue-install-target ros-"$dep" || tue-install-target "$dep" || \
+                        tue-install-error "Targets 'ros-$dep' and '$dep' does not exist."
+                done
 
+            else
+                tue-install-warning "Does not contain a valid ROS package.xml."
+            fi
         else
-            tue-install-warning "Does not contain a valid ROS package.xml."
+            tue-install-debug "No need to parse package.xml for dependencies"
         fi
 
     else
@@ -1018,6 +1103,20 @@ do
     case "$1" in
         --debug) DEBUG=true
             ;;
+        --no-ros-deps) NO_ROS_DEPS=true
+            ;;
+        --doc-depend)
+        export TUE_INSTALL_DOC_DEPEND=true
+            ;;
+        --no-doc-depend)
+        export TUE_INSTALL_DOC_DEPEND=false
+            ;;
+        --test-depend)
+        export TUE_INSTALL_TEST_DEPEND=true
+            ;;
+        --no-test-depend)
+        export TUE_INSTALL_TEST_DEPEND=false
+            ;;
         --branch*)
             # shellcheck disable=SC2001
             BRANCH=$(echo "$1" | sed -e 's/^[^=]*=//g')
@@ -1066,7 +1165,10 @@ TUE_INSTALL_WARNINGS=
 TUE_INSTALL_INFOS=
 
 # Make sure tools used by this installer are installed
-tue-install-system-now git python-pip python3-pip
+# Needed for mercurial install:
+# gcc, python-dev, python-docutils, python-pkg-resources, python-setuptools, python-wheel
+tue-install-system-now git gcc python-pip python-dev python-docutils python-pkg-resources python-setuptools python-wheel \
+python3-pip python3-dev python3-docutils python3-pkg-resources python3-setuptools python3-wheel
 
 tue-install-pip2-now "mercurial>=5.3"
 
@@ -1090,7 +1192,8 @@ do
     tue-install-target "$target" || tue-install-error "Installed target: '$target' doesn't exist (anymore)"
 
     if [[ "$tue_get_cmd" == "install" ]]
-    then # Mark as installed
+    then
+        # Mark as installed
         tue-install-debug "[$target] marked as installed after a successful install"
         touch "$TUE_INSTALL_INSTALLED_DIR"/"$target"
     else
