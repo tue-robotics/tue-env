@@ -226,7 +226,7 @@ function _try_branch_git
     then
         _try_branch_res=
     fi
-    [ -n "$_submodule_res" ] && res="${_try_branch_res:+${_try_branch_res} }$_submodule_res"
+    [ -n "$_submodule_res" ] && _try_branch_res="${_try_branch_res:+${_try_branch_res} }$_submodule_res"
 }
 
 # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # #
