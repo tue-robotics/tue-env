@@ -1065,20 +1065,16 @@ do
         --no-ros-deps) NO_ROS_DEPS=true
             ;;
         --doc-depend)
-        # shellcheck disable=SC2034
-        TUE_INSTALL_DOC_DEPEND=true
+        export TUE_INSTALL_DOC_DEPEND=true
             ;;
         --no-doc-depend)
-        # shellcheck disable=SC2034
-        TUE_INSTALL_DOC_DEPEND=false
+        export TUE_INSTALL_DOC_DEPEND=false
             ;;
         --test-depend)
-        # shellcheck disable=SC2034
-        TUE_INSTALL_TEST_DEPEND=true
+        export TUE_INSTALL_TEST_DEPEND=true
             ;;
         --no-test-depend)
-        # shellcheck disable=SC2034
-        TUE_INSTALL_TEST_DEPEND=false
+        export TUE_INSTALL_TEST_DEPEND=false
             ;;
         --branch*)
             # shellcheck disable=SC2001
