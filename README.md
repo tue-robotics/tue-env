@@ -150,6 +150,7 @@ generally used methods of installing packages:
 | `tue-install-svn`               | To install a svn repository                                                                 |
 | `tue-install-system`            | To add `deb` package to a list of packages to be installed at the end with `apt-get`        |
 | `tue-install-system-now`        | To install `deb` packages with `apt-get` right away, but ignores it if already installed    |
+| `tue-install-get-releases`      | To get a released asset from a github repository and place it in the requested directory    |
 
 The input arguments for each of the above mentioned commands can be found by
 simply executing the command in a bash session (provided tue-env is correctly
