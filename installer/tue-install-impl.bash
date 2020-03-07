@@ -375,17 +375,20 @@ function tue-install-hg
     fi
 
     tue-install-debug "Desired version: $version"
-    if [ -n "$version" ];
+    local _try_branch_res # Will be used in _try_branch_hg
+    if [ -n "$version" ]
     then
+        _try_branch_res=""
         _try_branch_hg "$targetdir" "$version"
-        res="$res $_try_branch_res"
+        [ -n "$_try_branch_res" ] && res="$res $_try_branch_res"
     fi
 
     tue-install-debug "Desired branch: $BRANCH"
-    if [ -n "$BRANCH" ]; #Cannot be combined with version-if because this one might not exist
+    if [ -n "$BRANCH" ] # Cannot be combined with version-if because this one might not exist
     then
+        _try_branch_res=""
         _try_branch_hg "$targetdir" "$BRANCH"
-        res="$res $_try_branch_res"
+        [ -n "$_try_branch_res" ] && res="$res $_try_branch_res"
     fi
 
     _show_update_message "$TUE_INSTALL_CURRENT_TARGET" "$res"
@@ -403,9 +406,8 @@ function _try_branch_hg
     fi
 
     tue-install-debug "hg -R $1 checkout $2"
-    local _try_branch_res
-    _try_branch_res=$(hg -R "$1" checkout "$2" 2>&1)
-    tue-install-debug "$_try_branch_res"
+    _try_branch_res=$(hg -R "$1" checkout "$2" 2>&1) # This is a "global" variable from tue-install-hg
+    tue-install-debug "_try_branch_res: $_try_branch_res"
     if [[ $_try_branch_res == "1 files updated, 0 files merged, 1 files removed, 0 files unresolved" || $_try_branch_res == "abort: unknown revision"* ]]
     then
         _try_branch_res=
