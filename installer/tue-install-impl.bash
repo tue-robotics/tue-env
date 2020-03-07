@@ -214,7 +214,7 @@ function _try_branch_git
     fi
 
     tue-install-debug "git -C $1 checkout $2"
-    _try_branch_res=$(git -C "$1" checkout "$2" 2>&1)
+    _try_branch_res=$(git -C "$1" checkout "$2" 2>&1) # This is a "global" variable from tue-install-git
     tue-install-debug "_try_branch_res: $_try_branch_res"
 
     local _submodule_res
@@ -285,17 +285,18 @@ function tue-install-git
     fi
 
     tue-install-debug "Desired version: $version"
+    local _try_branch_res # Will be used in _try_branch_git
     if [ -n "$version" ]
     then
-        local _try_branch_res
+        _try_branch_res=""
         _try_branch_git "$targetdir" "$version"
         [ -n "$_try_branch_res" ] && res="$res $_try_branch_res"
     fi
 
     tue-install-debug "Desired branch: $BRANCH"
-    if [ -n "$BRANCH" ] #Cannot be combined with version-if because this one might not exist
+    if [ -n "$BRANCH" ] # Cannot be combined with version-if because this one might not exist
     then
-        local _try_branch_res
+        _try_branch_res=""
         _try_branch_git "$targetdir" "$BRANCH"
         [ -n "$_try_branch_res" ] && res="$res $_try_branch_res"
     fi
