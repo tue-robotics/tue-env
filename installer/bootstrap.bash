@@ -1,9 +1,9 @@
 #! /usr/bin/env bash
 
 # Make sure git is installed
-hash git 2> /dev/null || sudo apt-get install --assume-yes --no-install-recommends git
+hash git 2> /dev/null || sudo apt-get install --assume-yes -qq --no-install-recommends git
 # Make sure lsb-release is installed
-hash lsb_release 2> /dev/null || sudo apt-get install --assume-yes lsb-release
+hash lsb_release 2> /dev/null || sudo apt-get install --assume-yes -qq lsb-release
 
 # Check if OS is Ubuntu
 # shellcheck disable=SC1091
