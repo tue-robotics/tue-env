@@ -60,7 +60,7 @@ else
 
     echo -en "[tue-env-targets] Updating targets... "
 
-    if ! git -C "$TUE_ENV_TARGETS_DIR" pull --prune --recurse-submodules --rebase && [ -z "$CI" ]
+    if ! { git -C "$TUE_ENV_TARGETS_DIR" pull --prune --recurse-submodules --rebase && git -C "$TUE_ENV_TARGETS_DIR" submodule update --init; } && [ -z "$CI" ]
     then
         # prompt for conformation
         exec < /dev/tty
