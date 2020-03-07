@@ -813,11 +813,15 @@ function _tue-install-pip-now
     fi
 
     local pips_to_install=""
+    local git_pips_to_install=""
     # shellcheck disable=SC2048
     for pkg in $*
     do
         local installed_version
-        if [[ "$pkg" == "git+"* ]] || ! installed_version=$(python"${pv}" "$TUE_INSTALL_SCRIPTS_DIR"/check-pip-pkg-installed-version.py "$pkg")
+        if [[ "$pkg" == "git+"* ]]
+        then
+            git_pips_to_install="$git_pips_to_install $pkg"
+        elif ! installed_version=$(python"${pv}" "$TUE_INSTALL_SCRIPTS_DIR"/check-pip-pkg-installed-version.py "$pkg")
         then
             pips_to_install="$pips_to_install $pkg"
         else
@@ -831,6 +835,17 @@ function _tue-install-pip-now
         echo -e "yes | pip${pv} install --user $pips_to_install\n"
         # shellcheck disable=SC2048,SC2086
         yes | pip"${pv}" install --user $pips_to_install
+    fi
+
+    if [ -n "$git_pips_to_install" ]
+    then
+        for pkg in $git_pips_to_install
+        do
+            echo -e "Going to run the following command:\n"
+            echo -e "yes | pip${pv} install --user $pkg\n"
+            # shellcheck disable=SC2048,SC2086
+            yes | pip"${pv}" install --user $pkg
+        done
     fi
 }
 
