@@ -143,8 +143,8 @@ generally used methods of installing packages:
 | `tue-install-pip-now`           | To install python pip2 package, but ignores it if already installed (deprecated)            |
 | `tue-install-pip2-now`          | To install python pip2 package, but ignores it if already installed                         |
 | `tue-install-pip3-now`          | To install python pip3 package, but ignores it if already installed                         |
-| `tue-install-ppa`               | To add a PPA to a list to be add with `apt-add-repository` at the end, before apt-get       |
-| `tue-install-ppa-now`           | To add a PPA with `apt-add-repository`                                                      |
+| `tue-install-ppa`               | To add a PPA/DEB to a list to be add with `apt-add-repository` at the end, before apt-get   |
+| `tue-install-ppa-now`           | To add a PPA/DEB with `apt-add-repository`                                                  |
 | `tue-install-snap`              | To add a snap package to a list to be installed at the end                                  |
 | `tue-install-snap-now`          | To install a snap                                                                           |
 | `tue-install-svn`               | To install a svn repository                                                                 |
