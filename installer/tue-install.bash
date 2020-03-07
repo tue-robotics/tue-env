@@ -60,7 +60,7 @@ else
 
     echo -en "[tue-env-targets] Updating targets... "
 
-    if ! git -C "$TUE_ENV_TARGETS_DIR" pull --ff-only --prune && [ -z "$CI" ]
+    if ! git -C "$TUE_ENV_TARGETS_DIR" pull --ff-only --prune --recurse-submodules && [ -z "$CI" ]
     then
         # prompt for conformation
         exec < /dev/tty
@@ -74,7 +74,7 @@ else
     fi
 fi
 
-if [[ -n "$CI" ]] #With continuous integration try to switch the targets repo to the PR branch
+if [[ -n "$CI" ]] # With continuous integration try to switch the targets repo to the PR branch
 then
     current_branch=$(git -C "$TUE_ENV_TARGETS_DIR" rev-parse --abbrev-ref HEAD)
 
@@ -91,6 +91,7 @@ then
                 echo -en "Already on branch $BRANCH"
             else
                 git -C "$TUE_ENV_TARGETS_DIR" checkout "$BRANCH" 2>&1
+                git -C "$TUE_ENV_TARGETS_DIR" submodule update --init --recursive 2>&1
                 echo -en "Switched to branch $BRANCH"
             fi
         else

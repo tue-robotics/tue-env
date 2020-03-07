@@ -196,7 +196,7 @@ Purged environment directory of '$env'"""
             echo "[tue-env] Moved old targets of environment '$env' to $targets_dir_moved"
         fi
 
-        git clone "$url" "$tue_env_targets_dir"
+        git clone --recursive "$url" "$tue_env_targets_dir"
         echo "[tue-env] cloned targets of environment '$env' from $url"
 
     elif [[ $cmd == "targets" ]]
