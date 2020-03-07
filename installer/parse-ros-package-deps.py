@@ -2,6 +2,7 @@
 
 from __future__ import print_function
 
+import os
 import sys
 import xml.etree.ElementTree as ET
 
@@ -19,6 +20,9 @@ def main():
     deps = doc.findall('build_depend')
     dep_set |= {dep.text for dep in deps}
 
+    deps = doc.findall('buildtool_depend')
+    dep_set |= set([dep.text for dep in deps])
+
     deps = doc.findall('run_depend')
     dep_set |= {dep.text for dep in deps}
 
@@ -31,11 +35,13 @@ def main():
     deps = doc.findall('exec_depend')
     dep_set |= {dep.text for dep in deps}
 
-    deps = doc.findall('test_depend')
-    dep_set |= {dep.text for dep in deps}
+    if os.getenv('TUE_INSTALL_TEST_DEPEND', 'false') == 'true':
+        deps = doc.findall('test_depend')
+        dep_set |= {dep.text for dep in deps}
 
-    deps = doc.findall('doc_depend')
-    dep_set |= {dep.text for dep in deps}
+    if os.getenv('TUE_INSTALL_DOC_DEPEND', 'false') == 'true':
+        deps = doc.findall('doc_depend')
+        dep_set |= {dep.text for dep in deps}
 
     print('\n'.join(dep_set))
 
