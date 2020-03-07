@@ -1027,7 +1027,16 @@ function tue-checkout
                 then
                     echo -e "\033[1m$pkg\033[0m: Already on branch $branch"
                 else
-                    if res=$(git -C "$pkg_dir" checkout "$branch" 2>&1)
+                    local res _checkout_res _checkout_return _submodule_res _submodule_return
+                    _checkout_res=$(git -C "$pkg_dir" checkout "$branch" 2>&1)
+                    _checkout_return=$?
+                    [ -n "$_checkout_res" ] && res="${res:+${res} }$_checkout_res"
+                    _submodule_res=$(git -C "$pkg_dir" submodule update --init --recursive 2>&1)
+                    # shellcheck disable=SC2034
+                    _submodule_return=$?
+                    [ -n "$_submodule_res" ] && res="${res:+${res} }$_submodule_res"
+
+                    if [ "$_checkout_return" == 0 ] && [ -z "$_submodule_res" ]
                     then
                         echo -e "\033[1m$pkg\033[0m: checked-out $branch"
                     else
