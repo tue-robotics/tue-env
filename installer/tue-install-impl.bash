@@ -667,7 +667,7 @@ function tue-install-system-now
             # Update once every boot. Or delete the tmp file if you need an update before installing a pkg.
             tue-install-debug "sudo apt-get update -qq"
             sudo apt-get update -qq
-            /tmp/apt_get_update
+            touch /tmp/apt_get_update
         fi
 
         # shellcheck disable=SC2086
