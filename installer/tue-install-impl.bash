@@ -688,9 +688,9 @@ function tue-install-ppa
     fi
     local ppa="$*"
 
-    if [[ $ppa != ppa:* && $ppa != deb* ]]
+    if [[ $ppa != "ppa:"* && $ppa != "deb"* ]]
     then
-        tue-install-error "Invalid tue-install-ppa call: needs to start with 'ppa:' or 'deb '"
+        tue-install-error "Invalid tue-install-ppa call: needs to start with 'ppa:' or 'deb ' ($ppa)"
     fi
     tue-install-debug "Adding $ppa to PPA list"
     TUE_INSTALL_PPA="${TUE_INSTALL_PPA} ${ppa// /^}"  # Replace space by ^ to support for-loops later
@@ -708,11 +708,33 @@ function tue-install-ppa-now
     fi
 
     local PPA_ADDED=""
+    local needs_to_be_added
     # shellcheck disable=SC2048
     for ppa in $*
     do
         ppa="${ppa//^/ }"
-        if ! grep -q -h "^deb.*${ppa#ppa:}" /etc/apt/sources.list.d/* 2>&1
+        if [[ $ppa != "ppa:"* && $ppa != "deb "* ]]
+        then
+            tue-install-error "Invalid tue-install-ppa-now call: needs to start with 'ppa:' or 'deb ' ($ppa)"
+        fi
+        needs_to_be_added="false"
+        if [[ "$ppa" == "ppa:"* ]]
+        then
+            if ! grep -q "^deb.*${ppa#ppa:}" /etc/apt/sources.list.d/* 2>&1
+            then
+                needs_to_be_added="true"
+            fi
+        elif [[ "$ppa" == "deb "* ]]
+        then
+            if ! grep -qF "$ppa" /etc/apt/sources.list 2>&1
+            then
+                needs_to_be_added="true"
+            fi
+        else
+            tue-install-warning "tue-install-ppa-now: We shouldn't end up here ($ppa)"
+        fi
+
+        if [ "$needs_to_be_added" == "true" ]
         then
             tue-install-system-now software-properties-common
             tue-install-info "Adding ppa: $ppa"
