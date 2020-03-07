@@ -226,7 +226,7 @@ function _try_branch_git
     then
         _try_branch_res=
     fi
-    [ -n "$_submodule_res" ] && _try_branch_res="$_try_branch_res $_submodule_res"
+    [ -n "$_submodule_res" ] && res="${_try_branch_res:+${_try_branch_res} }$_submodule_res"
 }
 
 # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # #
@@ -290,7 +290,7 @@ function tue-install-git
     then
         _try_branch_res=""
         _try_branch_git "$targetdir" "$version"
-        [ -n "$_try_branch_res" ] && res="$res $_try_branch_res"
+        [ -n "$_try_branch_res" ] && res="${res:+${res} }$_try_branch_res"
     fi
 
     tue-install-debug "Desired branch: $BRANCH"
@@ -298,7 +298,7 @@ function tue-install-git
     then
         _try_branch_res=""
         _try_branch_git "$targetdir" "$BRANCH"
-        [ -n "$_try_branch_res" ] && res="$res $_try_branch_res"
+        [ -n "$_try_branch_res" ] && res="${res:+${res} }$_try_branch_res"
     fi
 
     _show_update_message "$TUE_INSTALL_CURRENT_TARGET" "$res"
@@ -380,7 +380,7 @@ function tue-install-hg
     then
         _try_branch_res=""
         _try_branch_hg "$targetdir" "$version"
-        [ -n "$_try_branch_res" ] && res="$res $_try_branch_res"
+        [ -n "$_try_branch_res" ] && res="${res:+${res} }$_try_branch_res"
     fi
 
     tue-install-debug "Desired branch: $BRANCH"
@@ -388,7 +388,7 @@ function tue-install-hg
     then
         _try_branch_res=""
         _try_branch_hg "$targetdir" "$BRANCH"
-        [ -n "$_try_branch_res" ] && res="$res $_try_branch_res"
+        [ -n "$_try_branch_res" ] && res="${res:+${res} }$_try_branch_res"
     fi
 
     _show_update_message "$TUE_INSTALL_CURRENT_TARGET" "$res"
