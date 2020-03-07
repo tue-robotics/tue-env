@@ -28,7 +28,7 @@ SHELL ["/bin/bash", "-c"]
 # Install commands used in our scripts and standard present on a clean ubuntu
 # installation and setup a user with sudo priviledges
 RUN apt-get update -qq && \
-    apt-get install -qq --assume-yes --no-install-recommends apt-transport-https apt-utils ca-certificates curl dbus dialog git lsb-release sudo tzdata wget && \
+    apt-get install -qq --assume-yes --no-install-recommends apt-transport-https apt-utils ca-certificates curl dbus dialog git lsb-release sudo tzdata wget ssh && \
     # Add amigo user
     adduser --disabled-password --gecos "" $USER && \
     adduser $USER sudo && \
