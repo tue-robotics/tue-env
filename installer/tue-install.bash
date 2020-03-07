@@ -84,7 +84,7 @@ then
     if [ -n "$BRANCH" ]
     then
         echo -en "[tue-env-targets] Trying to switch to branch $BRANCH..."
-        if git -C "$TUE_ENV_TARGETS_DIR" branch -a 2> /dev/null | grep -q "$BRANCH"
+        if git -C "$TUE_ENV_TARGETS_DIR" rev-parse --quiet --verify origin/"$BRANCH" 1>/dev/null
         then
             if [[ "$current_branch" == "$BRANCH" ]]
             then
