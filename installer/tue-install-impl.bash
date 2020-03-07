@@ -890,8 +890,8 @@ function tue-install-dpkg
     fi
     tue-install-debug "Installing dpkg $1"
     sudo dpkg --install "$1"
-    tue-install-debug "sudo apt-get --fix-broken --assume-yes --no-install-recommends install"
-    sudo apt-get --fix-broken --assume-yes  --no-install-recommends install
+    tue-install-debug "sudo apt-get --fix-broken --assume-yes -qq --no-install-recommends install"
+    sudo apt-get --fix-broken --assume-yes -qq --no-install-recommends install
 }
 
 # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # #
