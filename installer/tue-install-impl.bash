@@ -240,7 +240,7 @@ function tue-install-git
     local version=$3
 
     # Change url to https/ssh
-    repo=$(_github_https_or_ssh "$repo")
+    repo=$(_https_or_ssh "$repo")
 
     if [ ! -d "$targetdir" ]
     then

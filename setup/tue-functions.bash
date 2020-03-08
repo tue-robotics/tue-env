@@ -230,6 +230,7 @@ complete -F __tue-git-clean-local _tue-git-clean-local
 #                                              SSH
 # ----------------------------------------------------------------------------------------------------
 
+## GitHub
 function _github_https
 {
     local input_url=$1
@@ -248,7 +249,7 @@ function _github_https_or_ssh
 {
     local input_url=$1
     local output_url
-    if [[ "$TUE_USE_SSH" == "true" ]]
+    if [[ "$TUE_GITHUB_USE_SSH" == "true" ]]
     then
         output_url=$(_github_ssh "$input_url")
     else
@@ -257,6 +258,52 @@ function _github_https_or_ssh
     echo "$output_url"
 }
 export -f _github_https_or_ssh # otherwise not available in sourced files
+
+## GitLab
+function _gitlab_https
+{
+    local input_url=$1
+    echo "${input_url/git@gitlab.com:/https:\/\/gitlab.com\/}"
+}
+export -f _gitlab_https # otherwise not available in sourced files
+
+function _gitlab_ssh
+{
+    local input_url=$1
+    echo "${input_url/https:\/\/gitlab.com\//git@gitlab.com:}"
+}
+export -f _gitlab_ssh # otherwise not available in sourced files
+
+function _gitlab_https_or_ssh
+{
+    local input_url=$1
+    local output_url
+    if [[ "$TUE_GITLAB_USE_SSH" == "true" ]]
+    then
+        output_url=$(_gitlab_ssh "$input_url")
+    else
+        output_url=$(_gitlab_https "$input_url")
+    fi
+    echo "$output_url"
+}
+export -f _gitlab_https_or_ssh # otherwise not available in sourced files
+
+function _https_or_ssh
+{
+    local input_url=$1
+    local output_url
+    if [[ "$input_url" == *"github"* ]]
+    then
+        output_url=$(_github_https_or_ssh "$input_url")
+    elif [[ "$input_url" == *"gitlab"* ]]
+    then
+        output_url=$(_gitlab_https_or_ssh "$input_url")
+    else
+        output_url=$input_url
+    fi
+    echo "$output_url"
+}
+export -f _https_or_ssh # otherwise not available in sourced files
 
 # ----------------------------------------------------------------------------------------------------
 #                                            TUE-MAKE

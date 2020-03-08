@@ -8,7 +8,7 @@ then
     exit 1
 else
     current_url=$(git -C "$TUE_DIR" config --get remote.origin.url)
-    new_url=$(_github_https_or_ssh "$current_url")
+    new_url=$(_https_or_ssh "$current_url")
 
     if [ "$current_url" != "$new_url" ]
     then
@@ -50,7 +50,7 @@ tue-env init-targets https://github.com/tue-robotics/tue-env-targets.git
     exit 1
 else
     current_url=$(git -C "$TUE_ENV_TARGETS_DIR" config --get remote.origin.url)
-    new_url=$(_github_https_or_ssh "$current_url")
+    new_url=$(_https_or_ssh "$current_url")
 
     if [ "$current_url" != "$new_url" ]
     then
