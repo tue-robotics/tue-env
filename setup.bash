@@ -70,7 +70,17 @@ then
 fi
 
 export TUE_BIN=$TUE_DIR/bin
-export PATH=$TUE_BIN${PATH:+:${PATH}}
+
+# .local/bin is needed in the path for all user installs like pip. It gets added automatically on reboot but not on CI
+if [[ :$PATH: != *:$HOME/.local/bin:* ]]
+then
+    export PATH=$HOME/.local/bin${PATH:+:${PATH}}
+fi
+
+if [[ :$PATH: != *:$TUE_BIN:* ]]
+then
+    export PATH=$TUE_BIN${PATH:+:${PATH}}
+fi
 
 if [ -f "$TUE_ENV_DIR"/.env/setup/target_setup.bash ]
 then
