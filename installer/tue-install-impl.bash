@@ -766,7 +766,7 @@ function tue-install-ppa-now
             tue-install-system-now software-properties-common
             tue-install-info "Adding ppa: $ppa"
             tue-install-debug "sudo add-apt-repository --yes $ppa"
-            sudo add-apt-repository --yes "$ppa"
+            sudo add-apt-repository --yes "$ppa" || tue-install-error "An error occurred while adding ppa: $ppa"
             PPA_ADDED=true
         else
             tue-install-debug "$ppa is already added previously"
@@ -861,7 +861,7 @@ function _tue-install-pip-now
         echo -e "Going to run the following command:\n"
         echo -e "yes | pip${pv} install --user $pips_to_install\n"
         # shellcheck disable=SC2048,SC2086
-        yes | pip"${pv}" install --user $pips_to_install
+        yes | pip"${pv}" install --user $pips_to_install || tue-install-error "An error occurred while installing pip${pv} packages."
     fi
 
     if [ -n "$git_pips_to_install" ]
@@ -871,7 +871,7 @@ function _tue-install-pip-now
             echo -e "Going to run the following command:\n"
             echo -e "yes | pip${pv} install --user $pkg\n"
             # shellcheck disable=SC2048,SC2086
-            yes | pip"${pv}" install --user $pkg
+            yes | pip"${pv}" install --user $pkg || tue-install-error "An error occurred while installing pip${pv} packages."
         done
     fi
 }
@@ -941,7 +941,7 @@ function tue-install-snap-now
         do
             echo -e "yes | sudo snap install --classic $pkg\n"
             tue-install-debug "yes | sudo snap install --classic $pkg"
-            yes | sudo snap install --classic "$pkg"
+            yes | sudo snap install --classic "$pkg" || tue-install-error "An error occurred while installing snap packages."
         done
     fi
 }
