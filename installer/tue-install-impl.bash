@@ -268,16 +268,20 @@ function tue-install-git
                 tue-install-info "URL has switched to $repo"
             fi
 
-            tue-install-debug "git -C $targetdir pull --ff-only --prune --recurse-submodules"
-
             local res
-            res=$(git -C "$targetdir" pull --ff-only --prune --recurse-submodules 2>&1)
-
-            tue-install-debug "$res"
+            tue-install-debug "git -C $targetdir pull --ff-only --prune"
+            res=$(git -C "$targetdir" pull --ff-only --prune 2>&1)
+            tue-install-debug "res: $res"
 
             TUE_INSTALL_GIT_PULL_Q+=$targetdir
 
-            if [[ $(echo "$res" | grep -v "Fetching submodule") == "Already up to date." ]]
+            local submodule_res
+            tue-install-debug "git -C $targetdir submodule update --init --recursive"
+            submodule_res=$(git -C "$targetdir" submodule update --init --recursive 2>&1)
+            tue-install-debug "submodule_res: $submodule_res"
+            [ -n "$submodule_res" ] && res="${res:+${res} }$submodule_res"
+
+            if [ "$res" == "Already up to date." ]
             then
                 res=
             fi
