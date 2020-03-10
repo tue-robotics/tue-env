@@ -673,7 +673,7 @@ function tue-install-system-now
     if [ -n "$pkgs_to_install" ]
     then
         echo -e "Going to run the following command:\n"
-        echo -e "sudo apt-get install --assume-yes -qq --no-install-recommends $pkgs_to_install\n"
+        echo -e "sudo apt-get install --assume-yes -qq $pkgs_to_install\n"
 
         # Wait for apt-lock first (https://askubuntu.com/a/375031)
         i=0
@@ -702,7 +702,7 @@ function tue-install-system-now
         fi
 
         # shellcheck disable=SC2086
-        sudo apt-get install --assume-yes -qq --no-install-recommends $pkgs_to_install || tue-install-error "An error occurred while installing system packages."
+        sudo apt-get install --assume-yes -qq $pkgs_to_install || tue-install-error "An error occurred while installing system packages."
         tue-install-debug "Installed $pkgs_to_install ($?)"
     fi
 }
@@ -962,8 +962,8 @@ function tue-install-dpkg
     fi
     tue-install-debug "Installing dpkg $1"
     sudo dpkg --install "$1"
-    tue-install-debug "sudo apt-get --fix-broken --assume-yes -qq --no-install-recommends install"
-    sudo apt-get --fix-broken --assume-yes -qq --no-install-recommends install
+    tue-install-debug "sudo apt-get --fix-broken --assume-yes -qq install"
+    sudo apt-get --fix-broken --assume-yes -qq install
 }
 
 # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # #
