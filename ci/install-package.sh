@@ -88,7 +88,7 @@ echo -e "\e[35m\e[1m Trying to fetch docker image: $IMAGE_NAME:$BRANCH_TAG \e[0m
 if ! docker pull "$IMAGE_NAME:$BRANCH_TAG"
 then
     echo -e "\e[35m\e[1m No worries, we just test against the master branch: $IMAGE_NAME:$MASTER_TAG \e[0m"
-    docker pull $IMAGE_NAME:$MASTER_TAG
+    docker pull "$IMAGE_NAME:$MASTER_TAG"
     BRANCH_TAG=master
 fi
 
