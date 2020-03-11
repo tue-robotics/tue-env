@@ -50,7 +50,7 @@ do
     esac
 done
 
-image_substring="$(basename "$CI_DOCKER_IMAGE_NAME")"
+image_substring=$(basename "$CI_DOCKER_IMAGE_NAME")
 case $image_substring in
     tue-env )
         BASE_IMAGE="ubuntu:16.04" ;;

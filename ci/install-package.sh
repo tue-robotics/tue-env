@@ -88,8 +88,8 @@ echo -e "\e[35m\e[1m Trying to fetch docker image: $IMAGE_NAME:$BRANCH_TAG \e[0m
 if ! docker pull "$IMAGE_NAME:$BRANCH_TAG"
 then
     echo -e "\e[35m\e[1m No worries, we just test against the master branch: $IMAGE_NAME:$MASTER_TAG \e[0m"
-    docker pull "$IMAGE_NAME:$MASTER_TAG"
-    BRANCH_TAG=master
+    docker pull "$IMAGE_NAME":"$MASTER_TAG"
+    BRANCH_TAG=$MASTER_TAG
 fi
 
 # Run the docker image along with setting new environment variables
@@ -97,7 +97,7 @@ docker run --detach --interactive -e CI="true" -e PACKAGE="$PACKAGE" -e BRANCH="
 
 if [ "$USE_SSH" != "false" ]
 then
-    docker exec tue-env bash -c 'eval $(ssh-agent -s)'
+    docker exec tue-env bash -c "eval $(ssh-agent -s)"
     docker exec tue-env bash -c "echo '$SSH_KEY' > ~/.ssh/id_rsa && chmod 700 ~/.ssh/id_rsa"
 fi
 
