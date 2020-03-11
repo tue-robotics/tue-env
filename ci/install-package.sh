@@ -82,8 +82,14 @@ then
     BRANCH_TAG=master
 fi
 
+echo -e "Travis: ls -la $HOME/.ssh"
+ls -la "$HOME"/.ssh
+
 # Run the docker image along with setting new environment variables
 docker run --detach --interactive -e CI=true -e PACKAGE="$PACKAGE" -e BRANCH="$BRANCH" -e COMMIT="$COMMIT" -e PULL_REQUEST="$PULL_REQUEST" --name tue-env "$IMAGE_NAME:$BRANCH_TAG"
+
+echo -e "Docker: ls -la $HOME/.ssh"
+docker exec tue-env bash -c 'ls -la "$HOME"/.ssh'
 
 # Refresh the apt cache in the docker image
 docker exec tue-env bash -c 'sudo apt-get update -qq'
