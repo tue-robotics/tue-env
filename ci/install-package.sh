@@ -29,6 +29,17 @@ do
 
         -r=* | --pullrequest=* )
             PULL_REQUEST="${i#*=}" ;;
+
+        -i=* | --image=* )
+            IMAGE_NAME="${i#*=}" ;;
+
+        -s=* | --ssh=* )
+            USE_SSH="${i#*=}"
+            USE_SSH=${USE_SSH:-"false"} ;;
+
+        -sk=* | --ssh-key=* )
+            SSH_KEY="${i#*=}" ;;
+
         * )
             # unknown option
             echo -e "\e[35m\e[1m Unknown input argument '$i'. Check CI .yml file \e[0m"
@@ -41,6 +52,7 @@ echo -e "\e[35m\e[1m PACKAGE      = ${PACKAGE} \e[0m"
 echo -e "\e[35m\e[1m BRANCH       = ${BRANCH} \e[0m"
 echo -e "\e[35m\e[1m COMMIT       = ${COMMIT} \e[0m"
 echo -e "\e[35m\e[1m PULL_REQUEST = ${PULL_REQUEST} \e[0m"
+echo -e "\e[35m\e[1m USE_SSH      = ${USE_SSH} \e[0m"
 
 echo -e "\e[35m\e[1m
 This build can be reproduced locally using the following commands:
@@ -61,8 +73,6 @@ then
     exit 0
 fi
 
-# Name of the docker image
-IMAGE_NAME=tuerobotics/tue-env
 # Determine docker tag if the same branch exists there
 BRANCH_TAG=$(echo "$BRANCH" | tr '[:upper:]' '[:lower:]' | sed -e 's:/:_:g')
 
@@ -82,14 +92,14 @@ then
     BRANCH_TAG=master
 fi
 
-echo -e "Travis: ls -la $HOME/.ssh"
-ls -la "$HOME"/.ssh
-
 # Run the docker image along with setting new environment variables
-docker run --detach --interactive -e CI=true -e PACKAGE="$PACKAGE" -e BRANCH="$BRANCH" -e COMMIT="$COMMIT" -e PULL_REQUEST="$PULL_REQUEST" --name tue-env "$IMAGE_NAME:$BRANCH_TAG"
+docker run --detach --interactive -e CI="true" -e PACKAGE="$PACKAGE" -e BRANCH="$BRANCH" -e COMMIT="$COMMIT" -e PULL_REQUEST="$PULL_REQUEST" --name tue-env "$IMAGE_NAME:$BRANCH_TAG"
 
-echo -e "Docker: ls -la $HOME/.ssh"
-docker exec tue-env bash -c 'ls -la "$HOME"/.ssh'
+if [ "$USE_SSH" != "false" ]
+then
+    docker exec tue-env bash -c 'eval $(ssh-agent -s)'
+    docker exec tue-env bash -c "echo '$SSH_KEY' > ~/.ssh/id_rsa && chmod 700 ~/.ssh/id_rsa"
+fi
 
 # Refresh the apt cache in the docker image
 docker exec tue-env bash -c 'sudo apt-get update -qq'
