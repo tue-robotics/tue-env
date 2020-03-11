@@ -12,7 +12,7 @@ jobs:
       language: generic
       services: docker
       name: tue-env
-      script: ci/build-docker-image.sh -i="tuerobotics/tue-env" -b="$TRAVIS_BRANCH" -c="$TRAVIS_COMMIT" -pr="$TRAVIS_PULL_REQUEST" -prb="$TRAVIS_PULL_REQUEST_BRANCH" -u="$DOCKER_HUB_USERNAME" -p="$DOCKER_HUB_PASSWORD" -r=""
+      script: ci/build-docker-image.sh -i="tuerobotics/tue-env" -b="$TRAVIS_BRANCH" -c="$TRAVIS_COMMIT" -pr="$TRAVIS_PULL_REQUEST" -prb="$TRAVIS_PULL_REQUEST_BRANCH" -u="$DOCKER_HUB_USERNAME" -p="$DOCKER_HUB_PASSWORD"
     - <<: *docker-generation
       name: tue-env-cuda
-      script: ci/build-docker-image.sh -i="tuerobotics/tue-env-cuda" -b="$TRAVIS_BRANCH" -c="$TRAVIS_COMMIT" -pr="$TRAVIS_PULL_REQUEST" -prb="$TRAVIS_PULL_REQUEST_BRANCH" -u="$DOCKER_HUB_USERNAME" -p="$DOCKER_HUB_PASSWORD" -r=""
+      script: ci/build-docker-image.sh -i="tuerobotics/tue-env-cuda" -b="$TRAVIS_BRANCH" -c="$TRAVIS_COMMIT" -pr="$TRAVIS_PULL_REQUEST" -prb="$TRAVIS_PULL_REQUEST_BRANCH" -u="$DOCKER_HUB_USERNAME" -p="$DOCKER_HUB_PASSWORD"
