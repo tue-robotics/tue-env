@@ -248,8 +248,10 @@ export -f _github_ssh # otherwise not available in sourced files
 function _github_https_or_ssh
 {
     local input_url=$1
-    local output_url
-    if [[ "$TUE_GITHUB_USE_SSH" == "true" ]]
+    local output_url test_var
+    [[ -v "TUE_USE_SSH" ]] && test_var="TUE_USE_SSH"
+    [[ -v "TUE_GITHUB_USE_SSH" ]] && test_var="TUE_GITHUB_USE_SSH"
+    if [[ "${!test_var}" == "true" ]]
     then
         output_url=$(_github_ssh "$input_url")
     else
@@ -277,8 +279,10 @@ export -f _gitlab_ssh # otherwise not available in sourced files
 function _gitlab_https_or_ssh
 {
     local input_url=$1
-    local output_url
-    if [[ "$TUE_GITLAB_USE_SSH" == "true" ]]
+    local output_url test_var
+    [[ -v "TUE_USE_SSH" ]] && test_var="TUE_USE_SSH"
+    [[ -v "TUE_GITLAB_USE_SSH" ]] && test_var="TUE_GITLAB_USE_SSH"
+    if [[ "${!test_var}" == "true" ]]
     then
         output_url=$(_gitlab_ssh "$input_url")
     else
