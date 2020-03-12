@@ -51,7 +51,12 @@ echo -e "\e[35m\e[1m PACKAGE      = ${PACKAGE} \e[0m"
 echo -e "\e[35m\e[1m BRANCH       = ${BRANCH} \e[0m"
 echo -e "\e[35m\e[1m COMMIT       = ${COMMIT} \e[0m"
 echo -e "\e[35m\e[1m PULL_REQUEST = ${PULL_REQUEST} \e[0m"
-echo -e "\e[35m\e[1m USE_SSH      = ${USE_SSH} \e[0m"
+
+if [ "$USE_SSH" == "true" ]
+then
+    SSH_KEY_FINGERPRINT=$(ssh-keygen -lf /dev/stdin <<< "$SSH_KEY" | awk '{print $2}')
+    echo -e "\e[35m\e[1m SSH_KEY  = ${SSH_KEY_FINGERPRINT} \e[0m"
+fi
 
 echo -e "\e[35m\e[1m
 This build can be reproduced locally using the following commands:
