@@ -73,7 +73,7 @@ then
         PULL_REQUEST="$CI_PULL_REQUEST" --build-arg COMMIT="$CI_COMMIT" --build-arg \
         CI="$CI" --build-arg BASE_IMAGE="$BASE_IMAGE" -t "$CI_DOCKER_IMAGE_NAME" .
 else
-    docker build --build-arg BRANCH="${CI_PULL_REQUEST_BRANCH:-$CI_BRANCH}" --build-arg \
+    DOCKER_BUILDKIT=1 docker build --build-arg BRANCH="${CI_PULL_REQUEST_BRANCH:-$CI_BRANCH}" --build-arg \
         PULL_REQUEST="$CI_PULL_REQUEST" --build-arg COMMIT="$CI_COMMIT" --build-arg \
         CI="$CI" --build-arg BASE_IMAGE="$BASE_IMAGE" -t "$CI_DOCKER_IMAGE_NAME" .
 fi
