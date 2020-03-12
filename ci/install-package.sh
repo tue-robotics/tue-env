@@ -36,7 +36,7 @@ do
         --ssh )
             USE_SSH=true ;;
 
-        -sk=* | --ssh-key=* )
+        --ssh-key=* )
             SSH_KEY="${i#*=}" ;;
 
         * )
