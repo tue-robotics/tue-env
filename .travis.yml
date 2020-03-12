@@ -7,6 +7,7 @@ jobs:
     - stage: Linting
       name: shellcheck
       script: bash -c 'shopt -s globstar; shellcheck **/*.bash **/*.sh'
+
     - &docker-generation
       stage: Docker generation
       language: generic
@@ -18,7 +19,8 @@ jobs:
         - sudo apt-get -y -o Dpkg::Options::="--force-confnew" install docker-ce
         - sudo rm /etc/docker/daemon.json
         - sudo systemctl restart docker
-      script: ci/build-docker-image.sh -i="tuerobotics/tue-env" -b="$TRAVIS_BRANCH" -c="$TRAVIS_COMMIT" -pr="$TRAVIS_PULL_REQUEST" -prb="$TRAVIS_PULL_REQUEST_BRANCH" -u="$DOCKER_HUB_USERNAME" -p="$DOCKER_HUB_PASSWORD"
+      script: ci/build-docker-image.sh --image="tuerobotics/tue-env" --branch="$TRAVIS_BRANCH" --commit="$TRAVIS_COMMIT" --pull_request="$TRAVIS_PULL_REQUEST" --pull_request_branch="$TRAVIS_PULL_REQUEST_BRANCH" --user="$DOCKER_HUB_USERNAME" --password="$DOCKER_HUB_PASSWORD"
+
     - <<: *docker-generation
       name: tue-env-cuda
-      script: ci/build-docker-image.sh -i="tuerobotics/tue-env-cuda" -b="$TRAVIS_BRANCH" -c="$TRAVIS_COMMIT" -pr="$TRAVIS_PULL_REQUEST" -prb="$TRAVIS_PULL_REQUEST_BRANCH" -u="$DOCKER_HUB_USERNAME" -p="$DOCKER_HUB_PASSWORD"
+      script: ci/build-docker-image.sh --image="tuerobotics/tue-env-cuda" --branch="$TRAVIS_BRANCH" --commit="$TRAVIS_COMMIT" --pull_request="$TRAVIS_PULL_REQUEST" --pull_request_branch="$TRAVIS_PULL_REQUEST_BRANCH" --user="$DOCKER_HUB_USERNAME" --password="$DOCKER_HUB_PASSWORD"
