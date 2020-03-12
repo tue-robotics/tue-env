@@ -33,9 +33,8 @@ do
         -i=* | --image=* )
             IMAGE_NAME="${i#*=}" ;;
 
-        -s=* | --ssh=* )
-            USE_SSH="${i#*=}"
-            USE_SSH=${USE_SSH:-"false"} ;;
+        --ssh )
+            USE_SSH=true ;;
 
         -sk=* | --ssh-key=* )
             SSH_KEY="${i#*=}" ;;
@@ -95,7 +94,7 @@ fi
 # Run the docker image along with setting new environment variables
 docker run --detach --interactive -e CI="true" -e PACKAGE="$PACKAGE" -e BRANCH="$BRANCH" -e COMMIT="$COMMIT" -e PULL_REQUEST="$PULL_REQUEST" --name tue-env "$IMAGE_NAME:$BRANCH_TAG"
 
-if [ "$USE_SSH" != "false" ]
+if [ "$USE_SSH" == "true" ]
 then
     docker exec tue-env bash -c "eval $(ssh-agent -s)"
     docker exec tue-env bash -c "echo '$SSH_KEY' > ~/.ssh/id_rsa && chmod 700 ~/.ssh/id_rsa"
