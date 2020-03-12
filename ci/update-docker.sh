@@ -20,3 +20,5 @@ sudo apt-get -y -o Dpkg::Options::="--force-confnew" install docker-ce
 sudo rm /etc/docker/daemon.json
 
 sudo systemctl restart docker
+
+docker --version
