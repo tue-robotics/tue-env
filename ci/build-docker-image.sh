@@ -45,7 +45,7 @@ do
             CI_DOCKER_SSH=true ;;
 
         * )
-            echo -e "Error! Unknown input variable"
+            echo -e "Error! Unknown input variable '$i'"
             exit 1 ;;
     esac
 done
