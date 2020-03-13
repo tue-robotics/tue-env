@@ -46,7 +46,7 @@ ADD ci/ssh-merge-known_hosts.py ./ssh-merge-known_hosts.py
 
 RUN mkdir -p -m 0700 ~/.ssh
 ADD ./known_hosts ./.ssh/known_hosts
-RUN sudo chmod 644 ~/.ssh/known_hosts
+RUN sudo chown 1000:1000 ~/.ssh/known_hosts && sudo chmod 644 ~/.ssh/known_hosts
 
 # Setup tue-env and install target ros
     # Remove interactive check from bashrc, otherwise bashrc refuses to execute
