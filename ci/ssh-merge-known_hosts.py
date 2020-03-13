@@ -1,4 +1,4 @@
-#! /usr/bin/python
+#! /usr/bin/env python3
 
 # Copyright (C) 2019 Joerg Jaspert <joerg@debian.org>
 #
@@ -35,15 +35,17 @@ The file should NOT use the HashKnownHosts feature.
 """)
 
 parser.add_argument('files', type=str, nargs='+', help='files that should be merged')
-parser.add_argument('-o', '--output', type=str, nargs='?', help='output file (defaults is STDOUT). Only opened after merge is complete, so can be used for inplace merge.')
+parser.add_argument('-o', '--output', type=str, nargs='?', help='output file (defaults is STDOUT).'
+                                                                'Only opened after merge is complete, '
+                                                                'so can be used for inplace merge.')
 args = parser.parse_args()
 
 if args.output:
-    import StringIO
-    output = StringIO.StringIO()
+    from io import StringIO
+    output = StringIO()
 else:
-    import sys
-    output = sys.stdout
+    from sys import stdout
+    output = stdout
 
 hostkeys = {}
 for kfile in args.files:
@@ -53,19 +55,19 @@ for kfile in args.files:
             hosts = line_splitted.pop(0).split(',')
             key_type = line_splitted.pop(0)
             key = line_splitted[0]
-            if not key in hostkeys:
-                hostkeys[key]={}
-                hostkeys[key]["hosts"] = {}
-            hostkeys[key]["key_type"]=key_type
+            if key not in hostkeys:
+                hostkeys[key] = {}
+                hostkeys[key]["hosts"] = []
+            hostkeys[key]["key_type"] = key_type
             # Store the host entries, uniquify them
             for entry in hosts:
-                hostkeys[key]["hosts"][entry]=1
+                hostkeys[key]["hosts"].extend(hosts)
 
 # And now output it all
-for key in hostkeys:
-    output.write('%s %s %s\n' %
-                 (','.join(hostkeys[key]["hosts"]), hostkeys[key]["key_type"], key))
+for k, v in hostkeys.items():
+    output.write('%s %s %s\n' % (','.join(v["hosts"]), v["key_type"], key))
 
+# Write to output file
 if args.output:
-    with open(args.output,'w') as f:
+    with open(args.output, 'w') as f:
         f.write(output.getvalue())
