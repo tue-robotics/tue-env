@@ -320,7 +320,7 @@ function tue-install-hg
 
     # Mercurial config extension to write configs from cli
     local hgcfg_folder="$HOME"/src/hgcfg
-    local hgcfg_pulled=/tmp/hgcfg_pulled
+    local hgcfg_pulled=/tmp/tue_get_hgcfg_pulled
     if [ ! -f "$hgcfg_pulled" ]
     then
         parent_target=$TUE_INSTALL_CURRENT_TARGET
@@ -692,13 +692,13 @@ function tue-install-system-now
             ((i=i+1))
         done
 
-
-        if [ ! -f /tmp/apt_get_update ]
+        local apt_get_updated=/tmp/tue_get_apt_get_updated
+        if [ ! -f "$apt_get_updated" ]
         then
             # Update once every boot. Or delete the tmp file if you need an update before installing a pkg.
             tue-install-debug "sudo apt-get update -qq"
             sudo apt-get update -qq
-            touch /tmp/apt_get_update
+            touch $apt_get_updated
         fi
 
         # shellcheck disable=SC2086
