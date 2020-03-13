@@ -66,6 +66,14 @@ esac
 CI_DOCKER_IMAGE_NAME="$CI_DOCKER_IMAGE_NAME":$(echo "$CI_BRANCH" | tr '[:upper:]' '[:lower:]' | sed -e 's:/:_:g')
 echo -e "\e[35m\e[1m Creating docker $CI_DOCKER_IMAGE_NAME \e[0m"
 
+# Make sure a known hosts file exists on the host in the workingdir
+if [ -f ~/.ssh/known_hosts ]
+then
+    cp ~/.ssh/known_hosts ./known_hosts
+else
+    touch ./known_hosts
+fi
+
 # build the Docker image (this will use the Dockerfile in the root of the repo)
 if [ "$CI_DOCKER_SSH" == "true" ]
 then
