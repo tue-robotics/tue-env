@@ -16,7 +16,7 @@ sudo add-apt-repository "deb [arch=amd64] https://download.docker.com/linux/ubun
 sudo apt-get update -qq
 sudo apt-get -y -qq -o Dpkg::Options::="--force-confnew" install docker-ce > /dev/null
 
-# This is need on travis because of https://github.com/moby/moby/issues/39120 and https://github.com/travis-ci/travis-ci/issues/6418
+# This is needed on travis because of https://github.com/moby/moby/issues/39120 and https://github.com/travis-ci/travis-ci/issues/6418
 sudo rm /etc/docker/daemon.json
 
 sudo systemctl restart docker
