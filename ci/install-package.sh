@@ -100,8 +100,20 @@ then
     BRANCH_TAG=$MASTER_TAG
 fi
 
+if [ -f ~/.ssh/known_hosts ]
+then
+    MERGE_KNOWN_HOSTS="true"
+    DOCKER_MOUNT_KNOWN_HOSTS_ARGS="--mount type=bind,source=$HOME/.ssh/known_hosts,target=/home/amigo/known_hosts_extra"
+fi
+
 # Run the docker image along with setting new environment variables
-docker run --detach --interactive -e CI="true" -e PACKAGE="$PACKAGE" -e BRANCH="$BRANCH" -e COMMIT="$COMMIT" -e PULL_REQUEST="$PULL_REQUEST" --name tue-env "$IMAGE_NAME:$BRANCH_TAG"
+# shellcheck disable=SC2086
+docker run --detach --interactive -e CI="true" -e PACKAGE="$PACKAGE" -e BRANCH="$BRANCH" -e COMMIT="$COMMIT" -e PULL_REQUEST="$PULL_REQUEST" --name tue-env $DOCKER_MOUNT_KNOWN_HOSTS_ARGS "$IMAGE_NAME:$BRANCH_TAG"
+
+if [ $MERGE_KNOWN_HOSTS == "true" ]
+then
+    docker exec tue-env bash -c "sudo chown 1000:1000 ~/known_hosts_extra && ./ssh-merge-known_hosts.py ~/.ssh/known_hosts ~/known_hosts_extra --output ~/.ssh/known_hosts"
+fi
 
 if [ "$USE_SSH" == "true" ]
 then
