@@ -5,7 +5,7 @@ from __future__ import print_function
 import json
 import os
 import sys
-import urllib
+from urllib.request import urlopen
 
 """
 Script to determine the commit range of a build in azure pipelines.
@@ -26,7 +26,7 @@ TEAM_FOUNDATION_URI = TEAM_FOUNDATION_URI.rstrip("/")
 json_url = "{}/{}/_apis/build/builds/{}/changes?&$top=500&includeSourceChange=true&api-version=5.0".format(
     TEAM_FOUNDATION_URI, TEAM_PROJECT, BUILD_ID)
 
-json_response = urllib.urlopen(json_url)
+json_response = urlopen(json_url)
 json_data = json.loads(json_response.read())
 number_commits = json_data["count"]
 if number_commits == 1:
