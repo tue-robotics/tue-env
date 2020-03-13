@@ -41,7 +41,7 @@ do
         -r=* | --registry=* )
             CI_DOCKER_REGISTRY="${i#*=}" ;;
 
-        -s | --ssh )
+        --ssh )
             CI_DOCKER_SSH=true ;;
 
         * )
