@@ -74,17 +74,16 @@ else
     touch ./known_hosts
 fi
 
-# build the Docker image (this will use the Dockerfile in the root of the repo)
+# Forward ssh-agent of the host
 if [ "$CI_DOCKER_SSH" == "true" ]
 then
-    DOCKER_BUILDKIT=1 docker build --ssh=default --build-arg BRANCH="${CI_PULL_REQUEST_BRANCH:-$CI_BRANCH}" --build-arg \
-        PULL_REQUEST="$CI_PULL_REQUEST" --build-arg COMMIT="$CI_COMMIT" --build-arg \
-        CI="$CI" --build-arg BASE_IMAGE="$BASE_IMAGE" -t "$CI_DOCKER_IMAGE_NAME" .
-else
-    DOCKER_BUILDKIT=1 docker build --build-arg BRANCH="${CI_PULL_REQUEST_BRANCH:-$CI_BRANCH}" --build-arg \
-        PULL_REQUEST="$CI_PULL_REQUEST" --build-arg COMMIT="$CI_COMMIT" --build-arg \
-        CI="$CI" --build-arg BASE_IMAGE="$BASE_IMAGE" -t "$CI_DOCKER_IMAGE_NAME" .
+    DOCKER_SSH_ARGS="--ssh=default"
 fi
+
+# build the Docker image (this will use the Dockerfile in the root of the repo)
+DOCKER_BUILDKIT=1 docker build $DOCKER_SSH_ARGS --build-arg BRANCH="${CI_PULL_REQUEST_BRANCH:-$CI_BRANCH}" --build-arg \
+    PULL_REQUEST="$CI_PULL_REQUEST" --build-arg COMMIT="$CI_COMMIT" --build-arg \
+    CI="$CI" --build-arg BASE_IMAGE="$BASE_IMAGE" -t "$CI_DOCKER_IMAGE_NAME" .
 
 # push the new Docker image to the Docker registry only after acceptance of pull request
 if [ "$CI_PULL_REQUEST" == "false" ]
