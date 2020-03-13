@@ -45,7 +45,7 @@ ADD installer/bootstrap.bash ./bootstrap.bash
 ADD ci/ssh-merge-known_hosts.py ./ssh-merge-known_hosts.py
 
 RUN mkdir -p -m 0700 ~/.ssh
-ADD ./known_hosts ~/.ssh/known_hosts
+ADD ./known_hosts ./.ssh/known_hosts
 RUN sudo chmod 644 ~/.ssh/known_hosts
 
 # Setup tue-env and install target ros
