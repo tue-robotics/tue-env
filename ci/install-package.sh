@@ -103,7 +103,7 @@ fi
 if [ -f ~/.ssh/known_hosts ]
 then
     MERGE_KNOWN_HOSTS="true"
-    DOCKER_MOUNT_KNOWN_HOSTS_ARGS="--mount type=bind,source=$HOME/.ssh/known_hosts,target=/home/amigo/known_hosts_extra"
+    DOCKER_MOUNT_KNOWN_HOSTS_ARGS="--mount type=bind,source=$HOME/.ssh/known_hosts,target=/tmp/known_hosts_extra"
 fi
 
 # Run the docker image along with setting new environment variables
@@ -112,7 +112,7 @@ docker run --detach --interactive -e CI="true" -e PACKAGE="$PACKAGE" -e BRANCH="
 
 if [ $MERGE_KNOWN_HOSTS == "true" ]
 then
-    docker exec tue-env bash -c "sudo chown 1000:1000 ~/known_hosts_extra && ~/.tue/ssh-merge-known_hosts.py ~/.ssh/known_hosts ~/known_hosts_extra --output ~/.ssh/known_hosts"
+    docker exec tue-env bash -c "sudo chown 1000:1000 /tmp/known_hosts_extra && ~/.tue/ssh-merge-known_hosts.py ~/.ssh/known_hosts /tmp/known_hosts_extra --output ~/.ssh/known_hosts"
 fi
 
 if [ "$USE_SSH" == "true" ]
