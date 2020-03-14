@@ -29,6 +29,16 @@ do
 
         -r=* | --pullrequest=* )
             PULL_REQUEST="${i#*=}" ;;
+
+        -i=* | --image=* )
+            IMAGE_NAME="${i#*=}" ;;
+
+        --ssh )
+            USE_SSH=true ;;
+
+        --ssh-key=* )
+            SSH_KEY="${i#*=}" ;;
+
         * )
             # unknown option
             echo -e "\e[35m\e[1m Unknown input argument '$i'. Check CI .yml file \e[0m"
@@ -41,6 +51,16 @@ echo -e "\e[35m\e[1m PACKAGE      = ${PACKAGE} \e[0m"
 echo -e "\e[35m\e[1m BRANCH       = ${BRANCH} \e[0m"
 echo -e "\e[35m\e[1m COMMIT       = ${COMMIT} \e[0m"
 echo -e "\e[35m\e[1m PULL_REQUEST = ${PULL_REQUEST} \e[0m"
+
+# Set default value for IMAGE_NAME
+[ -z "$IMAGE_NAME" ] && IMAGE_NAME='tuerobotics/tue-env'
+echo -e "\e[35m\e[1m IMAGE_NAME   = ${IMAGE_NAME} \e[0m"
+
+if [ "$USE_SSH" == "true" ]
+then
+    SSH_KEY_FINGERPRINT=$(ssh-keygen -lf /dev/stdin <<< "$SSH_KEY" | awk '{print $2}')
+    echo -e "\e[35m\e[1m SSH_KEY      = ${SSH_KEY_FINGERPRINT} \e[0m"
+fi
 
 echo -e "\e[35m\e[1m
 This build can be reproduced locally using the following commands:
@@ -61,8 +81,6 @@ then
     exit 0
 fi
 
-# Name of the docker image
-IMAGE_NAME=tuerobotics/tue-env
 # Determine docker tag if the same branch exists there
 BRANCH_TAG=$(echo "$BRANCH" | tr '[:upper:]' '[:lower:]' | sed -e 's:/:_:g')
 
@@ -78,12 +96,30 @@ echo -e "\e[35m\e[1m Trying to fetch docker image: $IMAGE_NAME:$BRANCH_TAG \e[0m
 if ! docker pull "$IMAGE_NAME:$BRANCH_TAG"
 then
     echo -e "\e[35m\e[1m No worries, we just test against the master branch: $IMAGE_NAME:$MASTER_TAG \e[0m"
-    docker pull $IMAGE_NAME:$MASTER_TAG
-    BRANCH_TAG=master
+    docker pull "$IMAGE_NAME":"$MASTER_TAG"
+    BRANCH_TAG=$MASTER_TAG
+fi
+
+if [ -f ~/.ssh/known_hosts ]
+then
+    MERGE_KNOWN_HOSTS="true"
+    DOCKER_MOUNT_KNOWN_HOSTS_ARGS="--mount type=bind,source=$HOME/.ssh/known_hosts,target=/tmp/known_hosts_extra"
 fi
 
 # Run the docker image along with setting new environment variables
-docker run --detach --interactive -e CI=true -e PACKAGE="$PACKAGE" -e BRANCH="$BRANCH" -e COMMIT="$COMMIT" -e PULL_REQUEST="$PULL_REQUEST" --name tue-env "$IMAGE_NAME:$BRANCH_TAG"
+# shellcheck disable=SC2086
+docker run --detach --interactive -e CI="true" -e PACKAGE="$PACKAGE" -e BRANCH="$BRANCH" -e COMMIT="$COMMIT" -e PULL_REQUEST="$PULL_REQUEST" --name tue-env $DOCKER_MOUNT_KNOWN_HOSTS_ARGS "$IMAGE_NAME:$BRANCH_TAG"
+
+if [ $MERGE_KNOWN_HOSTS == "true" ]
+then
+    docker exec tue-env bash -c "sudo chown 1000:1000 /tmp/known_hosts_extra && ~/.tue/ssh-merge-known_hosts.py ~/.ssh/known_hosts /tmp/known_hosts_extra --output ~/.ssh/known_hosts"
+fi
+
+if [ "$USE_SSH" == "true" ]
+then
+    docker exec tue-env bash -c "eval $(ssh-agent -s)"
+    docker exec tue-env bash -c "echo '$SSH_KEY' > ~/.ssh/id_rsa && chmod 700 ~/.ssh/id_rsa"
+fi
 
 # Refresh the apt cache in the docker image
 docker exec tue-env bash -c 'sudo apt-get update -qq'

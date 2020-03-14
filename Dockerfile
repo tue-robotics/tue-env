@@ -1,3 +1,4 @@
+# syntax = docker/dockerfile:experimental
 # ----------------------------------------------------------------
 #       Dockerfile to build working Ubuntu image with tue-env
 # ----------------------------------------------------------------
@@ -28,19 +29,26 @@ SHELL ["/bin/bash", "-c"]
 # Install commands used in our scripts and standard present on a clean ubuntu
 # installation and setup a user with sudo priviledges
 RUN apt-get update -qq && \
-    apt-get install -qq --assume-yes apt-transport-https apt-utils ca-certificates curl dbus dialog git lsb-release sudo tzdata wget && \
+    apt-get install -qq --assume-yes --no-install-recommends apt-transport-https apt-utils ca-certificates curl dbus dialog git lsb-release openssh-client sudo tzdata wget > /dev/null && \
     # Add amigo user
-    adduser --disabled-password --gecos "" $USER && \
-    adduser $USER sudo && \
-    echo '%sudo ALL=(ALL) NOPASSWD:ALL' >> /etc/sudoers
+    adduser -u 1000 --disabled-password --gecos "" $USER && \
+    usermod -aG sudo $USER && \
+    usermod -aG adm $USER && \
+    echo "%sudo ALL=(ALL) NOPASSWD:ALL" >> /etc/sudoers.d/"$USER"
 
 # Setup the current user and its home directory
 USER "$USER"
 WORKDIR /home/"$USER"
 
+ADD installer/bootstrap.bash ./bootstrap.bash
+
+RUN mkdir -p -m 0700 ~/.ssh
+ADD ./known_hosts ./.ssh/known_hosts
+RUN sudo chown 1000:1000 ~/.ssh/known_hosts && sudo chmod 644 ~/.ssh/known_hosts
+
 # Setup tue-env and install target ros
     # Remove interactive check from bashrc, otherwise bashrc refuses to execute
-RUN sed -e s/return//g -i ~/.bashrc && \
+RUN --mount=type=ssh,uid=1000 sed -e s/return//g -i ~/.bashrc && \
     # Set the CI args in the container as docker currently provides no method to
     # remove the environment variables
     # NOTE: The following exports will exist only in this container
@@ -49,7 +57,7 @@ RUN sed -e s/return//g -i ~/.bashrc && \
     export PULL_REQUEST=$PULL_REQUEST && \
     export COMMIT=$COMMIT && \
     # Run the standard installation script
-    source <(wget -q -O - https://raw.githubusercontent.com/tue-robotics/tue-env/"$BRANCH"/installer/bootstrap.bash) && \
+    source bootstrap.bash && \
     # Make tue-env to be available to the environment
     source ~/.bashrc && \
     # Set all git repositories to use HTTPS urls (Needed for local image builds)
