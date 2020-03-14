@@ -240,7 +240,7 @@ function tue-install-git
     local version=$3
 
     # Change url to https/ssh
-    repo=$(_https_or_ssh "$repo_pre")
+    repo=$(_git_https_or_ssh "$repo_pre")
     if ! grep -q "^git@.*\.git$\|^ssh://.*\.git\|^https://.*\.git$" <<< "$repo"
     then
         # shellcheck disable=SC2140

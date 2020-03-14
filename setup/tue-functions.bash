@@ -292,7 +292,7 @@ function _gitlab_https_or_ssh
 }
 export -f _gitlab_https_or_ssh # otherwise not available in sourced files
 
-function _https_or_ssh
+function _git_https_or_ssh
 {
     local input_url=$1
     local output_url
@@ -307,7 +307,7 @@ function _https_or_ssh
     fi
     echo "$output_url"
 }
-export -f _https_or_ssh # otherwise not available in sourced files
+export -f _git_https_or_ssh # otherwise not available in sourced files
 
 # ----------------------------------------------------------------------------------------------------
 #                                            TUE-MAKE
