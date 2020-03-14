@@ -3,5 +3,4 @@
 # Ignore the entire local repository
 /**
 !installer/bootstrap.bash
-!ci/ssh-merge-known_hosts.py
 !known_hosts
