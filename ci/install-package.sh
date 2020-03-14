@@ -112,7 +112,7 @@ docker run --detach --interactive -e CI="true" -e PACKAGE="$PACKAGE" -e BRANCH="
 
 if [ $MERGE_KNOWN_HOSTS == "true" ]
 then
-    docker exec tue-env bash -c "sudo chown 1000:1000 /tmp/known_hosts_extra && ~/.tue/ssh-merge-known_hosts.py ~/.ssh/known_hosts /tmp/known_hosts_extra --output ~/.ssh/known_hosts"
+    docker exec tue-env bash -c "sudo chown 1000:1000 /tmp/known_hosts_extra && ~/.tue/ci/ssh-merge-known_hosts.py ~/.ssh/known_hosts /tmp/known_hosts_extra --output ~/.ssh/known_hosts"
 fi
 
 if [ "$USE_SSH" == "true" ]
