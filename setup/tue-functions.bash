@@ -259,7 +259,10 @@ function _git_https_or_ssh
     local input_url=$1
     local output_url
 
+    # TODO: Remove the use of TUE_USE_SSH when migration to TUE_GIT_USE_SSH is complete
     [[ -v "TUE_USE_SSH" ]] && test_var="TUE_USE_SSH"
+
+    [[ -v "TUE_GIT_USE_SSH" ]] && test_var="TUE_GIT_USE_SSH"
 
     [[ "$input_url" == *"github"* ]] && [[ -v "TUE_GITHUB_USE_SSH" ]] && test_var="TUE_GITHUB_USE_SSH"
     [[ "$input_url" == *"gitlab"* ]] && [[ -v "TUE_GITLAB_USE_SSH" ]] && test_var="TUE_GITLAB_USE_SSH"

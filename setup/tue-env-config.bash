@@ -18,22 +18,22 @@ function _set_export_option
         -e '$a'"export ${key}"'='"${value}" "$3"
 }
 
-function tue-env-use-ssh
+function tue-env-git-use-ssh
 {
-    local option="TUE_USE_SSH"
+    local option="TUE_GIT_USE_SSH"
     local value="true"
     _set_export_option "$option" "$value" "$tue_env_dir"/.env/setup/user_setup.bash
 
-    echo -e "[tue-env](config) Environment '$env' set to use SSH"
+    echo -e "[tue-env](config) Environment '$env' set to use SSH for git as default"
 }
 
-function tue-env-use-https
+function tue-env-git-use-https
 {
-    local option="TUE_USE_SSH"
+    local option="TUE_GIT_USE_SSH"
     local value="false"
     _set_export_option "$option" "$value" "$tue_env_dir"/.env/setup/user_setup.bash
 
-    echo -e "[tue-env](config) Environment '$env' set to use HTTPS"
+    echo -e "[tue-env](config) Environment '$env' set to use HTTPS for git as default"
 }
 
 function tue-env-github-use-ssh
