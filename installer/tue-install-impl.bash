@@ -245,7 +245,7 @@ function tue-install-git
     then
         # shellcheck disable=SC2140
         tue-install-error "repo: '$repo' is invalid. It is generated from repo_pre: '$repo_pre'\n"\
-"Resouce the setup to see it solves the problem"
+"The problem will probably be solved by resourcing the setup"
     fi
 
     if [ ! -d "$targetdir" ]
