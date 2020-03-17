@@ -230,81 +230,49 @@ complete -F __tue-git-clean-local _tue-git-clean-local
 #                                              SSH
 # ----------------------------------------------------------------------------------------------------
 
-## GitHub
-function _github_https
+function _git_https
 {
-    local input_url=$1
-    echo "${input_url/git@github.com:/https:\/\/github.com\/}"
-}
-export -f _github_https # otherwise not available in sourced files
+    local url=$1
+    [[ "$url" == "https://"* ]] && echo "$url" && return 0
 
-function _github_ssh
-{
-    local input_url=$1
-    echo "${input_url/https:\/\/github.com\//git@github.com:}"
-}
-export -f _github_ssh # otherwise not available in sourced files
+    local web_address=${url#git@}
+    local domain_name=${web_address%%:*}
+    local repo_address=${web_address#*:}
 
-function _github_https_or_ssh
-{
-    local input_url=$1
-    local output_url test_var
-    [[ -v "TUE_USE_SSH" ]] && test_var="TUE_USE_SSH"
-    [[ -v "TUE_GITHUB_USE_SSH" ]] && test_var="TUE_GITHUB_USE_SSH"
-    if [[ "${!test_var}" == "true" ]]
-    then
-        output_url=$(_github_ssh "$input_url")
-    else
-        output_url=$(_github_https "$input_url")
-    fi
-    echo "$output_url"
+    echo "https://$domain_name/$repo_address"
 }
-export -f _github_https_or_ssh # otherwise not available in sourced files
+export -f _git_https # otherwise not available in sourced files
 
-## GitLab
-function _gitlab_https
+function _git_ssh
 {
-    local input_url=$1
-    echo "${input_url/git@gitlab.com:/https:\/\/gitlab.com\/}"
-}
-export -f _gitlab_https # otherwise not available in sourced files
+    local url=$1
+    [[ "$url" == "git@"* ]] && echo "$url" && return 0
 
-function _gitlab_ssh
-{
-    local input_url=$1
-    echo "${input_url/https:\/\/gitlab.com\//git@gitlab.com:}"
-}
-export -f _gitlab_ssh # otherwise not available in sourced files
+    local web_address=${url#https://}
+    local domain_name=${web_address%%/*}
+    local repo_address=${web_address#*/}
 
-function _gitlab_https_or_ssh
-{
-    local input_url=$1
-    local output_url test_var
-    [[ -v "TUE_USE_SSH" ]] && test_var="TUE_USE_SSH"
-    [[ -v "TUE_GITLAB_USE_SSH" ]] && test_var="TUE_GITLAB_USE_SSH"
-    if [[ "${!test_var}" == "true" ]]
-    then
-        output_url=$(_gitlab_ssh "$input_url")
-    else
-        output_url=$(_gitlab_https "$input_url")
-    fi
-    echo "$output_url"
+    echo "git@$domain_name:$repo_address"
 }
-export -f _gitlab_https_or_ssh # otherwise not available in sourced files
+export -f _git_ssh # otherwise not available in sourced files
 
 function _git_https_or_ssh
 {
     local input_url=$1
     local output_url
-    if [[ "$input_url" == *"github"* ]]
+
+    [[ -v "TUE_USE_SSH" ]] && test_var="TUE_USE_SSH"
+
+    [[ "$input_url" == *"github"* ]] && [[ -v "TUE_GITHUB_USE_SSH" ]] && test_var="TUE_GITHUB_USE_SSH"
+    [[ "$input_url" == *"gitlab"* ]] && [[ -v "TUE_GITLAB_USE_SSH" ]] && test_var="TUE_GITLAB_USE_SSH"
+
+    if [[ "${!test_var}" == "true" ]]
     then
-        output_url=$(_github_https_or_ssh "$input_url")
-    elif [[ "$input_url" == *"gitlab"* ]]
-    then
-        output_url=$(_gitlab_https_or_ssh "$input_url")
+        output_url=$(_git_ssh "$input_url")
     else
-        output_url=$input_url
+        output_url=$(_git_https "$input_url")
     fi
+
     echo "$output_url"
 }
 export -f _git_https_or_ssh # otherwise not available in sourced files
