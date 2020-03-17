@@ -18,22 +18,58 @@ function _set_export_option
         -e '$a'"export ${key}"'='"${value}" "$3"
 }
 
-function tue-env-use-ssh
+function tue-env-git-use-ssh
 {
-    local option="TUE_USE_SSH"
+    local option="TUE_GIT_USE_SSH"
     local value="true"
     _set_export_option "$option" "$value" "$tue_env_dir"/.env/setup/user_setup.bash
 
-    echo -e "[tue-env](config) Environment '$env' set to use SSH"
+    echo -e "[tue-env](config) Environment '$env' set to use SSH for git as default"
 }
 
-function tue-env-use-https
+function tue-env-git-use-https
 {
-    local option="TUE_USE_SSH"
+    local option="TUE_GIT_USE_SSH"
     local value="false"
     _set_export_option "$option" "$value" "$tue_env_dir"/.env/setup/user_setup.bash
 
-    echo -e "[tue-env](config) Environment '$env' set to use HTTPS"
+    echo -e "[tue-env](config) Environment '$env' set to use HTTPS for git as default"
+}
+
+function tue-env-github-use-ssh
+{
+    local option="TUE_GITHUB_USE_SSH"
+    local value="true"
+    _set_export_option "$option" "$value" "$tue_env_dir"/.env/setup/user_setup.bash
+
+    echo -e "[tue-env](config) Environment '$env' set to use SSH for GitHub"
+}
+
+function tue-env-github-use-https
+{
+    local option="TUE_GITHUB_USE_SSH"
+    local value="false"
+    _set_export_option "$option" "$value" "$tue_env_dir"/.env/setup/user_setup.bash
+
+    echo -e "[tue-env](config) Environment '$env' set to use HTTPS for GitHub"
+}
+
+function tue-env-gitlab-use-ssh
+{
+    local option="TUE_GITLAB_USE_SSH"
+    local value="true"
+    _set_export_option "$option" "$value" "$tue_env_dir"/.env/setup/user_setup.bash
+
+    echo -e "[tue-env](config) Environment '$env' set to use SSH for GitLab"
+}
+
+function tue-env-gitlab-use-https
+{
+    local option="TUE_GITLAB_USE_SSH"
+    local value="false"
+    _set_export_option "$option" "$value" "$tue_env_dir"/.env/setup/user_setup.bash
+
+    echo -e "[tue-env](config) Environment '$env' set to use HTTPS for GitLab"
 }
 
 function tue-env-install-test-depend
@@ -90,17 +126,17 @@ else
         functions=${functions//tue-env-/}
         # shellcheck disable=SC2086
         functions=$(echo $functions | tr ' ' '|')
-        while [ "$1" != "" ]
-        do
-            eval "
-                case $1 in
-                    $functions)
-                        tue-env-$1 ;;
-                    * )
-                        echo -e '[tue-env](config) Unknown config command: $1'
-                        exit 1 ;;
-                esac"
-            shift
-        done
+
+        cmd=$1
+        shift
+
+        eval "
+            case $cmd in
+                $functions )
+                        tue-env-$cmd $*;;
+                * )
+                    echo -e '[tue-env](config) Unknown config command: $cmd'
+                    exit 1 ;;
+            esac"
     fi
 fi

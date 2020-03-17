@@ -8,7 +8,16 @@ then
     exit 1
 else
     current_url=$(git -C "$TUE_DIR" config --get remote.origin.url)
-    new_url=$(_github_https_or_ssh "$current_url")
+    new_url=$(_git_https_or_ssh "$current_url")
+
+    if ! grep -q "^git@.*\.git$\|^https://.*\.git$" <<< "$new_url"
+    then
+        # shellcheck disable=SC2140
+        echo -e "[tue-get] (tue-env) new_url: '$new_url' is invalid. It is generated from the current_url: '$current_url'\n"\
+"The problem will probably be solved by resourcing the setup"
+        exit 1
+    fi
+
 
     if [ "$current_url" != "$new_url" ]
     then
@@ -50,7 +59,15 @@ tue-env init-targets https://github.com/tue-robotics/tue-env-targets.git
     exit 1
 else
     current_url=$(git -C "$TUE_ENV_TARGETS_DIR" config --get remote.origin.url)
-    new_url=$(_github_https_or_ssh "$current_url")
+    new_url=$(_git_https_or_ssh "$current_url")
+
+    if ! grep -q "^git@.*\.git$\|^https://.*\.git$" <<< "$new_url"
+    then
+        # shellcheck disable=SC2140
+        echo -e "[tue-get] (tue-env-targets) new_url: '$new_url' is invalid. It is generated from the current_url: '$current_url'\n"\
+"The problem will probably be solved by resourcing the setup"
+        exit 1
+    fi
 
     if [ "$current_url" != "$new_url" ]
     then
