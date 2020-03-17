@@ -10,7 +10,7 @@ else
     current_url=$(git -C "$TUE_DIR" config --get remote.origin.url)
     new_url=$(_git_https_or_ssh "$current_url")
 
-    if ! grep -q "^git@.*\.git$\|^ssh://.*\.git\|^https://.*\.git$" <<< "$new_url"
+    if ! grep -q "^git@.*\.git$\|^https://.*\.git$" <<< "$new_url"
     then
         # shellcheck disable=SC2140
         echo -e "[tue-get] (tue-env) new_url: '$new_url' is invalid. It is generated from the current_url: '$current_url'\n"\
@@ -61,7 +61,7 @@ else
     current_url=$(git -C "$TUE_ENV_TARGETS_DIR" config --get remote.origin.url)
     new_url=$(_git_https_or_ssh "$current_url")
 
-    if ! grep -q "^git@.*\.git$\|^ssh://.*\.git\|^https://.*\.git$" <<< "$new_url"
+    if ! grep -q "^git@.*\.git$\|^https://.*\.git$" <<< "$new_url"
     then
         # shellcheck disable=SC2140
         echo -e "[tue-get] (tue-env-targets) new_url: '$new_url' is invalid. It is generated from the current_url: '$current_url'\n"\
