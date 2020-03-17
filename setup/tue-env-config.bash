@@ -133,7 +133,7 @@ else
         eval "
             case $cmd in
                 $functions )
-                        tue-env-$1 $@;;
+                        tue-env-$1 $*;;
                 * )
                     echo -e '[tue-env](config) Unknown config command: $1'
                     exit 1 ;;
