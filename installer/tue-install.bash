@@ -14,7 +14,7 @@ else
     then
         # shellcheck disable=SC2140
         echo -e "[tue-get] (tue-env) new_url: '$new_url' is invalid. It is generated from the current_url: '$current_url'\n"\
-"Resouce the setup to see it this solves the problem"
+"The problem will probably be solved by resourcing the setup"
         exit 1
     fi
 
@@ -65,7 +65,7 @@ else
     then
         # shellcheck disable=SC2140
         echo -e "[tue-get] (tue-env-targets) new_url: '$new_url' is invalid. It is generated from the current_url: '$current_url'\n"\
-"Resouce the setup to see it solves the problem"
+"The problem will probably be solved by resourcing the setup"
         exit 1
     fi
 
