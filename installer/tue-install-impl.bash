@@ -241,7 +241,7 @@ function tue-install-git
 
     # Change url to https/ssh
     repo=$(_git_https_or_ssh "$repo_pre")
-    if ! grep -q "^git@.*\.git$\|^ssh://.*\.git\|^https://.*\.git$" <<< "$repo"
+    if ! grep -q "^git@.*\.git$\|^https://.*\.git$" <<< "$repo"
     then
         # shellcheck disable=SC2140
         tue-install-error "repo: '$repo' is invalid. It is generated from repo_pre: '$repo_pre'\n"\
