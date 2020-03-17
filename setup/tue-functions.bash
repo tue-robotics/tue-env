@@ -241,6 +241,7 @@ function _git_https
 
     echo "https://$domain_name/$repo_address"
 }
+export -f _git_https # otherwise not available in sourced files
 
 function _git_ssh
 {
@@ -253,6 +254,7 @@ function _git_ssh
 
     echo "git@$domain_name:$repo_address"
 }
+export -f _git_ssh # otherwise not available in sourced files
 
 function _git_https_or_ssh
 {
