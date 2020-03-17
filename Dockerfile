@@ -61,7 +61,7 @@ RUN --mount=type=ssh,uid=1000 sed -e s/return//g -i ~/.bashrc && \
     # Make tue-env to be available to the environment
     source ~/.bashrc && \
     # Set all git repositories to use HTTPS urls (Needed for local image builds)
-    tue-env config ros-"$TUE_ROS_DISTRO" use-https && \
+    tue-env config ros-"$TUE_ROS_DISTRO" git-use-https && \
     # Install target ros
     tue-get install ros --test-depend && \
     # Show ownership of .tue
