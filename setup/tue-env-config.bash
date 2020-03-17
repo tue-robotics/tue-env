@@ -108,17 +108,17 @@ else
         functions=${functions//tue-env-/}
         # shellcheck disable=SC2086
         functions=$(echo $functions | tr ' ' '|')
-        while [ "$1" != "" ]
-        do
-            eval "
-                case $1 in
-                    $functions)
-                        tue-env-$1 ;;
-                    * )
-                        echo -e '[tue-env](config) Unknown config command: $1'
-                        exit 1 ;;
-                esac"
-            shift
-        done
+
+        cmd=$1
+        shift
+
+        eval "
+            case $cmd in
+                $functions )
+                        tue-env-$1 $@;;
+                * )
+                    echo -e '[tue-env](config) Unknown config command: $1'
+                    exit 1 ;;
+            esac"
     fi
 fi
