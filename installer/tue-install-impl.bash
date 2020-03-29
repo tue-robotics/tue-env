@@ -240,6 +240,7 @@ function tue-install-git
     local version=$3
 
     # Change url to https/ssh
+    local repo
     repo=$(_git_https_or_ssh "$repo_pre")
     if ! grep -q "^git@.*\.git$\|^https://.*\.git$" <<< "$repo"
     then
