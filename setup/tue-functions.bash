@@ -230,29 +230,70 @@ complete -F __tue-git-clean-local _tue-git-clean-local
 #                                              SSH
 # ----------------------------------------------------------------------------------------------------
 
+function _git_split_https
+{
+    local url=$1
+    local web_address=${url#https://}
+    local domain_name=${web_address%%/*}
+    local repo_address=${web_address#*/}
+    repo_address=${repo_address%.git}
+    echo "$domain_name $repo_address"
+}
+export -f _git_split_https # otherwise not available in sourced files
+
+function _git_split_ssh
+{
+    local url=$1
+    local web_address=${url#ssh://}
+    web_address=${web_address#git@}
+    local domain_name=${web_address%%:*}
+    local repo_address=${web_address#*:}
+    repo_address=${repo_address%.git}
+    echo "$domain_name $repo_address"
+}
+export -f _git_split_ssh # otherwise not available in sourced files
+
 function _git_https
 {
     local url=$1
-    [[ "$url" == "https://"* ]] && echo "$url" && return 0
+    grep -q "^https://.*\.git$" <<< "$url" && echo "$url" && return 0
 
-    local web_address=${url#git@}
-    local domain_name=${web_address%%:*}
-    local repo_address=${web_address#*:}
+    local output
+    if [[ "$url" == *"@"* ]] # SSH
+    then
+        output=$(_git_split_ssh "$url")
+    else
+        output=$(_git_split_https "$url")
+    fi
 
-    echo "https://$domain_name/$repo_address"
+    local IFS=' '
+    read -r -a array <<< "$output"
+    local domain_name=${array[0]}
+    local repo_address=${array[1]}
+
+    echo "https://$domain_name/$repo_address.git"
 }
 export -f _git_https # otherwise not available in sourced files
 
 function _git_ssh
 {
     local url=$1
-    [[ "$url" == "git@"* ]] && echo "$url" && return 0
+    grep -q "^git@.*\.git$" <<< "$url" && echo "$url" && return 0
 
-    local web_address=${url#https://}
-    local domain_name=${web_address%%/*}
-    local repo_address=${web_address#*/}
+    local output
+    if [[ "$url" == *"@"* ]] # SSH
+    then
+        output=$(_git_split_ssh "$url")
+    else
+        output=$(_git_split_https "$url")
+    fi
 
-    echo "git@$domain_name:$repo_address"
+    local IFS=' '
+    read -r -a array <<< "$output"
+    local domain_name=${array[0]}
+    local repo_address=${array[1]}
+
+    echo "git@$domain_name:$repo_address.git"
 }
 export -f _git_ssh # otherwise not available in sourced files
 
