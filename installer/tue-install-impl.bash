@@ -235,16 +235,17 @@ function tue-install-git
 {
     tue-install-debug "tue-install-git $*"
 
-    local repo_pre=$1
+    local repo=$1
+    local repo_pre="$repo"
     local targetdir=$2
     local version=$3
 
     # Change url to https/ssh
-    repo=$(_git_https_or_ssh "$repo_pre")
+    repo=$(_git_https_or_ssh "$repo")
     if ! grep -q "^git@.*\.git$\|^https://.*\.git$" <<< "$repo"
     then
         # shellcheck disable=SC2140
-        tue-install-error "repo: '$repo' is invalid. It is generated from repo_pre: '$repo_pre'\n"\
+        tue-install-error "repo: '$repo' is invalid. It is generated from: '$repo_pre'\n"\
 "The problem will probably be solved by resourcing the setup"
     fi
 
