@@ -664,12 +664,15 @@ function tue-install-system-now
     fi
 
     local pkgs_to_install=""
+    local dpkg_query
+    # shellcheck disable=SC2016
+    dpkg_query=$(dpkg-query -W -f '${package} ${status}\n' 2>/dev/null)
     # shellcheck disable=SC2048
     for pkg in $*
     do
         # Check if pkg is not already installed dpkg -S does not cover previously removed packages
         # Based on https://stackoverflow.com/questions/1298066
-        if ! dpkg-query -W -f='${Status}' "$pkg" 2>/dev/null | grep -q "ok installed"
+        if ! echo "$dpkg_query" | grep -q "^$pkg install ok installed"
         then
             pkgs_to_install="$pkgs_to_install $pkg"
         else
