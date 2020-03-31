@@ -987,7 +987,7 @@ function tue-install-ros
     local sub_dir=$3
     local version=$4
 
-    tue-install-debug "Installing ros package: type = $install_type, source = $src"
+    tue-install-debug "Installing ros package: type: $install_type, source: $src"
 
     [ -n "$TUE_ROS_DISTRO" ] || tue-install-error "Environment variable 'TUE_ROS_DISTRO' is not set."
 
@@ -1055,7 +1055,7 @@ function tue-install-ros
     then
         repos_dir=$ros_pkg_dir
     fi
-    tue-install-debug "repos_dir = $repos_dir"
+    tue-install-debug "repos_dir: $repos_dir"
 
     if [ "$install_type" = "git" ]
     then
