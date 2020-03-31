@@ -1292,6 +1292,7 @@ then
 
     tue-install-debug "calling: tue-install-ppa-now $TUE_INSTALL_PPA"
     tue-install-ppa-now "$TUE_INSTALL_PPA"
+    TUE_INSTALL_CURRENT_TARGET="main-loop"
 fi
 
 
@@ -1302,6 +1303,7 @@ then
 
     tue-install-debug "calling: tue-install-system-now $TUE_INSTALL_SYSTEMS"
     tue-install-system-now "$TUE_INSTALL_SYSTEMS"
+    TUE_INSTALL_CURRENT_TARGET="main-loop"
 fi
 
 
@@ -1312,6 +1314,7 @@ then
 
     tue-install-debug "calling: tue-install-pip2-now $TUE_INSTALL_PIP2S"
     tue-install-pip2-now "$TUE_INSTALL_PIP2S"
+    TUE_INSTALL_CURRENT_TARGET="main-loop"
 fi
 
 
@@ -1322,6 +1325,7 @@ then
 
     tue-install-debug "calling: tue-install-pip3-now $TUE_INSTALL_PIP3S"
     tue-install-pip3-now "$TUE_INSTALL_PIP3S"
+    TUE_INSTALL_CURRENT_TARGET="main-loop"
 fi
 
 
@@ -1332,6 +1336,9 @@ then
 
     tue-install-debug "calling: tue-install-snap-now $TUE_INSTALL_SNAPS"
     tue-install-snap-now "$TUE_INSTALL_SNAPS"
+    TUE_INSTALL_CURRENT_TARGET="main-loop"
 fi
+
+tue-install-debug "Installer completed succesfully"
 
 return 0
