@@ -1095,10 +1095,12 @@ function tue-install-ros
 
         if [[ "$NO_ROS_DEPS" != "true" ]]
         then
-            if [ -f "$ros_pkg_dir"/package.xml ]
+            local pkg_xml="$ros_pkg_dir"/package.xml
+            if [ -f "$pkg_xml" ]
             then
                 # Catkin
-                deps=$("$TUE_INSTALL_SCRIPTS_DIR"/parse-ros-package-deps.py "$ros_pkg_dir"/package.xml)
+                local deps
+                deps=$("$TUE_INSTALL_SCRIPTS_DIR"/parse-ros-package-deps.py "$pkg_xml")
                 tue-install-debug "Parsed package.xml \n$deps"
 
                 for dep in $deps
