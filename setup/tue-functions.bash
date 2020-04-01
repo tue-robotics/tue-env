@@ -230,41 +230,26 @@ complete -F __tue-git-clean-local _tue-git-clean-local
 #                                              SSH
 # ----------------------------------------------------------------------------------------------------
 
-function _git_split_https
-{
-    local url=$1
-    local web_address=${url#https://}
-    local domain_name=${web_address%%/*}
-    local repo_address=${web_address#*/}
-    repo_address=${repo_address%.git}
-    echo -e "$domain_name\n$repo_address"
-}
-export -f _git_split_https # otherwise not available in sourced files
-
-function _git_split_ssh
-{
-    local url=$1
-    local web_address=${url#git@}
-    local domain_name=${web_address%%:*}
-    local repo_address=${web_address#*:}
-    repo_address=${repo_address%.git}
-    echo -e "$domain_name\n$repo_address"
-}
-export -f _git_split_ssh # otherwise not available in sourced files
-
 function _git_split_url
 {
     local url=$1
 
     local output
+    local web_address
+    local domain_name
+    local repo_address
     if [[ "$url" == *"@"* ]] # SSH
     then
-        output=$(_git_split_ssh "$url")
+        web_address=${url#git@}
+        domain_name=${web_address%%:*}
+        repo_address=${web_address#*:}
     else
-        output=$(_git_split_https "$url")
+        web_address=${url#https://}
+        domain_name=${web_address%%/*}
+        repo_address=${web_address#*/}
     fi
-    # shellcheck disable=SC2086
-    echo $output
+    repo_address=${repo_address%.git}
+    echo -e "$domain_name\n$repo_address"
 }
 export -f _git_split_url # otherwise not available in sourced files
 
