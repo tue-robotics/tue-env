@@ -234,7 +234,6 @@ function _git_split_url
 {
     local url=$1
 
-    local output
     local web_address
     local domain_name
     local repo_address
