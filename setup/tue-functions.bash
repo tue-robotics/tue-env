@@ -248,7 +248,7 @@ function _git_split_url
         repo_address=${web_address#*/}
     fi
     repo_address=${repo_address%.git}
-    echo -e "$domain_name\n$repo_address"
+    echo -e "$domain_name\t$repo_address"
 }
 export -f _git_split_url # otherwise not available in sourced files
 
