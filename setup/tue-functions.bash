@@ -244,8 +244,7 @@ export -f _git_split_https # otherwise not available in sourced files
 function _git_split_ssh
 {
     local url=$1
-    local web_address=${url#ssh://}
-    web_address=${web_address#git@}
+    local web_address=${url#git@}
     local domain_name=${web_address%%:*}
     local repo_address=${web_address#*:}
     repo_address=${repo_address%.git}
