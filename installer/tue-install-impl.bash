@@ -1025,8 +1025,7 @@ function tue-install-ros
         output=$(_git_split_url "$src")
 
         local array
-        # shellcheck disable=SC2086
-        read -r -a array <<< $output
+        read -r -a array <<< "$output"
         local domain_name=${array[0]}
         local repo_address=${array[1]}
         if [ -z "$domain_name" ] || [ -z "$repo_address" ]
