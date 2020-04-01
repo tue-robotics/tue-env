@@ -261,7 +261,8 @@ function _git_https
     output=$(_git_split_url "$url")
 
     local array
-    read -r -a array <<< "$output"
+    # shellcheck disable=SC2086
+    read -r -a array <<< $output
     local domain_name=${array[0]}
     local repo_address=${array[1]}
 
@@ -278,7 +279,8 @@ function _git_ssh
     output=$(_git_split_url "$url")
 
     local array
-    read -r -a array <<< "$output"
+    # shellcheck disable=SC2086
+    read -r -a array <<< $output
     local domain_name=${array[0]}
     local repo_address=${array[1]}
 
