@@ -272,7 +272,7 @@ export -f _git_split_url # otherwise not available in sourced files
 function _git_https
 {
     local url=$1
-    grep -q "^https://.*\.git$" <<< "$url" && echo "$url" && return 0
+    [[ $url =~ ^https://.*\.git$ ]] && echo "$url" && return 0
 
     local output
     output=$(_git_split_url "$url")
@@ -289,7 +289,7 @@ export -f _git_https # otherwise not available in sourced files
 function _git_ssh
 {
     local url=$1
-    grep -q "^git@.*\.git$" <<< "$url" && echo "$url" && return 0
+    [[ $url =~ ^git@.*\.git$ ]] && echo "$url" && return 0
 
     local output
     output=$(_git_split_url "$url")
