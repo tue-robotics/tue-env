@@ -1029,6 +1029,10 @@ function tue-install-ros
         read -r -a array <<< $output
         local domain_name=${array[0]}
         local repo_address=${array[1]}
+        if [ -z "$domain_name" ] || [ -z "$repo_address" ]
+        then
+            tue-install-error "Resource to load '_git_split_url'"
+        fi
         repos_dir="$TUE_REPOS_DIR"/"$domain_name"/"$repo_address"
         ## temp; Move repo to new location
         local repos_dir_old="$TUE_REPOS_DIR"/"$src"
