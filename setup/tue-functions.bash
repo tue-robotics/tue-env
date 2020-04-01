@@ -230,29 +230,59 @@ complete -F __tue-git-clean-local _tue-git-clean-local
 #                                              SSH
 # ----------------------------------------------------------------------------------------------------
 
+function _git_split_url
+{
+    local url=$1
+
+    local web_address
+    local domain_name
+    local repo_address
+    if [[ "$url" == *"@"* ]] # SSH
+    then
+        web_address=${url#git@}
+        domain_name=${web_address%%:*}
+        repo_address=${web_address#*:}
+    else
+        web_address=${url#https://}
+        domain_name=${web_address%%/*}
+        repo_address=${web_address#*/}
+    fi
+    repo_address=${repo_address%.git}
+    echo -e "$domain_name\n$repo_address"
+}
+export -f _git_split_url # otherwise not available in sourced files
+
 function _git_https
 {
     local url=$1
-    [[ "$url" == "https://"* ]] && echo "$url" && return 0
+    [[ $url =~ ^https://.*\.git$ ]] && echo "$url" && return 0
 
-    local web_address=${url#git@}
-    local domain_name=${web_address%%:*}
-    local repo_address=${web_address#*:}
+    local output
+    output=$(_git_split_url "$url")
 
-    echo "https://$domain_name/$repo_address"
+    local array
+    read -r -a array <<< "$output"
+    local domain_name=${array[0]}
+    local repo_address=${array[1]}
+
+    echo "https://$domain_name/$repo_address.git"
 }
 export -f _git_https # otherwise not available in sourced files
 
 function _git_ssh
 {
     local url=$1
-    [[ "$url" == "git@"* ]] && echo "$url" && return 0
+    [[ $url =~ ^git@.*\.git$ ]] && echo "$url" && return 0
 
-    local web_address=${url#https://}
-    local domain_name=${web_address%%/*}
-    local repo_address=${web_address#*/}
+    local output
+    output=$(_git_split_url "$url")
 
-    echo "git@$domain_name:$repo_address"
+    local array
+    read -r -a array <<< "$output"
+    local domain_name=${array[0]}
+    local repo_address=${array[1]}
+
+    echo "git@$domain_name:$repo_address.git"
 }
 export -f _git_ssh # otherwise not available in sourced files
 
