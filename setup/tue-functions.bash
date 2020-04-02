@@ -1133,7 +1133,7 @@ function _tue-repos-do
     echo -e "\033[1m[tue-env-targets]\033[0m"
     eval "$@"
 
-    local repos_dir=$TUE_ENV_DIR/repos/https_/github.com/tue-robotics
+    local repos_dir=$TUE_ENV_DIR/repos/github.com/tue-robotics
 
     local fs
     fs=$(ls "$repos_dir")
@@ -1481,7 +1481,7 @@ function _ping_bool
 
 function tue-robocup-install-package
 {
-    local repos_dir=$TUE_ENV_DIR/repos/https_/github.com/tue-robotics
+    local repos_dir=$TUE_ENV_DIR/repos/github.com/tue-robotics
     local repo_dir=$repos_dir/${1}.git
 
     local mem_pwd=$PWD
