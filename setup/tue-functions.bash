@@ -1175,9 +1175,12 @@ For example:
         return 1
     fi
 
-    local github_url
-    github_url="$(_github_https "$(git config --get remote.origin.url)")"
-    local url_extension=${github_url#https://github.com/}
+    local output
+    output="$(_git_split_url "$(git config --get remote.origin.url)")"
+    local array
+    read -r -a array <<< "$output"
+    local repo_address=${array[1]}
+    local url_extension="$repo_address.git"
 
     if [[ "$(git remote)" == *"$remote"* ]]
     then
