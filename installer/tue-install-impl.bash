@@ -1,5 +1,7 @@
 #! /usr/bin/env bash
 
+_function_test _git_https_or_ssh _git_split_url
+
 TUE_INSTALL_DEPENDENCIES_DIR=$TUE_ENV_DIR/.env/dependencies
 TUE_INSTALL_DEPENDENCIES_ON_DIR=$TUE_ENV_DIR/.env/dependencies-on
 TUE_INSTALL_INSTALLED_DIR=$TUE_ENV_DIR/.env/installed
@@ -745,7 +747,7 @@ function tue-install-ppa-now
 
     if [ -z "$1" ]
     then
-        tue-install-error "Invalid tue-install-ppa-now call: needs ppa as argument."
+        tue-install-error "Invalid tue-install-ppa-now call: needs ppa or deb as argument."
     fi
 
     local PPA_ADDED=""
@@ -1028,10 +1030,6 @@ function tue-install-ros
         read -r -a array <<< "$output"
         local domain_name=${array[0]}
         local repo_address=${array[1]}
-        if [ -z "$domain_name" ] || [ -z "$repo_address" ]
-        then
-            tue-install-error "Resource to load '_git_split_url'"
-        fi
         repos_dir="$TUE_REPOS_DIR"/"$domain_name"/"$repo_address"
         ## temp; Move repo to new location
         local repos_dir_old="$TUE_REPOS_DIR"/"$src"

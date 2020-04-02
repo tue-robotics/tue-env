@@ -1133,7 +1133,7 @@ function _tue-repos-do
     echo -e "\033[1m[tue-env-targets]\033[0m"
     eval "$@"
 
-    local repos_dir=$TUE_ENV_DIR/repos/https_/github.com/tue-robotics
+    local repos_dir=$TUE_ENV_DIR/repos/github.com/tue-robotics
 
     local fs
     fs=$(ls "$repos_dir")
@@ -1175,9 +1175,12 @@ For example:
         return 1
     fi
 
-    local github_url
-    github_url="$(_github_https "$(git config --get remote.origin.url)")"
-    local url_extension=${github_url#https://github.com/}
+    local output
+    output="$(_git_split_url "$(git config --get remote.origin.url)")"
+    local array
+    read -r -a array <<< "$output"
+    local repo_address=${array[1]}
+    local url_extension="$repo_address.git"
 
     if [[ "$(git remote)" == *"$remote"* ]]
     then
@@ -1481,7 +1484,7 @@ function _ping_bool
 
 function tue-robocup-install-package
 {
-    local repos_dir=$TUE_ENV_DIR/repos/https_/github.com/tue-robotics
+    local repos_dir=$TUE_ENV_DIR/repos/github.com/tue-robotics
     local repo_dir=$repos_dir/${1}.git
 
     local mem_pwd=$PWD

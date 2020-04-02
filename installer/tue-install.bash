@@ -1,6 +1,19 @@
 #! /usr/bin/env bash
 _tue-check-env-vars || exit 1
 
+function _function_test
+{
+    local function_missing="false"
+    # shellcheck disable=SC2048
+    for func in $*
+    do
+        declare -f "$func" > /dev/null || { echo -e "\033[38;5;1mFunction '$func' missing, resource the setup\033[0m" && function_missing="true"; }
+    done
+    [[ "$function_missing" == "true" ]] && exit 1
+}
+
+_function_test _git_https_or_ssh
+
 # Update installer
 if [ ! -d "$TUE_DIR" ]
 then
