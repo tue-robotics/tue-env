@@ -747,7 +747,7 @@ function tue-install-ppa-now
 
     if [ -z "$1" ]
     then
-        tue-install-error "Invalid tue-install-ppa-now call: needs ppa as argument."
+        tue-install-error "Invalid tue-install-ppa-now call: needs ppa or deb as argument."
     fi
 
     local PPA_ADDED=""

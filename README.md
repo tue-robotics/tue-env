@@ -131,26 +131,26 @@ Both Ubuntu distribution specific as default can be 'null'. Prevered usage is de
 The following functions provided with `tue-env` must be preferred over any
 generally used methods of installing packages:
 
-| Function Name                   | Description                                                                                 |
-|---------------------------------|---------------------------------------------------------------------------------------------|
-| `tue-install-add-text`          | To add/replace text in a file with `sudo` taken into account                                |
-| `tue-install-cp`                | Analogous to `cp` but takes `sudo` into account and the source should be relative to target |
-| `tue-install-dpkg`              | To install a debian dpkg file                                                               |
-| `tue-install-git`               | To install a git repository                                                                 |
-| `tue-install-pip`               | To add a python pip2 package to a list to be installed at the end (deprecated)              |
-| `tue-install-pip2`              | To add a python pip2 package to a list to be installed at the end                           |
-| `tue-install-pip3`              | To add a python pip3 package to a list to be installed at the end                           |
-| `tue-install-pip-now`           | To install python pip2 package, but ignores it if already installed (deprecated)            |
-| `tue-install-pip2-now`          | To install python pip2 package, but ignores it if already installed                         |
-| `tue-install-pip3-now`          | To install python pip3 package, but ignores it if already installed                         |
-| `tue-install-ppa`               | To add a PPA/DEB to a list to be add with `apt-add-repository` at the end, before apt-get   |
-| `tue-install-ppa-now`           | To add a PPA/DEB with `apt-add-repository`                                                  |
-| `tue-install-snap`              | To add a snap package to a list to be installed at the end                                  |
-| `tue-install-snap-now`          | To install a snap                                                                           |
-| `tue-install-svn`               | To install a svn repository                                                                 |
-| `tue-install-system`            | To add `deb` package to a list of packages to be installed at the end with `apt-get`        |
-| `tue-install-system-now`        | To install `deb` packages with `apt-get` right away, but ignores it if already installed    |
-| `tue-install-get-releases`      | To get a released asset from a github repository and place it in the requested directory    |
+| Function Name                   | Description                                                                                    |
+|---------------------------------|------------------------------------------------------------------------------------------------|
+| `tue-install-add-text`          | To add/replace text in a file with `sudo` taken into account                                   |
+| `tue-install-cp`                | Analogous to `cp` but takes `sudo` into account and the source should be relative to target    |
+| `tue-install-dpkg`              | To install a debian dpkg file                                                                  |
+| `tue-install-git`               | To install a git repository                                                                    |
+| `tue-install-pip`               | To add a python pip2 package to a list to be installed at the end (deprecated)                 |
+| `tue-install-pip2`              | To add a python pip2 package to a list to be installed at the end                              |
+| `tue-install-pip3`              | To add a python pip3 package to a list to be installed at the end                              |
+| `tue-install-pip-now`           | To install python pip2 package, but ignores it if already installed (deprecated)               |
+| `tue-install-pip2-now`          | To install python pip2 package, but ignores it if already installed                            |
+| `tue-install-pip3-now`          | To install python pip3 package, but ignores it if already installed                            |
+| `tue-install-ppa`               | To add one PPA/DEB to a list to be added with `apt-add-repository` at the end, before apt-get  |
+| `tue-install-ppa-now`           | To add a PPA/DEB with `apt-add-repository`, use ^ inside of a DEB and spaces between items     |
+| `tue-install-snap`              | To add a snap package to a list to be installed at the end                                     |
+| `tue-install-snap-now`          | To install a snap                                                                              |
+| `tue-install-svn`               | To install a svn repository                                                                    |
+| `tue-install-system`            | To add `deb` package to a list of packages to be installed at the end with `apt-get`           |
+| `tue-install-system-now`        | To install `deb` packages with `apt-get` right away, but ignores it if already installed       |
+| `tue-install-get-releases`      | To get a released asset from a github repository and place it in the requested directory       |
 
 The input arguments for each of the above mentioned commands can be found by
 simply executing the command in a bash session (provided tue-env is correctly
