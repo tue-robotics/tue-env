@@ -1,5 +1,7 @@
 #! /usr/bin/env bash
 
+_function_test _git_https_or_ssh _git_split_url
+
 TUE_INSTALL_DEPENDENCIES_DIR=$TUE_ENV_DIR/.env/dependencies
 TUE_INSTALL_DEPENDENCIES_ON_DIR=$TUE_ENV_DIR/.env/dependencies-on
 TUE_INSTALL_INSTALLED_DIR=$TUE_ENV_DIR/.env/installed
