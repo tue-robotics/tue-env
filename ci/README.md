@@ -1,5 +1,6 @@
-# Setting up SSH support on CI
-This travis configuration has ssh keys added to recurse submodules from private gitlab repository
+# Setting up SSH support on Travis CI
+The travis configuration needs changes to recurse submodules from private gitlab repository. 
+
 Steps to enable ssh support with travis and gitlab are as follows:
 
 ## On the local PC
