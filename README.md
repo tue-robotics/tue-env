@@ -159,3 +159,6 @@ installed).
 A general remark about the order of preference of package repositories:
 
 system > ppa > pip2 = pip3 > snap > git > hg > svn > dpkg (> pip, deprecated)
+
+### Adding SSH support to a repository
+See [this](ci/README.md)
