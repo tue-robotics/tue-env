@@ -3,23 +3,28 @@
 from __future__ import print_function
 
 import sys
-from pip._internal.req.constructors import install_req_from_req_string
+from pip._internal.req.constructors import install_req_from_line
 
 
 def main():
-    if len(sys.argv) != 2:
-        print("Usage: check-pip-pkg-installed-version.py requirement")
-        return 1
+    if len(sys.argv) < 2:
+        print("Usage: check-pip-pkg-installed-version.py requirement [requirements]")
+        return 2
 
-    req = install_req_from_req_string(sys.argv[1])
+    return_code = 0
 
-    req.check_if_exists(True)
+    for arg in sys.argv[1:]:
+        req = install_req_from_line(arg)
 
-    if req.satisfied_by:
-        print(str(req.satisfied_by))
-        return 0
-    else:
-        return 1
+        req.check_if_exists(True)
+
+        if req.satisfied_by:
+            print(str(req.satisfied_by).replace(" ", "^"))
+        else:
+            print(None)
+            return_code = 1
+
+    return return_code
 
 
 if __name__ == "__main__":

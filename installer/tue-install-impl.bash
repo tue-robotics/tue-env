@@ -866,20 +866,44 @@ function _tue-install-pip-now
         tue-install-debug "Already pip${pv}>=$desired_pip_version\n"
     fi
 
+    local pips_to_check=""
     local pips_to_install=""
     local git_pips_to_install=""
     # shellcheck disable=SC2048
     for pkg in $*
     do
-        local installed_version
         if [[ "$pkg" == "git+"* ]]
         then
             git_pips_to_install="$git_pips_to_install $pkg"
-        elif ! installed_version=$(python"${pv}" "$TUE_INSTALL_SCRIPTS_DIR"/check-pip-pkg-installed-version.py "$pkg")
-        then
-            pips_to_install="$pips_to_install $pkg"
         else
-            tue-install-debug "$pkg is already installed, $installed_version"
+            pips_to_check="$pips_to_check $pkg"
+        fi
+    done
+
+    read -r -a pips_to_check <<< "$pips_to_check"
+    local installed_versions
+    installed_versions=($(python"${pv}" "$TUE_INSTALL_SCRIPTS_DIR"/check-pip-pkg-installed-version.py "${pips_to_check[@]}"))
+    local error_code=$?
+    if [ "$error_code" -gt 1 ]
+    then
+        tue-install-error "${installed_versions[@]}"
+    fi
+
+    if [ "${#pips_to_check[@]}" -ne "${#installed_versions[@]}" ]
+    then
+        tue-install-error "Lengths of pips_to_check, ${#pips_to_check[@]}, and installed_version, ${#installed_versions[@]}, don't match"
+    fi
+
+    for idx in "${!pips_to_check[@]}"
+    do
+        local pkg_req="${pips_to_check[$idx]}"
+        local pkg_installed="${installed_versions[$idx]}"
+        pkg_installed="${pkg_installed//^/ }"
+        if [[ "$error_code" -eq 1 && "$pkg_installed" == "None" ]]
+        then
+            pips_to_install="$pips_to_install $pkg_req"
+        else
+            tue-install-debug "$pkg_req is already installed, $pkg_installed"
         fi
     done
 
