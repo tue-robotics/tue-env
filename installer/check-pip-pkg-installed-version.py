@@ -12,18 +12,25 @@ def main():
         return 2
 
     return_code = 0
+    pkg_installed = []
 
-    for arg in sys.argv[1:]:
-        req = install_req_from_line(arg)
+    try:
+        for arg in sys.argv[1:]:
+            req = install_req_from_line(arg)
 
-        req.check_if_exists(True)
+            req.check_if_exists(True)
 
-        if req.satisfied_by:
-            print(str(req.satisfied_by).replace(" ", "^"))
-        else:
-            print(None)
-            return_code = 1
+            if req.satisfied_by:
+                pkg_installed.append(str(req.satisfied_by).replace(" ", "^"))
+            else:
+                pkg_installed.append(str(None))
+                return_code = 1
 
+    except Exception as e:
+        print("check-pip-pkg-installed-version.py:\n{}".format(e))
+        return 2
+
+    print(" ".join(pkg_installed))
     return return_code
 
 
