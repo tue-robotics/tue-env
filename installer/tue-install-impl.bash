@@ -1185,8 +1185,7 @@ function _missing_targets_check
     if [ -n "$missing_targets" ]
     then
         missing_targets=$(echo "$missing_targets" | tr " " "\n" | sort)
-        echo -e "\e[31mThe following installed targets don't exist (anymore):\n$missing_targets \e[0m"
-        exit 1
+        tue-install-error "The following installed targets don't exist (anymore):\n$missing_targets"
     fi
 
     return 0
