@@ -1136,19 +1136,20 @@ function tue-install-ros
             if [ -f "$pkg_xml" ]
             then
                 # Catkin
+                tue-install-debug "Parsing $pkg_xml"
                 local deps
                 deps=$("$TUE_INSTALL_SCRIPTS_DIR"/parse-ros-package-deps.py "$pkg_xml")
-                tue-install-debug "Parsed package.xml \n$deps"
+                tue-install-debug "Parsed package.xml\n$deps"
 
                 for dep in $deps
                 do
                     # Preference given to target name starting with ros-
                     tue-install-target ros-"$dep" || tue-install-target "$dep" || \
-                        tue-install-error "Targets 'ros-$dep' and '$dep' does not exist."
+                        tue-install-error "Targets 'ros-$dep' and '$dep' don't exist"
                 done
 
             else
-                tue-install-warning "Does not contain a valid ROS package.xml."
+                tue-install-warning "Does not contain a valid ROS package.xml"
             fi
         else
             tue-install-debug "No need to parse package.xml for dependencies"
