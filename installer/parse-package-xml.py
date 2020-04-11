@@ -57,7 +57,26 @@ def _get_split_and_expression():
     return _split_and_expression
 
 
+def dep_evaluate_condition(dep):
+    # type: (ET.Element) -> bool
+    """
+    Wrapper to call evaluate_condition with os.environment on a ET.Element
+
+    :param dep: ET.Element with an optional 'condition' attribute
+    :return: Condition is satisfied or not
+    """
+    return evaluate_condition(dep.attrib.get('condition', None), os.environ)
+
+
 def evaluate_condition(condition, context):
+    # type: (Union[str, None], dict) -> bool
+    """
+    Evaluate condition against provided context
+
+    :param condition: condition to evaluate
+    :param context: dictionary on which to evaluate, probably os.environ
+    :return: Condition is satisfied or not
+    """
     if condition is None:
         return True
 
@@ -70,18 +89,26 @@ def evaluate_condition(condition, context):
     if parse_results is None:
         raise ValueError("condition '{}' failed to parse".format(condition))
 
+    # Make sure there is at least one space surrounding the operator, so we can split on spaces later on
     sub = _get_operator_expression()
     try:
         parse_results = sub.sub(r' \g<op> ', parse_results.string, concurrent=True)
     except Exception as e:
         raise ValueError("'{}' failed to substitute whitespace: {}".format(parse_results.string, e))
 
+    # First split on 'or', so only first part needs to be evaluated in case it evaluates to True
     parsed_list = split_on_or(parse_results)
     return _evaluate(parsed_list, context)
 
 
 def split_on_or(s):
     # type: (str) -> list[Union[str, list]]
+    """
+    Split string on 'or' surround by any number of spaces, other whitespaces are ignored
+
+    :param s: string to split
+    :return: list of strings
+    """
     split_or = _get_split_or_expression()
     l = split_or.split(s)
     for idx, v in enumerate(l):
@@ -94,6 +121,12 @@ def split_on_or(s):
 
 def split_on_and(s):
     # type: (str) -> list[Union[str, list]]
+    """
+    Split string on 'and' surround by any number of spaces, other whitespaces are ignored
+
+    :param s: string to split
+    :return: list of strings
+    """
     split_and = _get_split_and_expression()
     l = split_and.split(s)
     for idx, v in enumerate(l):
@@ -106,6 +139,12 @@ def split_on_and(s):
 
 def split_on_space(s):
     # type: (str) -> list[str]
+    """
+    Split string on any length of spaces, not splitting on other whitespaces
+
+    :param s: string to split
+    :return: list of strings
+    """
     split_space = _get_split_space_expression()
     return split_space.split(s, concurrent=True)
 
@@ -113,19 +152,18 @@ def split_on_space(s):
 def flat_to_nested(fl, add):
     """
     [a, b, c, d] --> [[[a, add, b], add, c,], add, d]
+
     :param fl: flat list of strings/lists
     :param add: string item be added in between list items
     :return: nested list
     """
-    if len(fl) == 3 and all(isinstance(x, str) for x in fl):
-        return fl
-    nl = fl[0]
-    for idx in range(1, len(fl)):
-        nl = [nl, add, fl[idx]]
-    return nl
+    if len(fl) == 1:
+        return fl[0]
+    return [flat_to_nested(fl[:-1], add), add, fl[-1]]
 
 
 def _evaluate(parse_results, context):
+    # type: (Union[str, List[str]]) -> Union[bool, str]
     if not isinstance(parse_results, list):
         if parse_results.startswith('$'):
             # get variable from context
@@ -154,6 +192,7 @@ def _evaluate(parse_results, context):
         '>': operator.gt,
     }
     assert parse_results[1] in operators.keys()
+
     return operators[parse_results[1]](
         _evaluate(parse_results[0], context),
         _evaluate(parse_results[2], context))
@@ -170,33 +209,33 @@ def main():
     dep_set = set()
 
     deps = doc.findall('build_depend')
-    dep_set |= {dep.text for dep in deps if evaluate_condition(dep.attrib.get("condition", None), os.environ)}
+    dep_set |= {dep.text for dep in deps if dep_evaluate_condition(dep)}
 
     deps = doc.findall('buildtool_depend')
-    dep_set |= {dep.text for dep in deps if evaluate_condition(dep.attrib.get("condition", None), os.environ)}
+    dep_set |= {dep.text for dep in deps if dep_evaluate_condition(dep)}
 
     deps = doc.findall('build_export_depend')
-    dep_set |= {dep.text for dep in deps if evaluate_condition(dep.attrib.get("condition", None), os.environ)}
+    dep_set |= {dep.text for dep in deps if dep_evaluate_condition(dep)}
 
     deps = doc.findall('buildtool_export_depend')
-    dep_set |= {dep.text for dep in deps if evaluate_condition(dep.attrib.get("condition", None), os.environ)}
+    dep_set |= {dep.text for dep in deps if dep_evaluate_condition(dep)}
 
     deps = doc.findall('exec_depend')
-    dep_set |= {dep.text for dep in deps if evaluate_condition(dep.attrib.get("condition", None), os.environ)}
+    dep_set |= {dep.text for dep in deps if dep_evaluate_condition(dep)}
 
     deps = doc.findall('depend')
-    dep_set |= {dep.text for dep in deps if evaluate_condition(dep.attrib.get("condition", None), os.environ)}
+    dep_set |= {dep.text for dep in deps if dep_evaluate_condition(dep)}
 
     deps = doc.findall('run_depend')
-    dep_set |= {dep.text for dep in deps if evaluate_condition(dep.attrib.get("condition", None), os.environ)}
+    dep_set |= {dep.text for dep in deps if dep_evaluate_condition(dep)}
 
     if os.getenv('TUE_INSTALL_TEST_DEPEND', 'false') == 'true':
         deps = doc.findall('test_depend')
-        dep_set |= {dep.text for dep in deps if evaluate_condition(dep.attrib.get("condition", None), os.environ)}
+        dep_set |= {dep.text for dep in deps if dep_evaluate_condition(dep)}
 
     if os.getenv('TUE_INSTALL_DOC_DEPEND', 'false') == 'true':
         deps = doc.findall('doc_depend')
-        dep_set |= {dep.text for dep in deps if evaluate_condition(dep.attrib.get("condition", None), os.environ)}
+        dep_set |= {dep.text for dep in deps if dep_evaluate_condition(dep)}
 
     print('\n'.join(dep_set))
 

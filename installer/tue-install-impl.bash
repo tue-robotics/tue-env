@@ -1274,7 +1274,7 @@ TUE_INSTALL_INFOS=
 tue-install-system-now git gcc python-pip python-dev python-docutils python-pkg-resources python-setuptools python-wheel \
 python3-pip python3-dev python3-docutils python3-pkg-resources python3-setuptools python3-wheel
 
-tue-install-pip3-now distro PyYAML "mercurial>=5.3"
+tue-install-pip3-now distro PyYAML regex "mercurial>=5.3"
 
 
 # Handling of targets
