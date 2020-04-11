@@ -161,7 +161,7 @@ def _evaluate(parse_results, context):
 
 def main():
     if len(sys.argv) != 2:
-        print("Usage: parse-ros-package-deps PACKAGE.XML")
+        print("Usage: parse-package-xml PACKAGE.XML")
         return 1
 
     tree = ET.parse(sys.argv[1])
