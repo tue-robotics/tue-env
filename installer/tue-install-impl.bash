@@ -1249,7 +1249,7 @@ TUE_INSTALL_INFOS=
 # Make sure tools used by this installer are installed
 tue-install-system-now curl git jq python-is-python3 python3-pip wget
 
-tue-install-pip3-now catkin-pkg PyYAML
+tue-install-pip3-now distro PyYAML regex
 
 
 # Handling of targets
