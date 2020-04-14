@@ -778,7 +778,7 @@ function tue-get
 
     Possible options:
         --debug          - Shows more debugging information
-        --no-ros-deps    - Do not install ROS dependencies
+        --no-ros-deps    - Do not install ROS dependencies (Breaks the dependency tree, not all setup files will be sourced)
         --doc-depend     - Do install doc dependencies, overules config
         --no-doc-depend  - Do not install doc dependencies, overules config
         --test-depend    - Do install test dependencies, overules config
