@@ -24,7 +24,9 @@ def main():
 
     with open(sys.argv[1]) as f:
         try:
-            install_items = yaml.safe_load(f)
+            install_items = yaml.load(f, yaml.CSafeLoader)
+        except AttributeError:
+            install_items = yaml.load(f, yaml.SafeLoader)
         except (yaml.parser.ParserError, yaml.scanner.ScannerError) as e:
             return show_error("Invalid yaml syntax: {0}".format(e))
 
