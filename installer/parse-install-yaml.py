@@ -6,10 +6,10 @@ from os import environ
 import sys
 import yaml
 
-from distro import linux_distribution
+from lsb_release import get_distro_information
 
 ros_release = environ["TUE_ROS_DISTRO"]
-ubuntu_release = linux_distribution()[2]
+ubuntu_release = get_distro_information()['CODENAME']
 
 
 def show_error(error):
