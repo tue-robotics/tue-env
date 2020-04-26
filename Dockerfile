@@ -21,7 +21,7 @@ ENV DEBIAN_FRONTEND=noninteractive \
     LANG=C.UTF-8 \
     DOCKER=true \
     USER=amigo \
-    TERM=xterm
+    TERM=xterm-256color
 
 # Set default shell to be bash
 SHELL ["/bin/bash", "-c"]

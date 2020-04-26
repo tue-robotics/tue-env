@@ -63,7 +63,15 @@ case $image_substring in
 esac
 
 # Create tag based on branch name
-CI_DOCKER_IMAGE_NAME="$CI_DOCKER_IMAGE_NAME":$(echo "$CI_BRANCH" | tr '[:upper:]' '[:lower:]' | sed -e 's:/:_:g')
+default_branch=$(git remote show origin | grep HEAD | awk '{print $3;}')
+if [ "$default_branch" == "$CI_BRANCH" ]
+then
+    CI_DOCKER_IMAGE_TAG="latest"
+else
+    CI_DOCKER_IMAGE_TAG=$(echo "$CI_BRANCH" | tr '[:upper:]' '[:lower:]' | sed -e 's:/:_:g')
+fi
+
+CI_DOCKER_IMAGE_NAME="$CI_DOCKER_IMAGE_NAME":"$CI_DOCKER_IMAGE_TAG"
 echo -e "\e[35m\e[1m Creating docker $CI_DOCKER_IMAGE_NAME \e[0m"
 
 # Make sure a known hosts file exists on the host in the workingdir

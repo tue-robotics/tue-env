@@ -84,8 +84,8 @@ fi
 # Determine docker tag if the same branch exists there
 BRANCH_TAG=$(echo "$BRANCH" | tr '[:upper:]' '[:lower:]' | sed -e 's:/:_:g')
 
-# Set the default fallback branch to master
-MASTER_TAG=master
+# Set the default fallback branch to latest
+MASTER_TAG="latest"
 
 # Remove any previously started containers if they exist (if not exist, still return true to let the script continue)
 docker stop tue-env  &> /dev/null || true
