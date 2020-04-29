@@ -3,8 +3,8 @@
 #       Dockerfile to build working Ubuntu image with tue-env
 # ----------------------------------------------------------------
 
-# Set default base image to Ubuntu 16.04
-ARG BASE_IMAGE=ubuntu:16.04
+# Set default base image to Ubuntu 18.04
+ARG BASE_IMAGE=ubuntu:18.04
 FROM $BASE_IMAGE
 
 # Build time arguments
