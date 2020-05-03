@@ -496,12 +496,28 @@ function _tue-repo-status
 
             local current_branch
             current_branch=$(git -C "$pkg_dir" rev-parse --abbrev-ref HEAD)
-            case $current_branch in
-                master|develop|indigo-devel|hydro-devel|jade-devel|kinetic-devel|toolchain-2.9) ;;
-                *) _robocup_branch_allowed "$current_branch" || echo -e "\033[1m$name\033[0m is on branch '$current_branch'";;
-            esac
-        fi
 
+            local test_branches="master"
+
+            # Add default branch
+            test_branches="$test_branches $(_tue-git-get-default-branch "$pkg_dir")"
+
+            # Add robocup branch
+            test_branches="$test_branches $(_get_robocup_branch)"
+
+            local allowed="false"
+            for test_branch in $test_branches
+            do
+                if [ "$test_branch" == "$current_branch" ]
+                then
+                    [ -z "$status" ] && return 0
+                    # else
+                    allowed="true"
+                    break
+                fi
+            done
+            [ "$allowed" != "true" ] && echo -e "\033[1m$name\033[0m is on branch '$current_branch'"
+        fi
         vctype=git
     elif [ -d "$pkg_dir"/.svn ]
     then
