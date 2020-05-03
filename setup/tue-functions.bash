@@ -497,13 +497,17 @@ function _tue-repo-status
             local current_branch
             current_branch=$(git -C "$pkg_dir" rev-parse --abbrev-ref HEAD)
 
-            local test_branches="master"
+            local test_branches=""
 
             # Add default branch
-            test_branches="$test_branches $(_tue-git-get-default-branch "$pkg_dir")"
+            local default_branch
+            default_branch=$(_tue-git-get-default-branch "$pkg_dir")
+            [ -n "$default_branch" ] && test_branches="${test_branches:+${test_branches} }$default_branch"
 
             # Add robocup branch
-            test_branches="$test_branches $(_get_robocup_branch)"
+            local robocup_branch
+            robocup_branch=$(_get_robocup_branch)
+            [ -n "$robocup_branch" ] && test_branches="${test_branches:+${test_branches} }$robocup_branch"
 
             local allowed="false"
             for test_branch in $test_branches
