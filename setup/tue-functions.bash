@@ -64,16 +64,22 @@ function tue-apt-select-mirror
 #                                       GIT LOCAL HOUSEKEEPING
 # ----------------------------------------------------------------------------------------------------
 
-function __tue-git-default-branch
+function _tue-git-get-default-branch
+{
+    # Takes current dir in case $1 is empty
+    git -C "$1" symbolic-ref refs/remotes/origin/HEAD | sed 's@^refs/remotes/origin/@@'
+}
+
+function __tue-git-checkout-default-branch
 {
     local default_branch
-    default_branch=$(git remote show origin | grep HEAD | awk '{print $3}')
+    default_branch=$(_tue-git-get-default-branch)
     _git_remote_checkout origin "$default_branch"
 }
 
-function _tue-git-default-branch
+function _tue-git-checkout-default-branch
 {
-    _tue-repos-do "__tue-git-default-branch"
+    _tue-repos-do "__tue-git-checkout-default-branch"
 }
 
 function _tue-git-clean-local
@@ -115,7 +121,7 @@ function _tue-git-clean-local
     # branch before cleanup
     if [[ "$stale_branches" == *$(git rev-parse --abbrev-ref HEAD)* ]]
     then
-        __tue-git-default-branch
+        __tue-git-checkout-default-branch
 
         git pull --ff-only --prune > /dev/null 2>&1
         error_code=$?
@@ -1451,7 +1457,7 @@ function _disallow_robocup_branch
 function tue-robocup-set-github
 {
     tue-robocup-change-remote $TUE_ROBOCUP_BRANCH origin
-    _tue-git-default-branch
+    _tue-git-checkout-default-branch
     _disallow_robocup_branch
 }
 
