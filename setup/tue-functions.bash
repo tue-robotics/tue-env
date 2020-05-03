@@ -454,11 +454,16 @@ complete -F _tue-dev tue-dev
 function _robocup_branch_allowed
 {
     local branch=$1
-    if [ -f "$TUE_DIR"/user/config/robocup ] && [ "$branch" == "$(cat "$TUE_DIR"/user/config/robocup)" ]
-    then
-        return 0
-    fi
+    local robocup_branch
+    robocup_branch=$(_get_robocup_branch)
+    [ -n "$robocup_branch" ] && [ "$branch" == "$robocup_branch" ] && return 0
+    # else
     return 1
+}
+
+function _get_robocup_branch
+{
+    [ -f "$TUE_DIR"/user/config/robocup ] && cat "$TUE_DIR"/user/config/robocup
 }
 
 function _tue-repo-status
