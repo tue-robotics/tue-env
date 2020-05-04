@@ -67,7 +67,10 @@ function tue-apt-select-mirror
 function _tue-git-get-default-branch
 {
     # Takes current dir in case $1 is empty
-    git -C "$1" symbolic-ref refs/remotes/origin/HEAD | sed 's@^refs/remotes/origin/@@'
+    local default_branch
+    default_branch=$(git -C "$1" symbolic-ref refs/remotes/origin/HEAD --short 2>/dev/null | sed 's@^origin/@@')
+    [ -z "$default_branch" ] && default_branch=$(git -C "$1" remote show origin 2>/dev/null | grep HEAD | awk '{print $3}')
+    echo "$default_branch"
 }
 
 function __tue-git-checkout-default-branch
