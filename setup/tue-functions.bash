@@ -502,6 +502,12 @@ function _tue-repo-status
 
             local test_branches=""
 
+            # Add branch specified by target
+            local target_branch version_cache_file
+            version_cache_file="$TUE_ENV_DIR/.env/version_cache/$(git -C "$pkg_dir" rev-parse --show-toplevel 2>/dev/null)"
+            [ -f "$version_cache_file" ] && target_branch=$(cat "$version_cache_file")
+            [ -n "$target_branch" ] && test_branches="${test_branches:+${test_branches} }$target_branch"
+
             # Add default branch
             local default_branch
             default_branch=$(_tue-git-get-default-branch "$pkg_dir")

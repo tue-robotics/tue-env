@@ -310,11 +310,16 @@ function tue-install-git
 
     tue-install-debug "Desired version: $version"
     local _try_branch_res # Will be used in _try_branch_git
+    local version_cache_file="$TUE_ENV_DIR/.env/version_cache/$targetdir"
     if [ -n "$version" ]
     then
+        mkdir -p "$(dirname "$version_cache_file")"
+        echo "$version" > "$version_cache_file"
         _try_branch_res=""
         _try_branch_git "$targetdir" "$version"
         [ -n "$_try_branch_res" ] && res="${res:+${res} }$_try_branch_res"
+    else
+        rm "$version_cache_file" 2>/dev/null
     fi
 
     tue-install-debug "Desired branch: $BRANCH"
