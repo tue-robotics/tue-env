@@ -64,16 +64,25 @@ function tue-apt-select-mirror
 #                                       GIT LOCAL HOUSEKEEPING
 # ----------------------------------------------------------------------------------------------------
 
-function __tue-git-default-branch
+function _tue-git-get-default-branch
+{
+    # Takes current dir in case $1 is empty
+    local default_branch
+    default_branch=$(git -C "$1" symbolic-ref refs/remotes/origin/HEAD --short 2>/dev/null | sed 's@^origin/@@')
+    [ -z "$default_branch" ] && default_branch=$(git -C "$1" remote show origin 2>/dev/null | grep HEAD | awk '{print $3}')
+    echo "$default_branch"
+}
+
+function __tue-git-checkout-default-branch
 {
     local default_branch
-    default_branch=$(git remote show origin | grep HEAD | awk '{print $3}')
+    default_branch=$(_tue-git-get-default-branch)
     _git_remote_checkout origin "$default_branch"
 }
 
-function _tue-git-default-branch
+function _tue-git-checkout-default-branch
 {
-    _tue-repos-do "__tue-git-default-branch"
+    _tue-repos-do "__tue-git-checkout-default-branch"
 }
 
 function _tue-git-clean-local
@@ -115,7 +124,7 @@ function _tue-git-clean-local
     # branch before cleanup
     if [[ "$stale_branches" == *$(git rev-parse --abbrev-ref HEAD)* ]]
     then
-        __tue-git-default-branch
+        __tue-git-checkout-default-branch
 
         git pull --ff-only --prune > /dev/null 2>&1
         error_code=$?
@@ -448,11 +457,16 @@ complete -F _tue-dev tue-dev
 function _robocup_branch_allowed
 {
     local branch=$1
-    if [ -f "$TUE_DIR"/user/config/robocup ] && [ "$branch" == "$(cat "$TUE_DIR"/user/config/robocup)" ]
-    then
-        return 0
-    fi
+    local robocup_branch
+    robocup_branch=$(_get_robocup_branch)
+    [ -n "$robocup_branch" ] && [ "$branch" == "$robocup_branch" ] && return 0
+    # else
     return 1
+}
+
+function _get_robocup_branch
+{
+    [ -f "$TUE_DIR"/user/config/robocup ] && cat "$TUE_DIR"/user/config/robocup
 }
 
 function _tue-repo-status
@@ -485,12 +499,38 @@ function _tue-repo-status
 
             local current_branch
             current_branch=$(git -C "$pkg_dir" rev-parse --abbrev-ref HEAD)
-            case $current_branch in
-                master|develop|indigo-devel|hydro-devel|jade-devel|kinetic-devel|toolchain-2.9) ;;
-                *) _robocup_branch_allowed "$current_branch" || echo -e "\033[1m$name\033[0m is on branch '$current_branch'";;
-            esac
-        fi
 
+            local test_branches=""
+
+            # Add branch specified by target
+            local target_branch version_cache_file
+            version_cache_file="$TUE_ENV_DIR/.env/version_cache/$(git -C "$pkg_dir" rev-parse --show-toplevel 2>/dev/null)"
+            [ -f "$version_cache_file" ] && target_branch=$(cat "$version_cache_file")
+            [ -n "$target_branch" ] && test_branches="${test_branches:+${test_branches} }$target_branch"
+
+            # Add default branch
+            local default_branch
+            default_branch=$(_tue-git-get-default-branch "$pkg_dir")
+            [ -n "$default_branch" ] && test_branches="${test_branches:+${test_branches} }$default_branch"
+
+            # Add robocup branch
+            local robocup_branch
+            robocup_branch=$(_get_robocup_branch)
+            [ -n "$robocup_branch" ] && test_branches="${test_branches:+${test_branches} }$robocup_branch"
+
+            local allowed="false"
+            for test_branch in $test_branches
+            do
+                if [ "$test_branch" == "$current_branch" ]
+                then
+                    [ -z "$status" ] && return 0
+                    # else
+                    allowed="true"
+                    break
+                fi
+            done
+            [ "$allowed" != "true" ] && echo -e "\033[1m$name\033[0m is on branch '$current_branch'"
+        fi
         vctype=git
     elif [ -d "$pkg_dir"/.svn ]
     then
@@ -1451,7 +1491,7 @@ function _disallow_robocup_branch
 function tue-robocup-set-github
 {
     tue-robocup-change-remote $TUE_ROBOCUP_BRANCH origin
-    _tue-git-default-branch
+    _tue-git-checkout-default-branch
     _disallow_robocup_branch
 }
 
