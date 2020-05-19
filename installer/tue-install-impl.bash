@@ -230,6 +230,12 @@ function _try_branch_git
     _try_branch_res=$(git -C "$1" checkout "$2" 2>&1) # This is a "global" variable from tue-install-git
     tue-install-debug "_try_branch_res: $_try_branch_res"
 
+    local _submodule_sync_res _submodule_sync_error_code
+    tue-install-debug "git -C $1 submodule sync --recursive"
+    _submodule_sync_res=$(git -C "$1" submodule sync --recursive 2>&1)
+    _submodule_sync_error_code=$?
+    tue-install-debug "_submodule_sync_res: $_submodule_sync_res"
+
     local _submodule_res
     tue-install-debug "git -C $1 submodule update --init --recursive"
     _submodule_res=$(git -C "$1" submodule update --init --recursive 2>&1)
@@ -239,6 +245,7 @@ function _try_branch_git
     then
         _try_branch_res=
     fi
+    [ "$_submodule_sync_error_code" -gt 0 ] && [ -n "$_submodule_sync_res" ] && _try_branch_res="${res:+${res} }$_submodule_sync_res"
     [ -n "$_submodule_res" ] && _try_branch_res="${_try_branch_res:+${_try_branch_res} }$_submodule_res"
 }
 
@@ -294,6 +301,13 @@ function tue-install-git
             tue-install-debug "res: $res"
 
             TUE_INSTALL_GIT_PULL_Q+=$targetdir
+
+            local submodule_sync_res submodule_sync_error_code
+            tue-install-debug "git -C $targetdir submodule sync --recursive"
+            submodule_sync_res=$(git -C "$targetdir" submodule sync --recursive)
+            submodule_sync_error_code=$?
+            tue-install-debug "submodule_sync_res: $submodule_sync_res"
+            [ "$submodule_sync_error_code" -gt 0 ] && [ -n "$submodule_sync_res" ] && res="${res:+${res} }$submodule_sync_res"
 
             local submodule_res
             tue-install-debug "git -C $targetdir submodule update --init --recursive"
