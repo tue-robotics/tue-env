@@ -90,7 +90,7 @@ else
 
     echo -en "[tue-env-targets] Updating targets... "
 
-    if ! { git -C "$TUE_ENV_TARGETS_DIR" pull --ff-only --prune && git -C "$TUE_ENV_TARGETS_DIR" submodule update --init --recursive; } && [ -z "$CI" ]
+    if ! { git -C "$TUE_ENV_TARGETS_DIR" pull --ff-only --prune && git -C "$TUE_ENV_TARGETS_DIR" submodule sync --recursive 1>/dev/null && git -C "$TUE_ENV_TARGETS_DIR" submodule update --init --recursive; } && [ -z "$CI" ]
     then
         # prompt for conformation
         exec < /dev/tty
@@ -121,6 +121,7 @@ then
                 echo -en "Already on branch $BRANCH"
             else
                 git -C "$TUE_ENV_TARGETS_DIR" checkout "$BRANCH" 2>&1
+                git -C "$TUE_ENV_TARGETS_DIR" submodule sync --recursive 2>&1
                 git -C "$TUE_ENV_TARGETS_DIR" submodule update --init --recursive 2>&1
                 echo -en "Switched to branch $BRANCH"
             fi
