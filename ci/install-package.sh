@@ -142,6 +142,10 @@ then
     # Install the package completely
     echo -e "\e[35m\e[1m tue-get install ros-$PACKAGE --test-depend --branch=PULLREQUEST\e[0m"
     docker exec tue-env bash -c 'source ~/.bashrc; tue-get install ros-"$PACKAGE" --test-depend --branch=PULLREQUEST'
+
+    # Checkout -f to be really sure
+    echo -e "\e[35m\e[1m git -C ~${TUE_SYSTEM_DIR#$DOCKER_HOME}/src/$PACKAGE checkout -f PULLREQUEST\e[0m"
+    docker exec -t tue-env bash -c 'source ~/.bashrc; git -C "$TUE_SYSTEM_DIR"/src/"$PACKAGE" checkout -f PULLREQUEST'
 else
     # Install the package
     echo -e "\e[35m\e[1m tue-get install ros-$PACKAGE --test-depend --branch=$BRANCH\e[0m"
