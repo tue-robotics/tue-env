@@ -129,17 +129,26 @@ docker exec -t tue-env bash -c 'sudo apt-get update -qq'
 ROS_DISTRO=$(docker exec -t tue-env bash -c 'source ~/.bashrc; echo "$ROS_DISTRO"')
 echo -e "\e[35m\e[1m ROS_DISTRO = ${ROS_DISTRO}\e[0m"
 
-# Install the package
-echo -e "\e[35m\e[1m tue-get install ros-$PACKAGE --test-depend --branch=$BRANCH\e[0m"
-docker exec tue-env bash -c 'source ~/.bashrc; tue-get install ros-"$PACKAGE" --test-depend --branch="$BRANCH"'
-
-# Set the package to the right commit
-echo -e "\e[35m\e[1m Reset package to this commit \e[0m"
-if [[ $PULL_REQUEST == "false" ]]
+if [[ $PULL_REQUEST != "false" ]]
 then
-    echo -e "\e[35m\e[1m cd ~${TUE_SYSTEM_DIR#$HOME}/src/$PACKAGE && git reset --hard $COMMIT \e[0m"
-    docker exec -t tue-env bash -c 'source ~/.bashrc; cd "$TUE_SYSTEM_DIR"/src/"$PACKAGE" && git reset --hard "$COMMIT"'
+    # Install only the git repo of the package
+    echo -e "\e[35m\e[1m tue-get install ros-$PACKAGE --no-ros-deps\e[0m"
+    docker exec tue-env bash -c 'source ~/.bashrc; tue-get install ros-"$PACKAGE" --no-ros-deps'
+
+    # Fetch the merge branch
+    echo -e "\e[35m\e[1m git -C ~${TUE_SYSTEM_DIR#$HOME}/src/$PACKAGE fetch origin pull/$PULL_REQUEST/merge:PULLREQUEST\e[0m"
+    docker exec -t tue-env bash -c 'source ~/.bashrc; git -C "$TUE_SYSTEM_DIR"/src/"$PACKAGE" fetch origin pull/$PULL_REQUEST/merge:PULLREQUEST'
+
+    # Install the package completely
+    echo -e "\e[35m\e[1m tue-get install ros-$PACKAGE --test-depend --branch=PULLREQUEST\e[0m"
+    docker exec tue-env bash -c 'source ~/.bashrc; tue-get install ros-"$PACKAGE" --test-depend --branch=PULLREQUEST'
 else
-    echo -e "\e[35m\e[1m cd ~${TUE_SYSTEM_DIR#$HOME}/src/$PACKAGE && git fetch origin pull/$PULL_REQUEST/head:PULLREQUEST && git checkout PULLREQUEST \e[0m"
-    docker exec -t tue-env bash -c 'source ~/.bashrc; cd "$TUE_SYSTEM_DIR"/src/"$PACKAGE" && git fetch origin pull/"$PULL_REQUEST"/head:PULLREQUEST && git checkout PULLREQUEST'
+    # Install the package
+    echo -e "\e[35m\e[1m tue-get install ros-$PACKAGE --test-depend --branch=$BRANCH\e[0m"
+    docker exec tue-env bash -c 'source ~/.bashrc; tue-get install ros-"$PACKAGE" --test-depend --branch="$BRANCH"'
+
+    # Set the package to the right commit
+    echo -e "\e[35m\e[1m Reset package to this commit\e[0m"
+    echo -e "\e[35m\e[1m git -C ~${TUE_SYSTEM_DIR#$HOME}/src/$PACKAGE reset --hard $COMMIT\e[0m"
+    docker exec -t tue-env bash -c 'source ~/.bashrc; git -C "$TUE_SYSTEM_DIR"/src/"$PACKAGE" reset --hard "$COMMIT"'
 fi
