@@ -126,6 +126,9 @@ fi
 ROS_DISTRO=$(docker exec -t tue-env bash -c 'source ~/.bashrc; echo "$ROS_DISTRO"')
 echo -e "\e[35m\e[1m ROS_DISTRO = ${ROS_DISTRO}\e[0m"
 
+TUE_SYSTEM_DIR=$(docker exec -t tue-env bash -c 'source ~/.bashrc; echo "$TUE_SYSTEM_DIR"')
+DOCKER_HOME=$(docker exec -t tue-env bash -c 'source ~/.bashrc; echo "$HOME"')
+
 if [[ $PULL_REQUEST != "false" ]]
 then
     # Install only the git repo of the package
@@ -133,7 +136,7 @@ then
     docker exec tue-env bash -c 'source ~/.bashrc; tue-get install ros-"$PACKAGE" --no-ros-deps'
 
     # Fetch the merge branch
-    echo -e "\e[35m\e[1m git -C ~${TUE_SYSTEM_DIR#$HOME}/src/$PACKAGE fetch origin pull/$PULL_REQUEST/merge:PULLREQUEST\e[0m"
+    echo -e "\e[35m\e[1m git -C ~${TUE_SYSTEM_DIR#$DOCKER_HOME}/src/$PACKAGE fetch origin pull/$PULL_REQUEST/merge:PULLREQUEST\e[0m"
     docker exec -t tue-env bash -c 'source ~/.bashrc; git -C "$TUE_SYSTEM_DIR"/src/"$PACKAGE" fetch origin pull/$PULL_REQUEST/merge:PULLREQUEST'
 
     # Install the package completely
@@ -146,6 +149,6 @@ else
 
     # Set the package to the right commit
     echo -e "\e[35m\e[1m Reset package to this commit\e[0m"
-    echo -e "\e[35m\e[1m git -C ~${TUE_SYSTEM_DIR#$HOME}/src/$PACKAGE reset --hard $COMMIT\e[0m"
+    echo -e "\e[35m\e[1m git -C ~${TUE_SYSTEM_DIR#$DOCKER_HOME}/src/$PACKAGE reset --hard $COMMIT\e[0m"
     docker exec -t tue-env bash -c 'source ~/.bashrc; git -C "$TUE_SYSTEM_DIR"/src/"$PACKAGE" reset --hard "$COMMIT"'
 fi
