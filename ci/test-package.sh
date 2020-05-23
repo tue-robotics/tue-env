@@ -1,7 +1,7 @@
 #! /usr/bin/env bash
 #
 # Package builder (CI script)
-# This script can only be run after the install-package.sh
+# This script can only be run after the build-package.sh
 
 # Stop on errors
 set -o errexit
@@ -39,7 +39,10 @@ then
     exit 0
 fi
 
-# Use docker environment variables in all exec commands instead of script variables
-# Compile the package
-echo -e "\e[35m\e[1m Compile the package (catkin build -DCMAKE_BUILD_TYPE=RelWithDebInfo) \e[0m"
-docker exec -t tue-env bash -c 'source ~/.bashrc; cd "$TUE_SYSTEM_DIR"/src/"$PACKAGE" && catkin build --this --no-status -DCMAKE_BUILD_TYPE=RelWithDebInfo'
+# Run unit tests
+echo -e "\e[35m\e[1m Run tests on this package (catkin run_tests --this --no-deps -DCATKIN_ENABLE_TESTING=ON) \e[0m"
+docker exec -t tue-env bash -c 'source ~/.bashrc; cd "$TUE_SYSTEM_DIR"/src/"$PACKAGE" && catkin run_tests --this --no-status --no-deps -DCATKIN_ENABLE_TESTING=ON'
+
+# Check results of unit tests
+echo -e "\e[35m\e[1m Check results of the tests on this package (catkin_test_results build/$PACKAGE) \e[0m"
+docker exec -t tue-env bash -c 'source ~/.bashrc; cd "$TUE_SYSTEM_DIR" && [ ! -d build/"$PACKAGE" ] || catkin_test_results build/"$PACKAGE"'
