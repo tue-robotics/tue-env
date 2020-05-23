@@ -1,4 +1,5 @@
 #! /usr/bin/env bash
+# shellcheck disable=SC2016
 #
 # Package builder (CI script)
 # This script can only be run after the build-package.sh
