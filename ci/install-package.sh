@@ -137,9 +137,9 @@ docker exec tue-env bash -c 'source ~/.bashrc; tue-get install ros-"$PACKAGE" --
 echo -e "\e[35m\e[1m Reset package to this commit \e[0m"
 if [[ $PULL_REQUEST == "false" ]]
 then
-    echo -e "\e[35m\e[1m cd ~/ros/$ROS_DISTRO/system/src/$PACKAGE && git reset --hard $COMMIT \e[0m"
-    docker exec -t tue-env bash -c 'source ~/.bashrc; cd ~/ros/"$ROS_DISTRO"/system/src/"$PACKAGE" && git reset --hard "$COMMIT"'
+    echo -e "\e[35m\e[1m cd ~${TUE_SYSTEM_DIR#$HOME}/src/$PACKAGE && git reset --hard $COMMIT \e[0m"
+    docker exec -t tue-env bash -c 'source ~/.bashrc; cd "$TUE_SYSTEM_DIR"/src/"$PACKAGE" && git reset --hard "$COMMIT"'
 else
-    echo -e "\e[35m\e[1m cd ~/ros/$ROS_DISTRO/system/src/$PACKAGE && git fetch origin pull/$PULL_REQUEST/head:PULLREQUEST && git checkout PULLREQUEST \e[0m"
-    docker exec -t tue-env bash -c 'source ~/.bashrc; cd ~/ros/"$ROS_DISTRO"/system/src/"$PACKAGE" && git fetch origin pull/"$PULL_REQUEST"/head:PULLREQUEST && git checkout PULLREQUEST'
+    echo -e "\e[35m\e[1m cd ~${TUE_SYSTEM_DIR#$HOME}/src/$PACKAGE && git fetch origin pull/$PULL_REQUEST/head:PULLREQUEST && git checkout PULLREQUEST \e[0m"
+    docker exec -t tue-env bash -c 'source ~/.bashrc; cd "$TUE_SYSTEM_DIR"/src/"$PACKAGE" && git fetch origin pull/"$PULL_REQUEST"/head:PULLREQUEST && git checkout PULLREQUEST'
 fi
