@@ -8,10 +8,14 @@ services:
 before_install:
   - wget https://raw.githubusercontent.com/tue-robotics/tue-env/master/ci/install-package.sh
   - wget https://raw.githubusercontent.com/tue-robotics/tue-env/master/ci/build-package.sh
+  - wget https://raw.githubusercontent.com/tue-robotics/tue-env/master/ci/test-package.sh
   - export PACKAGE=${TRAVIS_REPO_SLUG#*/}
 
 install:
-  - bash install-package.sh --package=$PACKAGE --branch=${TRAVIS_PULL_REQUEST_BRANCH:-$TRAVIS_BRANCH} --commit=$TRAVIS_COMMIT --pullrequest=$TRAVIS_PULL_REQUEST --image="tuerobotics/tue-env"
+  - bash install-package.sh --package=$PACKAGE --branch=${TRAVIS_PULL_REQUEST_BRANCH:-$TRAVIS_BRANCH} --commit=$TRAVIS_COMMIT --pullrequest=$TRAVIS_PULL_REQUEST
 
 script:
   - bash build-package.sh --package=$PACKAGE
+
+after_success:
+  - bash test-package.sh --package=$PACKAGE

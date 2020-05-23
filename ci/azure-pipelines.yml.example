@@ -21,6 +21,7 @@ steps:
     script: |
       wget https://raw.githubusercontent.com/tue-robotics/tue-env/master/ci/install-package.sh
       wget https://raw.githubusercontent.com/tue-robotics/tue-env/master/ci/build-package.sh
+      wget https://raw.githubusercontent.com/tue-robotics/tue-env/master/ci/test-package.sh
       echo "##vso[task.setvariable variable=package]${BUILD_REPOSITORY_NAME#*/}"
   displayName: 'Get CI scripts'
 - task: Bash@3
@@ -34,4 +35,10 @@ steps:
     targetType: 'inline'
     script: |
       bash build-package.sh --package=$PACKAGE
-  displayName: 'Build & test'
+  displayName: 'Build'
+- task: Bash@3
+  inputs:
+    targetType: 'inline'
+    script: |
+      bash test-package.sh --package=$PACKAGE
+  displayName: 'Test'
