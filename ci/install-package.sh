@@ -69,6 +69,7 @@ This build can be reproduced locally using the following commands:
 tue-get install docker
 ~/.tue/ci/install-package.sh --package=${PACKAGE} --branch=${BRANCH} --commit=${COMMIT} --pullrequest=${PULL_REQUEST}
 ~/.tue/ci/build-package.sh --package=${PACKAGE}
+~/.tue/ci/test-package.sh --package=${PACKAGE}
 
 Optionally fix your compilation errors and re-run only the last command
 \e[0m"
