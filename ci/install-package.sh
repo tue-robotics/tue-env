@@ -123,11 +123,13 @@ fi
 
 # Use docker environment variables in all exec commands instead of script variables
 # Catch the ROS_DISTRO of the docker container
-ROS_DISTRO=$(docker exec -t tue-env bash -c 'source ~/.bashrc; echo "$ROS_DISTRO"')
+# stip carriage return from docker output by "tr -d '\r'"
+# see https://unix.stackexchange.com/a/487185
+ROS_DISTRO=$(docker exec -t tue-env bash -c 'source ~/.bashrc; echo "$ROS_DISTRO"' | tr -d '\r')
 echo -e "\e[35m\e[1m ROS_DISTRO = ${ROS_DISTRO}\e[0m"
 
-TUE_SYSTEM_DIR=$(docker exec -t tue-env bash -c 'source ~/.bashrc; echo "$TUE_SYSTEM_DIR"')
-DOCKER_HOME=$(docker exec -t tue-env bash -c 'source ~/.bashrc; echo "$HOME"')
+TUE_SYSTEM_DIR=$(docker exec -t tue-env bash -c 'source ~/.bashrc; echo "$TUE_SYSTEM_DIR"' | tr -d '\r')
+DOCKER_HOME=$(docker exec -t tue-env bash -c 'source ~/.bashrc; echo "$HOME"' | tr -d '\r')
 
 if [[ $PULL_REQUEST != "false" ]]
 then
