@@ -1,4 +1,5 @@
 #! /usr/bin/env bash
+# shellcheck disable=SC2016
 #
 # Package installer (CI script)
 # This script uses the Docker image of tue-env and installs the current git
