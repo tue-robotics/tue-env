@@ -121,9 +121,6 @@ then
     docker exec -t tue-env bash -c "echo '$SSH_KEY' > ~/.ssh/id_rsa && chmod 700 ~/.ssh/id_rsa"
 fi
 
-# Refresh the apt cache in the docker image
-docker exec -t tue-env bash -c 'sudo apt-get update -qq'
-
 # Use docker environment variables in all exec commands instead of script variables
 # Catch the ROS_DISTRO of the docker container
 ROS_DISTRO=$(docker exec -t tue-env bash -c 'source ~/.bashrc; echo "$ROS_DISTRO"')
