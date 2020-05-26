@@ -139,6 +139,14 @@ DOCKER_HOME=$(docker exec -t tue-env bash -c 'source ~/.bashrc; echo "$HOME"' | 
 
 if [[ $PULL_REQUEST != "false" ]]
 then
+    # First install only the git repo, so we can pull the pullrequest branch.
+    # Then we pull the pullrequest branch before running tue-get install.
+    # with the --branch=PULLREQUEST option. So only the tested repo is checked
+    # out to the merged pull request. While all other packages are checked out
+    # to their default branch.
+    # This is needed before tue-get, so also new deps are installed.
+    # After a tue-get run, we checkout forced, just to be sure.
+
     # Install only the git repo of the package
     echo -e "\e[35m\e[1m tue-get install ros-$PACKAGE --no-ros-deps\e[0m"
     docker exec tue-env bash -c 'source ~/.bashrc; tue-get install ros-"$PACKAGE" --no-ros-deps'
