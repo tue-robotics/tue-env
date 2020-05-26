@@ -22,6 +22,7 @@ do
             PACKAGE="${i#*=}" ;;
 
         -b=* | --branch=* )
+        # BRANCH should allways be targetbranch
             BRANCH="${i#*=}" ;;
 
         -c=* | --commit=* )
