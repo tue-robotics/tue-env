@@ -880,7 +880,7 @@ function _tue-install-pip-now
     if version_gt "$desired_pip_version" "$pip_version"
     then
         tue-install-debug "pip${pv} not yet version >=$desired_pip_version, but $pip_version"
-        pip"${pv}" install --user --upgrade pip
+        python"${pv}" -m pip install --user --upgrade pip
         hash -r
     else
         tue-install-debug "Already pip${pv}>=$desired_pip_version\n"
@@ -931,9 +931,9 @@ function _tue-install-pip-now
     if [ -n "$pips_to_install" ]
     then
         echo -e "Going to run the following command:\n"
-        echo -e "yes | pip${pv} install --user $pips_to_install\n"
+        echo -e "yes | python${pv} -m pip install --user $pips_to_install\n"
         # shellcheck disable=SC2048,SC2086
-        yes | pip"${pv}" install --user $pips_to_install || tue-install-error "An error occurred while installing pip${pv} packages."
+        yes | python"${pv}" -m pip install --user $pips_to_install || tue-install-error "An error occurred while installing pip${pv} packages."
     fi
 
     if [ -n "$git_pips_to_install" ]
@@ -941,9 +941,9 @@ function _tue-install-pip-now
         for pkg in $git_pips_to_install
         do
             echo -e "Going to run the following command:\n"
-            echo -e "yes | pip${pv} install --user $pkg\n"
+            echo -e "yes | python${pv} -m pip install --user $pkg\n"
             # shellcheck disable=SC2048,SC2086
-            yes | pip"${pv}" install --user $pkg || tue-install-error "An error occurred while installing pip${pv} packages."
+            yes | python"${pv}" -m pip install --user $pkg || tue-install-error "An error occurred while installing pip${pv} packages."
         done
     fi
 }
