@@ -17,3 +17,4 @@ jobs:
 
     - <<: *docker-generation
       name: tue-env-cuda
+      if: branch = master
