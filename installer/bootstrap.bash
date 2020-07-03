@@ -17,9 +17,6 @@ fi
 
 # Set ROS version
 case $DISTRIB_RELEASE in
-    "16.04")
-        TUE_ROS_DISTRO=kinetic
-        ;;
     "18.04")
         TUE_ROS_DISTRO=melodic
         ;;
@@ -29,16 +26,23 @@ case $DISTRIB_RELEASE in
         ;;
 esac
 
+# Script variables
+env_url="git@gitlab.com:avular/i-team/tue-env.git"
+env_targets_url="git@gitlab.com:avular/i-team/tue-env-targets.git"
+env_dir="$HOME/.tue"
+workspace="ros-$TUE_ROS_DISTRO"
+workspace_dir="$HOME/ros/$TUE_ROS_DISTRO"
+
 # Move old environments and installer
-if [ -d ~/.tue ] && [ -z "$CI" ]
+if [ -d "$env_dir" ] && [ -z "$CI" ]
 then
-    FILES=$(find ~/.tue/user/envs -maxdepth 1 -type f)
+    FILES=$(find "$env_dir"/user/envs -maxdepth 1 -type f)
     date_now=$(date +%F_%R)
     for env in $FILES
     do
         mv -f "$(cat "$env")" "$(cat "$env")"."$date_now"
     done
-    mv -f ~/.tue ~/.tue."$date_now"
+    mv -f "$env_dir" "$env_dir"."$date_now"
 fi
 
 # If in CI with Docker, then clone tue-env with BRANCH when not testing a PR
@@ -51,51 +55,52 @@ then
         if [ -n "$BRANCH" ] && [ -n "$COMMIT" ]
         then
             echo -e "[tue-env](bootstrap) Cloning tue-env repository with branch: $BRANCH at commit: $COMMIT"
-            git clone -q --single-branch --branch "$BRANCH" https://github.com/tue-robotics/tue-env.git ~/.tue
-            git -C ~/.tue reset --hard "$COMMIT"
+            git clone -q --single-branch --branch "$BRANCH" "$env_url" "$env_dir"
+            git -C "$env_dir" reset --hard "$COMMIT"
         else
             echo -e "[tue-env](bootstrap) Error! CI branch or commit is unset"
             return 1
         fi
     else
         echo -e "[tue-env](bootstrap) Testing Pull Request"
-        git clone -q --depth=10 https://github.com/tue-robotics/tue-env.git ~/.tue
-        git -C ~/.tue fetch origin pull/"$PULL_REQUEST"/head:PULLREQUEST
-        git -C ~/.tue checkout PULLREQUEST
+        git clone -q --depth=10 "$env_url" "$env_dir"
+        git -C "$env_dir" fetch origin pull/"$PULL_REQUEST"/head:PULLREQUEST
+        git -C "$env_dir" checkout PULLREQUEST
     fi
 else
     # Update installer
     echo -e "[tue-env](bootstrap) Cloning tue-env repository"
-    git clone https://github.com/tue-robotics/tue-env.git ~/.tue
+    git clone "$env_url" "$env_dir"
 fi
 
 # Source the installer commands
 # No need to follow to a file which is already checked by CI
 # shellcheck disable=SC1090
-source ~/.tue/setup.bash
+source "$env_dir"/setup.bash
 
 # Create ros environment directory
-mkdir -p ~/ros/$TUE_ROS_DISTRO
+mkdir -p "$workspace_dir"
 
 # Initialize ros environment directory incl. targets
-tue-env init ros-$TUE_ROS_DISTRO ~/ros/$TUE_ROS_DISTRO https://github.com/tue-robotics/tue-env-targets.git
+tue-env init "$workspace" "$workspace_dir" "$env_targets_url"
 
-# Set the correct ROS version for this environment
-echo "export TUE_ROS_DISTRO=$TUE_ROS_DISTRO" >> ~/ros/$TUE_ROS_DISTRO/.env/setup/user_setup.bash
+# Configure environment
+tue-env config "$workspace" set "TUE_ROS_DISTRO" "$TUE_ROS_DISTRO"
+tue-env config "$workspace" use-ssh
 
 # Add loading of TU/e tools (tue-env, tue-get, etc) to bashrc
 # shellcheck disable=SC2088
-if ! grep -q '~/.tue/setup.bash' ~/.bashrc;
+if ! grep -q "$env_dir/setup.bash" ~/.bashrc;
 then
-    echo '
+    echo "
 # Load TU/e tools
-source ~/.tue/setup.bash' >> ~/.bashrc
+source $env_dir/setup.bash" >> ~/.bashrc
 fi
 
 # Set this environment as default
-tue-env set-default ros-$TUE_ROS_DISTRO
+tue-env set-default "$workspace"
 
 # Activate the default environment
 # No need to follow to file which is already checked by CI
 # shellcheck disable=SC1090
-source ~/.tue/setup.bash
+source "$env_dir"/setup.bash
