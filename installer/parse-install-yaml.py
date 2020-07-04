@@ -9,7 +9,7 @@ import yaml
 from lsb_release import get_distro_information
 
 ros_release = environ["TUE_ROS_DISTRO"]
-ubuntu_release = get_distro_information()['CODENAME']
+ubuntu_release = get_distro_information()["CODENAME"]
 
 
 def show_error(error):
@@ -53,8 +53,9 @@ def main():
                     elif "default" in install_item:
                         source = install_item["default"]["source"]
                     else:
-                        return show_error("ROS distro {} or 'default' not specified in install.yaml".
-                                          format(ros_release))
+                        return show_error(
+                            "ROS distro {} or 'default' not specified in install.yaml".format(ros_release)
+                        )
                     # Both release and default are allowed to be None
                     if source is None:
                         continue
@@ -76,9 +77,16 @@ def main():
                 if "version" in install_item:
                     command += " {0}".format(install_item["version"])
 
-            elif install_type == "target" or install_type == "system" or install_type == "pip" or \
-                    install_type == "pip2" or install_type == "pip3" or install_type == "ppa" or \
-                    install_type == "snap" or install_type == "dpkg":
+            elif (
+                install_type == "target"
+                or install_type == "system"
+                or install_type == "pip"
+                or install_type == "pip2"
+                or install_type == "pip3"
+                or install_type == "ppa"
+                or install_type == "snap"
+                or install_type == "dpkg"
+            ):
                 if "name" in install_item:
                     pkg_name = install_item["name"]
                 else:
@@ -87,8 +95,9 @@ def main():
                     elif "default" in install_item:
                         pkg_name = install_item["default"]["name"]
                     else:
-                        return show_error("Ubuntu distro {} or 'default' not specified in install.yaml".
-                                          format(ubuntu_release))
+                        return show_error(
+                            "Ubuntu distro {} or 'default' not specified in install.yaml".format(ubuntu_release)
+                        )
                     # Both release and default are allowed to be None
                     if pkg_name is None:
                         continue

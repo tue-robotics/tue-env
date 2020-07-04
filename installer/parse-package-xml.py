@@ -19,20 +19,27 @@ def main():
 
     dep_set = set()
 
-    dep_types = ['build_depend', 'buildtool_depend', 'build_export_depend', 'buildtool_export_depend', 'exec_depend',
-                 'depend', 'run_depend']
+    dep_types = [
+        "build_depend",
+        "buildtool_depend",
+        "build_export_depend",
+        "buildtool_export_depend",
+        "exec_depend",
+        "depend",
+        "run_depend",
+    ]
 
-    if os.getenv('TUE_INSTALL_TEST_DEPEND', 'false') == 'true':
-        dep_types.append('test_depend')
+    if os.getenv("TUE_INSTALL_TEST_DEPEND", "false") == "true":
+        dep_types.append("test_depend")
 
-    if os.getenv('TUE_INSTALL_DOC_DEPEND', 'false') == 'true':
-        dep_types.append('doc_depend')
+    if os.getenv("TUE_INSTALL_DOC_DEPEND", "false") == "true":
+        dep_types.append("doc_depend")
 
     for dep_type in dep_types:
         deps = doc.findall(dep_type)
         dep_set |= {dep.text for dep in deps if evaluate_condition(dep.attrib.get("condition", None), os.environ)}
 
-    print('\n'.join(dep_set))
+    print("\n".join(dep_set))
 
 
 if __name__ == "__main__":
