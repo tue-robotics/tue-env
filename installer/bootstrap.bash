@@ -27,8 +27,8 @@ case $DISTRIB_RELEASE in
 esac
 
 # Script variables
-env_url="git@gitlab.com:avular/i-team/tue-env.git"
-env_targets_url="git@gitlab.com:avular/i-team/tue-env-targets.git"
+env_url="git@gitlab.com:avular/common-tools/package-manager/tue-env.git"
+env_targets_url="git@gitlab.com:avular/common-tools/package-manager/tue-env-targets.git"
 env_dir="$HOME/.tue"
 workspace="ros-$TUE_ROS_DISTRO"
 workspace_dir="$HOME/ros/$TUE_ROS_DISTRO"
