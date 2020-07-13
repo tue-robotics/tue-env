@@ -53,9 +53,9 @@ done
 image_substring=$(basename "$CI_DOCKER_IMAGE_NAME")
 case $image_substring in
     tue-env )
-        BASE_IMAGE="ubuntu:16.04" ;;
+        BASE_IMAGE="ubuntu:18.04" ;;
     tue-env-cuda )
-        BASE_IMAGE="nvidia/cuda:10.0-cudnn7-devel-ubuntu16.04" ;;
+        BASE_IMAGE="nvidia/cuda:10.0-cudnn7-devel-ubuntu18.04" ;;
     * )
         echo -e "Error! Unknown image tag subname provided."
         echo -e "Supported names are 'tue-env' or 'tue-env-cuda'"

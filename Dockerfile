@@ -3,8 +3,8 @@
 #       Dockerfile to build working Ubuntu image with tue-env
 # ----------------------------------------------------------------
 
-# Set default base image to Ubuntu 16.04
-ARG BASE_IMAGE=ubuntu:16.04
+# Set default base image to Ubuntu 18.04
+ARG BASE_IMAGE=ubuntu:18.04
 FROM $BASE_IMAGE
 
 # Build time arguments
@@ -20,7 +20,7 @@ ARG COMMIT=
 ENV DEBIAN_FRONTEND=noninteractive \
     LANG=C.UTF-8 \
     DOCKER=true \
-    USER=amigo \
+    USER=avular \
     TERM=xterm-256color
 
 # Set default shell to be bash
@@ -30,7 +30,7 @@ SHELL ["/bin/bash", "-c"]
 # installation and setup a user with sudo priviledges
 RUN apt-get update -qq && \
     apt-get install -qq --assume-yes --no-install-recommends apt-transport-https apt-utils ca-certificates curl dbus dialog git lsb-release openssh-client sudo tzdata wget > /dev/null && \
-    # Add amigo user
+    # Add defined user
     adduser -u 1000 --disabled-password --gecos "" $USER && \
     usermod -aG sudo $USER && \
     usermod -aG adm $USER && \
@@ -60,8 +60,6 @@ RUN --mount=type=ssh,uid=1000 sed -e s/return//g -i ~/.bashrc && \
     source bootstrap.bash && \
     # Make tue-env to be available to the environment
     source ~/.bashrc && \
-    # Set all git repositories to use HTTPS urls (Needed for local image builds)
-    tue-env config ros-"$TUE_ROS_DISTRO" git-use-https && \
     # Install target ros
     tue-get install ros --test-depend && \
     # Show ownership of .tue
