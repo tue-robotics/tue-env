@@ -86,7 +86,7 @@ tue-env init "$workspace" "$workspace_dir" "$env_targets_url"
 
 # Configure environment
 tue-env config "$workspace" set "TUE_ROS_DISTRO" "$TUE_ROS_DISTRO"
-tue-env config "$workspace" use-ssh
+tue-env config "$workspace" git-use-ssh
 
 # Add loading of TU/e tools (tue-env, tue-get, etc) to bashrc
 # shellcheck disable=SC2088
