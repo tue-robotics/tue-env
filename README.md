@@ -1,4 +1,6 @@
 # tue-env
+[![pipeline status](https://gitlab.com/avular/common-tools/package-manager/tue-env/badges/master/pipeline.svg)](https://gitlab.com/avular/common-tools/package-manager/tue-env/-/commits/master)
+
 Package manager that can be used to install (ROS) dependencies
 
 ## Installation
