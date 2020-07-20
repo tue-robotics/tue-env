@@ -1348,11 +1348,7 @@ TUE_INSTALL_SNAPS=
 TUE_INSTALL_WARNINGS=
 TUE_INSTALL_INFOS=
 
-# Make sure tools used by this installer are installed
-# Needed for mercurial install:
-# gcc, python-dev, python-docutils, python-pkg-resources, python-setuptools, python-wheel
-tue-install-system-now git gcc python-pip python-dev python-docutils python-pkg-resources python-setuptools python-wheel \
-python3-pip python3-dev python3-docutils python3-pkg-resources python3-setuptools python3-wheel
+tue-install-system-now git python3-pip
 
 tue-install-pip3-now catkin-pkg PyYAML "mercurial>=5.3"
 
