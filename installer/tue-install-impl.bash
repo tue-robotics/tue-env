@@ -899,12 +899,7 @@ function _tue-install-pip
 # Needed for backward compatibility
 function tue-install-pip
 {
-    _tue-install-pip "2" "$@"
-}
-
-function tue-install-pip2
-{
-    _tue-install-pip "2" "$@"
+    _tue-install-pip "3" "$@"
 }
 
 function tue-install-pip3
@@ -1006,12 +1001,7 @@ function _tue-install-pip-now
 # Needed for backward compatibility
 function tue-install-pip-now
 {
-    _tue-install-pip-now "2" "$@"
-}
-
-function tue-install-pip2-now
-{
-    _tue-install-pip-now "2" "$@"
+    _tue-install-pip-now "3" "$@"
 }
 
 function tue-install-pip3-now
@@ -1352,7 +1342,6 @@ TUE_INSTALL_HG_PULL_Q=()
 
 TUE_INSTALL_SYSTEMS=
 TUE_INSTALL_PPA=
-TUE_INSTALL_PIP2S=
 TUE_INSTALL_PIP3S=
 TUE_INSTALL_SNAPS=
 
@@ -1442,16 +1431,6 @@ then
 
     tue-install-debug "calling: tue-install-system-now $TUE_INSTALL_SYSTEMS"
     tue-install-system-now "$TUE_INSTALL_SYSTEMS"
-fi
-
-
-# Installing all python2 (pip2) targets, which are collected during the install
-if [ -n "$TUE_INSTALL_PIP2S" ]
-then
-    TUE_INSTALL_CURRENT_TARGET="PIP2"
-
-    tue-install-debug "calling: tue-install-pip2-now $TUE_INSTALL_PIP2S"
-    tue-install-pip2-now "$TUE_INSTALL_PIP2S"
 fi
 
 
