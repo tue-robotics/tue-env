@@ -12,11 +12,14 @@ services:
 
 variables:
   DOCKER_TLS_CERTDIR: "/certs"
+  DOCKER_DRIVER: overlay2
 
 before_script:
-  - 'which ssh-agent || ( apk --update add openssh-client git )'
+  - docker info
+  - apk --update add git bash
+  - which ssh-agent || ( apk --update add openssh-client )
   - eval $(ssh-agent -s)
-  - echo "$SSH_KEY_PRIVATE" | tr -d '\r' | ssh-add -
+  - echo "$CI_SSH_KEY_PRIVATE" | tr -d '\r' | ssh-add -
   - mkdir -p ~/.ssh
   - chmod 700 ~/.ssh
   - ssh-keyscan gitlab.com >> ~/.ssh/known_hosts
