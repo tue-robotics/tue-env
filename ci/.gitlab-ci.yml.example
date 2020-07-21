@@ -28,7 +28,15 @@ before_script:
   - mv /tmp/tue-env/ci/install-package.sh /tmp/tue-env/ci/build-package.sh .
   - echo "$CI_JOB_TOKEN" | docker login $CI_REGISTRY -u gitlab-ci-token --password-stdin
 
-build_image:
+stages:
+  - install
+  - build
+
+Install:
+  stage: install
   script:
     - ./install-package.sh -p=$CI_PROJECT_NAME -b=${CI_MERGE_REQUEST_BRANCH_NAME:-${CI_COMMIT_BRANCH}} -c=$CI_COMMIT_SHA -r=${CI_MERGE_REQUEST_ID:-"false"} -i="$CI_REGISTRY/avular/common-tools/package-manager/tue-env"
+
+Build:
+  stage: build
     - ./build-package.sh -p=$CI_PROJECT_NAME
