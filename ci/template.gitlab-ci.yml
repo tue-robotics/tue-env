@@ -39,4 +39,5 @@ Install:
 
 Build:
   stage: build
+  script:
     - ./build-package.sh -p=$CI_PROJECT_NAME
