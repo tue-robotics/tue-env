@@ -19,15 +19,20 @@ before_script:
   - docker info
   - apk --update add git bash
   - which ssh-agent || ( apk --update add openssh-client )
+  # To clone the tue-env repository and get the install-package.sh & build-package.sh scripts
+  # SSH needs to be setup in the CI environment
   - eval $(ssh-agent -s)
   - echo "$CI_SSH_KEY_PRIVATE" | tr -d '\r' | ssh-add -
   - mkdir -p ~/.ssh "$SHARED_PATH"
   - chmod 700 ~/.ssh
   - ssh-keyscan gitlab.com >> ~/.ssh/known_hosts
+  # The known_hosts file is merged in the tue-env docker container to make sure the correct
+  # signature of the git server is setup and does not require input using CLI
   - cp ~/.ssh/known_hosts "$SHARED_PATH"/
   - chmod 644 ~/.ssh/known_hosts
   - git clone --depth=1 --single-branch git@gitlab.com:avular/common-tools/package-manager/tue-env.git /tmp/tue-env
   - mv /tmp/tue-env/ci/install-package.sh /tmp/tue-env/ci/build-package.sh .
+  # Authenticate the docker registry where the docker images stored
   - echo "$CI_JOB_TOKEN" | docker login $CI_REGISTRY -u gitlab-ci-token --password-stdin
 
 Install, Build, Test:
