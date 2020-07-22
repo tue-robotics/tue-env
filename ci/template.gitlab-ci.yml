@@ -13,6 +13,7 @@ services:
 variables:
   DOCKER_TLS_CERTDIR: "/certs"
   DOCKER_DRIVER: overlay2
+  SHARED_PATH: "/builds/shared/$CI_PROJECT_PATH"
 
 before_script:
   - docker info
@@ -20,9 +21,10 @@ before_script:
   - which ssh-agent || ( apk --update add openssh-client )
   - eval $(ssh-agent -s)
   - echo "$CI_SSH_KEY_PRIVATE" | tr -d '\r' | ssh-add -
-  - mkdir -p ~/.ssh
+  - mkdir -p ~/.ssh "$SHARED_PATH"
   - chmod 700 ~/.ssh
   - ssh-keyscan gitlab.com >> ~/.ssh/known_hosts
+  - cp ~/.ssh/known_hosts "$SHARED_PATH"/
   - chmod 644 ~/.ssh/known_hosts
   - git clone --depth=1 --single-branch --branch master git@gitlab.com:avular/common-tools/package-manager/tue-env.git /tmp/tue-env
   - mv /tmp/tue-env/ci/install-package.sh /tmp/tue-env/ci/build-package.sh .
