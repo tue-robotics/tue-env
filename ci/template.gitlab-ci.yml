@@ -26,7 +26,7 @@ before_script:
   - ssh-keyscan gitlab.com >> ~/.ssh/known_hosts
   - cp ~/.ssh/known_hosts "$SHARED_PATH"/
   - chmod 644 ~/.ssh/known_hosts
-  - git clone --depth=1 --single-branch --branch master git@gitlab.com:avular/common-tools/package-manager/tue-env.git /tmp/tue-env
+  - git clone --depth=1 --single-branch git@gitlab.com:avular/common-tools/package-manager/tue-env.git /tmp/tue-env
   - mv /tmp/tue-env/ci/install-package.sh /tmp/tue-env/ci/build-package.sh .
   - echo "$CI_JOB_TOKEN" | docker login $CI_REGISTRY -u gitlab-ci-token --password-stdin
 
