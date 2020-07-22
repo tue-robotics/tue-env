@@ -33,6 +33,9 @@ do
         -i=* | --image=* )
             IMAGE_NAME="${i#*=}" ;;
 
+        -s=* | --shared=* )
+            SHARED_DIR="${i#*=}" ;;
+
         --ssh )
             USE_SSH=true ;;
 
@@ -55,6 +58,10 @@ echo -e "\e[35m\e[1m PULL_REQUEST = ${PULL_REQUEST} \e[0m"
 # Set default value for IMAGE_NAME
 [ -z "$IMAGE_NAME" ] && IMAGE_NAME='tuerobotics/tue-env'
 echo -e "\e[35m\e[1m IMAGE_NAME   = ${IMAGE_NAME} \e[0m"
+
+# Set default value for directory to place mountable container assests
+[ -z "$SHARED_DIR" ] && SHARED_DIR="$HOME"
+echo -e "\e[35m\e[1m SHARED_DIR   = ${SHARED_DIR} \e[0m"
 
 if [ "$USE_SSH" == "true" ]
 then
@@ -100,10 +107,10 @@ then
     BRANCH_TAG=$MASTER_TAG
 fi
 
-if [ -f ~/.ssh/known_hosts ]
+if [ -f "$SHARED_DIR"/.ssh/known_hosts ]
 then
     MERGE_KNOWN_HOSTS="true"
-    DOCKER_MOUNT_KNOWN_HOSTS_ARGS="--mount type=bind,source=$HOME/.ssh/known_hosts,target=/tmp/known_hosts_extra"
+    DOCKER_MOUNT_KNOWN_HOSTS_ARGS="--mount type=bind,source=$SHARED_DIR/.ssh/known_hosts,target=/tmp/known_hosts_extra"
 fi
 
 # Run the docker image along with setting new environment variables
