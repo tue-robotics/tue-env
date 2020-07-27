@@ -47,6 +47,6 @@ Install, Build, Test:
 Mirror Upstream:
   script:
     - mv /tmp/tue-env/ci/mirror-upstream.bash .
-    - ./mirror-upstream.bash --upstream-remote-url="$REMOTE_URL" --local-remote-url="$LOCAL_REMOTE_URL" --upstream-remote-branch="$REMOTE_BRANCH" --local-remote-branch="$LOCAL_REMOTE_BRANCH" --user="$GIT_USERNAME" --email="$GIT_USEREMAIL"
+    - ./mirror-upstream.bash --upstream-remote-url="$REMOTE_URL" --local-remote-url="git@gitlab.com:$CI_PROJECT_PATH" --upstream-remote-branch="$REMOTE_BRANCH" --local-remote-branch="$LOCAL_REMOTE_BRANCH" --user="$GIT_USERNAME" --email="$GIT_USEREMAIL"
   rules:
     - if: '$MIRROR_UPSTREAM == "true"'
