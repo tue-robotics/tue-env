@@ -34,11 +34,15 @@ do
 done
 
 echo -e "\e[35m\e[1m UPSTREAM_REMOTE        = ${UPSTREAM_REMOTE} \e[0m"
+git remote add fork "$UPSTREAM_REMOTE" || { echo "Could not add remote: $UPSTREAM_REMOTE"; exit 1; }
+git fetch fork || { echo "Could not fetch remote refs for $UPSTREAM_REMOTE"; exit 1; }
+
+default_remote_branch=$(git remote show "$UPSTREAM_REMOTE" | grep HEAD | awk '{print $3;}')
+[ -z "$UPSTREAM_REMOTE_BRANCH" ] && UPSTREAM_REMOTE_BRANCH="$default_remote_branch"
+
 echo -e "\e[35m\e[1m UPSTREAM_REMOTE_BRANCH = ${UPSTREAM_REMOTE_BRANCH} \e[0m"
 echo -e "\e[35m\e[1m UPSTREAM_BRANCH        = ${UPSTREAM_BRANCH} \e[0m"
 
-git remote add fork "$UPSTREAM_REMOTE" || { echo "Could not add remote: $UPSTREAM_REMOTE"; exit 1; }
-git fetch fork
 git checkout "$UPSTREAM_BRANCH" || { echo "Could not checkout upstream branch"; exit 1; }
 git merge fork/"$UPSTREAM_REMOTE_BRANCH" --no-commit --no-ff || { echo "Could not sync with upstream remote branch"; exit 1; }
 git push origin "$UPSTREAM_BRANCH"
