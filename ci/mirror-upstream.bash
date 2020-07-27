@@ -72,4 +72,4 @@ git remote set-url --push origin "$LOCAL_REMOTE_URL"
 git push origin "$LOCAL_REMOTE_BRANCH"
 
 echo
-echo -e "\e[35m\e[1m Synced '$LOCAL_REMOTE_BRANCH' with upstream remote"
+echo -e "\e[35m\e[1m Synced local branch '$LOCAL_REMOTE_BRANCH' with upstream remote branch '$UPSTREAM_REMOTE_BRANCH'"
