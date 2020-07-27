@@ -43,8 +43,10 @@ default_remote_branch=$(git remote show "$UPSTREAM_REMOTE" | grep HEAD | awk '{p
 echo -e "\e[35m\e[1m UPSTREAM_REMOTE_BRANCH = ${UPSTREAM_REMOTE_BRANCH} \e[0m"
 echo -e "\e[35m\e[1m UPSTREAM_BRANCH        = ${UPSTREAM_BRANCH} \e[0m"
 
+# Sync with the upstream repository
+git fetch origin
 git checkout "$UPSTREAM_BRANCH" || { echo "Could not checkout upstream branch"; exit 1; }
-git merge fork/"$UPSTREAM_REMOTE_BRANCH" --no-commit --no-ff || { echo "Could not sync with upstream remote branch"; exit 1; }
+git merge fork/"$UPSTREAM_REMOTE_BRANCH" --ff-only || { echo "Could not sync with upstream remote branch"; exit 1; }
 git push origin "$UPSTREAM_BRANCH"
 
 echo
