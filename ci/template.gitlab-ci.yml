@@ -42,6 +42,7 @@ Install, Build, Test:
   rules:
     - if: '$MIRROR_UPSTREAM == "true"'
       when: never
+    - when: always
 
 Mirror Upstream:
   script:
