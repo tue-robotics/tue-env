@@ -4,6 +4,17 @@
 # 1. Generate a password less SSH key on a local machine
 # 2. Add the public key as a deploy key to the repository/group
 # 3. Add the private key as a variable (e.g. SSH_KEY_PRIVATE) to the repository/group
+#
+# Scheduled branch mirroring:
+# 1. Allow the CI deploy key to have write access
+# 2. In the pipelines schedule configuration, set:
+#      - MIRROR_UPSTREAM = true
+# 3. Set the remaining variables to appropriate values:
+#      - REMOTE_URL
+#      - REMOTE_BRANCH
+#      - LOCAL_REMOTE_BRANCH
+#      - GIT_USERNAME
+#      - GIT_USEREMAIL
 
 image: docker:19.03.1
 
