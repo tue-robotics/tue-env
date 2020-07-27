@@ -46,6 +46,6 @@ Install, Build, Test:
 Mirror Upstream:
   script:
     - mv /tmp/tue-env/ci/mirror-upstream.bash .
-    - ./mirror-upstream.bash --upstream-remote="$REMOTE_URL" --upstream-remote-branch="$REMOTE_BRANCH" --upstream-branch="$LOCAL_UPSTREAM_BRANCH"
+    - ./mirror-upstream.bash --upstream-remote="$REMOTE_URL" --upstream-remote-branch="$REMOTE_BRANCH" --upstream-branch="$LOCAL_UPSTREAM_BRANCH" --user="$GIT_USERNAME" --email="$GIT_USEREMAIL"
   rules:
     - if: '$MIRROR_UPSTREAM == "true"'
