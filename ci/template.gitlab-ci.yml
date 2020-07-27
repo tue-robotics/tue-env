@@ -39,3 +39,13 @@ Install, Build, Test:
   script:
     - ./install-package.sh --package=$CI_PROJECT_NAME --branch=${CI_MERGE_REQUEST_BRANCH_NAME:-${CI_COMMIT_BRANCH}} --commit=$CI_COMMIT_SHA --pullrequest=${CI_MERGE_REQUEST_ID:-"false"} --image="$CI_REGISTRY/avular/common-tools/package-manager/tue-env" --shared="$SHARED_PATH" --ssh --ssh-key="$CI_SSH_KEY_PRIVATE"
     - ./build-package.sh -p=$CI_PROJECT_NAME
+  rules:
+    - if: '$MIRROR_UPSTREAM == "true"'
+      when: never
+
+Mirror Upstream:
+  script:
+    - mv /tmp/tue-env/ci/mirror-upstream.bash .
+    - ./mirror-upstream.bash --upstream-remote="$REMOTE_URL" --upstream-remote-branch="$REMOTE_BRANCH" --upstream-branch="$LOCAL_UPSTREAM_BRANCH"
+  rules:
+    - if: '$MIRROR_UPSTREAM == "true"'
