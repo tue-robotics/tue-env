@@ -62,6 +62,8 @@ git config user.name "$GIT_USERNAME"
 git fetch origin
 git checkout "$UPSTREAM_BRANCH" || { echo "Could not checkout upstream branch"; exit 1; }
 git merge fork/"$UPSTREAM_REMOTE_BRANCH" --ff-only || { echo "Could not sync with upstream remote branch"; exit 1; }
+
+git remote show origin
 git push origin "$UPSTREAM_BRANCH"
 
 echo
