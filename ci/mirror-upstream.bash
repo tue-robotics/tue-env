@@ -23,6 +23,9 @@ do
         --upstream-remote-branch=* )
             UPSTREAM_REMOTE_BRANCH="${i#*=}" ;;
 
+        --local-remote-url=* )
+            LOCAL_REMOTE_URL="${i#*=}" ;;
+
         --local-remote-branch=* )
             LOCAL_REMOTE_BRANCH="${i#*=}" ;;
 
@@ -47,6 +50,7 @@ default_upstream_remote_branch=$(git remote show fork | grep HEAD | awk '{print 
 [ -z "$UPSTREAM_REMOTE_BRANCH" ] && UPSTREAM_REMOTE_BRANCH="$default_upstream_remote_branch"
 
 echo -e "\e[35m\e[1m UPSTREAM_REMOTE_BRANCH = ${UPSTREAM_REMOTE_BRANCH} \e[0m"
+echo -e "\e[35m\e[1m LOCAL_REMOTE_URL       = ${LOCAL_REMOTE_URL} \e[0m"
 echo -e "\e[35m\e[1m LOCAL_REMOTE_BRANCH    = ${LOCAL_REMOTE_BRANCH} \e[0m"
 
 [ -z "$GIT_USERNAME" ] && { echo "Need User Name for git config."; exit 1; }
@@ -64,6 +68,7 @@ git checkout "$LOCAL_REMOTE_BRANCH" || { echo "Could not checkout local remote b
 git merge fork/"$UPSTREAM_REMOTE_BRANCH" --ff-only || { echo "Could not sync with upstream remote branch"; exit 1; }
 
 git remote show origin
+git remote set-url --push origin "$LOCAL_REMOTE_URL"
 git push origin "$LOCAL_REMOTE_BRANCH"
 
 echo
