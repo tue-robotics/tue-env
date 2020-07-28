@@ -50,6 +50,11 @@ do
     esac
 done
 
+echo -e "\e[35m\e[1m CI_BRANCH              = ${CI_BRANCH} \e[0m"
+echo -e "\e[35m\e[1m CI_PULL_REQUEST        = ${CI_PULL_REQUEST} \e[0m"
+echo -e "\e[35m\e[1m CI_PULL_REQUEST_BRANCH = ${CI_PULL_REQUEST_BRANCH} \e[0m"
+echo -e "\e[35m\e[1m CI_COMMIT              = ${CI_COMMIT} \e[0m"
+
 image_substring=$(basename "$CI_DOCKER_IMAGE_NAME")
 case $image_substring in
     tue-env )
