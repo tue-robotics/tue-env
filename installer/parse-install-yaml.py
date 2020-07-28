@@ -71,6 +71,20 @@ def main():
                 else:
                     return show_error("Unknown ROS install type: '{0}'".format(source_type))
 
+            # Non ros targets that are packaged to be built with catkin
+            elif install_type == "catkin":
+                source = install_item["source"]
+                source_type = source["type"]
+
+                if source_type in ["svn", "git", "hg"]:
+                    sub_dir = source.get("sub_dir", '.')
+
+                    command = "tue-install-ros {0} {1} {2}".format(source_type, source["url"], sub_dir)
+                    if "version" in source:
+                        command += " {0}".format(source["version"])
+                else:
+                    return show_error("Unknown catkin install type: '{0}'".format(source_type))
+
             elif install_type == "svn" or install_type == "git" or install_type == "hg":
                 command = "tue-install-{0} {1} {2}".format(install_type, install_item["url"], install_item["path"])
                 if "version" in install_item:
