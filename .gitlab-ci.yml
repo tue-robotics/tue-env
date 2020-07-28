@@ -4,6 +4,17 @@
 # 1. Generate a password less SSH key on a local machine
 # 2. Add the public key as a deploy key to the repository/group
 # 3. Add the private key as a variable (e.g. SSH_KEY_PRIVATE) to the repository/group
+#
+# Scheduled branch mirroring:
+# 1. Allow the CI deploy key to have write access
+# 2. In the pipelines schedule configuration, set:
+#      - MIRROR_UPSTREAM = true
+# 3. Set the remaining variables to appropriate values:
+#      - REMOTE_URL
+#      - REMOTE_BRANCH
+#      - LOCAL_REMOTE_BRANCH
+#      - GIT_USERNAME
+#      - GIT_USEREMAIL
 
 image: docker:19.03.1
 
@@ -18,6 +29,8 @@ before_script:
   - docker info
   - apk --update add git bash
   - which ssh-agent || ( apk --update add openssh-client )
+  # To build and push the docker image of private repository to the container registry SSH
+  # needs to be setup in the CI environment
   - eval $(ssh-agent -s)
   - echo "$CI_SSH_KEY_PRIVATE" | tr -d '\r' | ssh-add -
   - mkdir -p ~/.ssh
@@ -25,6 +38,16 @@ before_script:
   - ssh-keyscan gitlab.com >> ~/.ssh/known_hosts
   - chmod 644 ~/.ssh/known_hosts
 
-build_image:
+Build Docker Image:
   script:
     - ci/build-docker-image.sh --ssh --image="$CI_REGISTRY/avular/common-tools/package-manager/tue-env" --branch="$CI_COMMIT_BRANCH" --commit="$CI_COMMIT_SHA" --pull_request=${CI_MERGE_REQUEST_ID:-"false"} --pull_request_branch="$CI_MERGE_REQUEST_BRANCH_NAME" --user="gitlab-ci-token" --password="$CI_JOB_TOKEN" --registry="$CI_REGISTRY"
+  rules:
+    - if: '$MIRROR_UPSTREAM == "true"'
+      when: never
+    - when: always
+
+Mirror Upstream:
+  script:
+    - ci/mirror-upstream.bash --upstream-remote-url="$REMOTE_URL" --local-remote-url="git@gitlab.com:$CI_PROJECT_PATH" --upstream-remote-branch="$REMOTE_BRANCH" --local-remote-branch="$LOCAL_REMOTE_BRANCH" --user="$GIT_USERNAME" --email="$GIT_USEREMAIL"
+  rules:
+    - if: '$MIRROR_UPSTREAM == "true"'
