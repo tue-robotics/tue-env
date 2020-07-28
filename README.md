@@ -106,6 +106,18 @@ Taking the above into account, the following combinations for `install.yaml` are
 ```
 Both ROS distro specific as default can be 'null'. Prevered usage is default for current and feature distributions and exceptions for old distributions.
 
+#### Catkin package install
+```yaml
+- type: catkin
+  source:
+    type: [git/hg/svn]
+    url: <Repository URL>
+    sub-dir: <Sub directory of the repository> (Optional field)
+    version: <Version to be installed> (Optional field)
+```
+This target type is similar to a ROS source target with only difference being a catkin package is independent of any ROS
+dependencies and solely depends on catkin. Examples of such packages are `librealsense`, `gtsam`, etc.
+
 #### Target / System / PIP / PIP2 / PIP3 / PPA / Snap / DPKG / Empty
 ```yaml
 - type: [target/system/pip/pip2/pip3/ppa/snap/dpkg/empty]
