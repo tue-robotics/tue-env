@@ -44,7 +44,7 @@ do
         --ssh-key=* )
             SSH_KEY="${i#*=}" ;;
 
-        --ref-name=*= )
+        --ref-name=* )
             REF_NAME="${i#*=}" ;;
 
         * )
