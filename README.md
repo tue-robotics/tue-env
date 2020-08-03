@@ -121,6 +121,17 @@ Depending on Ubuntu distribution:
 ```
 Both Ubuntu distribution specific as default can be 'null'. Prevered usage is default for current and feature distributions and exceptions for old distributions.
 
+#### (System / PIP / PIP2 / PIP3 / PPA / Snap)-now
+The default installation method for targets of type `system`, `pip(2/3)`, `ppa` and `snap` is to collect all such targets in a list and install them simultaneously at the end of the `tue-get install` procedure. To install such a dependency immediately for a specific target, use the target type as `X-now`:
+```yaml
+- type: [system/pip/pip2/pip3/ppa/snap]-now
+  name: <Name of the candidate>
+  
+- type: [target/system/pip/pip2/pip3/ppa/snap/dpkg]
+  name: <Name of the candidate>
+```
+or use `tue-install-X-now` functions in `install.bash` along with the procedure to installing the required target. 
+
 #### GIT / HG / SVN
 ```yaml
 - type: [git/hg/svn]

@@ -1,5 +1,5 @@
 os: linux
-dist: xenial
+dist: bionic
 language: cpp
 
 services:
@@ -8,9 +8,10 @@ services:
 before_install:
   - wget https://raw.githubusercontent.com/tue-robotics/tue-env/master/ci/install-package.sh
   - wget https://raw.githubusercontent.com/tue-robotics/tue-env/master/ci/build-package.sh
+  - wget https://raw.githubusercontent.com/tue-robotics/tue-env/master/ci/test-package.sh
   - wget https://raw.githubusercontent.com/tue-robotics/tue-env/master/ci/packages.sh
   # Determine packages modified in this commit
-  - ALL=$([ $TRAVIS_EVENT_TYPE == "cron" ] && echo "true")
+  - ALL=$([ "$TRAVIS_EVENT_TYPE" == "cron" ] && echo "true") || true
   - source packages.sh --commit-range=$TRAVIS_COMMIT_RANGE --all=$ALL # add all folders which need to be excluded as an argument
 
 env:
@@ -22,7 +23,10 @@ env:
   - PACKAGE=package3
 
 install:
-  - bash install-package.sh --package=$PACKAGE --branch=${TRAVIS_PULL_REQUEST_BRANCH:-$TRAVIS_BRANCH} --commit=$TRAVIS_COMMIT --pullrequest=$TRAVIS_PULL_REQUEST --image="tuerobotics/tue-env"
+  - bash install-package.sh --package=$PACKAGE --branch=$TRAVIS_BRANCH --commit=$TRAVIS_COMMIT --pullrequest=$TRAVIS_PULL_REQUEST
+
+before_script:
+  - bash build-package.sh --package=$PACKAGE
 
 script:
-  - bash build-package.sh --package=$PACKAGE
+  - bash test-package.sh --package=$PACKAGE
