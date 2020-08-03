@@ -13,8 +13,6 @@
 #      - REMOTE_URL
 #      - REMOTE_BRANCH
 #      - LOCAL_REMOTE_BRANCH
-#      - GIT_USERNAME
-#      - GIT_USEREMAIL
 
 image: docker:19.03.1
 
@@ -40,7 +38,7 @@ before_script:
 
 Build Docker Image:
   script:
-    - ci/build-docker-image.sh --ssh --image="$CI_REGISTRY/avular/common-tools/package-manager/tue-env" --branch="$CI_COMMIT_BRANCH" --commit="$CI_COMMIT_SHA" --pull_request=${CI_MERGE_REQUEST_ID:-"false"} --pull_request_branch="$CI_MERGE_REQUEST_BRANCH_NAME" --user="gitlab-ci-token" --password="$CI_JOB_TOKEN" --registry="$CI_REGISTRY"
+    - ci/build-docker-image.sh --ssh --image="$CI_REGISTRY/avular/common-tools/package-manager/tue-env" --branch=${CI_MERGE_REQUEST_TARGET_BRANCH_NAME:-$CI_COMMIT_BRANCH} --commit="$CI_COMMIT_SHA" --pull_request=${CI_MERGE_REQUEST_IID:-"false"} --pull_request_branch="$CI_MERGE_REQUEST_SOURCE_BRANCH_NAME" --ref-name="merge-requests" --user="gitlab-ci-token" --password="$CI_JOB_TOKEN" --registry="$CI_REGISTRY"
   rules:
     - if: '$MIRROR_UPSTREAM == "true"'
       when: never
@@ -48,6 +46,6 @@ Build Docker Image:
 
 Mirror Upstream:
   script:
-    - ci/mirror-upstream.bash --upstream-remote-url="$REMOTE_URL" --local-remote-url="git@gitlab.com:$CI_PROJECT_PATH" --upstream-remote-branch="$REMOTE_BRANCH" --local-remote-branch="$LOCAL_REMOTE_BRANCH" --user="$GIT_USERNAME" --email="$GIT_USEREMAIL"
+    - ci/mirror-upstream.bash --upstream-remote-url="$REMOTE_URL" --local-remote-url="git@gitlab.com:$CI_PROJECT_PATH" --upstream-remote-branch="$REMOTE_BRANCH" --local-remote-branch="$LOCAL_REMOTE_BRANCH" --user="$GITLAB_USER_NAME" --email="$GITLAB_USER_EMAIL"
   rules:
     - if: '$MIRROR_UPSTREAM == "true"'

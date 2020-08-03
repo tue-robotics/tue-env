@@ -13,8 +13,6 @@
 #      - REMOTE_URL
 #      - REMOTE_BRANCH
 #      - LOCAL_REMOTE_BRANCH
-#      - GIT_USERNAME
-#      - GIT_USEREMAIL
 
 image: docker:19.03.1
 
@@ -48,8 +46,8 @@ before_script:
 
 Install, Build, Test:
   script:
-    - ./install-package.sh --package=$CI_PROJECT_NAME --branch=${CI_MERGE_REQUEST_BRANCH_NAME:-${CI_COMMIT_BRANCH}} --commit=$CI_COMMIT_SHA --pullrequest=${CI_MERGE_REQUEST_ID:-"false"} --image="$CI_REGISTRY/avular/common-tools/package-manager/tue-env" --shared="$SHARED_PATH" --ssh --ssh-key="$CI_SSH_KEY_PRIVATE"
-    - ./build-package.sh -p=$CI_PROJECT_NAME
+    - ./install-package.sh --package="$CI_PROJECT_NAME" --branch={$CI_MERGE_REQUEST_TARGET_BRANCH_NAME:-$CI_COMMIT_BRANCH} --commit="$CI_COMMIT_SHA" --pullrequest=${CI_MERGE_REQUEST_IID:-"false"} --image="$CI_REGISTRY/avular/common-tools/package-manager/tue-env" --shared="$SHARED_PATH" --ref-name="merge-requests" --ssh --ssh-key="$CI_SSH_KEY_PRIVATE"
+    - ./build-package.sh -p="$CI_PROJECT_NAME"
   rules:
     - if: '$MIRROR_UPSTREAM == "true"'
       when: never
@@ -58,6 +56,6 @@ Install, Build, Test:
 Mirror Upstream:
   script:
     - mv /tmp/tue-env/ci/mirror-upstream.bash .
-    - ./mirror-upstream.bash --upstream-remote-url="$REMOTE_URL" --local-remote-url="git@gitlab.com:$CI_PROJECT_PATH" --upstream-remote-branch="$REMOTE_BRANCH" --local-remote-branch="$LOCAL_REMOTE_BRANCH" --user="$GIT_USERNAME" --email="$GIT_USEREMAIL"
+    - ./mirror-upstream.bash --upstream-remote-url="$REMOTE_URL" --local-remote-url="git@gitlab.com:$CI_PROJECT_PATH" --upstream-remote-branch="$REMOTE_BRANCH" --local-remote-branch="$LOCAL_REMOTE_BRANCH" --user="$GITLAB_USER_NAME" --email="$GITLAB_USER_EMAIL"
   rules:
     - if: '$MIRROR_UPSTREAM == "true"'
