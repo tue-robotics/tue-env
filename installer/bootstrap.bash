@@ -63,8 +63,10 @@ then
         fi
     else
         echo -e "[tue-env](bootstrap) Testing Pull Request"
+        [ -z "$REF_NAME" ] && { echo "Error! Environment variable REF_NAME is not set."; exit 1; }
+
         git clone -q --depth=10 "$env_url" "$env_dir"
-        git -C "$env_dir" fetch origin pull/"$PULL_REQUEST"/head:PULLREQUEST
+        git -C "$env_dir" fetch origin "$REF_NAME"/"$PULL_REQUEST"/head:PULLREQUEST || { echo "Error! Could not fetch refs"; exit 1; }
         git -C "$env_dir" checkout PULLREQUEST
     fi
 else

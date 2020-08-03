@@ -14,6 +14,7 @@ ARG CI=false
 ARG BRANCH=master
 ARG PULL_REQUEST=false
 ARG COMMIT=
+ARG REF_NAME=
 
 # Inform scripts that no questions should be asked and set some environment
 # variables to prevent warnings and errors
@@ -56,6 +57,7 @@ RUN --mount=type=ssh,uid=1000 sed -e s/return//g -i ~/.bashrc && \
     export BRANCH=$BRANCH && \
     export PULL_REQUEST=$PULL_REQUEST && \
     export COMMIT=$COMMIT && \
+    export REF_NAME=$REF_NAME && \
     # Run the standard installation script
     source bootstrap.bash && \
     # Make tue-env to be available to the environment

@@ -44,6 +44,9 @@ do
         --ssh )
             CI_DOCKER_SSH=true ;;
 
+        --ref-name=* )
+            CI_REF_NAME="${i#*=}" ;;
+
         * )
             echo -e "Error! Unknown input variable '$i'"
             exit 1 ;;
@@ -54,6 +57,9 @@ echo -e "\e[35m\e[1m CI_BRANCH              = ${CI_BRANCH} \e[0m"
 echo -e "\e[35m\e[1m CI_PULL_REQUEST        = ${CI_PULL_REQUEST} \e[0m"
 echo -e "\e[35m\e[1m CI_PULL_REQUEST_BRANCH = ${CI_PULL_REQUEST_BRANCH} \e[0m"
 echo -e "\e[35m\e[1m CI_COMMIT              = ${CI_COMMIT} \e[0m"
+
+[ -z "$CI_REF_NAME" ] && CI_REF_NAME="pull"
+echo -e "\e[35m\e[1m CI_REF_NAME            = ${CI_REF_NAME} \e[0m"
 
 image_substring=$(basename "$CI_DOCKER_IMAGE_NAME")
 case $image_substring in
@@ -96,7 +102,7 @@ fi
 # build the Docker image (this will use the Dockerfile in the root of the repo)
 DOCKER_BUILDKIT=1 docker build $DOCKER_SSH_ARGS --build-arg BRANCH="${CI_PULL_REQUEST_BRANCH:-$CI_BRANCH}" --build-arg \
     PULL_REQUEST="$CI_PULL_REQUEST" --build-arg COMMIT="$CI_COMMIT" --build-arg \
-    CI="$CI" --build-arg BASE_IMAGE="$BASE_IMAGE" -t "$CI_DOCKER_IMAGE_NAME" .
+    CI="$CI" --build-arg REF_NAME="$CI_REF_NAME" --build-arg BASE_IMAGE="$BASE_IMAGE" -t "$CI_DOCKER_IMAGE_NAME" .
 
 # push the new Docker image to the Docker registry only after acceptance of pull request
 if [ "$CI_PULL_REQUEST" == "false" ]

@@ -48,7 +48,7 @@ Build Docker Image:
 
 Merge Request Test:
   script:
-    - ci/build-docker-image.sh --ssh --image="$CI_REGISTRY/avular/common-tools/package-manager/tue-env" --branch="$CI_MERGE_REQUEST_TARGET_BRANCH_NAME" --commit="$CI_COMMIT_SHA" --pull_request="$CI_MERGE_REQUEST_IID" --pull_request_branch="$CI_MERGE_REQUEST_SOURCE_BRANCH_NAME"
+    - ci/build-docker-image.sh --ssh --image="$CI_REGISTRY/avular/common-tools/package-manager/tue-env" --branch="$CI_MERGE_REQUEST_TARGET_BRANCH_NAME" --commit="$CI_COMMIT_SHA" --pull_request="$CI_MERGE_REQUEST_IID" --pull_request_branch="$CI_MERGE_REQUEST_SOURCE_BRANCH_NAME" --ref-name="merge-requests"
   rules:
     - if: $CI_MERGE_REQUEST_IID
 

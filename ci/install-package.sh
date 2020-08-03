@@ -42,6 +42,9 @@ do
         --ssh-key=* )
             SSH_KEY="${i#*=}" ;;
 
+        --ref-name=*= )
+            REF_NAME="${i#*=}" ;;
+
         * )
             # unknown option
             echo -e "\e[35m\e[1m Unknown input argument '$i'. Check CI .yml file \e[0m"
@@ -62,6 +65,10 @@ echo -e "\e[35m\e[1m IMAGE_NAME   = ${IMAGE_NAME} \e[0m"
 # Set default value for directory to place mountable container assests
 [ -z "$SHARED_DIR" ] && SHARED_DIR="$HOME"
 echo -e "\e[35m\e[1m SHARED_DIR   = ${SHARED_DIR} \e[0m"
+
+# Set default value for REF_NAME
+[ -z "$REF_NAME" ] && REF_NAME="pull"
+echo -e "\e[35m\e[1m REF_NAME     = ${REF_NAME} \e[0m"
 
 if [ "$USE_SSH" == "true" ]
 then
@@ -115,7 +122,7 @@ fi
 
 # Run the docker image along with setting new environment variables
 # shellcheck disable=SC2086
-docker run --detach --interactive --tty -e CI="true" -e PACKAGE="$PACKAGE" -e BRANCH="$BRANCH" -e COMMIT="$COMMIT" -e PULL_REQUEST="$PULL_REQUEST" --name tue-env $DOCKER_MOUNT_KNOWN_HOSTS_ARGS "$IMAGE_NAME:$BRANCH_TAG"
+docker run --detach --interactive --tty -e CI="true" -e PACKAGE="$PACKAGE" -e BRANCH="$BRANCH" -e COMMIT="$COMMIT" -e PULL_REQUEST="$PULL_REQUEST" -e REF_NAME="$REF_NAME" --name tue-env $DOCKER_MOUNT_KNOWN_HOSTS_ARGS "$IMAGE_NAME:$BRANCH_TAG"
 
 if [ "$MERGE_KNOWN_HOSTS" == "true" ]
 then
@@ -147,6 +154,6 @@ then
     echo -e "\e[35m\e[1m cd ~/ros/$ROS_DISTRO/system/src/$PACKAGE && git reset --hard $COMMIT \e[0m"
     docker exec -t tue-env bash -c 'source ~/.bashrc; cd ~/ros/"$ROS_DISTRO"/system/src/"$PACKAGE" && git reset --hard "$COMMIT"'
 else
-    echo -e "\e[35m\e[1m cd ~/ros/$ROS_DISTRO/system/src/$PACKAGE && git fetch origin pull/$PULL_REQUEST/head:PULLREQUEST && git checkout PULLREQUEST \e[0m"
-    docker exec -t tue-env bash -c 'source ~/.bashrc; cd ~/ros/"$ROS_DISTRO"/system/src/"$PACKAGE" && git fetch origin pull/"$PULL_REQUEST"/head:PULLREQUEST && git checkout PULLREQUEST'
+    echo -e "\e[35m\e[1m cd ~/ros/$ROS_DISTRO/system/src/$PACKAGE && git fetch origin $REF_NAME/$PULL_REQUEST/head:PULLREQUEST && git checkout PULLREQUEST \e[0m"
+    docker exec -t tue-env bash -c 'source ~/.bashrc; cd ~/ros/"$ROS_DISTRO"/system/src/"$PACKAGE" && git fetch origin "$REF_NAME"/"$PULL_REQUEST"/head:PULLREQUEST && git checkout PULLREQUEST'
 fi
