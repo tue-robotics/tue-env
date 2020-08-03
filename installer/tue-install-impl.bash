@@ -1196,7 +1196,7 @@ function _missing_targets_check
 
     for target in $targets
     do
-        if [ ! -d "$TUE_INSTALL_TARGETS_DIR"/"$target" ]
+        if [ ! -d "$TUE_INSTALL_TARGETS_DIR"/ros-"$target" ] && [ ! -d "$TUE_INSTALL_TARGETS_DIR"/"$target" ]
         then
             missing_targets="$target${missing_targets:+ ${missing_targets}}"
         fi
@@ -1311,7 +1311,7 @@ for target in $targets
 do
     tue-install-debug "Main loop: installing $target"
     # Next line shouldn't error anymore with _missing_targets_check
-    tue-install-target "$target" || tue-install-error "Installed target: '$target' doesn't exist (anymore)"
+    tue-install-target ros-"$target" || tue-install-target "$target" || tue-install-error "Installed target: '$target' doesn't exist (anymore)"
 
     if [[ "$tue_get_cmd" == "install" ]]
     then
