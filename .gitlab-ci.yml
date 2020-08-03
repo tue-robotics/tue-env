@@ -38,19 +38,11 @@ before_script:
 
 Build Docker Image:
   script:
-    - ci/build-docker-image.sh --ssh --image="$CI_REGISTRY/avular/common-tools/package-manager/tue-env" --branch="$CI_COMMIT_BRANCH" --commit="$CI_COMMIT_SHA" --pull_request="false" --user="gitlab-ci-token" --password="$CI_JOB_TOKEN" --registry="$CI_REGISTRY"
+    - ci/build-docker-image.sh --ssh --image="$CI_REGISTRY/avular/common-tools/package-manager/tue-env" --branch=${CI_MERGE_REQUEST_TARGET_BRANCH_NAME:-$CI_COMMIT_BRANCH} --commit="$CI_COMMIT_SHA" --pull_request=${CI_MERGE_REQUEST_IID:-"false"} --pull_request_branch="$CI_MERGE_REQUEST_SOURCE_BRANCH_NAME" --ref-name="merge-requests" --user="gitlab-ci-token" --password="$CI_JOB_TOKEN" --registry="$CI_REGISTRY"
   rules:
     - if: '$MIRROR_UPSTREAM == "true"'
       when: never
-    - if: $CI_MERGE_REQUEST_IID
-      when: never
     - when: always
-
-Merge Request Test:
-  script:
-    - ci/build-docker-image.sh --ssh --image="$CI_REGISTRY/avular/common-tools/package-manager/tue-env" --branch="$CI_MERGE_REQUEST_TARGET_BRANCH_NAME" --commit="$CI_COMMIT_SHA" --pull_request="$CI_MERGE_REQUEST_IID" --pull_request_branch="$CI_MERGE_REQUEST_SOURCE_BRANCH_NAME" --ref-name="merge-requests"
-  rules:
-    - if: $CI_MERGE_REQUEST_IID
 
 Mirror Upstream:
   script:
