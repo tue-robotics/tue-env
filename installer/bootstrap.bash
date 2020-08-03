@@ -60,7 +60,7 @@ then
     else
         echo -e "[tue-env](bootstrap) Testing Pull Request"
         git clone -q --depth=10 https://github.com/tue-robotics/tue-env.git ~/.tue
-        git -C ~/.tue fetch origin pull/"$PULL_REQUEST"/head:PULLREQUEST
+        git -C ~/.tue fetch origin pull/"$PULL_REQUEST"/merge:PULLREQUEST
         git -C ~/.tue checkout PULLREQUEST
     fi
 else
