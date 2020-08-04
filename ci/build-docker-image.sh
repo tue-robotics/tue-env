@@ -64,11 +64,13 @@ esac
 
 # Create tag based on branch name
 default_branch=$(git remote show origin | grep HEAD | awk '{print $3;}')
-if [ "$default_branch" == "$CI_BRANCH" ]
+CI_DOCKER_BRANCH=${CI_PULL_REQUEST_BRANCH:-$CI_BRANCH}
+
+if [ "$default_branch" == "$CI_DOCKER_BRANCH" ]
 then
     CI_DOCKER_IMAGE_TAG="latest"
 else
-    CI_DOCKER_IMAGE_TAG=$(echo "$CI_BRANCH" | tr '[:upper:]' '[:lower:]' | sed -e 's:/:_:g')
+    CI_DOCKER_IMAGE_TAG=$(echo "$CI_DOCKER_BRANCH" | tr '[:upper:]' '[:lower:]' | sed -e 's:/:_:g')
 fi
 
 CI_DOCKER_IMAGE_NAME="$CI_DOCKER_IMAGE_NAME":"$CI_DOCKER_IMAGE_TAG"
@@ -89,7 +91,7 @@ then
 fi
 
 # build the Docker image (this will use the Dockerfile in the root of the repo)
-DOCKER_BUILDKIT=1 docker build $DOCKER_SSH_ARGS --build-arg BRANCH="${CI_PULL_REQUEST_BRANCH:-$CI_BRANCH}" --build-arg \
+DOCKER_BUILDKIT=1 docker build $DOCKER_SSH_ARGS --build-arg BRANCH="$CI_DOCKER_BRANCH" --build-arg \
     PULL_REQUEST="$CI_PULL_REQUEST" --build-arg COMMIT="$CI_COMMIT" --build-arg \
     CI="$CI" --build-arg BASE_IMAGE="$BASE_IMAGE" -t "$CI_DOCKER_IMAGE_NAME" .
 
