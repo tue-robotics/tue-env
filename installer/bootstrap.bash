@@ -47,11 +47,16 @@ then
     # Docker has a default value as false for PULL_REQUEST
     if [ "$PULL_REQUEST" == "false" ]
     then
-        # Docker has a default value as master for BRANCH
-        if [ -n "$BRANCH" ] && [ -n "$COMMIT" ]
+        if [ -n "$COMMIT" ]
         then
-            echo -e "[tue-env](bootstrap) Cloning tue-env repository with branch: $BRANCH at commit: $COMMIT"
-            git clone -q --single-branch --branch "$BRANCH" https://github.com/tue-robotics/tue-env.git ~/.tue
+            if [ -n "$BRANCH" ]
+            then
+                echo -e "[tue-env](bootstrap) Cloning tue-env repository with branch: $BRANCH at commit: $COMMIT"
+                git clone -q --single-branch --branch "$BRANCH" https://github.com/tue-robotics/tue-env.git ~/.tue
+            else
+                echo -e "[tue-env](bootstrap) Cloning tue-env repository with default branch at commit: $COMMIT"
+                git clone -q --single-branch https://github.com/tue-robotics/tue-env.git ~/.tue
+            fi
             git -C ~/.tue reset --hard "$COMMIT"
         else
             echo -e "[tue-env](bootstrap) Error! CI branch or commit is unset"

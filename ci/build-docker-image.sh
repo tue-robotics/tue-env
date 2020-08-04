@@ -69,6 +69,7 @@ CI_DOCKER_BRANCH=${CI_PULL_REQUEST_BRANCH:-$CI_BRANCH}
 if [ "$default_branch" == "$CI_DOCKER_BRANCH" ]
 then
     CI_DOCKER_IMAGE_TAG="latest"
+    CI_DOCKER_BRANCH=
 else
     CI_DOCKER_IMAGE_TAG=$(echo "$CI_DOCKER_BRANCH" | tr '[:upper:]' '[:lower:]' | sed -e 's:/:_:g')
 fi
