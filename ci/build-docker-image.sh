@@ -63,7 +63,8 @@ case $image_substring in
 esac
 
 # Create tag based on branch name
-default_branch=$(git remote show origin | grep HEAD | awk '{print $3;}')
+default_branch=$(git symbolic-ref refs/remotes/origin/HEAD --short 2>/dev/null | sed 's@^origin/@@')
+[ -z "$default_branch" ] && default_branch=$(git remote show origin 2>/dev/null | grep HEAD | awk '{print $3}')
 CI_DOCKER_BRANCH=${CI_PULL_REQUEST_BRANCH:-$CI_BRANCH}
 
 if [ "$default_branch" == "$CI_DOCKER_BRANCH" ]
