@@ -106,14 +106,21 @@ fi
 
 if [[ -n "$CI" ]] # With continuous integration try to switch the targets repo to the PR branch
 then
-    current_branch=$(git -C "$TUE_ENV_TARGETS_DIR" rev-parse --abbrev-ref HEAD)
+    BRANCH=
+    for var in "$@"
+    do
+        if [[ "$var" == --branch* ]]
+        then
+            # shellcheck disable=SC2001
+            BRANCH=$(echo "$var" | sed -e 's/^[^=]*=//g')
+        fi
+    done
 
-    # BRANCH is an environment variable set by ci/install-package.sh in the
-    # Docker container. The container has no knowledge about TRAVIS environment
-    # variable. BRANCH=${TRAVIS_PULL_REQUEST_BRANCH:-$TRAVIS_BRANCH}
     if [ -n "$BRANCH" ]
     then
         echo -en "[tue-env-targets] Trying to switch to branch $BRANCH..."
+        current_branch=$(git -C "$TUE_ENV_TARGETS_DIR" rev-parse --abbrev-ref HEAD)
+
         if git -C "$TUE_ENV_TARGETS_DIR" rev-parse --quiet --verify origin/"$BRANCH" 1>/dev/null
         then
             if [[ "$current_branch" == "$BRANCH" ]]

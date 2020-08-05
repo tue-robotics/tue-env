@@ -8,10 +8,9 @@ ARG BASE_IMAGE=ubuntu:18.04
 FROM $BASE_IMAGE
 
 # Build time arguments
-# BRANCH is the PULL_REQUEST_BRANCH if in PULL_REQUEST mode else it is the
-# BUILD_BRANCH
+# BRANCH is the target branch if in PULL_REQUEST mode else it is the test branch
 ARG CI=false
-ARG BRANCH=master
+ARG BRANCH=
 ARG PULL_REQUEST=false
 ARG COMMIT=
 ARG REF_NAME=
@@ -63,7 +62,7 @@ RUN --mount=type=ssh,uid=1000 sed -e s/return//g -i ~/.bashrc && \
     # Make tue-env to be available to the environment
     source ~/.bashrc && \
     # Install target ros
-    tue-get install ros --test-depend && \
+    tue-get install ros --test-depend --branch="$BRANCH" && \
     # Show ownership of .tue
     namei -l ~/.tue && \
     # Check git remote origin
