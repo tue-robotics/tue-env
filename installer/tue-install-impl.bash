@@ -1222,7 +1222,7 @@ shift
 
 # idiomatic parameter and option handling in sh
 targets=""
-BRANCH=
+BRANCH=""
 while test $# -gt 0
 do
     case "$1" in
