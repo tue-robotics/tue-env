@@ -8,8 +8,7 @@ ARG BASE_IMAGE=ubuntu:16.04
 FROM $BASE_IMAGE
 
 # Build time arguments
-# BRANCH is the PULL_REQUEST_BRANCH if in PULL_REQUEST mode else it is the
-# BUILD_BRANCH
+# BRANCH is the target branch if in PULL_REQUEST mode else it is the test branch
 ARG CI=false
 ARG BRANCH=
 ARG PULL_REQUEST=false
