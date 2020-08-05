@@ -21,13 +21,11 @@ do
             CI_DOCKER_IMAGE_NAME="${i#*=}" ;;
 
         -b=* | --branch=* )
+        # branch should always be target branch
             CI_BRANCH="${i#*=}" ;;
 
         -pr=* | --pull_request=* )
             CI_PULL_REQUEST="${i#*=}" ;;
-
-        -prb=* | --pull_request_branch=* )
-            CI_PULL_REQUEST_BRANCH="${i#*=}" ;;
 
         -c=* | --commit=* )
             CI_COMMIT="${i#*=}" ;;
@@ -63,10 +61,13 @@ case $image_substring in
 esac
 
 # Create tag based on branch name
-default_branch=$(git remote show origin | grep HEAD | awk '{print $3;}')
+default_branch=$(git symbolic-ref refs/remotes/origin/HEAD --short 2>/dev/null | sed 's@^origin/@@')
+[ -z "$default_branch" ] && default_branch=$(git remote show origin 2>/dev/null | grep HEAD | awk '{print $3}')
+
 if [ "$default_branch" == "$CI_BRANCH" ]
 then
     CI_DOCKER_IMAGE_TAG="latest"
+    CI_BRANCH=
 else
     CI_DOCKER_IMAGE_TAG=$(echo "$CI_BRANCH" | tr '[:upper:]' '[:lower:]' | sed -e 's:/:_:g')
 fi
@@ -89,7 +90,7 @@ then
 fi
 
 # build the Docker image (this will use the Dockerfile in the root of the repo)
-DOCKER_BUILDKIT=1 docker build $DOCKER_SSH_ARGS --build-arg BRANCH="${CI_PULL_REQUEST_BRANCH:-$CI_BRANCH}" --build-arg \
+DOCKER_BUILDKIT=1 docker build $DOCKER_SSH_ARGS --build-arg BRANCH="$CI_BRANCH" --build-arg \
     PULL_REQUEST="$CI_PULL_REQUEST" --build-arg COMMIT="$CI_COMMIT" --build-arg \
     CI="$CI" --build-arg BASE_IMAGE="$BASE_IMAGE" -t "$CI_DOCKER_IMAGE_NAME" .
 

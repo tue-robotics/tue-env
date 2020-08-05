@@ -137,21 +137,20 @@ echo -e "\e[35m\e[1m ROS_DISTRO = ${ROS_DISTRO}\e[0m"
 TUE_SYSTEM_DIR=$(docker exec -t tue-env bash -c 'source ~/.bashrc; echo "$TUE_SYSTEM_DIR"' | tr -d '\r')
 DOCKER_HOME=$(docker exec -t tue-env bash -c 'source ~/.bashrc; echo "$HOME"' | tr -d '\r')
 
+# First install only the git repo of the package so that appropriate branch can be checked out later
+echo -e "\e[35m\e[1m tue-get install ros-$PACKAGE --no-ros-deps\e[0m"
+docker exec tue-env bash -c 'source ~/.bashrc; tue-get install ros-"$PACKAGE" --no-ros-deps'
+
 if [[ $PULL_REQUEST != "false" ]]
 then
-    # First install only the git repo, so we can pull the pullrequest branch.
-    # Then we pull the pullrequest branch before running tue-get install.
-    # with the --branch=PULLREQUEST option. So only the tested repo is checked
-    # out to the merged pull request. While all other packages are checked out
+    # Fetch the merged state ref of the pull request before running tue-get install
+    # with the --branch=PULLREQUEST option. Only the tested repo is checked
+    # out to the merged pull request while all other packages are checked out
     # to their default branch.
     # This is needed before tue-get, so also new deps are installed.
     # After a tue-get run, we checkout forced, just to be sure.
 
-    # Install only the git repo of the package
-    echo -e "\e[35m\e[1m tue-get install ros-$PACKAGE --no-ros-deps\e[0m"
-    docker exec tue-env bash -c 'source ~/.bashrc; tue-get install ros-"$PACKAGE" --no-ros-deps'
-
-    # Fetch the merge branch
+    # Fetch the merged branch
     echo -e "\e[35m\e[1m git -C ~${TUE_SYSTEM_DIR#$DOCKER_HOME}/src/$PACKAGE fetch origin pull/$PULL_REQUEST/merge:PULLREQUEST\e[0m"
     docker exec -t tue-env bash -c 'source ~/.bashrc; git -C "$TUE_SYSTEM_DIR"/src/"$PACKAGE" fetch origin pull/$PULL_REQUEST/merge:PULLREQUEST'
 
@@ -163,9 +162,17 @@ then
     echo -e "\e[35m\e[1m git -C ~${TUE_SYSTEM_DIR#$DOCKER_HOME}/src/$PACKAGE checkout -f PULLREQUEST\e[0m"
     docker exec -t tue-env bash -c 'source ~/.bashrc; git -C "$TUE_SYSTEM_DIR"/src/"$PACKAGE" checkout -f PULLREQUEST'
 else
+    DEFAULT_BRANCH=$(docker exec -t tue-env bash -c 'source ~/.bashrc; _tue-git-get-default-branch "$TUE_SYSTEM_DIR"/src/"$PACKAGE"')
+
     # Install the package
-    echo -e "\e[35m\e[1m tue-get install ros-$PACKAGE --test-depend --branch=$BRANCH\e[0m"
-    docker exec tue-env bash -c 'source ~/.bashrc; tue-get install ros-"$PACKAGE" --test-depend --branch="$BRANCH"'
+    if [ "$BRANCH" != "$DEFAULT_BRANCH" ]
+    then
+        echo -e "\e[35m\e[1m tue-get install ros-$PACKAGE --test-depend --branch=$BRANCH\e[0m"
+        docker exec tue-env bash -c 'source ~/.bashrc; tue-get install ros-"$PACKAGE" --test-depend --branch="$BRANCH"'
+    else
+        echo -e "\e[35m\e[1m tue-get install ros-$PACKAGE --test-depend \e[0m"
+        docker exec tue-env bash -c 'source ~/.bashrc; tue-get install ros-"$PACKAGE" --test-depend'
+    fi
 
     # Set the package to the right commit
     echo -e "\e[35m\e[1m Reset package to this commit\e[0m"

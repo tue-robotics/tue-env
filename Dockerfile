@@ -8,10 +8,9 @@ ARG BASE_IMAGE=ubuntu:16.04
 FROM $BASE_IMAGE
 
 # Build time arguments
-# BRANCH is the PULL_REQUEST_BRANCH if in PULL_REQUEST mode else it is the
-# BUILD_BRANCH
+# BRANCH is the target branch if in PULL_REQUEST mode else it is the test branch
 ARG CI=false
-ARG BRANCH=master
+ARG BRANCH=
 ARG PULL_REQUEST=false
 ARG COMMIT=
 
@@ -63,7 +62,7 @@ RUN --mount=type=ssh,uid=1000 sed -e s/return//g -i ~/.bashrc && \
     # Set all git repositories to use HTTPS urls (Needed for local image builds)
     tue-env config ros-"$TUE_ROS_DISTRO" git-use-https && \
     # Install target ros
-    tue-get install ros --test-depend && \
+    tue-get install ros --test-depend --branch="$BRANCH" && \
     # Show ownership of .tue
     namei -l ~/.tue && \
     # Check git remote origin
