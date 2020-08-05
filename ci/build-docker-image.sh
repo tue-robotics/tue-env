@@ -53,7 +53,6 @@ done
 
 echo -e "\e[35m\e[1m CI_BRANCH              = ${CI_BRANCH} \e[0m"
 echo -e "\e[35m\e[1m CI_PULL_REQUEST        = ${CI_PULL_REQUEST} \e[0m"
-echo -e "\e[35m\e[1m CI_PULL_REQUEST_BRANCH = ${CI_PULL_REQUEST_BRANCH} \e[0m"
 echo -e "\e[35m\e[1m CI_COMMIT              = ${CI_COMMIT} \e[0m"
 
 [ -z "$CI_REF_NAME" ] && CI_REF_NAME="pull"
