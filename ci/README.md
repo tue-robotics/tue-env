@@ -35,7 +35,7 @@ Steps to enable ssh support with travis and gitlab are as follows:
 1. Add the following lines to .travis.yml under `install`
    ```
    - SSH_KEY_PRIVATE=$(cat deploy_key)
-   - bash install-package.sh --package=$PACKAGE --branch=${TRAVIS_PULL_REQUEST_BRANCH:-$TRAVIS_BRANCH} --commit=$TRAVIS_COMMIT --pullrequest=$TRAVIS_PULL_REQUEST --ssh --ssh-key="$SSH_KEY_PRIVATE"
+   - bash install-package.sh --package=$PACKAGE --branch=$TRAVIS_BRANCH --commit=$TRAVIS_COMMIT --pullrequest=$TRAVIS_PULL_REQUEST --ssh --ssh-key="$SSH_KEY_PRIVATE"
    ```
 
 ## On GITLAB
