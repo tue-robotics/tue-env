@@ -859,7 +859,7 @@ function tue-get
                 #Skip options
                 [[ $target = '--'* ]] && continue
 
-                if [ ! -f "$TUE_ENV_DIR"/.env/dependencies/"$target" ]
+                if [ -z "$(find "$TUE_ENV_DIR"/.env/dependencies -maxdepth 1 -name "$target" -type f -printf "%P ")" ]
                 then
                     echo "[tue-get] Package '$target' is not installed."
                     error_code=1
