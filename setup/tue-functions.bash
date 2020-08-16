@@ -859,7 +859,7 @@ function tue-get
                 #Skip options
                 [[ $target = '--'* ]] && continue
 
-                if [ ! -f "$TUE_ENV_DIR"/.env/dependencies/"$target" ]
+                if [ -z "$(find "$TUE_ENV_DIR"/.env/dependencies -maxdepth 1 -name "$target" -type f -printf "%P ")" ]
                 then
                     echo "[tue-get] Package '$target' is not installed."
                     error_code=1
@@ -882,12 +882,17 @@ function tue-get
         return $error_code
     elif [[ $cmd == "remove" ]]
     then
+        local targets_to_remove=""
         for target in "$@"
         do
-            if [ ! -f "$tue_installed_dir"/"$target" ]
+            local resolved_targets
+            resolved_targets="$(find "$tue_installed_dir" -maxdepth 1 -name "$target" -type f -printf "%P ")"
+            if [ -z "$resolved_targets" ]
             then
                 echo "[tue-get] Package '$target' is not installed."
                 error_code=1
+            else
+                targets_to_remove="${targets_to_remove:+$targets_to_remove }$resolved_targets"
             fi
         done
 
@@ -906,7 +911,7 @@ function tue-get
         fi
 
         touch /tmp/tue_get_remove_lock
-        for target in "$@"
+        for target in $targets_to_remove
         do
             local target_error=0
             _remove_recursively "$target"
