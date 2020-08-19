@@ -5,16 +5,37 @@ Package manager that can be used to install (ROS) dependencies
 
 ## Installation
 
-#### Ubuntu 16.04/18.04
-Standard tue-env installation with targets from [tue-env-targets](https://github.com/tue-robotics/tue-env-targets)
+#### Ubuntu 18.04/20.04
+Standard tue-env installation with targets from [tue-env-targets](https://gitlab.com/avular/common-tools/package-manager/tue-env-targets)
 
+##### Add SSH key to gitlab to gain access to this repository
+Add the public part of your ssh-key (`cat ~/.ssh/<KEY_NAME>.pub`, where `<KEY_NAME>` is the name of your ssh-key) to Gitlab > Settings > SSH Key and add key
+
+To generate a new ssh keypair:
 ```bash
-source <(wget -O - https://raw.githubusercontent.com/tue-robotics/tue-env/master/installer/bootstrap.bash)
-tue-get install tue-dev #or
-tue-get install tue-dev-full #tue-dev plus extra tools
-tue-make
-source ~/.bashrc
+sudo apt-get install ssh
+ssh-keygen
+cat ~/.ssh/<KEY_NAME>.pub
 ```
+
+##### Installing the tue-env
+Download the bootstrap.bash file manually from gitlab.com (https://gitlab.com/avular/common-tools/package-manager/tue-env/-/blob/master/installer/bootstrap.bash)
+
+1. Bootstrap the package manager 
+   ```bash
+   source [DOWNLOAD DIRECTORY]/bootstrap.bash
+   ```
+2. Install target(s)
+   ```bash
+   tue-get install idrive-robot # for installation on the i-drive
+   # Or
+   tue-get install idrive-dev   # includes idrive-robot plus extra simulation tools
+   ```
+3. Build sources
+   ```bash
+   tue-make
+   source ~/.bashrc  # Or open a new terminal
+   ```
 
 #### Customization
 A customized targets repository can be setup with this package manager (currently only one git repository is supported). If `tue-env` is already installed, to setup the targets repository run:
