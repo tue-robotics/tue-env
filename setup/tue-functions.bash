@@ -875,7 +875,7 @@ function tue-get
             then
                 _generate_setup_file
                 # shellcheck disable=SC1090
-                source ~/.bashrc
+                source "$TUE_DIR"/setup.bash
             fi
         fi
 
