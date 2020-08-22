@@ -19,8 +19,11 @@ def main():
 
     dep_set = set()
 
-    dep_types = ['build_depend', 'buildtool_depend', 'build_export_depend', 'buildtool_export_depend', 'exec_depend',
-                 'depend', 'run_depend']
+    dep_types = []
+
+    if os.getenv('TUE_INSTALL_SKIP_ROS_DEPS', 'false') == 'false':
+        dep_types.extend(['build_depend', 'buildtool_depend', 'build_export_depend', 'buildtool_export_depend', 'exec_depend',
+                          'depend', 'run_depend'])
 
     if os.getenv('TUE_INSTALL_TEST_DEPEND', 'false') == 'true':
         dep_types.append('test_depend')
