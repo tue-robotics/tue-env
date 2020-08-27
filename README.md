@@ -45,6 +45,26 @@ we provide an alias to `catkin build` as `tue-make` which would build the
 
 Upon executing the installation instructions mentioned in the previous section, `~/.tue/setup.bash` is automatically added in `.bashrc`. Sourcing `.bashrc` would make `tue-env` available to the bash session.
 
+### Pre-built docker image
+
+1. Pull the latest tue-env docker image from GitLab
+```bash
+echo <YOUR_GITLAB_PASSWORD/TOKEN> | docker login registry.gitlab.com -u <YOUR_GITLAB_USERNAME> --password-stdin
+docker pull registry.gitlab.com/avular/common-tools/package-manager/tue-env:latest
+```
+
+2. Start an interactive docker container that autoremoves upon exit, with your local ssh keys mounted
+```bash
+docker run --rm -it --network host --mount type=bind,source=$HOME/.ssh,target=/tmp/.ssh registry.gitlab.com/avular/common-tools/package-manager/tue-env:latest
+```
+
+3. Enable ssh agent inside the container and add your ssh key(s)
+```bash
+eval $(ssh-agent -s)
+ssh-add /tmp/.ssh/<YOUR_PRIVATE_SSH_KEYNAME>
+source ~/.bashrc
+```
+
 ## Guidelines on creating a new target
 A target can consist of the following three files:
 1. `install.yaml`
@@ -138,11 +158,11 @@ The default installation method for targets of type `system`, `pip(2/3)`, `ppa` 
 ```yaml
 - type: [system/pip/pip2/pip3/ppa/snap]-now
   name: <Name of the candidate>
-  
+
 - type: [target/system/pip/pip2/pip3/ppa/snap/dpkg]
   name: <Name of the candidate>
 ```
-or use `tue-install-X-now` functions in `install.bash` along with the procedure to installing the required target. 
+or use `tue-install-X-now` functions in `install.bash` along with the procedure to installing the required target.
 
 #### GIT / HG / SVN
 ```yaml
