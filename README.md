@@ -49,19 +49,19 @@ Upon executing the installation instructions mentioned in the previous section, 
 
 1. Pull the latest tue-env docker image from GitLab
 ```bash
-echo <YOUR_GITLAB_PASSWORD/TOKEN> | docker login registry.gitlab.com -u <YOUR_GITLAB_USERNAME> --password-stdin
+echo <GITLAB_PASSWORD/TOKEN> | docker login registry.gitlab.com -u <GITLAB_USERNAME> --password-stdin
 docker pull registry.gitlab.com/avular/common-tools/package-manager/tue-env:latest
 ```
 
-2. Start an interactive docker container that autoremoves upon exit, with your local ssh keys mounted
+2. Start an interactive docker container that autoremoves upon exit, with local ssh keys mounted
 ```bash
 docker run --rm -it --network host --mount type=bind,source=$HOME/.ssh,target=/tmp/.ssh registry.gitlab.com/avular/common-tools/package-manager/tue-env:latest
 ```
 
-3. Enable ssh agent inside the container and add your ssh key(s)
+3. Enable ssh agent inside the container and add the mounted ssh key(s) to it
 ```bash
 eval $(ssh-agent -s)
-ssh-add /tmp/.ssh/<YOUR_PRIVATE_SSH_KEYNAME>
+ssh-add /tmp/.ssh/<PRIVATE_SSH_KEYNAME>
 source ~/.bashrc
 ```
 
