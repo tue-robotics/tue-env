@@ -29,9 +29,8 @@ SHELL ["/bin/bash", "-c"]
 # Install commands used in our scripts and standard present on a clean ubuntu
 # installation and setup a user with sudo priviledges
 RUN apt-get update -qq && \
-    apt-get install -qq --assume-yes --no-install-recommends apt-transport-https apt-utils bash-completion ca-certificates curl dbus debconf-utils dialog git lsb-release openssh-client sudo systemd tzdata wget > /dev/null && \
     echo "resolvconf resolvconf/linkify-resolvconf boolean false" | debconf-set-selections && \
-    apt-get install -qq --assume-yes --no-install-recommends resolvconf && \
+    apt-get install -qq --assume-yes --no-install-recommends apt-transport-https apt-utils bash-completion ca-certificates curl dbus debconf-utils dialog git lsb-release openssh-client resolvconf sudo systemd tzdata wget > /dev/null && \
     # Add defined user
     adduser -u 1000 --disabled-password --gecos "" $USER && \
     usermod -aG sudo $USER && \
