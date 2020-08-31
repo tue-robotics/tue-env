@@ -900,33 +900,36 @@ function _tue-install-pip-now
         fi
     done
 
-    read -r -a pips_to_check <<< "$pips_to_check"
-    local installed_versions
-    installed_versions=$(python"${pv}" "$TUE_INSTALL_SCRIPTS_DIR"/check-pip-pkg-installed-version.py "${pips_to_check[@]}")
-    local error_code=$?
-    if [ "$error_code" -gt 1 ]
+    if [[ -n "$pips_to_check" ]]
     then
-        tue-install-error "tue-install-pip${pv}-now: $installed_versions"
-    fi
-    read -r -a installed_versions <<< "$installed_versions"
-
-    if [ "${#pips_to_check[@]}" -ne "${#installed_versions[@]}" ]
-    then
-        tue-install-error "Lengths of pips_to_check, ${#pips_to_check[@]}, and installed_version, ${#installed_versions[@]}, don't match"
-    fi
-
-    for idx in "${!pips_to_check[@]}"
-    do
-        local pkg_req="${pips_to_check[$idx]}"
-        local pkg_installed="${installed_versions[$idx]}"
-        pkg_installed="${pkg_installed//^/ }"
-        if [[ "$error_code" -eq 1 && "$pkg_installed" == "None" ]]
+        read -r -a pips_to_check <<< "$pips_to_check"
+        local installed_versions
+        installed_versions=$(python"${pv}" "$TUE_INSTALL_SCRIPTS_DIR"/check-pip-pkg-installed-version.py "${pips_to_check[@]}")
+        local error_code=$?
+        if [ "$error_code" -gt 1 ]
         then
-            pips_to_install="$pips_to_install $pkg_req"
-        else
-            tue-install-debug "$pkg_req is already installed, $pkg_installed"
+            tue-install-error "tue-install-pip${pv}-now: $installed_versions"
         fi
-    done
+        read -r -a installed_versions <<< "$installed_versions"
+
+        if [ "${#pips_to_check[@]}" -ne "${#installed_versions[@]}" ]
+        then
+            tue-install-error "Lengths of pips_to_check, ${#pips_to_check[@]}, and installed_version, ${#installed_versions[@]}, don't match"
+        fi
+
+        for idx in "${!pips_to_check[@]}"
+        do
+            local pkg_req="${pips_to_check[$idx]}"
+            local pkg_installed="${installed_versions[$idx]}"
+            pkg_installed="${pkg_installed//^/ }"
+            if [[ "$error_code" -eq 1 && "$pkg_installed" == "None" ]]
+            then
+                pips_to_install="$pips_to_install $pkg_req"
+            else
+                tue-install-debug "$pkg_req is already installed, $pkg_installed"
+            fi
+        done
+    fi
 
     if [ -n "$pips_to_install" ]
     then
