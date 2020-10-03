@@ -819,9 +819,9 @@ function tue-get
     Possible options:
         --debug          - Shows more debugging information
         --no-ros-deps    - Do not install ROS dependencies (Breaks the dependency tree, not all setup files will be sourced)
-        --doc-depend     - Do install doc dependencies, overules config
+        --doc-depend     - Do install doc dependencies, overules config and --no-ros-deps
         --no-doc-depend  - Do not install doc dependencies, overules config
-        --test-depend    - Do install test dependencies, overules config
+        --test-depend    - Do install test dependencies, overules config and --no-ros-deps
         --no-test-depend - Do not install test dependencies, overules config
         --branch=name    - Try to checkout this branch if exists
 
@@ -875,7 +875,7 @@ function tue-get
             then
                 _generate_setup_file
                 # shellcheck disable=SC1090
-                source ~/.bashrc
+                source "$TUE_DIR"/setup.bash
             fi
         fi
 

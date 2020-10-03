@@ -1151,7 +1151,7 @@ function tue-install-ros
             ln -s "$repos_dir"/"$sub_dir" "$ros_pkg_dir"
         fi
 
-        if [[ "$NO_ROS_DEPS" != "true" ]]
+        if [[ "$TUE_INSTALL_SKIP_ROS_DEPS" != "all" ]]
         then
             local pkg_xml="$ros_pkg_dir"/package.xml
             if [ -f "$pkg_xml" ]
@@ -1226,29 +1226,35 @@ BRANCH=""
 while test $# -gt 0
 do
     case "$1" in
-        --debug) DEBUG=true
+        --debug)
+            DEBUG="true"
             ;;
-        --no-ros-deps) NO_ROS_DEPS=true
+        --no-ros-deps)
+            export TUE_INSTALL_SKIP_ROS_DEPS="all"
             ;;
         --doc-depend)
-        export TUE_INSTALL_DOC_DEPEND=true
+            [[ "$TUE_INSTALL_SKIP_ROS_DEPS" == "all" ]] && export TUE_INSTALL_SKIP_ROS_DEPS="normal"
+            export TUE_INSTALL_DOC_DEPEND="true"
             ;;
         --no-doc-depend)
-        export TUE_INSTALL_DOC_DEPEND=false
+            export TUE_INSTALL_DOC_DEPEND="false"
             ;;
         --test-depend)
-        export TUE_INSTALL_TEST_DEPEND=true
+            [[ "$TUE_INSTALL_SKIP_ROS_DEPS" == "all" ]] && export TUE_INSTALL_SKIP_ROS_DEPS="normal"
+            export TUE_INSTALL_TEST_DEPEND="true"
             ;;
         --no-test-depend)
-        export TUE_INSTALL_TEST_DEPEND=false
+            export TUE_INSTALL_TEST_DEPEND="false"
             ;;
         --branch*)
             # shellcheck disable=SC2001
             BRANCH=$(echo "$1" | sed -e 's/^[^=]*=//g')
             ;;
-        --*) echo "unknown option $1"
+        --*)
+            echo "unknown option $1"
             ;;
-        *) targets="$targets $1"
+        *)
+            targets="$targets $1"
             ;;
     esac
     shift
