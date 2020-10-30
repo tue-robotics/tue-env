@@ -74,8 +74,49 @@ echo -e "\e[35m\e[1m REF_NAME     = ${REF_NAME} \e[0m"
 
 if [ "$USE_SSH" == "true" ]
 then
-    SSH_KEY_FINGERPRINT=$(ssh-keygen -lf /dev/stdin <<< "$SSH_KEY" | awk '{print $2}')
-    echo -e "\e[35m\e[1m SSH_KEY      = ${SSH_KEY_FINGERPRINT} \e[0m"
+    SSH_KEY_EXTERNAL="false"
+    eval $(ssh-agent -s)  # Start SSH agent
+    SSH_KEY_DEFAULT="true"
+    $(ssh-add &> /dev/null) || SSH_KEY_DEFAULT="false"  # Add any existing default keys
+
+    if [[ "${SHARED_DIR}" != "${HOME}" && "${SSH_KEY_DEFAULT}" == "true" ]]
+    then
+        mkdir -p "${SHARED_DIR}"/.ssh
+        cp -r "${HOME}"/.ssh/* "${SHARED_DIR}"/.ssh
+    fi
+
+    if [[ -n "${SSH_KEY}" && ! -f "${SSH_KEY}" ]]
+    then
+        echo "SSH key does not exist at '"${SSH_KEY}"'"
+        exit 1
+    fi
+
+    if [[ -n "${SSH_KEY}" && -f "${SSH_KEY}" ]]
+    then
+        SSH_KEY_FINGERPRINT="$(ssh-keygen -lf "${SSH_KEY}" 2> /dev/null | awk '{print $2}')"
+        [[ -z "${SSH_KEY_FINGERPRINT}" ]] && { echo "'"${SSH_KEY}"' is an invalid SSH key" && exit 1; }
+
+        if [[ "$(ssh-add -l)" != *"${SSH_KEY_FINGERPRINT}"* ]]
+        then
+            chmod 600 "${SSH_KEY}"
+            { [[ "$(ssh-add "${SSH_KEY}" &> /dev/null)" ]] && SSH_KEY_EXTERNAL="true"; } || { echo "'"${SSH_KEY}"' is an invalid SSH key" && exit 1; }
+
+
+            if [[ "$(dirname "${SSH_KEY}")" != "${SHARED_DIR}/.ssh" ]]
+            then
+                mkdir -p "${SHARED_DIR}"/.ssh  # This will be mounted to the docker container
+                cp "${SSH_KEY}" "${SHARED_DIR}"/.ssh
+            fi
+        fi
+
+        SSH_KEY_FINGERPRINT=$(ssh-keygen -lf /dev/stdin <<< "$SSH_KEY" | awk '{print $2}')
+        echo -e "\e[35m\e[1m SSH_KEY      = ${SSH_KEY_FINGERPRINT} \e[0m"
+    fi
+
+    { [[ "${SSH_KEY_EXTERNAL}" == "true" ]] || [[ "${SSH_KEY_DEFAULT}" == "true" ]]; } || { echo "No SSH keys found" && exit 1; }
+
+    DOCKER_MOUNT_KNOWN_HOSTS_ARGS="--mount type=bind,source=$SHARED_DIR/.ssh,target=/tmp/.ssh"
+    { [[ -f "$SHARED_DIR"/.ssh/known_hosts ]] && MERGE_KNOWN_HOSTS="true"; } || MERGE_KNOWN_HOSTS="false"
 fi
 
 echo -e "\e[35m\e[1m
@@ -115,12 +156,6 @@ then
     echo -e "\e[35m\e[1m No worries, we just test against the master branch: $IMAGE_NAME:$MASTER_TAG \e[0m"
     docker pull "$IMAGE_NAME":"$MASTER_TAG"
     BRANCH_TAG=$MASTER_TAG
-fi
-
-if [ -f "$SHARED_DIR"/.ssh/known_hosts ]
-then
-    MERGE_KNOWN_HOSTS="true"
-    DOCKER_MOUNT_KNOWN_HOSTS_ARGS="--mount type=bind,source=$SHARED_DIR/.ssh/known_hosts,target=/tmp/known_hosts_extra"
 fi
 
 # Run the docker image along with setting new environment variables
