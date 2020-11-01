@@ -18,9 +18,16 @@ def show_error(error):
 
 
 def main():
-    if len(sys.argv) != 2:
-        print("Usage: parse-install-yaml install.yaml")
+    if not 2 <= len(sys.argv) <= 3:
+        print("Usage: parse-install-yaml install.yaml [--now]")
         return 1
+
+    now = False
+    if len(sys.argv) == 3:
+        if sys.argv[2] == "--now":
+            now = True
+        else:
+            return show_error("Unknown option: {0}".format(sys.argv[2]))
 
     with open(sys.argv[1]) as f:
         try:
@@ -77,7 +84,10 @@ def main():
                     command += " {0}".format(install_item["version"])
 
             elif install_type in ["target", "system", "pip", "pip2", "pip3", "ppa", "snap", "dpkg",
-                                  "system-now", "pip-now", "pip2-now", "pip3-now", "ppa-now", "snap-now"]:
+                                  "target-now", "system-now", "pip-now", "pip2-now", "pip3-now", "ppa-now", "snap-now"]:
+                if now and "now" not in install_type:
+                    install_type += "-now"
+
                 if "name" in install_item:
                     pkg_name = install_item["name"]
                 else:

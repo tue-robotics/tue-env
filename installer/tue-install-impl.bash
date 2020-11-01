@@ -91,13 +91,29 @@ function tue-install-debug
 
 # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # #
 
+function tue-install-target-now
+{
+    tue-install-debug "tue-install-target-now $*"
+
+    local target=$1
+
+    tue-install-debug "calling: tue-install-target $target true"
+    tue-install-target "$target" "true"
+}
+
+# # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # #
+
 function tue-install-target
 {
     tue-install-debug "tue-install-target $*"
 
     local target=$1
+    local now=$2
 
-    tue-install-debug "Installing $target"
+    local now_cmd=""
+    [ "$now" == "true" ] && now_cmd="--now"
+
+    tue-install-debug "Installing target: $target"
 
     # Check if valid target received as input
     if [ ! -d "$TUE_INSTALL_TARGETS_DIR"/"$target" ]
@@ -124,7 +140,6 @@ function tue-install-target
     then
         tue-install-debug "File $TUE_INSTALL_STATE_DIR/$target does not exist, going to installation procedure"
 
-
         local install_file=$TUE_INSTALL_TARGETS_DIR/$target/install
 
         TUE_INSTALL_CURRENT_TARGET_DIR=$TUE_INSTALL_TARGETS_DIR/$target
@@ -140,7 +155,7 @@ function tue-install-target
             tue-install-debug "Parsing $install_file.yaml"
             # Do not use 'local cmds=' because it does not preserve command output status ($?)
             local cmds
-            if cmds=$("$TUE_INSTALL_SCRIPTS_DIR"/parse-install-yaml.py "$install_file".yaml)
+            if cmds=$("$TUE_INSTALL_SCRIPTS_DIR"/parse-install-yaml.py "$install_file".yaml $now_cmd)
             then
                 for cmd in $cmds
                 do
@@ -883,7 +898,7 @@ function _tue-install-pip-now
         python"${pv}" -m pip install --user --upgrade pip
         hash -r
     else
-        tue-install-debug "Already pip${pv}>=$desired_pip_version\n"
+        tue-install-debug "Already pip${pv}>=$desired_pip_version"
     fi
 
     local pips_to_check=""
@@ -1016,6 +1031,15 @@ function tue-install-snap-now
             yes | sudo snap install --classic "$pkg" || tue-install-error "An error occurred while installing snap packages."
         done
     fi
+}
+
+# # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # #
+
+function tue-install-dpkg-now
+{
+    tue-install-debug "tue-install-dpkg-now $*"
+    tue-install-debug "calling: tue-install-dpkg $*"
+    tue-install-dpkg "$@"
 }
 
 # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # #
