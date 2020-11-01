@@ -28,31 +28,40 @@
 import argparse
 
 parser = argparse.ArgumentParser(
-    description='Merge ssh known host entries by key',
+    description="Merge ssh known host entries by key",
     epilog="""
 Merges entries in given ssh known_hosts file based on the key. One can also merge from multiple files.
 The file should NOT use the HashKnownHosts feature.
-""")
+""",
+)
 
-parser.add_argument('files', type=str, nargs='+', help='files that should be merged')
-parser.add_argument('-o', '--output', type=str, nargs='?', help='output file (defaults is STDOUT).'
-                                                                'Only opened after merge is complete, '
-                                                                'so can be used for inplace merge.')
+parser.add_argument("files", type=str, nargs="+", help="files that should be merged")
+parser.add_argument(
+    "-o",
+    "--output",
+    type=str,
+    nargs="?",
+    help="output file (defaults is STDOUT)."
+    "Only opened after merge is complete, "
+    "so can be used for inplace merge.",
+)
 args = parser.parse_args()
 
 if args.output:
     from io import StringIO
+
     output = StringIO()
 else:
     from sys import stdout
+
     output = stdout
 
 hostkeys = {}
 for kfile in args.files:
     with open(kfile) as kf:
         for line in kf:
-            line_splitted = line.rstrip().split(' ')
-            hosts = line_splitted.pop(0).split(',')
+            line_splitted = line.rstrip().split(" ")
+            hosts = line_splitted.pop(0).split(",")
             key_type = line_splitted.pop(0)
             key = line_splitted[0]
             if key not in hostkeys:
@@ -65,9 +74,9 @@ for kfile in args.files:
 
 # And now output it all
 for k, v in hostkeys.items():
-    output.write('%s %s %s\n' % (','.join(v["hosts"]), v["key_type"], key))
+    output.write("%s %s %s\n" % (",".join(v["hosts"]), v["key_type"], key))
 
 # Write to output file
 if args.output:
-    with open(args.output, 'w') as f:
+    with open(args.output, "w") as f:
         f.write(output.getvalue())
