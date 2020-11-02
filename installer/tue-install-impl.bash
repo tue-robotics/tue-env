@@ -99,6 +99,7 @@ function tue-install-target-now
 
     tue-install-debug "calling: tue-install-target $target true"
     tue-install-target "$target" "true"
+    return $?
 }
 
 # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # #
@@ -159,8 +160,8 @@ function tue-install-target
             then
                 for cmd in $cmds
                 do
-                    tue-install-debug "Running following command: $cmd"
-                    ${cmd//^/ }
+                    tue-install-debug "Running following command:  ${cmd//^/ }"
+                    ${cmd//^/ } || tue-install-error "Error while running: ${cmd//^/ }"
                 done
                 target_processed=true
             else
