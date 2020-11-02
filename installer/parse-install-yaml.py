@@ -9,7 +9,7 @@ import yaml
 from lsb_release import get_distro_information
 
 ros_release = environ["TUE_ROS_DISTRO"]
-ubuntu_release = get_distro_information()['CODENAME']
+ubuntu_release = get_distro_information()["CODENAME"]
 
 
 def show_error(error):
@@ -18,9 +18,16 @@ def show_error(error):
 
 
 def main():
-    if len(sys.argv) != 2:
-        print("Usage: parse-install-yaml install.yaml")
+    if not 2 <= len(sys.argv) <= 3:
+        print("Usage: parse-install-yaml install.yaml [--now]")
         return 1
+
+    now = False
+    if len(sys.argv) == 3:
+        if sys.argv[2] == "--now":
+            now = True
+        else:
+            return show_error("Unknown option: {0}".format(sys.argv[2]))
 
     with open(sys.argv[1]) as f:
         try:
@@ -53,8 +60,9 @@ def main():
                     elif "default" in install_item:
                         source = install_item["default"]["source"]
                     else:
-                        return show_error("ROS distro {} or 'default' not specified in install.yaml".
-                                          format(ros_release))
+                        return show_error(
+                            "ROS distro {} or 'default' not specified in install.yaml".format(ros_release)
+                        )
                     # Both release and default are allowed to be None
                     if source is None:
                         continue
@@ -76,8 +84,26 @@ def main():
                 if "version" in install_item:
                     command += " {0}".format(install_item["version"])
 
-            elif install_type in ["target", "system", "pip", "pip2", "pip3", "ppa", "snap", "dpkg",
-                                  "system-now", "pip-now", "pip2-now", "pip3-now", "ppa-now", "snap-now"]:
+            elif install_type in [
+                "target",
+                "system",
+                "pip",
+                "pip2",
+                "pip3",
+                "ppa",
+                "snap",
+                "dpkg",
+                "target-now",
+                "system-now",
+                "pip-now",
+                "pip2-now",
+                "pip3-now",
+                "ppa-now",
+                "snap-now",
+            ]:
+                if now and "now" not in install_type:
+                    install_type += "-now"
+
                 if "name" in install_item:
                     pkg_name = install_item["name"]
                 else:
@@ -86,8 +112,9 @@ def main():
                     elif "default" in install_item:
                         pkg_name = install_item["default"]["name"]
                     else:
-                        return show_error("Ubuntu distro {} or 'default' not specified in install.yaml".
-                                          format(ubuntu_release))
+                        return show_error(
+                            "Ubuntu distro {} or 'default' not specified in install.yaml".format(ubuntu_release)
+                        )
                     # Both release and default are allowed to be None
                     if pkg_name is None:
                         continue
