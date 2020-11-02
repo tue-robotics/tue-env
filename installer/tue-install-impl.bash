@@ -111,9 +111,6 @@ function tue-install-target
     local target=$1
     local now=$2
 
-    local now_cmd=""
-    [ "$now" == "true" ] && now_cmd="--now"
-
     tue-install-debug "Installing target: $target"
 
     # Check if valid target received as input
@@ -124,6 +121,8 @@ function tue-install-target
     fi
 
     local parent_target=$TUE_INSTALL_CURRENT_TARGET
+    TUE_INSTALL_CURRENT_TARGET_DIR=$TUE_INSTALL_TARGETS_DIR/$target
+    TUE_INSTALL_CURRENT_TARGET=$target
 
     # If the target has a parent target, add target as a dependency to the parent target
     if [ -n "$parent_target" ] && [ "$parent_target" != "main-loop" ]
@@ -137,14 +136,37 @@ function tue-install-target
         fi
     fi
 
-    if [ ! -f "$TUE_INSTALL_STATE_DIR"/"$target" ]
+    local state_file="$TUE_INSTALL_STATE_DIR"/"$target"
+    local state_file_now="${state_file}-now"
+
+    local execution_needed="true"
+    if [ -f "$state_file_now" ]
     then
-        tue-install-debug "File $TUE_INSTALL_STATE_DIR/$target does not exist, going to installation procedure"
+        tue-install-debug "File $state_file_now does exist, so installation has already been executed with 'now' option. No execution is needed"
+        execution_needed="false"
+    elif [ -f "$state_file" ]
+    then
+        if [ "$now" == "true" ]
+        then
+            tue-install-debug "File $state_file_now doesn't exist, but file $state_file does. So installation has been executed yet, but not with the 'now' option. Going to execute it with 'now' option."
+        else
+            tue-install-debug "File $state_file_now does exist. 'now' is not enabled, so no execution needed."
+            execution_needed="false"
+        fi
+    else
+        if [ "$now" == "true" ]
+        then
+            tue-install-debug "Files $state_file_now and $state_file don't exist. Going to execute with 'now' option."
+        else
+            tue-install-debug "Files $state_file_now and $state_file don't exist. Going to execute without 'now' option."
+        fi
+    fi
 
-        local install_file=$TUE_INSTALL_TARGETS_DIR/$target/install
+    if [ "$execution_needed" == "true" ]
+    then
+        tue-install-debug "Starting installation"
 
-        TUE_INSTALL_CURRENT_TARGET_DIR=$TUE_INSTALL_TARGETS_DIR/$target
-        TUE_INSTALL_CURRENT_TARGET=$target
+        local install_file=$TUE_INSTALL_CURRENT_TARGET_DIR/install
 
         # Empty the target's dependency file
         tue-install-debug "Emptying $TUE_INSTALL_DEPENDENCIES_DIR/$target"
@@ -154,13 +176,15 @@ function tue-install-target
         if [ -f "$install_file".yaml ]
         then
             tue-install-debug "Parsing $install_file.yaml"
+            local now_cmd=""
+            [ "$now" == "true" ] && now_cmd="--now"
             # Do not use 'local cmds=' because it does not preserve command output status ($?)
             local cmds
             if cmds=$("$TUE_INSTALL_SCRIPTS_DIR"/parse-install-yaml.py "$install_file".yaml $now_cmd)
             then
                 for cmd in $cmds
                 do
-                    tue-install-debug "Running following command:  ${cmd//^/ }"
+                    tue-install-debug "Running following command: ${cmd//^/ }"
                     ${cmd//^/ } || tue-install-error "Error while running: ${cmd//^/ }"
                 done
                 target_processed=true
@@ -182,7 +206,12 @@ function tue-install-target
             tue-install-warning "Target $target does not contain a valid install.yaml/bash file"
         fi
 
-        touch "$TUE_INSTALL_STATE_DIR"/"$target"
+        if [ "$now" == "true" ]
+        then
+            touch "$state_file_now"
+        else
+            touch "$state_file"
+        fi
 
     fi
 
