@@ -27,16 +27,6 @@ TUE_REPOS_DIR=$TUE_ENV_DIR/repos
 
 # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # #
 
-function _skip_in_ci
-{
-    # use as followed:
-    # _skip_in_ci && return 0
-    [[ "$CI" == "true" ]] && return 0
-    return 1
-}
-
-# # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # #
-
 function date_stamp
 {
     date +%Y_%m_%d_%H_%M_%S
