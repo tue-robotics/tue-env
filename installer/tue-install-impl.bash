@@ -131,7 +131,7 @@ function tue-install-target
 
     # Determine if this target needs to be executed
     local execution_needed="true"
-    
+
     if [[ "$CI" == "true" ]] && [[ -f "$TUE_INSTALL_CURRENT_TARGET_DIR"/.ci_ignore ]]
     then
         tue-install-debug "Running installer in CI mode and file $TUE_INSTALL_CURRENT_TARGET_DIR/.ci_ignore exists. No execution is needed"
@@ -171,29 +171,40 @@ function tue-install-target
 
         if [ -f "$install_file".yaml ]
         then
-            tue-install-debug "Parsing $install_file.yaml"
-            local now_cmd=""
-            [ "$now" == "true" ] && now_cmd="--now"
-            # Do not use 'local cmds=' because it does not preserve command output status ($?)
-            local cmds
-            if cmds=$("$TUE_INSTALL_SCRIPTS_DIR"/parse-install-yaml.py "$install_file".yaml $now_cmd)
+            if [[ "$CI" == "true" ]] && [[ -f "$TUE_INSTALL_CURRENT_TARGET_DIR"/.ci_ignore_yaml ]]
             then
-                for cmd in $cmds
-                do
-                    tue-install-debug "Running following command: ${cmd//^/ }"
-                    ${cmd//^/ } || tue-install-error "Error while running: ${cmd//^/ }"
-                done
+                tue-install-debug "Running in CI mode and found .ci_ignore_yaml file, so skipping install.yaml"
                 target_processed=true
             else
-                tue-install-error "Invalid install.yaml: $cmds"
+                tue-install-debug "Parsing $install_file.yaml"
+                local now_cmd=""
+                [ "$now" == "true" ] && now_cmd="--now"
+                # Do not use 'local cmds=' because it does not preserve command output status ($?)
+                local cmds
+                if cmds=$("$TUE_INSTALL_SCRIPTS_DIR"/parse-install-yaml.py "$install_file".yaml $now_cmd)
+                then
+                    for cmd in $cmds
+                    do
+                        tue-install-debug "Running following command: ${cmd//^/ }"
+                        ${cmd//^/ } || tue-install-error "Error while running: ${cmd//^/ }"
+                    done
+                    target_processed=true
+                else
+                    tue-install-error "Invalid install.yaml: $cmds"
+                fi
             fi
         fi
 
         if [ -f "$install_file".bash ]
         then
-            tue-install-debug "Sourcing $install_file.bash"
-            # shellcheck disable=SC1090
-            source "$install_file".bash
+            if [[ "$CI" == "true" ]] && [[ -f "$TUE_INSTALL_CURRENT_TARGET_DIR"/.ci_ignore_bash ]]
+            then
+                tue-install-debug "Running in CI mode and found .ci_ignore_bash file, so skipping install.bash"
+            else
+                tue-install-debug "Sourcing $install_file.bash"
+                # shellcheck disable=SC1090
+                source "$install_file".bash
+            fi
             target_processed=true
         fi
 
