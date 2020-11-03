@@ -139,8 +139,14 @@ function tue-install-target
     local state_file="$TUE_INSTALL_STATE_DIR"/"$target"
     local state_file_now="${state_file}-now"
 
+    # Determine if this target needs to be executed
     local execution_needed="true"
-    if [ -f "$state_file_now" ]
+    
+    if [[ "$CI" == "true" ]] && [[ -f "$TUE_INSTALL_CURRENT_TARGET_DIR"/.ci_ignore ]]
+    then
+        tue-install-debug "Running installer in CI mode and file $TUE_INSTALL_CURRENT_TARGET_DIR/.ci_ignore exists. No execution is needed"
+        execution_needed="false"
+    elif [ -f "$state_file_now" ]
     then
         tue-install-debug "File $state_file_now does exist, so installation has already been executed with 'now' option. No execution is needed"
         execution_needed="false"
