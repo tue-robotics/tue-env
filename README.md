@@ -57,6 +57,7 @@ A target can consist of the following three files:
 1. `install.yaml`
 2. `install.bash`
 3. `setup`
+4. `.ci_ignore/.ci_ignore_bash/.ci_ignore_yaml`
 
 Installation happens in the above order. First `install.yaml` is parsed and the
 instructions in it are executed. Then `install.bash` is executed. This must have
@@ -66,6 +67,12 @@ commands/instructions that cannot be specified in the YAML file. Lastly, the
 Any target dependencies that can be specified in `install.yaml` as other targets
 or installable packages must be specified there. They should not be moved to
 `install.bash`as`tue-env` has many controls in place to parse the YAML file.
+
+Some (parts of) targets are not used for testing, but do take a long time
+to install. Therefore it is prefferable to skip these (parts of) targets
+during CI.
+To ignore an entire target in CI, add a `.ci_ignore` file to the target. To either
+ignore the bash script or the yaml file add respectively `.ci_ignore_bash` or `.ci_ignore_yaml`.
 
 ### Naming conventions
 
@@ -148,7 +155,7 @@ The default installation method for targets of type `system`, `pip(2/3)`, `ppa` 
 ```yaml
 - type: [system/pip/pip2/pip3/ppa/snap]-now
   name: <Name of the candidate>
-  
+
 - type: [target/system/pip/pip2/pip3/ppa/snap/dpkg]
   name: <Name of the candidate>
 ```
