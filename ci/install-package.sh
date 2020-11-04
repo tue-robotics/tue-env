@@ -75,7 +75,7 @@ echo -e "\e[35m\e[1m REF_NAME     = ${REF_NAME} \e[0m"
 if [ "$USE_SSH" == "true" ]
 then
     SSH_KEY_EXTERNAL="false"
-    eval $(ssh-agent -s)  # Start SSH agent
+    eval $(ssh-agent -s &> /dev/null)  # Start SSH agent
     SSH_KEY_DEFAULT="true"
     $(ssh-add &> /dev/null) || SSH_KEY_DEFAULT="false"  # Add any existing default keys
 
@@ -94,7 +94,7 @@ then
     if [[ -n "${SSH_KEY}" && -f "${SSH_KEY}" ]]
     then
         SSH_KEY_FINGERPRINT="$(ssh-keygen -lf "${SSH_KEY}" 2> /dev/null | awk '{print $2}')"
-        [[ -z "${SSH_KEY_FINGERPRINT}" ]] && { echo "'"${SSH_KEY}"' is an invalid SSH key" && exit 1; }
+        [[ -z "${SSH_KEY_FINGERPRINT}" ]] && { echo "'"${SSH_KEY}"' has an invalid SSH fingerprint" && exit 1; }
 
         if [[ "$(ssh-add -l)" != *"${SSH_KEY_FINGERPRINT}"* ]]
         then
