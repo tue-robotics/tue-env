@@ -166,13 +166,10 @@ docker run --detach --interactive --tty -e CI="true" -e PACKAGE="$PACKAGE" -e BR
 if [ "$USE_SSH" == "true" ]
 then
     docker exec -t tue-env bash -c "eval $(ssh-agent -s)"
-    docker exec -t tue-env bash -c "[[ -f /tmp/.ssh/known_hosts ]] && mv ~/.ssh/known_hosts ~/.ssh/known_hosts_original"
+    docker exec -t tue-env bash -c "[[ -f /tmp/.ssh/known_hosts ]] && mv ~/.ssh/known_hosts ~/.ssh/known_hosts.old"
     docker exec -t tue-env bash -c 'sudo cp -r /tmp/.ssh/* ~/.ssh/ && sudo chown -R "${USER}":"${USER}" ~/.ssh && ls -aln ~/.ssh'
 
-    if [ "$MERGE_KNOWN_HOSTS" == "tru" ]
-    then
-        docker exec -t tue-env bash -c "sudo chown 1000:1000 /tmp/.ssh/known_hosts && ~/.tue/ci/ssh-merge-known_hosts.py ~/.ssh/known_hosts /tmp/.ssh/known_hosts --output ~/.ssh/known_hosts"
-    fi
+    docker exec -t tue-env bash -c "[[ -f ~/.ssh/known_hosts && -f ~/.ssh/known_hosts.old ]] && ~/.tue/ci/ssh-merge-known_hosts.py ~/.ssh/known_hosts.old ~/.ssh/known_hosts --output ~/.ssh/known_hosts"
 fi
 
 # Refresh the apt cache in the docker image
