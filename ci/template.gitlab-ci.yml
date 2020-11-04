@@ -43,6 +43,7 @@ before_script:
   - mkdir -p "$SHARED_PATH"/.ssh
   - ssh-keyscan gitlab.com > "$SHARED_PATH"/.ssh/known_hosts
   - echo "$CI_SSH_KEY_PRIVATE" > "$SHARED_PATH"/.ssh/ci_ssh_key
+  - chmod 600 "$SHARED_PATH"/.ssh/ci_ssh_key
   # Authenticate the docker registry where the docker images stored
   - echo "$CI_JOB_TOKEN" | docker login $CI_REGISTRY -u gitlab-ci-token --password-stdin
 
