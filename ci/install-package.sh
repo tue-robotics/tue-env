@@ -74,12 +74,11 @@ echo -e "\e[35m\e[1m REF_NAME     = ${REF_NAME} \e[0m"
 
 if [ "$USE_SSH" == "true" ]
 then
-    SSH_KEY_EXTERNAL="false"
     eval $(ssh-agent -s &> /dev/null)  # Start SSH agent
-    SSH_KEY_DEFAULT="true"
-    $(ssh-add &> /dev/null) || SSH_KEY_DEFAULT="false"  # Add any existing default keys
+    SSH_KEY_CHECK=
+    { $(ssh-add &> /dev/null) && SSH_KEY_CHECK="true"; } || SSH_KEY_CHECK="false"  # Add any existing default keys
 
-    if [[ "${SHARED_DIR}" != "${HOME}" && "${SSH_KEY_DEFAULT}" == "true" ]]
+    if [[ "${SHARED_DIR}" != "${HOME}" && "${SSH_KEY_CHECK}" == "true" ]]
     then
         mkdir -p "${SHARED_DIR}"/.ssh
         cp -r "${HOME}"/.ssh/* "${SHARED_DIR}"/.ssh
@@ -99,20 +98,21 @@ then
         if [[ "$(ssh-add -l)" != *"${SSH_KEY_FINGERPRINT}"* ]]
         then
             chmod 600 "${SSH_KEY}"
-            { [[ "$(ssh-add "${SSH_KEY}" &> /dev/null)" ]] && SSH_KEY_EXTERNAL="true"; } || { echo "'"${SSH_KEY}"' is an invalid SSH key" && exit 1; }
-
+            { [[ "$(ssh-add "${SSH_KEY}" &> /dev/null)" ]] && SSH_KEY_CHECK="true"; } || { echo "'"${SSH_KEY}"' is an invalid SSH key" && exit 1; }
 
             if [[ "$(dirname "${SSH_KEY}")" != "${SHARED_DIR}/.ssh" ]]
             then
                 mkdir -p "${SHARED_DIR}"/.ssh  # This will be mounted to the docker container
                 cp "${SSH_KEY}" "${SHARED_DIR}"/.ssh
             fi
+        else
+            SSH_KEY_CHECK="true"
         fi
 
         echo -e "\e[35m\e[1m SSH_KEY      = ${SSH_KEY_FINGERPRINT} \e[0m"
     fi
 
-    { [[ "${SSH_KEY_EXTERNAL}" == "true" ]] || [[ "${SSH_KEY_DEFAULT}" == "true" ]]; } || { echo "No SSH keys found" && exit 1; }
+    [[ "${SSH_KEY_CHECK}" == "true" ]] || { echo "No SSH keys found" && exit 1; }
 
     DOCKER_MOUNT_KNOWN_HOSTS_ARGS="--mount type=bind,source=$SHARED_DIR/.ssh,target=/tmp/.ssh"
     { [[ -f "$SHARED_DIR"/.ssh/known_hosts ]] && MERGE_KNOWN_HOSTS="true"; } || MERGE_KNOWN_HOSTS="false"
