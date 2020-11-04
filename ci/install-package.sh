@@ -78,7 +78,7 @@ then
     SSH_KEY_CHECK=
     { $(ssh-add &> /dev/null) && SSH_KEY_CHECK="true"; } || SSH_KEY_CHECK="false"  # Add any existing default keys
 
-    if [[ "${SHARED_DIR}" != "${HOME}" && "${SSH_KEY_CHECK}" == "true" ]]
+    if [[ "${SHARED_DIR}" != "${HOME}" ]]
     then
         mkdir -p "${SHARED_DIR}"/.ssh
         cp -r "${HOME}"/.ssh/* "${SHARED_DIR}"/.ssh
@@ -92,30 +92,31 @@ then
 
     if [[ -n "${SSH_KEY}" && -f "${SSH_KEY}" ]]
     then
+        chmod 600 "${SSH_KEY}"
         SSH_KEY_FINGERPRINT="$(ssh-keygen -lf "${SSH_KEY}" 2> /dev/null | awk '{print $2}')"
         [[ -z "${SSH_KEY_FINGERPRINT}" ]] && { echo "'"${SSH_KEY}"' has an invalid SSH fingerprint" && exit 1; }
 
         if [[ "$(ssh-add -l)" != *"${SSH_KEY_FINGERPRINT}"* ]]
         then
-            chmod 600 "${SSH_KEY}"
             { [[ "$(ssh-add "${SSH_KEY}" &> /dev/null)" ]] && SSH_KEY_CHECK="true"; } || { echo "'"${SSH_KEY}"' is an invalid SSH key" && exit 1; }
 
-            if [[ "$(dirname "${SSH_KEY}")" != "${SHARED_DIR}/.ssh" ]]
-            then
-                mkdir -p "${SHARED_DIR}"/.ssh  # This will be mounted to the docker container
-                cp "${SSH_KEY}" "${SHARED_DIR}"/.ssh
-            fi
         else
             SSH_KEY_CHECK="true"
         fi
 
-        echo -e "\e[35m\e[1m SSH_KEY      = ${SSH_KEY_FINGERPRINT} \e[0m"
+        if [[ "${SSH_KEY_CHECK}" == "true" && "$(dirname "${SSH_KEY}")" != "${SHARED_DIR}/.ssh" ]]
+        then
+            cp "${SSH_KEY}" "${SHARED_DIR}"/.ssh/
+        fi
     fi
 
     [[ "${SSH_KEY_CHECK}" == "true" ]] || { echo "No SSH keys found" && exit 1; }
 
+    [[ -n "${SSH_KEY_FINGERPRINT}" ]] || SSH_KEY_FINGERPRINT="default"
+    echo -e "\e[35m\e[1m SSH_KEY      = ${SSH_KEY_FINGERPRINT} \e[0m"
+
     DOCKER_MOUNT_KNOWN_HOSTS_ARGS="--mount type=bind,source=$SHARED_DIR/.ssh,target=/tmp/.ssh"
-    { [[ -f "$SHARED_DIR"/.ssh/known_hosts ]] && MERGE_KNOWN_HOSTS="true"; } || MERGE_KNOWN_HOSTS="false"
+    { [[ -f "${SHARED_DIR}"/.ssh/known_hosts ]] && MERGE_KNOWN_HOSTS="true"; } || MERGE_KNOWN_HOSTS="false"
 fi
 
 echo -e "\e[35m\e[1m
