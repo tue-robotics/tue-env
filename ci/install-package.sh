@@ -167,7 +167,7 @@ if [ "$USE_SSH" == "true" ]
 then
     docker exec -t tue-env bash -c "eval $(ssh-agent -s)"
     docker exec -t tue-env bash -c "[[ -f /tmp/.ssh/known_hosts ]] && mv ~/.ssh/known_hosts ~/.ssh/known_hosts_original"
-    docker exec -t tue-env bash -c 'sudo cp -r /tmp/.ssh/* ~/.ssh/ && sudo chown -R "${USER}":"${USER}"  ~/.ssh && ll ~/.ssh'
+    docker exec -t tue-env bash -c 'sudo cp -r /tmp/.ssh/* ~/.ssh/ && sudo chown -R "${USER}":"${USER}" ~/.ssh && ls -aln ~/.ssh'
 
     if [ "$MERGE_KNOWN_HOSTS" == "tru" ]
     then
