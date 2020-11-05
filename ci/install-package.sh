@@ -117,7 +117,6 @@ then
 
     DOCKER_SSH_AUTH_SOCK="/tmp/ssh_auth_sock"
     DOCKER_MOUNT_KNOWN_HOSTS_ARGS="-e SSH_AUTH_SOCK=$DOCKER_SSH_AUTH_SOCK --mount type=bind,source=$SHARED_DIR/.ssh,target=/tmp/.ssh"
-    { [[ -f "${SHARED_DIR}"/.ssh/known_hosts ]] && MERGE_KNOWN_HOSTS="true"; } || MERGE_KNOWN_HOSTS="false"
 
     ADDITIONAL_ARGS_LOCAL_BUILD="--shared=/tmp/shared/${PACKAGE} --ssh"
 fi
