@@ -118,6 +118,7 @@ then
     DOCKER_SSH_AUTH_SOCK="/tmp/ssh_auth_sock"
     DOCKER_MOUNT_KNOWN_HOSTS_ARGS="-e SSH_AUTH_SOCK=$DOCKER_SSH_AUTH_SOCK --mount type=bind,source=$SHARED_DIR/.ssh,target=/tmp/.ssh"
 
+    # Used in the print statement to reproduce CI build locally
     ADDITIONAL_ARGS_LOCAL_BUILD="--shared=/tmp/shared/${PACKAGE} --ssh"
 fi
 
