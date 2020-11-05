@@ -117,13 +117,15 @@ then
 
     DOCKER_MOUNT_KNOWN_HOSTS_ARGS="--mount type=bind,source=$SHARED_DIR/.ssh,target=/tmp/.ssh"
     { [[ -f "${SHARED_DIR}"/.ssh/known_hosts ]] && MERGE_KNOWN_HOSTS="true"; } || MERGE_KNOWN_HOSTS="false"
+
+    ADDITIONAL_ARGS_LOCAL_BUILD="--shared=/tmp/shared/${PACKAGE} --ssh"
 fi
 
 echo -e "\e[35m\e[1m
 This build can be reproduced locally using the following commands:
 
 tue-get install docker
-~/.tue/ci/install-package.sh --package=${PACKAGE} --branch=${BRANCH} --commit=${COMMIT} --pullrequest=${PULL_REQUEST}
+~/.tue/ci/install-package.sh --package=${PACKAGE} --branch=${BRANCH} --commit=${COMMIT} --pullrequest=${PULL_REQUEST} --image=${IMAGE_NAME} --ref-name=${REF_NAME} ${ADDITIONAL_ARGS_LOCAL_BUILD}
 ~/.tue/ci/build-package.sh --package=${PACKAGE}
 ~/.tue/ci/test-package.sh --package=${PACKAGE}
 
