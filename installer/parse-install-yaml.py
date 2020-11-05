@@ -19,8 +19,7 @@ def show_error(error):
 
 def main():
     if not 2 <= len(sys.argv) <= 3:
-        print("Usage: parse-install-yaml install.yaml [--now]")
-        return 1
+        return show_error("Usage: parse-install-yaml install.yaml [--now]")
 
     now = False
     if len(sys.argv) == 3:
@@ -41,6 +40,16 @@ def main():
         return show_error("Root of install.yaml file should be a YAML sequence")
 
     commands = []
+
+    # Combine now calls
+    now_cache = {
+        "system-now": [],
+        "pip-now": [],
+        "pip2-now": [],
+        "pip3-now": [],
+        "ppa-now": [],
+        "snap-now": [],
+    }
 
     for install_item in install_items:
         command = None
@@ -119,6 +128,11 @@ def main():
                     if pkg_name is None:
                         continue
 
+                # Cache install types which accept multiple pkgs at once
+                if install_type in now_cache:
+                    now_cache[install_type].append(pkg_name)
+                    continue
+
                 command = "tue-install-{0} {1}".format(install_type, pkg_name)
 
             else:
@@ -132,6 +146,12 @@ def main():
 
         command = command.replace(" ", "^")
         commands.append(command)
+
+    for install_type, pkg_list in now_cache.items():
+        if pkg_list:
+            command = "tue-install-{0} {1}".format(install_type, " ".join(pkg_list))
+            command = command.replace(" ", "^")
+            commands.append(command)
 
     commands = " ".join(commands)
 
