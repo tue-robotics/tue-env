@@ -115,7 +115,8 @@ then
     [[ -n "${SSH_KEY_FINGERPRINT}" ]] || SSH_KEY_FINGERPRINT="default"
     echo -e "\e[35m\e[1m SSH_KEY      = ${SSH_KEY_FINGERPRINT} \e[0m"
 
-    DOCKER_MOUNT_KNOWN_HOSTS_ARGS="--mount type=bind,source=$SHARED_DIR/.ssh,target=/tmp/.ssh"
+    DOCKER_SSH_AUTH_SOCK="/tmp/ssh_auth_sock"
+    DOCKER_MOUNT_KNOWN_HOSTS_ARGS="-e SSH_AUTH_SOCK=$DOCKER_SSH_AUTH_SOCK --mount type=bind,source=$SHARED_DIR/.ssh,target=/tmp/.ssh"
     { [[ -f "${SHARED_DIR}"/.ssh/known_hosts ]] && MERGE_KNOWN_HOSTS="true"; } || MERGE_KNOWN_HOSTS="false"
 
     ADDITIONAL_ARGS_LOCAL_BUILD="--shared=/tmp/shared/${PACKAGE} --ssh"
@@ -167,11 +168,11 @@ docker run --detach --interactive --tty -e CI="true" -e PACKAGE="$PACKAGE" -e BR
 
 if [ "$USE_SSH" == "true" ]
 then
-    docker exec -t tue-env bash -c "eval $(ssh-agent -s)"
     docker exec -t tue-env bash -c "[[ -f /tmp/.ssh/known_hosts ]] && mv ~/.ssh/known_hosts ~/.ssh/known_hosts.old"
     docker exec -t tue-env bash -c 'sudo cp -r /tmp/.ssh/* ~/.ssh/ && sudo chown -R "${USER}":"${USER}" ~/.ssh && ls -aln ~/.ssh'
 
     docker exec -t tue-env bash -c "[[ -f ~/.ssh/known_hosts && -f ~/.ssh/known_hosts.old ]] && ~/.tue/ci/ssh-merge-known_hosts.py ~/.ssh/known_hosts.old ~/.ssh/known_hosts --output ~/.ssh/known_hosts"
+    docker exec -e DOCKER_SSH_AUTH_SOCK="$DOCKER_SSH_AUTH_SOCK" -t tue-env bash -c 'eval "$(ssh-agent -s)" && ln -sf "$SSH_AUTH_SOCK" "$DOCKER_SSH_AUTH_SOCK" && ssh-add ~/.ssh/ci_ssh_key'
 fi
 
 # Refresh the apt cache in the docker image
