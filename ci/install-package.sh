@@ -72,17 +72,68 @@ echo -e "\e[35m\e[1m SHARED_DIR   = ${SHARED_DIR} \e[0m"
 [ -z "$REF_NAME" ] && REF_NAME="pull"
 echo -e "\e[35m\e[1m REF_NAME     = ${REF_NAME} \e[0m"
 
-if [ "$USE_SSH" == "true" ]
+if [[ "$USE_SSH" == "true" ]]
 then
-    SSH_KEY_FINGERPRINT=$(ssh-keygen -lf /dev/stdin <<< "$SSH_KEY" | awk '{print $2}')
+    eval $(ssh-agent -s &> /dev/null)  # Start SSH agent
+    SSH_KEY_CHECK=
+    { $(ssh-add &> /dev/null) && SSH_KEY_CHECK="true"; } || SSH_KEY_CHECK="false"  # Add any existing default keys
+
+    # Copy contents of default ssh directory, except for known_hosts file if there is
+    # a pre-existing known_hosts file in the shared directory
+    if [[ "${SHARED_DIR}" != "${HOME}" ]]
+    then
+        mkdir -p "${SHARED_DIR}"/.ssh
+
+        { [[ -f "${SHARED_DIR}"/.ssh/known_hosts ]] && mv "${SHARED_DIR}/.ssh/known_hosts" "${SHARED_DIR}/.ssh/known_hosts_shared"; } || true
+
+        cp -r "${HOME}"/.ssh/* "${SHARED_DIR}"/.ssh
+
+        { [[ -f "${SHARED_DIR}"/.ssh/known_hosts_shared ]] && mv "${SHARED_DIR}/.ssh/known_hosts_shared" "${SHARED_DIR}/.ssh/known_hosts"; } || true
+    fi
+
+    if [[ -n "${SSH_KEY}" && ! -f "${SSH_KEY}" ]]
+    then
+        echo "SSH key does not exist at '"${SSH_KEY}"'"
+        exit 1
+    fi
+
+    if [[ -n "${SSH_KEY}" && -f "${SSH_KEY}" ]]
+    then
+        chmod 600 "${SSH_KEY}"
+        SSH_KEY_FINGERPRINT="$(ssh-keygen -lf "${SSH_KEY}" 2> /dev/null | awk '{print $2}')"
+        [[ -z "${SSH_KEY_FINGERPRINT}" ]] && { echo "'"${SSH_KEY}"' has an invalid SSH fingerprint" && exit 1; }
+
+        if [[ "$(ssh-add -l)" != *"${SSH_KEY_FINGERPRINT}"* ]]
+        then
+            { [[ "$(ssh-add "${SSH_KEY}" &> /dev/null)" ]] && SSH_KEY_CHECK="true"; } || { echo "'"${SSH_KEY}"' is an invalid SSH key" && exit 1; }
+
+        else
+            SSH_KEY_CHECK="true"
+        fi
+
+        if [[ "${SSH_KEY_CHECK}" == "true" && "$(dirname "${SSH_KEY}")" != "${SHARED_DIR}/.ssh" ]]
+        then
+            cp "${SSH_KEY}" "${SHARED_DIR}"/.ssh/
+        fi
+    fi
+
+    [[ "${SSH_KEY_CHECK}" == "true" ]] || { echo "No SSH keys found" && exit 1; }
+
+    [[ -n "${SSH_KEY_FINGERPRINT}" ]] || SSH_KEY_FINGERPRINT="default"
     echo -e "\e[35m\e[1m SSH_KEY      = ${SSH_KEY_FINGERPRINT} \e[0m"
+
+    DOCKER_SSH_AUTH_SOCK="/tmp/ssh_auth_sock"
+    DOCKER_MOUNT_KNOWN_HOSTS_ARGS="-e SSH_AUTH_SOCK=$DOCKER_SSH_AUTH_SOCK --mount type=bind,source=$SHARED_DIR/.ssh,target=/tmp/.ssh"
+
+    # Used in the print statement to reproduce CI build locally
+    ADDITIONAL_ARGS_LOCAL_BUILD="--shared=/tmp/shared/${PACKAGE} --ssh"
 fi
 
 echo -e "\e[35m\e[1m
 This build can be reproduced locally using the following commands:
 
 tue-get install docker
-~/.tue/ci/install-package.sh --package=${PACKAGE} --branch=${BRANCH} --commit=${COMMIT} --pullrequest=${PULL_REQUEST}
+~/.tue/ci/install-package.sh --package=${PACKAGE} --branch=${BRANCH} --commit=${COMMIT} --pullrequest=${PULL_REQUEST} --image=${IMAGE_NAME} --ref-name=${REF_NAME} ${ADDITIONAL_ARGS_LOCAL_BUILD}
 ~/.tue/ci/build-package.sh --package=${PACKAGE}
 ~/.tue/ci/test-package.sh --package=${PACKAGE}
 
@@ -117,25 +168,18 @@ then
     BRANCH_TAG=$MASTER_TAG
 fi
 
-if [ -f "$SHARED_DIR"/.ssh/known_hosts ]
-then
-    MERGE_KNOWN_HOSTS="true"
-    DOCKER_MOUNT_KNOWN_HOSTS_ARGS="--mount type=bind,source=$SHARED_DIR/.ssh/known_hosts,target=/tmp/known_hosts_extra"
-fi
-
 # Run the docker image along with setting new environment variables
 # shellcheck disable=SC2086
 docker run --detach --interactive --tty -e CI="true" -e PACKAGE="$PACKAGE" -e BRANCH="$BRANCH" -e COMMIT="$COMMIT" -e PULL_REQUEST="$PULL_REQUEST" -e REF_NAME="$REF_NAME" --name tue-env $DOCKER_MOUNT_KNOWN_HOSTS_ARGS "$IMAGE_NAME:$BRANCH_TAG"
 
-if [ "$MERGE_KNOWN_HOSTS" == "true" ]
-then
-    docker exec -t tue-env bash -c "sudo chown 1000:1000 /tmp/known_hosts_extra && ~/.tue/ci/ssh-merge-known_hosts.py ~/.ssh/known_hosts /tmp/known_hosts_extra --output ~/.ssh/known_hosts"
-fi
 
 if [ "$USE_SSH" == "true" ]
 then
-    docker exec -t tue-env bash -c "eval $(ssh-agent -s)"
-    docker exec -t tue-env bash -c "echo '$SSH_KEY' > ~/.ssh/id_rsa && chmod 700 ~/.ssh/id_rsa"
+    docker exec -t tue-env bash -c "[[ -f /tmp/.ssh/known_hosts ]] && mv ~/.ssh/known_hosts ~/.ssh/known_hosts_container"
+    docker exec -t tue-env bash -c 'sudo cp -r /tmp/.ssh/* ~/.ssh/ && sudo chown -R "${USER}":"${USER}" ~/.ssh && ls -aln ~/.ssh'
+
+    docker exec -t tue-env bash -c "[[ -f ~/.ssh/known_hosts && -f ~/.ssh/known_hosts_container ]] && ~/.tue/ci/ssh-merge-known_hosts.py ~/.ssh/known_hosts_container ~/.ssh/known_hosts --output ~/.ssh/known_hosts"
+    docker exec -e DOCKER_SSH_AUTH_SOCK="$DOCKER_SSH_AUTH_SOCK" -t tue-env bash -c 'eval "$(ssh-agent -s)" && ln -sf "$SSH_AUTH_SOCK" "$DOCKER_SSH_AUTH_SOCK" && grep -slR "PRIVATE" ~/.ssh/ | xargs ssh-add'
 fi
 
 # Refresh the apt cache in the docker image
