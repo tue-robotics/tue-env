@@ -78,10 +78,17 @@ then
     SSH_KEY_CHECK=
     { $(ssh-add &> /dev/null) && SSH_KEY_CHECK="true"; } || SSH_KEY_CHECK="false"  # Add any existing default keys
 
+    # Copy contents of default ssh directory, except for known_hosts file if there is
+    # a pre-existing known_hosts file in the shared directory
     if [[ "${SHARED_DIR}" != "${HOME}" ]]
     then
         mkdir -p "${SHARED_DIR}"/.ssh
+
+        { [[ -f "${SHARED_DIR}"/.ssh/known_hosts ]] && mv "${SHARED_DIR}/.ssh/known_hosts" "${SHARED_DIR}/.ssh/known_hosts_shared"; } || true
+
         cp -r "${HOME}"/.ssh/* "${SHARED_DIR}"/.ssh
+
+        { [[ -f "${SHARED_DIR}"/.ssh/known_hosts_shared ]] && mv "${SHARED_DIR}/.ssh/known_hosts_shared" "${SHARED_DIR}/.ssh/known_hosts"; } || true
     fi
 
     if [[ -n "${SSH_KEY}" && ! -f "${SSH_KEY}" ]]
