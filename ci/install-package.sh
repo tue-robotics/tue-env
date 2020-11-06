@@ -72,7 +72,7 @@ echo -e "\e[35m\e[1m SHARED_DIR   = ${SHARED_DIR} \e[0m"
 [ -z "$REF_NAME" ] && REF_NAME="pull"
 echo -e "\e[35m\e[1m REF_NAME     = ${REF_NAME} \e[0m"
 
-if [ "$USE_SSH" == "true" ]
+if [[ "$USE_SSH" == "true" ]]
 then
     eval $(ssh-agent -s &> /dev/null)  # Start SSH agent
     SSH_KEY_CHECK=
