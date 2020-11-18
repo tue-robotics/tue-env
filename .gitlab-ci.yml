@@ -30,7 +30,12 @@ before_script:
   # To build and push the docker image of private repository to the container registry SSH
   # needs to be setup in the CI environment
   - eval $(ssh-agent -s)
-  - echo "$CI_SSH_KEY_PRIVATE" | tr -d '\r' | ssh-add -
+  - |
+    cat <<EOT | ssh-add -
+    -----BEGIN OPENSSH PRIVATE KEY-----
+    ${CI_SSH_KEY_PRIVATE}
+    -----END OPENSSH PRIVATE KEY-----
+    EOT
   - mkdir -p ~/.ssh
   - chmod 700 ~/.ssh
   - ssh-keyscan gitlab.com >> ~/.ssh/known_hosts
