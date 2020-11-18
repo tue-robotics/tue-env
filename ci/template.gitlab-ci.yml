@@ -47,7 +47,12 @@ before_script:
   # signature of the git server is setup and does not require input using CLI
   - mkdir -p "$SHARED_PATH"/.ssh
   - ssh-keyscan gitlab.com > "$SHARED_PATH"/.ssh/known_hosts
-  - echo "$CI_SSH_KEY_PRIVATE" > "$SHARED_PATH"/.ssh/ci_ssh_key
+  - |
+    cat <<EOT > "${SHARED_PATH}"/.ssh/ci_ssh_key
+    -----BEGIN OPENSSH PRIVATE KEY-----
+    ${CI_SSH_KEY_PRIVATE}
+    -----END OPENSSH PRIVATE KEY-----
+    EOT
   # Authenticate the docker registry where the docker images stored
   - echo "$CI_JOB_TOKEN" | docker login $CI_REGISTRY -u gitlab-ci-token --password-stdin
 
