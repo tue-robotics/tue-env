@@ -1348,7 +1348,7 @@ TUE_INSTALL_SNAPS=
 TUE_INSTALL_WARNINGS=
 TUE_INSTALL_INFOS=
 
-tue-install-system-now git python3-pip
+tue-install-system-now git python3-pip python-is-python3
 
 tue-install-pip3-now catkin-pkg PyYAML "mercurial>=5.3"
 
