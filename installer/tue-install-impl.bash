@@ -983,9 +983,9 @@ function _tue-install-pip-now
     if [ -n "$pips_to_install" ]
     then
         echo -e "Going to run the following command:\n"
-        echo -e "yes | python${pv} -m pip install --user $pips_to_install\n"
+        echo -e "python${pv} -m pip install --user $pips_to_install <<< yes\n"
         # shellcheck disable=SC2048,SC2086
-        yes | python"${pv}" -m pip install --user $pips_to_install || tue-install-error "An error occurred while installing pip${pv} packages."
+        python"${pv}" -m pip install --user $pips_to_install <<< yes || tue-install-error "An error occurred while installing pip${pv} packages."
     fi
 
     if [ -n "$git_pips_to_install" ]
@@ -993,9 +993,9 @@ function _tue-install-pip-now
         for pkg in $git_pips_to_install
         do
             echo -e "Going to run the following command:\n"
-            echo -e "yes | python${pv} -m pip install --user $pkg\n"
+            echo -e "python${pv} -m pip install --user $pkg <<< yes\n"
             # shellcheck disable=SC2048,SC2086
-            yes | python"${pv}" -m pip install --user $pkg || tue-install-error "An error occurred while installing pip${pv} packages."
+            python"${pv}" -m pip install --user $pkg <<< yes || tue-install-error "An error occurred while installing pip${pv} packages."
         done
     fi
 }
@@ -1063,9 +1063,9 @@ function tue-install-snap-now
         echo -e "Going to run the following command:\n"
         for pkg in $snaps_to_install
         do
-            echo -e "yes | sudo snap install --classic $pkg\n"
-            tue-install-debug "yes | sudo snap install --classic $pkg"
-            yes | sudo snap install --classic "$pkg" || tue-install-error "An error occurred while installing snap packages."
+            echo -e "sudo snap install --classic $pkg <<< yes\n"
+            tue-install-debug "sudo snap install --classic $pkg <<< yes"
+            sudo snap install --classic "$pkg" <<< yes || tue-install-error "An error occurred while installing snap packages."
         done
     fi
 }
