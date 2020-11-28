@@ -756,7 +756,7 @@ function tue-install-system-now
     do
         # Check if pkg is not already installed dpkg -S does not cover previously removed packages
         # Based on https://stackoverflow.com/questions/1298066
-        if ! echo "$dpkg_query" | grep -q "^$pkg install ok installed"
+        if ! grep -q "^$pkg install ok installed" <<< "$dpkg_query"
         then
             pkgs_to_install="$pkgs_to_install $pkg"
         else
