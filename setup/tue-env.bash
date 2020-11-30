@@ -164,7 +164,7 @@ Purged environment directory of '$env'"""
 
     elif [[ $cmd == "init-targets" ]]
     then
-        if [ -z "$1" ] || { [ -z "$TUE_ENV" ] && [ -z "$2" ]; }
+        if [ -z "$1" ] || { [ -z "${TUE_ENV-}" ] && [ -z "$2" ]; }
         then
             echo "Usage: tue-env init-targets [ENVIRONMENT] TARGETS_GIT_URL"
             return 1
