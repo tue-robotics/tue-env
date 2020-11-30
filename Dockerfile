@@ -45,6 +45,7 @@ RUN mkdir -p -m 0700 ~/.ssh
 ADD ./known_hosts ./.ssh/known_hosts
 RUN sudo chown 1000:1000 ~/.ssh/known_hosts && sudo chmod 644 ~/.ssh/known_hosts
 
+RUN echo $SHELLOPTS
 # Setup tue-env and install target ros
     # Remove interactive check from bashrc, otherwise bashrc refuses to execute
 RUN --mount=type=ssh,uid=1000 sed -e s/return//g -i ~/.bashrc && \
@@ -71,3 +72,5 @@ RUN --mount=type=ssh,uid=1000 sed -e s/return//g -i ~/.bashrc && \
     git -C ~/.tue remote -v && \
     # Show the branches of tue-env
     git -C ~/.tue branch
+
+RUN echo $SHELLOPTS
