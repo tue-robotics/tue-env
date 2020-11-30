@@ -23,7 +23,7 @@ ENV DEBIAN_FRONTEND=noninteractive \
     TERM=xterm-256color
 
 # Set default shell to be bash
-SHELL ["/bin/bash", "-c"]
+SHELL ["/bin/bash", "-euo", "pipefail", "-c"]
 
 # Install commands used in our scripts and standard present on a clean ubuntu
 # installation and setup a user with sudo priviledges
