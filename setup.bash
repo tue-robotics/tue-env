@@ -17,6 +17,8 @@ function _tue-check-env-vars
 }
 export -f _tue-check-env-vars
 
+TUE_ENV=${TUE_ENV-}  # Set default value to none
+
 if [ -z "$TUE_ENV" ]
 then
     if [ ! -f "$TUE_DIR"/user/config/default_env ]
