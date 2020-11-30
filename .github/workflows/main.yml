@@ -1,0 +1,47 @@
+name: CI
+
+on: [push, pull_request]
+
+jobs:
+  linting:
+    name: Linting
+    runs-on: ubuntu-18.04
+    continue-on-error: true
+    steps:
+      - uses: actions/checkout@v2
+      - name: Setup Python 3
+        uses: actions/setup-python@v2
+        with:
+          python-version: '3.x'
+      - name: Install Black
+        run: pip install black
+      - name: Shellcheck
+        run: |
+          shopt -s globstar
+          shellcheck **/*.bash **/*.sh
+      - name: Python Black
+        run: black -l 120 --check --diff --color .
+
+  docker_generation_tue_env:
+    name: Docker Generation tue-env
+    runs-on: ubuntu-18.04
+    needs: linting
+    steps:
+      - uses: actions/checkout@v2
+      - name: Install
+        run: ci/update-docker.bash
+      - name: Script
+        run: ci/build-docker-image.sh --image="tuerobotics/tue-env" --branch="${GITHUB_BASE_REF:-${GITHUB_REF#refs/heads/}}" --commit="$GITHUB_SHA" --pull_request="${{ github.event_name == 'pull_request' }}" --user="${{ secrets.DOCKER_HUB_USERNAME }}" --password="${{ secrets.DOCKER_HUB_PASSWORD }}"
+
+  docker_generation_tue_env_cuda:
+    name: Docker Generation tue-env-cuda
+    runs-on: ubuntu-18.04
+    needs: linting
+    if: ${{ github.event_name != 'pull_request' && github.ref == 'refs/heads/master' }}
+    steps:
+      - uses: actions/checkout@v2
+      - name: Install
+        run: ci/update-docker.bash
+      - name: Script
+        run: ci/build-docker-image.sh --image="tuerobotics/tue-env-cuda" --branch="${GITHUB_BASE_REF:-${GITHUB_REF#refs/heads/}}" --commit="$GITHUB_SHA" --pull_request="${{ github.event_name == 'pull_request' }}" --user="${{ secrets.DOCKER_HUB_USERNAME }}" --password="${{ secrets.DOCKER_HUB_PASSWORD }}"
+
