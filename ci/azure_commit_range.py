@@ -10,7 +10,7 @@ from urllib.request import urlopen
 """
 Script to determine the commit range of a build in azure pipelines.
 
-The output of this script should be captured in bash. The out               put
+The output of this script should be captured in bash. The output
 will match the format of TRAVIS_COMMIT_RANGE, which is
 newest_commit...oldest_commit
 
