@@ -5,7 +5,7 @@ on: [push, pull_request]
 jobs:
   linting:
     name: Linting
-    runs-on: ubuntu-18.04
+    runs-on: ubuntu-latest
     continue-on-error: true
     steps:
       - uses: actions/checkout@v2
@@ -24,7 +24,7 @@ jobs:
 
   docker_generation_tue_env:
     name: Docker Generation tue-env
-    runs-on: ubuntu-18.04
+    runs-on: ubuntu-latest
     needs: linting
     steps:
       - uses: actions/checkout@v2
@@ -35,7 +35,7 @@ jobs:
 
   docker_generation_tue_env_cuda:
     name: Docker Generation tue-env-cuda
-    runs-on: ubuntu-18.04
+    runs-on: ubuntu-latest
     needs: linting
     if: ${{ github.event_name != 'pull_request' && github.ref == 'refs/heads/master' }}
     steps:
