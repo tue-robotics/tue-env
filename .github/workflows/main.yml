@@ -6,7 +6,6 @@ jobs:
   linting:
     name: Linting
     runs-on: ubuntu-latest
-    continue-on-error: true
     steps:
       - uses: actions/checkout@v2
       - name: Setup Python 3
