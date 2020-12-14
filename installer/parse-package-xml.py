@@ -19,7 +19,9 @@ def _get_condition_expression():
     # type: () -> regex.Regex
     global _condition_expression
     if not _condition_expression:
-        _condition_expression = regex.compile(r'(?<item>((?<var>\$\w+) *(?<op>==|!=|>=|>|<=|<) *(?<value>[\w-]+))|((?&value) *(?&op) *(?&var)))( *(and|or) *((?R)|(?&item)))*')
+        _condition_expression = regex.compile(
+            r"(?<item>((?<var>\$\w+) *(?<op>==|!=|>=|>|<=|<) *(?<value>[\w-]+))|((?&value) *(?&op) *(?&var)))( *(and|or) *((?R)|(?&item)))*"
+        )
     return _condition_expression
 
 
@@ -27,7 +29,7 @@ def _get_operator_expression():
     # type: () -> regex.Regex
     global _operator_expression
     if not _operator_expression:
-        _operator_expression = regex.compile(r' *(?<op>==|!=|>=|>|<=|<) *')
+        _operator_expression = regex.compile(r" *(?<op>==|!=|>=|>|<=|<) *")
     return _operator_expression
 
 
@@ -35,7 +37,7 @@ def _get_split_space_expression():
     # type: () -> regex.Regex
     global _split_space_expression
     if not _split_space_expression:
-        _split_space_expression = regex.compile(r' *')
+        _split_space_expression = regex.compile(r" *")
     return _split_space_expression
 
 
@@ -43,7 +45,7 @@ def _get_split_or_expression():
     # type: () -> regex.Regex
     global _split_or_expression
     if not _split_or_expression:
-        _split_or_expression = regex.compile(r' *or *')
+        _split_or_expression = regex.compile(r" *or *")
     return _split_or_expression
 
 
@@ -51,7 +53,7 @@ def _get_split_and_expression():
     # type: () -> regex.Regex
     global _split_and_expression
     if not _split_and_expression:
-        _split_and_expression = regex.compile(r' *and *')
+        _split_and_expression = regex.compile(r" *and *")
     return _split_and_expression
 
 
@@ -63,7 +65,7 @@ def dep_evaluate_condition(dep):
     :param dep: ET.Element with an optional 'condition' attribute
     :return: Condition is satisfied or not
     """
-    return evaluate_condition(dep.attrib.get('condition', None), os.environ)
+    return evaluate_condition(dep.attrib.get("condition", None), os.environ)
 
 
 def evaluate_condition(condition, context):
@@ -90,7 +92,7 @@ def evaluate_condition(condition, context):
     # Make sure there is at least one space surrounding the operator, so we can split on spaces later on
     sub = _get_operator_expression()
     try:
-        parse_results = sub.sub(r' \g<op> ', parse_results.string, concurrent=True)
+        parse_results = sub.sub(r" \g<op> ", parse_results.string, concurrent=True)
     except Exception as e:
         raise ValueError("'{}' failed to substitute whitespace: {}".format(parse_results.string, e))
 
@@ -114,7 +116,7 @@ def split_on_or(s):
             l[idx] = split_on_and(v)
         else:
             l[idx] = split_on_space(v)
-    return flat_to_nested(l, 'or')
+    return flat_to_nested(l, "or")
 
 
 def split_on_and(s):
@@ -132,7 +134,7 @@ def split_on_and(s):
             l[idx] = split_on_and(v)
         else:
             l[idx] = split_on_space(v)
-    return flat_to_nested(l, 'and')
+    return flat_to_nested(l, "and")
 
 
 def split_on_space(s):
@@ -163,9 +165,9 @@ def flat_to_nested(fl, add):
 def _evaluate(parse_results, context):
     # type: (Union[str, List[str]]) -> Union[bool, str]
     if not isinstance(parse_results, list):
-        if parse_results.startswith('$'):
+        if parse_results.startswith("$"):
             # get variable from context
-            return str(context.get(parse_results[1:], ''))
+            return str(context.get(parse_results[1:], ""))
         # return literal value
         return parse_results
 
@@ -173,27 +175,23 @@ def _evaluate(parse_results, context):
     assert len(parse_results) == 3
 
     # handle logical operators
-    if parse_results[1] == 'and':
-        return _evaluate(parse_results[0], context) and \
-            _evaluate(parse_results[2], context)
-    if parse_results[1] == 'or':
-        return _evaluate(parse_results[0], context) or \
-            _evaluate(parse_results[2], context)
+    if parse_results[1] == "and":
+        return _evaluate(parse_results[0], context) and _evaluate(parse_results[2], context)
+    if parse_results[1] == "or":
+        return _evaluate(parse_results[0], context) or _evaluate(parse_results[2], context)
 
     # handle comparison operators
     operators = {
-        '==': operator.eq,
-        '!=': operator.ne,
-        '<=': operator.le,
-        '<': operator.lt,
-        '>=': operator.ge,
-        '>': operator.gt,
+        "==": operator.eq,
+        "!=": operator.ne,
+        "<=": operator.le,
+        "<": operator.lt,
+        ">=": operator.ge,
+        ">": operator.gt,
     }
     assert parse_results[1] in operators.keys()
 
-    return operators[parse_results[1]](
-        _evaluate(parse_results[0], context),
-        _evaluate(parse_results[2], context))
+    return operators[parse_results[1]](_evaluate(parse_results[0], context), _evaluate(parse_results[2], context))
 
 
 def main():
@@ -206,33 +204,33 @@ def main():
 
     dep_set = set()
 
-    deps = doc.findall('build_depend')
+    deps = doc.findall("build_depend")
     dep_set |= {dep.text for dep in deps if dep_evaluate_condition(dep)}
 
-    deps = doc.findall('buildtool_depend')
+    deps = doc.findall("buildtool_depend")
     dep_set |= {dep.text for dep in deps if dep_evaluate_condition(dep)}
 
-    deps = doc.findall('build_export_depend')
+    deps = doc.findall("build_export_depend")
     dep_set |= {dep.text for dep in deps if dep_evaluate_condition(dep)}
 
-    deps = doc.findall('buildtool_export_depend')
+    deps = doc.findall("buildtool_export_depend")
     dep_set |= {dep.text for dep in deps if dep_evaluate_condition(dep)}
 
-    deps = doc.findall('exec_depend')
+    deps = doc.findall("exec_depend")
     dep_set |= {dep.text for dep in deps if dep_evaluate_condition(dep)}
 
-    deps = doc.findall('depend')
+    deps = doc.findall("depend")
     dep_set |= {dep.text for dep in deps if dep_evaluate_condition(dep)}
 
-    deps = doc.findall('run_depend')
+    deps = doc.findall("run_depend")
     dep_set |= {dep.text for dep in deps if dep_evaluate_condition(dep)}
 
-    if os.getenv('TUE_INSTALL_TEST_DEPEND', 'false') == 'true':
-        deps = doc.findall('test_depend')
+    if os.getenv("TUE_INSTALL_TEST_DEPEND", "false") == "true":
+        deps = doc.findall("test_depend")
         dep_set |= {dep.text for dep in deps if dep_evaluate_condition(dep)}
 
-    if os.getenv('TUE_INSTALL_DOC_DEPEND', 'false') == 'true':
-        deps = doc.findall('doc_depend')
+    if os.getenv("TUE_INSTALL_DOC_DEPEND", "false") == "true":
+        deps = doc.findall("doc_depend")
         dep_set |= {dep.text for dep in deps if dep_evaluate_condition(dep)}
 
     print("\n".join(dep_set))
