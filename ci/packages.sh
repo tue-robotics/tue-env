@@ -22,6 +22,12 @@ do
     shift
 done
 
+echo -e "\e[35m\e[1m COMMIT_RANGE = ${COMMIT_RANGE} \e[0m"
+echo -e "\e[35m\e[1m PULL_REQUEST = ${PULL_REQUEST} \e[0m"
+echo -e "\e[35m\e[1m BRANCH       = ${BRANCH} \e[0m"
+echo -e "\e[35m\e[1m ALL          = ${ALL} \e[0m"
+echo -e "\e[35m\e[1m exclude_dirs = ${exclude_dirs} \e[0m"
+
 exclude_dirs=$(echo "$exclude_dirs" | xargs ls -dl 2>/dev/null |  grep "^d" | grep -v "\." | awk '{print $NF}')
 
 if [ -n "$COMMIT_RANGE" ]
@@ -46,7 +52,7 @@ fi
 
 dir_mod=$(echo "$mod_files" | xargs ls -dl 2>/dev/null |  grep "^d" | grep -v "\." | awk '{print $NF}')
 
-if [[ $mod_files == *".travis.yml"* ]] || [[ $mod_files == *"azure-pipelines.yml"* ]] || [ "$ALL" == "true" ]
+if [[ $mod_files == *".travis.yml"* ]] || [[ $mod_files == *"azure-pipelines.yml"* ]] || [[ $mod_files == *".github"* ]] || [ "$ALL" == "true" ]
 then
     # If CI config is modified, build all pkgs (=all sub directories)
     PACKAGES=$(printf "%s\n" ./*/ | cut -f2 -d '/')
@@ -72,6 +78,18 @@ do
 done
 PACKAGES_DICT+="}"
 export PACKAGES_DICT
+
+PACKAGES_LIST="["
+for PKG in $PACKAGES
+do
+    if [[ "$PACKAGES_LIST" != "[" ]]
+    then
+        PACKAGES_LIST+=", "
+    fi
+    PACKAGES_LIST+="'${PKG}'"
+done
+PACKAGES_LIST+="]"
+export PACKAGES_LIST
 
 echo -e "\e[35m\e[1m PACKAGES: \e[0m"
 for PKG in $PACKAGES

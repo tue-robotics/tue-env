@@ -1,0 +1,35 @@
+name: 'Modified packages'
+description: 'Determine modified packages based on commit range'
+inputs:
+  commit-range:
+    description: 'Range of commits to determine modified files'
+    required: true
+  ignored-packages:
+    description: 'Packages to be ignored at all times'
+    required: false
+outputs:
+  packages:
+    description: 'Modified packages'
+    value: ${{ steps.packages.outputs.packages }}
+runs:
+  using: "composite"
+  steps:
+    - name: Dump GitHub context
+      env:
+        GITHUB_CONTEXT: ${{ toJson(github) }}
+      run: |
+        echo "::group::GitHub context"
+        echo "$GITHUB_CONTEXT"
+        echo "::endgroup::"
+      shell: bash
+    - name: Modified packages
+      id: packages
+      run: |
+        PULLREQUEST=${{ github.event.number }}
+        PULLREQUEST=${PULLREQUEST:-false}
+        source ${{ github.action_path }}/../packages.sh --pullrequest=${PULLREQUEST} --branch=${GITHUB_BASE_REF} --commit-range=${{ inputs.commit-range }} --all=${{ github.event_name == 'schedule' }} ${{ inputs.ignored-packages }}
+        echo "::set-output name=packages::${PACKAGES_LIST}"
+      shell: bash --noprofile --norc -o pipefail {0}
+
+
+
