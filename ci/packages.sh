@@ -79,16 +79,11 @@ done
 PACKAGES_DICT+="}"
 export PACKAGES_DICT
 
-PACKAGES_LIST="["
 for PKG in $PACKAGES
 do
-    if [[ "${PACKAGES_LIST}" != "[" ]]
-    then
-        PACKAGES_LIST+=", "
-    fi
-    PACKAGES_LIST+="'${PKG}'"
+    PACKAGES_LIST="${PACKAGES_LIST:+$PACKAGES_LIST, }'${PKG}'"
 done
-PACKAGES_LIST+="]"
+PACKAGES_LIST="[${PACKAGES_LIST}]"
 export PACKAGES_LIST
 
 echo -e "\e[35m\e[1m PACKAGES: \e[0m"
