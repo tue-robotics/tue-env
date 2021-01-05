@@ -76,7 +76,9 @@ do
 done
 PACKAGES_DICT="{${PACKAGES_DICT}}"
 PACKAGES_LIST="[${PACKAGES_LIST}]"
+# shellcheck disable=SC2090
 export PACKAGES_DICT
+# shellcheck disable=SC2090
 export PACKAGES_LIST
 
 echo -e "\e[35m\e[1m PACKAGES: \e[0m"
