@@ -1,0 +1,35 @@
+name: 'TUe CI'
+description: 'Install, build and test package in tue-env environment'
+inputs:
+  package:
+    description: 'Package name'
+    required: true
+runs:
+  using: "composite"
+  steps:
+    - name: Install
+      id: install
+      run: |
+        echo "::group::install-package.sh"
+        GITHUB_REF=${GITHUB_REF#refs/heads/}
+        GITHUB_REF=${GITHUB_REF#refs/tags/}
+        BRANCH=${GITHUB_BASE_REF:-${GITHUB_REF}}
+        PULLREQUEST=${{ github.event.number }}
+        PULLREQUEST=${PULLREQUEST:-false}
+        ${{ github.action_path }}/../install-package.sh --package=${{ inputs.package }} --branch=${BRANCH} --commit=${GITHUB_SHA} --pullrequest=${PULLREQUEST}
+        echo "::endgroup::"
+      shell: bash
+    - name: Build
+      id: build
+      run: |
+        echo "::group::build-package.sh"
+        ${{ github.action_path }}/../build-package.sh --package=${{ inputs.package }}
+        echo "::endgroup::"
+      shell: bash
+    - name: Test
+      id: test
+      run: |
+        echo "::group::test-package.sh"
+        ${{ github.action_path }}/../test-package.sh --package=${{ inputs.package }}
+        echo "::endgroup::"
+      shell: bash
