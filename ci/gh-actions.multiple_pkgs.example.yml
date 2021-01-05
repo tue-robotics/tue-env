@@ -25,6 +25,7 @@ jobs:
     runs-on: ubuntu-latest
     needs: matrix
     strategy:
+      fail-fast: false
       matrix:
         package: ${{ fromJson(needs.matrix.outputs.packages) }}
     steps:
