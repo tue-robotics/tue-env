@@ -14,14 +14,6 @@ outputs:
 runs:
   using: "composite"
   steps:
-    - name: Dump GitHub context
-      env:
-        GITHUB_CONTEXT: ${{ toJson(github) }}
-      run: |
-        echo "::group::GitHub context"
-        echo "$GITHUB_CONTEXT"
-        echo "::endgroup::"
-      shell: bash
     - name: Modified packages
       id: packages
       run: |
