@@ -30,5 +30,3 @@ runs:
         echo -e "\e[35m\e[1m COMMIT_RANGE = ${COMMIT_RANGE} \e[0m"
         echo "::set-output name=commit-range::${COMMIT_RANGE}"
       shell: bash
-
-
