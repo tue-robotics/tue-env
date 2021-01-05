@@ -69,7 +69,9 @@ export PACKAGES
 
 for PKG in $PACKAGES
 do
+    # shellcheck disable=SC2089
     PACKAGES_DICT="${PACKAGES_DICT:+$PACKAGES_DICT, }'${PKG}': {'PACKAGE': '${PKG}'}"
+    # shellcheck disable=SC2089
     PACKAGES_LIST="${PACKAGES_LIST:+$PACKAGES_LIST, }'${PKG}'"
 done
 PACKAGES_DICT="{${PACKAGES_DICT}}"
