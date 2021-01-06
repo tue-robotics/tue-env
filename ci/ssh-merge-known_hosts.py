@@ -75,7 +75,7 @@ for kfile in args.files:
 
 # And now output it all
 for k, v in hostkeys.items():
-    output.write("%s %s %s\n" % (",".join(v["hosts"]), v["key_type"], key))
+    output.write("%s %s %s\n" % (",".join(v["hosts"]), v["key_type"], k))
 
 # Write to output file
 if args.output:
