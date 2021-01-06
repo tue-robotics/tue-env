@@ -35,10 +35,6 @@ runs:
           mkdir -p ${HOME}/.ssh
           for host in ${SSH_KNOWN_HOSTS}
           do
-            echo -e "\e[35m\e[1m ssh-keyscan -t rsa ${host} | ssh-keygen -lf - \e[0m"
-            ssh-keyscan -t rsa "$host" | ssh-keygen -lf -
-            #echo -e "\e[35m\e[1m ssh-keygen -R ${host} || true \e[0m"
-            #ssh-keygen -R "${host}" || true
             echo -e "\e[35m\e[1m ssh-keyscan -t rsa -H \"${host}\" 2>&1 | tee -a ${HOME}/.ssh/known_hosts \e[0m"
             ssh-keyscan -t rsa -H "${host}" 2>&1 | tee -a "${HOME}"/.ssh/known_hosts
           done
