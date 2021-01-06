@@ -22,14 +22,16 @@ runs:
         BRANCH=${GITHUB_BASE_REF:-${GITHUB_REF}}
         PULLREQUEST=${{ github.event.number }}
         PULLREQUEST=${PULLREQUEST:-false}
-        if [[ -n "${{ inputs.ssh-key }}" ]]
+        SSH_KEY="${{ inputs.ssh-key }}"
+        SSH_KNOWN_HOSTS="${{ inputs.ssh-known-hosts }}"
+        if [[ -n "${SSH_KEY}" ]]
         then
           SSH_ARG="--ssh"
-          SSH_KEY_ARG="--ssh-key=${{ inputs.ssh-key }}"
+          SSH_KEY_ARG="--ssh-key=${SSH_KEY}"
         fi
-        if [[ -n "${{ inputs.ssh-key }}" ]]
+        if [[ -n "${SSH_KNOWN_HOSTS}" ]]
         then
-          for host in ${{ inputs.ssh-key }}
+          for host in ${SSH_KNOWN_HOSTS}
           do
             echo "ssh-keyscan -t rsa -H \"${host}\" 2>&1 | tee -a \"${HOME}\"/.ssh/known_hosts"
             ssh-keyscan -t rsa -H "${host}" 2>&1 | tee -a "${HOME}"/.ssh/known_hosts
