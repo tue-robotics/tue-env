@@ -60,6 +60,8 @@ hostkeys = {}
 for kfile in args.files:
     with open(kfile) as kf:
         for line in kf:
+            if line[0] == "#":
+                continue
             line_splitted = line.rstrip().split(" ")
             hosts = line_splitted.pop(0).split(",")
             key_type = line_splitted.pop(0)
