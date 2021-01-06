@@ -7,6 +7,9 @@ inputs:
   ssh-key:
     description: 'SSH key used during install process'
     required: false
+  ssh-known-hosts:
+    description: 'Hosts to be added known_hosts'
+    required: false
 runs:
   using: "composite"
   steps:
@@ -23,6 +26,14 @@ runs:
         then
           SSH_ARG="--ssh"
           SSH_KEY_ARG="--ssh-key=${{ inputs.ssh-key }}"
+        fi
+        if [[ -n "${{ inputs.ssh-key }}" ]]
+        then
+          for host in ${{ inputs.ssh-key }}
+          do
+            echo "ssh-keyscan -t rsa -H \"${host}\" 2>&1 | tee -a \"${HOME}\"/.ssh/known_hosts"
+            ssh-keyscan -t rsa -H "${host}" 2>&1 | tee -a "${HOME}"/.ssh/known_hosts
+          done
         fi
         ${{ github.action_path }}/../install-package.sh --package=${{ inputs.package }} --branch="${BRANCH}" --commit="${GITHUB_SHA}" --pullrequest="${PULLREQUEST}" "${SSH_ARG}" "${SSH_KEY_ARG}"
         echo "::endgroup::"
