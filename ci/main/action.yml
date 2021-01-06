@@ -31,9 +31,13 @@ runs:
         fi
         if [[ -n "${SSH_KNOWN_HOSTS}" ]]
         then
+          echo -e "\e[35m\e[1m mkdir -p ${HOME}/.ssh \e[0m"
+          mkdir -p ${HOME}/.ssh
           for host in ${SSH_KNOWN_HOSTS}
           do
-            echo "ssh-keyscan -t rsa -H \"${host}\" 2>&1 | tee -a \"${HOME}\"/.ssh/known_hosts"
+            echo -e "\e[35m\e[1m ssh-keygen -R ${host} || true \e[0m"
+            ssh-keygen -R "${host}" || true
+            echo -e "\e[35m\e[1m ssh-keyscan -t rsa -H \"${host}\" 2>&1 | tee -a ${HOME}/.ssh/known_hosts \e[0m"
             ssh-keyscan -t rsa -H "${host}" 2>&1 | tee -a "${HOME}"/.ssh/known_hosts
           done
         fi
