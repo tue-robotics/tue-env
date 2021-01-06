@@ -123,8 +123,8 @@ fi
 
 if [ "$USE_SSH" == "true" ]
 then
-    docker exec -t tue-env bash -c "eval $(ssh-agent -s)"
     docker exec -t tue-env bash -c "echo '$SSH_KEY' > ~/.ssh/id_rsa && chmod 700 ~/.ssh/id_rsa"
+    docker exec -t tue-env bash -c "eval $(ssh-agent -s)"
 fi
 
 # Refresh the apt cache in the docker image
