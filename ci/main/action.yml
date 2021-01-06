@@ -4,6 +4,9 @@ inputs:
   package:
     description: 'Package name'
     required: true
+  ssh-key:
+    description: 'SSH key used during install process'
+    required: false
 runs:
   using: "composite"
   steps:
@@ -16,7 +19,12 @@ runs:
         BRANCH=${GITHUB_BASE_REF:-${GITHUB_REF}}
         PULLREQUEST=${{ github.event.number }}
         PULLREQUEST=${PULLREQUEST:-false}
-        ${{ github.action_path }}/../install-package.sh --package=${{ inputs.package }} --branch=${BRANCH} --commit=${GITHUB_SHA} --pullrequest=${PULLREQUEST}
+        if [[ -n "${{ inputs.ssh-key }}" ]]
+        then
+          SSH_ARG="--ssh"
+          SSH_KEY_ARG="--ssh-key=${{ inputs.ssh-key }}"
+        fi
+        ${{ github.action_path }}/../install-package.sh --package=${{ inputs.package }} --branch="${BRANCH}" --commit="${GITHUB_SHA}" --pullrequest="${PULLREQUEST}" "${SSH_ARG}" "${SSH_KEY_ARG}"
         echo "::endgroup::"
       shell: bash
     - name: Build
