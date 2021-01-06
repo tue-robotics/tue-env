@@ -69,8 +69,7 @@ for kfile in args.files:
                 hostkeys[key]["hosts"] = []
             hostkeys[key]["key_type"] = key_type
             # Store the host entries, uniquify them
-            for entry in hosts:
-                hostkeys[key]["hosts"].extend(hosts)
+            hostkeys[key]["hosts"].extend(hosts)
 
 # And now output it all
 for k, v in hostkeys.items():
