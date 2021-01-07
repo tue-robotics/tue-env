@@ -325,10 +325,10 @@ function tue-install-git
     then
         tue-install-debug "git clone --recursive $repo $targetdir"
         res=$(git clone --recursive "$repo" "$targetdir" 2>&1)
-        TUE_INSTALL_GIT_PULL_Q+=$targetdir
+        TUE_INSTALL_GIT_PULL_Q+=:$targetdir:
     else
         # Check if we have already pulled the repo
-        if [[ $TUE_INSTALL_GIT_PULL_Q =~ $targetdir ]]
+        if [[ $TUE_INSTALL_GIT_PULL_Q == *:$targetdir:* ]]
         then
             tue-install-debug "Repo previously pulled, skipping"
             # We have already pulled this repo, skip it
@@ -352,7 +352,7 @@ function tue-install-git
             res=$(git -C "$targetdir" pull --ff-only --prune 2>&1)
             tue-install-debug "res: $res"
 
-            TUE_INSTALL_GIT_PULL_Q+=$targetdir
+            TUE_INSTALL_GIT_PULL_Q+=:$targetdir:
 
             local submodule_sync_res submodule_sync_error_code
             tue-install-debug "git -C $targetdir submodule sync --recursive"
@@ -431,10 +431,10 @@ function tue-install-hg
     then
         tue-install-debug "hg clone $repo $targetdir"
         res=$(hg clone "$repo" "$targetdir" 2>&1)
-        TUE_INSTALL_HG_PULL_Q+=$targetdir
+        TUE_INSTALL_HG_PULL_Q+=:$targetdir:
     else
         # Check if we have already pulled the repo
-        if [[ $TUE_INSTALL_HG_PULL_Q =~ $targetdir ]]
+        if [[ $TUE_INSTALL_HG_PULL_Q == *:$targetdir:* ]]
         then
             tue-install-debug "Repo previously pulled, skipping"
             # We have already pulled this repo, skip it
@@ -460,7 +460,7 @@ function tue-install-hg
 
             tue-install-debug "$res"
 
-            TUE_INSTALL_HG_PULL_Q+=$targetdir
+            TUE_INSTALL_HG_PULL_Q+=:$targetdir:
 
             if [[ $res == *"no changes found" ]]
             then
