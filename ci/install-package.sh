@@ -43,8 +43,11 @@ do
 
         * )
             # unknown option
-            echo -e "\e[35m\e[1m Unknown input argument '$i'. Check CI .yml file \e[0m"
-            exit 1 ;;
+            if [[ -n "$i" ]]
+            then
+                echo -e "\e[35m\e[1m Unknown input argument '$i'. Check CI .yml file \e[0m"
+                exit 1
+            fi ;;
     esac
     shift
 done
@@ -120,8 +123,8 @@ fi
 
 if [ "$USE_SSH" == "true" ]
 then
-    docker exec -t tue-env bash -c "eval $(ssh-agent -s)"
     docker exec -t tue-env bash -c "echo '$SSH_KEY' > ~/.ssh/id_rsa && chmod 700 ~/.ssh/id_rsa"
+    docker exec -t tue-env bash -c "eval $(ssh-agent -s)"
 fi
 
 # Refresh the apt cache in the docker image

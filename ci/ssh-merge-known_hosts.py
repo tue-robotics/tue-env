@@ -60,6 +60,8 @@ hostkeys = {}
 for kfile in args.files:
     with open(kfile) as kf:
         for line in kf:
+            if line[0] == "#":
+                continue
             line_splitted = line.rstrip().split(" ")
             hosts = line_splitted.pop(0).split(",")
             key_type = line_splitted.pop(0)
@@ -69,12 +71,11 @@ for kfile in args.files:
                 hostkeys[key]["hosts"] = []
             hostkeys[key]["key_type"] = key_type
             # Store the host entries, uniquify them
-            for entry in hosts:
-                hostkeys[key]["hosts"].extend(hosts)
+            hostkeys[key]["hosts"].extend(hosts)
 
 # And now output it all
 for k, v in hostkeys.items():
-    output.write("%s %s %s\n" % (",".join(v["hosts"]), v["key_type"], key))
+    output.write("%s %s %s\n" % (",".join(v["hosts"]), v["key_type"], k))
 
 # Write to output file
 if args.output:

@@ -4,6 +4,12 @@ inputs:
   package:
     description: 'Package name'
     required: true
+  ssh-key:
+    description: 'SSH key used during install process'
+    required: false
+  ssh-known-hosts:
+    description: 'Hosts to be added known_hosts'
+    required: false
 runs:
   using: "composite"
   steps:
@@ -16,7 +22,24 @@ runs:
         BRANCH=${GITHUB_BASE_REF:-${GITHUB_REF}}
         PULLREQUEST=${{ github.event.number }}
         PULLREQUEST=${PULLREQUEST:-false}
-        ${{ github.action_path }}/../install-package.sh --package=${{ inputs.package }} --branch=${BRANCH} --commit=${GITHUB_SHA} --pullrequest=${PULLREQUEST}
+        SSH_KEY="${{ inputs.ssh-key }}"
+        SSH_KNOWN_HOSTS="${{ inputs.ssh-known-hosts }}"
+        if [[ -n "${SSH_KEY}" ]]
+        then
+          SSH_ARG="--ssh"
+          SSH_KEY_ARG="--ssh-key=${SSH_KEY}"
+        fi
+        if [[ -n "${SSH_KNOWN_HOSTS}" ]]
+        then
+          echo -e "\e[35m\e[1m mkdir -p ${HOME}/.ssh \e[0m"
+          mkdir -p ${HOME}/.ssh
+          for host in ${SSH_KNOWN_HOSTS}
+          do
+            echo -e "\e[35m\e[1m ssh-keyscan -t rsa -H \"${host}\" 2>&1 | tee -a ${HOME}/.ssh/known_hosts \e[0m"
+            ssh-keyscan -t rsa -H "${host}" 2>&1 | tee -a "${HOME}"/.ssh/known_hosts
+          done
+        fi
+        ${{ github.action_path }}/../install-package.sh --package=${{ inputs.package }} --branch="${BRANCH}" --commit="${GITHUB_SHA}" --pullrequest="${PULLREQUEST}" "${SSH_ARG}" "${SSH_KEY_ARG}"
         echo "::endgroup::"
       shell: bash
     - name: Build
