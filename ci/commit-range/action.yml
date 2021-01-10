@@ -19,8 +19,8 @@ runs:
           then
             COMMIT_RANGE=""
           else
-            OLDEST=$(echo "${commit_list}" | jq 'first.id')
-            NEWEST=$(echo "${commit_list}" | jq 'last.id')
+            OLDEST=$(echo "${commit_list}" | jq 'first.id' | tr -d '"')
+            NEWEST=$(echo "${commit_list}" | jq 'last.id' | tr -d '"')
             OLDEST_PARENTS=($(git show --no-patch --format="%P" ${OLDEST}))
             NUMBER_OLDEST_PARENTS=${#OLDEST_PARENTS[@]}
             COMMIT_RANGE="${OLDEST}^${NUMBER_OLDEST_PARENTS}...${NEWEST}" # Take second parent if possible, see https://stackoverflow.com/a/2222920
