@@ -27,16 +27,6 @@ TUE_REPOS_DIR=$TUE_ENV_DIR/repos
 
 # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # #
 
-function _skip_in_ci
-{
-    # use as followed:
-    # _skip_in_ci && return 0
-    [[ "$CI" == "true" ]] && return 0
-    return 1
-}
-
-# # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # #
-
 function date_stamp
 {
     date +%Y_%m_%d_%H_%M_%S
@@ -91,13 +81,27 @@ function tue-install-debug
 
 # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # #
 
+function tue-install-target-now
+{
+    tue-install-debug "tue-install-target-now $*"
+
+    local target=$1
+
+    tue-install-debug "calling: tue-install-target $target true"
+    tue-install-target "$target" "true"
+    return $?
+}
+
+# # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # #
+
 function tue-install-target
 {
     tue-install-debug "tue-install-target $*"
 
     local target=$1
+    local now=$2
 
-    tue-install-debug "Installing $target"
+    tue-install-debug "Installing target: $target"
 
     # Check if valid target received as input
     if [ ! -d "$TUE_INSTALL_TARGETS_DIR"/"$target" ]
@@ -107,6 +111,8 @@ function tue-install-target
     fi
 
     local parent_target=$TUE_INSTALL_CURRENT_TARGET
+    TUE_INSTALL_CURRENT_TARGET_DIR=$TUE_INSTALL_TARGETS_DIR/$target
+    TUE_INSTALL_CURRENT_TARGET=$target
 
     # If the target has a parent target, add target as a dependency to the parent target
     if [ -n "$parent_target" ] && [ "$parent_target" != "main-loop" ]
@@ -120,15 +126,43 @@ function tue-install-target
         fi
     fi
 
-    if [ ! -f "$TUE_INSTALL_STATE_DIR"/"$target" ]
+    local state_file="$TUE_INSTALL_STATE_DIR"/"$target"
+    local state_file_now="${state_file}-now"
+
+    # Determine if this target needs to be executed
+    local execution_needed="true"
+
+    if [[ "$CI" == "true" ]] && [[ -f "$TUE_INSTALL_CURRENT_TARGET_DIR"/.ci_ignore ]]
     then
-        tue-install-debug "File $TUE_INSTALL_STATE_DIR/$target does not exist, going to installation procedure"
+        tue-install-debug "Running installer in CI mode and file $TUE_INSTALL_CURRENT_TARGET_DIR/.ci_ignore exists. No execution is needed"
+        execution_needed="false"
+    elif [ -f "$state_file_now" ]
+    then
+        tue-install-debug "File $state_file_now does exist, so installation has already been executed with 'now' option. No execution is needed"
+        execution_needed="false"
+    elif [ -f "$state_file" ]
+    then
+        if [ "$now" == "true" ]
+        then
+            tue-install-debug "File $state_file_now doesn't exist, but file $state_file does. So installation has been executed yet, but not with the 'now' option. Going to execute it with 'now' option."
+        else
+            tue-install-debug "File $state_file_now does exist. 'now' is not enabled, so no execution needed."
+            execution_needed="false"
+        fi
+    else
+        if [ "$now" == "true" ]
+        then
+            tue-install-debug "Files $state_file_now and $state_file don't exist. Going to execute with 'now' option."
+        else
+            tue-install-debug "Files $state_file_now and $state_file don't exist. Going to execute without 'now' option."
+        fi
+    fi
 
+    if [ "$execution_needed" == "true" ]
+    then
+        tue-install-debug "Starting installation"
 
-        local install_file=$TUE_INSTALL_TARGETS_DIR/$target/install
-
-        TUE_INSTALL_CURRENT_TARGET_DIR=$TUE_INSTALL_TARGETS_DIR/$target
-        TUE_INSTALL_CURRENT_TARGET=$target
+        local install_file=$TUE_INSTALL_CURRENT_TARGET_DIR/install
 
         # Empty the target's dependency file
         tue-install-debug "Emptying $TUE_INSTALL_DEPENDENCIES_DIR/$target"
@@ -137,27 +171,40 @@ function tue-install-target
 
         if [ -f "$install_file".yaml ]
         then
-            tue-install-debug "Parsing $install_file.yaml"
-            # Do not use 'local cmds=' because it does not preserve command output status ($?)
-            local cmds
-            if cmds=$("$TUE_INSTALL_SCRIPTS_DIR"/parse-install-yaml.py "$install_file".yaml)
+            if [[ "$CI" == "true" ]] && [[ -f "$TUE_INSTALL_CURRENT_TARGET_DIR"/.ci_ignore_yaml ]]
             then
-                for cmd in $cmds
-                do
-                    tue-install-debug "Running following command: $cmd"
-                    ${cmd//^/ }
-                done
+                tue-install-debug "Running in CI mode and found .ci_ignore_yaml file, so skipping install.yaml"
                 target_processed=true
             else
-                tue-install-error "Invalid install.yaml: $cmds"
+                tue-install-debug "Parsing $install_file.yaml"
+                local now_cmd=""
+                [ "$now" == "true" ] && now_cmd="--now"
+                # Do not use 'local cmds=' because it does not preserve command output status ($?)
+                local cmds
+                if cmds=$("$TUE_INSTALL_SCRIPTS_DIR"/parse-install-yaml.py "$install_file".yaml $now_cmd)
+                then
+                    for cmd in $cmds
+                    do
+                        tue-install-debug "Running following command: ${cmd//^/ }"
+                        ${cmd//^/ } || tue-install-error "Error while running: ${cmd//^/ }"
+                    done
+                    target_processed=true
+                else
+                    tue-install-error "Invalid install.yaml: $cmds"
+                fi
             fi
         fi
 
         if [ -f "$install_file".bash ]
         then
-            tue-install-debug "Sourcing $install_file.bash"
-            # shellcheck disable=SC1090
-            source "$install_file".bash
+            if [[ "$CI" == "true" ]] && [[ -f "$TUE_INSTALL_CURRENT_TARGET_DIR"/.ci_ignore_bash ]]
+            then
+                tue-install-debug "Running in CI mode and found .ci_ignore_bash file, so skipping install.bash"
+            else
+                tue-install-debug "Sourcing $install_file.bash"
+                # shellcheck disable=SC1090
+                source "$install_file".bash
+            fi
             target_processed=true
         fi
 
@@ -166,7 +213,12 @@ function tue-install-target
             tue-install-warning "Target $target does not contain a valid install.yaml/bash file"
         fi
 
-        touch "$TUE_INSTALL_STATE_DIR"/"$target"
+        if [ "$now" == "true" ]
+        then
+            touch "$state_file_now"
+        else
+            touch "$state_file"
+        fi
 
     fi
 
@@ -273,10 +325,10 @@ function tue-install-git
     then
         tue-install-debug "git clone --recursive $repo $targetdir"
         res=$(git clone --recursive "$repo" "$targetdir" 2>&1)
-        TUE_INSTALL_GIT_PULL_Q+=$targetdir
+        TUE_INSTALL_GIT_PULL_Q+=:$targetdir:
     else
         # Check if we have already pulled the repo
-        if [[ $TUE_INSTALL_GIT_PULL_Q =~ $targetdir ]]
+        if [[ $TUE_INSTALL_GIT_PULL_Q == *:$targetdir:* ]]
         then
             tue-install-debug "Repo previously pulled, skipping"
             # We have already pulled this repo, skip it
@@ -300,7 +352,7 @@ function tue-install-git
             res=$(git -C "$targetdir" pull --ff-only --prune 2>&1)
             tue-install-debug "res: $res"
 
-            TUE_INSTALL_GIT_PULL_Q+=$targetdir
+            TUE_INSTALL_GIT_PULL_Q+=:$targetdir:
 
             local submodule_sync_res submodule_sync_error_code
             tue-install-debug "git -C $targetdir submodule sync --recursive"
@@ -379,10 +431,10 @@ function tue-install-hg
     then
         tue-install-debug "hg clone $repo $targetdir"
         res=$(hg clone "$repo" "$targetdir" 2>&1)
-        TUE_INSTALL_HG_PULL_Q+=$targetdir
+        TUE_INSTALL_HG_PULL_Q+=:$targetdir:
     else
         # Check if we have already pulled the repo
-        if [[ $TUE_INSTALL_HG_PULL_Q =~ $targetdir ]]
+        if [[ $TUE_INSTALL_HG_PULL_Q == *:$targetdir:* ]]
         then
             tue-install-debug "Repo previously pulled, skipping"
             # We have already pulled this repo, skip it
@@ -408,7 +460,7 @@ function tue-install-hg
 
             tue-install-debug "$res"
 
-            TUE_INSTALL_HG_PULL_Q+=$targetdir
+            TUE_INSTALL_HG_PULL_Q+=:$targetdir:
 
             if [[ $res == *"no changes found" ]]
             then
@@ -704,7 +756,7 @@ function tue-install-system-now
     do
         # Check if pkg is not already installed dpkg -S does not cover previously removed packages
         # Based on https://stackoverflow.com/questions/1298066
-        if ! echo "$dpkg_query" | grep -q "^$pkg install ok installed"
+        if ! grep -q "^$pkg install ok installed" <<< "$dpkg_query"
         then
             pkgs_to_install="$pkgs_to_install $pkg"
         else
@@ -883,7 +935,7 @@ function _tue-install-pip-now
         python"${pv}" -m pip install --user --upgrade pip
         hash -r
     else
-        tue-install-debug "Already pip${pv}>=$desired_pip_version\n"
+        tue-install-debug "Already pip${pv}>=$desired_pip_version"
     fi
 
     local pips_to_check=""
@@ -934,9 +986,9 @@ function _tue-install-pip-now
     if [ -n "$pips_to_install" ]
     then
         echo -e "Going to run the following command:\n"
-        echo -e "yes | python${pv} -m pip install --user $pips_to_install\n"
+        echo -e "python${pv} -m pip install --user $pips_to_install <<< yes\n"
         # shellcheck disable=SC2048,SC2086
-        yes | python"${pv}" -m pip install --user $pips_to_install || tue-install-error "An error occurred while installing pip${pv} packages."
+        python"${pv}" -m pip install --user $pips_to_install <<< yes || tue-install-error "An error occurred while installing pip${pv} packages."
     fi
 
     if [ -n "$git_pips_to_install" ]
@@ -944,9 +996,9 @@ function _tue-install-pip-now
         for pkg in $git_pips_to_install
         do
             echo -e "Going to run the following command:\n"
-            echo -e "yes | python${pv} -m pip install --user $pkg\n"
+            echo -e "python${pv} -m pip install --user $pkg <<< yes\n"
             # shellcheck disable=SC2048,SC2086
-            yes | python"${pv}" -m pip install --user $pkg || tue-install-error "An error occurred while installing pip${pv} packages."
+            python"${pv}" -m pip install --user $pkg <<< yes || tue-install-error "An error occurred while installing pip${pv} packages."
         done
     fi
 }
@@ -1014,11 +1066,20 @@ function tue-install-snap-now
         echo -e "Going to run the following command:\n"
         for pkg in $snaps_to_install
         do
-            echo -e "yes | sudo snap install --classic $pkg\n"
-            tue-install-debug "yes | sudo snap install --classic $pkg"
-            yes | sudo snap install --classic "$pkg" || tue-install-error "An error occurred while installing snap packages."
+            echo -e "sudo snap install --classic $pkg <<< yes\n"
+            tue-install-debug "sudo snap install --classic $pkg <<< yes"
+            sudo snap install --classic "$pkg" <<< yes || tue-install-error "An error occurred while installing snap packages."
         done
     fi
+}
+
+# # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # #
+
+function tue-install-dpkg-now
+{
+    tue-install-debug "tue-install-dpkg-now $*"
+    tue-install-debug "calling: tue-install-dpkg $*"
+    tue-install-dpkg "$@"
 }
 
 # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # #
@@ -1154,7 +1215,7 @@ function tue-install-ros
             ln -s "$repos_dir"/"$sub_dir" "$ros_pkg_dir"
         fi
 
-        if [[ "$NO_ROS_DEPS" != "true" ]]
+        if [[ "$TUE_INSTALL_SKIP_ROS_DEPS" != "all" ]]
         then
             local pkg_xml="$ros_pkg_dir"/package.xml
             if [ -f "$pkg_xml" ]
@@ -1229,29 +1290,35 @@ BRANCH=""
 while test $# -gt 0
 do
     case "$1" in
-        --debug) DEBUG=true
+        --debug)
+            DEBUG="true"
             ;;
-        --no-ros-deps) NO_ROS_DEPS=true
+        --no-ros-deps)
+            export TUE_INSTALL_SKIP_ROS_DEPS="all"
             ;;
         --doc-depend)
-        export TUE_INSTALL_DOC_DEPEND=true
+            [[ "$TUE_INSTALL_SKIP_ROS_DEPS" == "all" ]] && export TUE_INSTALL_SKIP_ROS_DEPS="normal"
+            export TUE_INSTALL_DOC_DEPEND="true"
             ;;
         --no-doc-depend)
-        export TUE_INSTALL_DOC_DEPEND=false
+            export TUE_INSTALL_DOC_DEPEND="false"
             ;;
         --test-depend)
-        export TUE_INSTALL_TEST_DEPEND=true
+            [[ "$TUE_INSTALL_SKIP_ROS_DEPS" == "all" ]] && export TUE_INSTALL_SKIP_ROS_DEPS="normal"
+            export TUE_INSTALL_TEST_DEPEND="true"
             ;;
         --no-test-depend)
-        export TUE_INSTALL_TEST_DEPEND=false
+            export TUE_INSTALL_TEST_DEPEND="false"
             ;;
         --branch*)
             # shellcheck disable=SC2001
             BRANCH=$(echo "$1" | sed -e 's/^[^=]*=//g')
             ;;
-        --*) echo "unknown option $1"
+        --*)
+            echo "unknown option $1"
             ;;
-        *) targets="$targets $1"
+        *)
+            targets="$targets $1"
             ;;
     esac
     shift
@@ -1306,7 +1373,20 @@ if [[ -z "${targets// }" ]] #If only whitespace
 then
     # If no targets are provided, update all installed targets
     targets=$(ls "$TUE_INSTALL_INSTALLED_DIR")
+else
+    raw_targets=$targets
+    targets=""
+    for target in $raw_targets
+    do
+        resolved_targets="$(find "$TUE_INSTALL_TARGETS_DIR" -maxdepth 1 -name "$target" -type d -printf "%P ")"
+        if [ -z "$resolved_targets" ] # So the missing target is handled by _missing_targets_check
+        then
+            resolved_targets="$target"
+        fi
+        targets="${targets:+$targets }$resolved_targets"
+    done
 fi
+
 
 # Check if all installed targets exist in the targets repo
 _missing_targets_check "$targets"

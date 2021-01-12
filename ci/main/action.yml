@@ -1,0 +1,58 @@
+name: 'TUe CI'
+description: 'Install, build and test package in tue-env environment'
+inputs:
+  package:
+    description: 'Package name'
+    required: true
+  ssh-key:
+    description: 'SSH key used during install process'
+    required: false
+  ssh-known-hosts:
+    description: 'Hosts to be added known_hosts'
+    required: false
+runs:
+  using: "composite"
+  steps:
+    - name: Install
+      id: install
+      run: |
+        echo "::group::install-package.sh"
+        GITHUB_REF=${GITHUB_REF#refs/heads/}
+        GITHUB_REF=${GITHUB_REF#refs/tags/}
+        BRANCH=${GITHUB_BASE_REF:-${GITHUB_REF}}
+        PULLREQUEST=${{ github.event.number }}
+        PULLREQUEST=${PULLREQUEST:-false}
+        SSH_KEY="${{ inputs.ssh-key }}"
+        SSH_KNOWN_HOSTS="${{ inputs.ssh-known-hosts }}"
+        if [[ -n "${SSH_KEY}" ]]
+        then
+          SSH_ARG="--ssh"
+          SSH_KEY_ARG="--ssh-key=${SSH_KEY}"
+        fi
+        if [[ -n "${SSH_KNOWN_HOSTS}" ]]
+        then
+          echo -e "\e[35m\e[1m mkdir -p ${HOME}/.ssh \e[0m"
+          mkdir -p ${HOME}/.ssh
+          for host in ${SSH_KNOWN_HOSTS}
+          do
+            echo -e "\e[35m\e[1m ssh-keyscan -t rsa -H \"${host}\" 2>&1 | tee -a ${HOME}/.ssh/known_hosts \e[0m"
+            ssh-keyscan -t rsa -H "${host}" 2>&1 | tee -a "${HOME}"/.ssh/known_hosts
+          done
+        fi
+        ${{ github.action_path }}/../install-package.sh --package=${{ inputs.package }} --branch="${BRANCH}" --commit="${GITHUB_SHA}" --pullrequest="${PULLREQUEST}" "${SSH_ARG}" "${SSH_KEY_ARG}"
+        echo "::endgroup::"
+      shell: bash
+    - name: Build
+      id: build
+      run: |
+        echo "::group::build-package.sh"
+        ${{ github.action_path }}/../build-package.sh --package=${{ inputs.package }}
+        echo "::endgroup::"
+      shell: bash
+    - name: Test
+      id: test
+      run: |
+        echo "::group::test-package.sh"
+        ${{ github.action_path }}/../test-package.sh --package=${{ inputs.package }}
+        echo "::endgroup::"
+      shell: bash
