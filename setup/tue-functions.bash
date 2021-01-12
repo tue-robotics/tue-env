@@ -819,9 +819,9 @@ function tue-get
     Possible options:
         --debug          - Shows more debugging information
         --no-ros-deps    - Do not install ROS dependencies (Breaks the dependency tree, not all setup files will be sourced)
-        --doc-depend     - Do install doc dependencies, overules config
+        --doc-depend     - Do install doc dependencies, overules config and --no-ros-deps
         --no-doc-depend  - Do not install doc dependencies, overules config
-        --test-depend    - Do install test dependencies, overules config
+        --test-depend    - Do install test dependencies, overules config and --no-ros-deps
         --no-test-depend - Do not install test dependencies, overules config
         --branch=name    - Try to checkout this branch if exists
 
@@ -859,7 +859,7 @@ function tue-get
                 #Skip options
                 [[ $target = '--'* ]] && continue
 
-                if [ ! -f "$TUE_ENV_DIR"/.env/dependencies/"$target" ]
+                if [ -z "$(find "$TUE_ENV_DIR"/.env/dependencies -maxdepth 1 -name "$target" -type f -printf "%P ")" ]
                 then
                     echo "[tue-get] Package '$target' is not installed."
                     error_code=1
@@ -875,19 +875,24 @@ function tue-get
             then
                 _generate_setup_file
                 # shellcheck disable=SC1090
-                source ~/.bashrc
+                source "$TUE_DIR"/setup.bash
             fi
         fi
 
         return $error_code
     elif [[ $cmd == "remove" ]]
     then
+        local targets_to_remove=""
         for target in "$@"
         do
-            if [ ! -f "$tue_installed_dir"/"$target" ]
+            local resolved_targets
+            resolved_targets="$(find "$tue_installed_dir" -maxdepth 1 -name "$target" -type f -printf "%P ")"
+            if [ -z "$resolved_targets" ]
             then
                 echo "[tue-get] Package '$target' is not installed."
                 error_code=1
+            else
+                targets_to_remove="${targets_to_remove:+$targets_to_remove }$resolved_targets"
             fi
         done
 
@@ -906,7 +911,7 @@ function tue-get
         fi
 
         touch /tmp/tue_get_remove_lock
-        for target in "$@"
+        for target in $targets_to_remove
         do
             local target_error=0
             _remove_recursively "$target"

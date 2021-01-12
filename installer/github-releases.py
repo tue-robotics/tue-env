@@ -18,11 +18,11 @@ def get_release(url, filename, output):
     :param output: Path of the output location
     """
     parsed_json = json.loads(urllib.request.urlopen(url).read())
-    asset_re = re.compile(r'{}'.format(filename))
+    asset_re = re.compile(r"{}".format(filename))
 
-    assets = [asset for asset in parsed_json['assets'] if asset_re.match(asset['name'])]
+    assets = [asset for asset in parsed_json["assets"] if asset_re.match(asset["name"])]
 
-    browser_download_urls = [asset['browser_download_url'] for asset in assets]
+    browser_download_urls = [asset["browser_download_url"] for asset in assets]
 
     if not browser_download_urls:
         return 1
@@ -51,16 +51,16 @@ def download_url(url, root, filename=None, md5=None):
 
     # check if file is already present locally
     if check_integrity(fpath, md5):
-        print('Using downloaded and verified file: ' + fpath)
-    else:   # download the file
+        print("Using downloaded and verified file: " + fpath)
+    else:  # download the file
         try:
-            print('Downloading ' + url + ' to ' + fpath)
+            print("Downloading " + url + " to " + fpath)
             urllib.request.urlretrieve(url, fpath, reporthook=reporthook)
             print()
         except (urllib.error.URLError, IOError) as error:
-            if url[:5] == 'https':
-                url = url.replace('https:', 'http:')
-                print('Failed download. Trying https -> http instead. Downloading ' + url + ' to ' + fpath)
+            if url[:5] == "https":
+                url = url.replace("https:", "http:")
+                print("Failed download. Trying https -> http instead. Downloading " + url + " to " + fpath)
                 urllib.request.urlretrieve(url, fpath, reporthook=reporthook)
                 print()
             else:
@@ -80,16 +80,17 @@ def reporthook(count, block_size, total_size):
     progress_size = int(count * block_size)
     speed = int(progress_size / (1024 * duration))
     percent = int(count * block_size * 100 / total_size)
-    sys.stdout.write("\r...%d%%, %d MB, %d KB/s, %d seconds passed" % (percent, progress_size / (1024 * 1024),
-                                                                       speed, duration))
+    sys.stdout.write(
+        "\r...%d%%, %d MB, %d KB/s, %d seconds passed" % (percent, progress_size / (1024 * 1024), speed, duration)
+    )
     sys.stdout.flush()
 
 
 def calculate_md5(fpath, chunk_size=1024 * 1024):
     """Function to calculate md5 checksum"""
     md5 = hashlib.md5()
-    with open(fpath, 'rb') as f:
-        for chunk in iter(lambda: f.read(chunk_size), b''):
+    with open(fpath, "rb") as f:
+        for chunk in iter(lambda: f.read(chunk_size), b""):
             md5.update(chunk)
     return md5.hexdigest()
 
@@ -119,32 +120,26 @@ def main():
     release_group = parser.add_mutually_exclusive_group()
     tags_group = parser.add_mutually_exclusive_group()
 
-    release_group.add_argument("--create",
-                               help="Create new release",
-                               action="store_true")
+    release_group.add_argument("--create", help="Create new release", action="store_true")
 
-    release_group.add_argument("--get",
-                               help="Get the latest release if no version is specified",
-                               action="store_true")
+    release_group.add_argument("--get", help="Get the latest release if no version is specified", action="store_true")
 
-    tags_group.add_argument("-l", "--latest",
-                            help="Get the latest release",
-                            action="store_true")
+    tags_group.add_argument("-l", "--latest", help="Get the latest release", action="store_true")
 
-    tags_group.add_argument("-t", "--tag",
-                            help="Release tag (default=latest for --get)",
-                            type=str)
+    tags_group.add_argument("-t", "--tag", help="Release tag (default=latest for --get)", type=str)
 
-    parser.add_argument("-u", "--url",
-                        help="Short url of the github repository without .git extension, eg: tue-robotics/tue-env",
-                        required=True)
+    parser.add_argument(
+        "-u",
+        "--url",
+        help="Short url of the github repository without .git extension, eg: tue-robotics/tue-env",
+        required=True,
+    )
 
-    parser.add_argument("-o", "--output",
-                        help="Absolute path of the data directory (used for both creating"
-                        "and getting releases)")
+    parser.add_argument(
+        "-o", "--output", help="Absolute path of the data directory (used for both creating" "and getting releases)"
+    )
 
-    parser.add_argument("filename",
-                        help="Short name of the tar file to upload or download")
+    parser.add_argument("filename", help="Short name of the tar file to upload or download")
 
     args = parser.parse_args()
 
@@ -157,9 +152,9 @@ def main():
     # Get release
     if args.get:
         if args.latest:
-            url += '/latest'
+            url += "/latest"
         elif args.tag:
-            url += '/tags/{}'.format(args.tag)
+            url += "/tags/{}".format(args.tag)
         else:
             print("With --get option either specify --latest or a specific tag using --tag")
             return 1
@@ -168,7 +163,7 @@ def main():
 
     # Create release
     if args.tag:
-        url += '/tags/{}'.format(args.tag)
+        url += "/tags/{}".format(args.tag)
     else:
         print("With --create option, --tag is a required argument")
         return 1
