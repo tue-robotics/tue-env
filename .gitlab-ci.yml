@@ -22,6 +22,7 @@ services:
 variables:
   DOCKER_TLS_CERTDIR: "/certs"
   DOCKER_DRIVER: overlay2
+  GIT_STRATEGY: clone
 
 before_script:
   - docker info

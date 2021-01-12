@@ -23,6 +23,7 @@ variables:
   DOCKER_TLS_CERTDIR: "/certs"
   DOCKER_DRIVER: overlay2
   SHARED_PATH: "/builds/shared/$CI_PROJECT_PATH"
+  GIT_STRATEGY: clone
 
 before_script:
   - docker info
