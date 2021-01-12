@@ -14,12 +14,16 @@ runs:
       run: |
         if [ "${GITHUB_EVENT_NAME}" == "push" ]
         then
-          COMMIT_RANGE=${{ github.event.compare }}
-          if [[ "${COMMIT_RANGE}" == *"..."* ]] && [[ $(echo "${commit_list}" | jq '. | length') > 1 ]]
+          NUMBER_COMMITS=$(echo "${commit_list}" | jq 'length')
+          if [ ${NUMBER_COMMITS} -le 1 ]
           then
-            COMMIT_RANGE=${COMMIT_RANGE#https://github.com/${{ github.repository }}/compare/}
-          else
             COMMIT_RANGE=""
+          else
+            OLDEST=$(echo "${commit_list}" | jq 'first.id' | tr -d '"')
+            NEWEST=$(echo "${commit_list}" | jq 'last.id' | tr -d '"')
+            OLDEST_PARENTS=($(git show --no-patch --format="%P" ${OLDEST}))
+            NUMBER_OLDEST_PARENTS=${#OLDEST_PARENTS[@]}
+            COMMIT_RANGE="${OLDEST}^${NUMBER_OLDEST_PARENTS}...${NEWEST}" # Take second parent if possible, see https://stackoverflow.com/a/2222920
           fi
         elif [ "${GITHUB_EVENT_NAME}" == "pull_request" ]
         then
