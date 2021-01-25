@@ -46,7 +46,7 @@ Build Docker Image:
   script:
     - docker info
     - docker buildx inspect
-    - ci/build-docker-image.sh --ssh --image="$CI_REGISTRY/avular/common-tools/package-manager/tue-env" --branch=${CI_MERGE_REQUEST_TARGET_BRANCH_NAME:-$CI_COMMIT_BRANCH} --commit="$CI_COMMIT_SHA" --pull_request=${CI_MERGE_REQUEST_IID:-"false"} --ref-name="merge-requests" --user="gitlab-ci-token" --password="$CI_JOB_TOKEN" --registry="$CI_REGISTRY"
+    - ci/build-docker-image.sh --ssh --image="$CI_REGISTRY/avular/common-tools/package-manager/tue-env" --branch=${CI_MERGE_REQUEST_TARGET_BRANCH_NAME:-$CI_COMMIT_BRANCH} --commit="$CI_COMMIT_SHA" --pull_request=${CI_MERGE_REQUEST_IID:-"false"} --ref-name="merge-requests" --user="gitlab-ci-token" --password="$CI_JOB_TOKEN" --registry="$CI_REGISTRY" --platforms="linux/arm64,linux/amd64"
   rules:
     - if: '$MIRROR_UPSTREAM == "true"'
       when: never
