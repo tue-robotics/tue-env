@@ -14,43 +14,47 @@
 #      - REMOTE_BRANCH
 #      - LOCAL_REMOTE_BRANCH
 
-image: docker:19.03.1
+# Base config that other jobs extend from
+.base:
+  variables:
+    GIT_STRATEGY: clone
 
-services:
-  - docker:19.03.1-dind
+  tags:
+    - vm
+    - linux
+    - ubuntu
+    - docker
 
-variables:
-  DOCKER_TLS_CERTDIR: "/certs"
-  DOCKER_DRIVER: overlay2
-  GIT_STRATEGY: clone
+  before_script:
+    # To build and push the docker image of private repository to the container registry SSH
+    # needs to be setup in the CI environment
+    - eval $(ssh-agent -s)
+    - |
+      cat <<EOT | ssh-add -
+      -----BEGIN OPENSSH PRIVATE KEY-----
+      ${CI_SSH_KEY_PRIVATE}
+      -----END OPENSSH PRIVATE KEY-----
+      EOT
+    - mkdir -p ~/.ssh
+    - chmod 700 ~/.ssh
+    - ssh-keyscan gitlab.com >> ~/.ssh/known_hosts
+    - chmod 644 ~/.ssh/known_hosts
 
-before_script:
-  - docker info
-  - apk --update add git bash
-  - which ssh-agent || ( apk --update add openssh-client )
-  # To build and push the docker image of private repository to the container registry SSH
-  # needs to be setup in the CI environment
-  - eval $(ssh-agent -s)
-  - |
-    cat <<EOT | ssh-add -
-    -----BEGIN OPENSSH PRIVATE KEY-----
-    ${CI_SSH_KEY_PRIVATE}
-    -----END OPENSSH PRIVATE KEY-----
-    EOT
-  - mkdir -p ~/.ssh
-  - chmod 700 ~/.ssh
-  - ssh-keyscan gitlab.com >> ~/.ssh/known_hosts
-  - chmod 644 ~/.ssh/known_hosts
-
+# Job to build docker image
 Build Docker Image:
+  extends: .base
   script:
-    - ci/build-docker-image.sh --ssh --image="$CI_REGISTRY/avular/common-tools/package-manager/tue-env" --branch=${CI_MERGE_REQUEST_TARGET_BRANCH_NAME:-$CI_COMMIT_BRANCH} --commit="$CI_COMMIT_SHA" --pull_request=${CI_MERGE_REQUEST_IID:-"false"} --ref-name="merge-requests" --user="gitlab-ci-token" --password="$CI_JOB_TOKEN" --registry="$CI_REGISTRY"
+    - docker info
+    - docker buildx inspect
+    - ci/build-docker-image.sh --ssh --image="$CI_REGISTRY/avular/common-tools/package-manager/tue-env" --branch=${CI_MERGE_REQUEST_TARGET_BRANCH_NAME:-$CI_COMMIT_BRANCH} --commit="$CI_COMMIT_SHA" --pull_request=${CI_MERGE_REQUEST_IID:-"false"} --ref-name="merge-requests" --user="gitlab-ci-token" --password="$CI_JOB_TOKEN" --registry="$CI_REGISTRY" --platforms="linux/arm64,linux/amd64"
   rules:
     - if: '$MIRROR_UPSTREAM == "true"'
       when: never
     - when: always
 
+# Job to mirror upstream
 Mirror Upstream:
+  extends: .base
   script:
     - ci/mirror-upstream.bash --upstream-remote-url="$REMOTE_URL" --local-remote-url="git@gitlab.com:$CI_PROJECT_PATH" --upstream-remote-branch="$REMOTE_BRANCH" --local-remote-branch="$LOCAL_REMOTE_BRANCH" --user="$GITLAB_USER_NAME" --email="$GITLAB_USER_EMAIL"
   rules:

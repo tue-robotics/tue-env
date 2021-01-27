@@ -45,6 +45,9 @@ do
         --ref-name=* )
             CI_REF_NAME="${i#*=}" ;;
 
+        --platforms=* )
+            CI_DOCKER_PLATFORMS="${i#*=}" ;;
+
         * )
             echo -e "Error! Unknown input variable '$i'"
             exit 1 ;;
@@ -61,9 +64,9 @@ echo -e "\e[35m\e[1m CI_REF_NAME            = ${CI_REF_NAME} \e[0m"
 image_substring=$(basename "$CI_DOCKER_IMAGE_NAME")
 case $image_substring in
     tue-env )
-        BASE_IMAGE="ubuntu:18.04" ;;
+        BASE_IMAGE="ubuntu:20.04" ;;
     tue-env-cuda )
-        BASE_IMAGE="nvidia/cuda:10.0-cudnn7-devel-ubuntu18.04" ;;
+        BASE_IMAGE="nvidia/cuda:10.0-cudnn7-devel-ubuntu20.04" ;;
     * )
         echo -e "Error! Unknown image tag subname provided."
         echo -e "Supported names are 'tue-env' or 'tue-env-cuda'"
@@ -99,10 +102,15 @@ then
     DOCKER_SSH_ARGS="--ssh=default"
 fi
 
-# build the Docker image (this will use the Dockerfile in the root of the repo)
-DOCKER_BUILDKIT=1 docker build $DOCKER_SSH_ARGS --build-arg BRANCH="$CI_BRANCH" --build-arg \
-    PULL_REQUEST="$CI_PULL_REQUEST" --build-arg COMMIT="$CI_COMMIT" --build-arg \
-    CI="$CI" --build-arg REF_NAME="$CI_REF_NAME" --build-arg BASE_IMAGE="$BASE_IMAGE" -t "$CI_DOCKER_IMAGE_NAME" .
+if [ -n "$CI_DOCKER_PLATFORMS" ]
+then
+    DOCKER_PLATFORMS="--platform=${CI_DOCKER_PLATFORMS}"
+    echo -e "\e[35m\e[1m Creating a new docker context for multi arch builds \e[0m"
+    docker context create multiarch-environment
+    echo -e "\e[35m\e[1m Creating a new buildx builder for multi arch builds \e[0m"
+    docker buildx create --name multiarchbuilder --driver docker-container --use multiarch-environment
+    docker buildx ls
+fi
 
 # push the new Docker image to the Docker registry only after acceptance of pull request
 if [ "$CI_PULL_REQUEST" == "false" ]
@@ -110,10 +118,20 @@ then
     # Authenticate to the Docker registry
     echo -e "\e[35m\e[1m Authenticating docker registry $CI_DOCKER_REGISTRY \e[0m"
     echo "$CI_DOCKER_PASSWORD" | docker login "$CI_DOCKER_REGISTRY" -u "$CI_DOCKER_USER" --password-stdin
+    DOCKER_PUSH=true
+else
+    DOCKER_PUSH=false
+fi
 
-    echo -e "\e[35m\e[1m docker push $CI_DOCKER_IMAGE_NAME \e[0m"
-    docker push "$CI_DOCKER_IMAGE_NAME"
+# build the Docker image (this will use the Dockerfile in the root of the repo)
+echo -e "\e[35m\e[1m Building docker image with push=${DOCKER_PUSH} \e[0m"
+docker buildx build --output=type=image,push="$DOCKER_PUSH" "$DOCKER_SSH_ARGS" "$DOCKER_PLATFORMS" \
+    --build-arg BRANCH="$CI_BRANCH" --build-arg PULL_REQUEST="$CI_PULL_REQUEST" --build-arg COMMIT="$CI_COMMIT" \
+    --build-arg CI="$CI" --build-arg REF_NAME="$CI_REF_NAME" --build-arg BASE_IMAGE="$BASE_IMAGE" \
+    -t "$CI_DOCKER_IMAGE_NAME" .
 
-    echo -e "\e[35m\e[1m Succeeded, see: \e[0m"
-    docker images
+if [ "$DOCKER_PUSH" == "true" ]
+then
+    echo -e "\e[35m\e[1m Inspecting the pushed image ${CI_DOCKER_IMAGE_NAME} \e[0m"
+    docker buildx imagetools inspect "${CI_DOCKER_IMAGE_NAME}"
 fi

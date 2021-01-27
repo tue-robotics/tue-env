@@ -94,7 +94,7 @@ def main():
                 source_type = source["type"]
 
                 if source_type in ["svn", "git", "hg"]:
-                    sub_dir = source.get("sub_dir", '.')
+                    sub_dir = source.get("sub-dir", '.')
 
                     command = "tue-install-ros {0} {1} {2}".format(source_type, source["url"], sub_dir)
                     if "version" in source:
