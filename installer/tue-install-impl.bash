@@ -730,12 +730,7 @@ function tue-install-system
 {
     tue-install-debug "tue-install-system $*"
 
-    if [ -z "$1" ]
-    then
-        tue-install-error "Invalid tue-install-system call: needs package as argument."
-    fi
-    tue-install-debug "Adding $1 to apt list"
-    TUE_INSTALL_SYSTEMS="$1 $TUE_INSTALL_SYSTEMS"
+    tue-install-system-now "$*"
 }
 
 # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # #
@@ -828,8 +823,8 @@ function tue-install-ppa
     then
         tue-install-error "Invalid tue-install-ppa call: needs to start with 'ppa:' or 'deb ' ($ppa)"
     fi
-    tue-install-debug "Adding $ppa to PPA list"
-    TUE_INSTALL_PPA="${TUE_INSTALL_PPA} ${ppa// /^}"  # Replace space by ^ to support for-loops later
+
+    tue-install-ppa-now "$*"
 }
 
 # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # #
