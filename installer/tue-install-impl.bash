@@ -899,10 +899,8 @@ function _tue-install-pip
     then
         tue-install-error "Invalid tue-install-pip${pv} call: needs package as argument."
     fi
-    tue-install-debug "Adding $1 to pip${pv} list"
-    local list=TUE_INSTALL_PIP"${pv}"S
-    # shellcheck disable=SC2140
-    declare -g "$list"="$1 ${!list}"
+
+    _tue-install-pip-now "${pv}" "$@"
 }
 
 # Needed for backward compatibility
