@@ -1225,10 +1225,7 @@ TUE_INSTALL_SNAPS=
 TUE_INSTALL_WARNINGS=
 TUE_INSTALL_INFOS=
 
-tue-install-system-now git python3-pip curl jq
-
-tue-install-pip3-now catkin-pkg PyYAML
-
+tue-install-system-now git python3-pip curl jq python3-yaml python3-catkin-pkg
 
 # Handling of targets
 if [[ -z "${targets// }" ]] #If only whitespace
