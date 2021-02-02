@@ -17,6 +17,9 @@ fi
 
 # Set ROS version
 case $DISTRIB_RELEASE in
+    "18.04")
+        TUE_ROS_DISTRO=melodic
+        ;;
     "20.04")
         TUE_ROS_DISTRO=noetic
         ;;
