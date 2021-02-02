@@ -1049,12 +1049,6 @@ function tue-install-ros
     if [ "$install_type" = "git" ]
     then
         tue-install-git "$src" "$repos_dir" "$version"
-    elif [ "$install_type" = "hg" ]
-    then
-        tue-install-hg "$src" "$repos_dir" "$version"
-    elif [ "$install_type" = "svn" ]
-    then
-        tue-install-svn "$src" "$repos_dir" "$version"
     else
         tue-install-error "Unknown ros install type: '${install_type}'"
     fi
@@ -1215,7 +1209,6 @@ TUE_INSTALL_STATE_DIR=$TUE_INSTALL_GENERAL_STATE_DIR/$stamp
 mkdir -p "$TUE_INSTALL_STATE_DIR"
 
 TUE_INSTALL_GIT_PULL_Q=()
-TUE_INSTALL_HG_PULL_Q=()
 
 TUE_INSTALL_SYSTEMS=
 TUE_INSTALL_PPA=
