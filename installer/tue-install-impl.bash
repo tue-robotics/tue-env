@@ -71,7 +71,7 @@ function tue-install-info
 
 function tue-install-debug
 {
-    if [ "$DEBUG" = "true" ]
+    if [ "$DEBUG" == "true" ]
     then
         echo -e "\e[0;34m[$TUE_INSTALL_CURRENT_TARGET] DEBUG: $*\033[0m"  | tee --append "$INSTALL_DETAILS_FILE"
     else
@@ -1120,7 +1120,7 @@ function tue-install-ros
     # First of all, make sure ROS itself is installed
     tue-install-target ros || tue-install-error "Failed to install target 'ROS'"
 
-    if [ "$install_type" = "system" ]
+    if [ "$install_type" == "system" ]
     then
         tue-install-debug "tue-install-system ros-$TUE_ROS_DISTRO-$src"
         tue-install-system ros-"$TUE_ROS_DISTRO"-"$src"
@@ -1138,7 +1138,7 @@ function tue-install-ros
 
     local ros_pkg_dir="$ROS_PACKAGE_INSTALL_DIR"/"$ros_pkg_name"
     local repos_dir
-    if [ "$install_type" = "git" ]
+    if [ "$install_type" == "git" ]
     then
         local output
         output=$(_git_split_url "$src")
@@ -1176,13 +1176,13 @@ function tue-install-ros
     fi
     tue-install-debug "repos_dir: $repos_dir"
 
-    if [ "$install_type" = "git" ]
+    if [ "$install_type" == "git" ]
     then
         tue-install-git "$src" "$repos_dir" "$version"
-    elif [ "$install_type" = "hg" ]
+    elif [ "$install_type" == "hg" ]
     then
         tue-install-hg "$src" "$repos_dir" "$version"
-    elif [ "$install_type" = "svn" ]
+    elif [ "$install_type" == "svn" ]
     then
         tue-install-svn "$src" "$repos_dir" "$version"
     else
