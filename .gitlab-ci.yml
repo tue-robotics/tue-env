@@ -40,17 +40,25 @@
     - ssh-keyscan gitlab.com >> ~/.ssh/known_hosts
     - chmod 644 ~/.ssh/known_hosts
 
-# Job to build docker image
-Build Docker Image:
+# Job template to build docker image
+# variables to be defined:
+#   1.  TARGET_PLATFORM (linux/amd64, linux/arm64)
+.build_docker_image_template: &build_docker_image
   extends: .base
   script:
     - docker info
     - docker buildx inspect
-    - ci/build-docker-image.sh --ssh --image="$CI_REGISTRY/avular/common-tools/package-manager/tue-env" --branch=${CI_MERGE_REQUEST_TARGET_BRANCH_NAME:-$CI_COMMIT_BRANCH} --commit="$CI_COMMIT_SHA" --pull_request=${CI_MERGE_REQUEST_IID:-"false"} --ref-name="merge-requests" --user="gitlab-ci-token" --password="$CI_JOB_TOKEN" --registry="$CI_REGISTRY" --platforms="linux/arm64,linux/amd64"
+    - ci/build-docker-image.sh --ssh --image="$CI_REGISTRY/avular/common-tools/package-manager/tue-env" --branch=${CI_MERGE_REQUEST_TARGET_BRANCH_NAME:-$CI_COMMIT_BRANCH} --commit="$CI_COMMIT_SHA" --pull_request=${CI_MERGE_REQUEST_IID:-"false"} --ref-name="merge-requests" --user="gitlab-ci-token" --password="$CI_JOB_TOKEN" --registry="$CI_REGISTRY" --platforms="$TARGET_PLATFORM"
   rules:
     - if: '$MIRROR_UPSTREAM == "true"'
       when: never
     - when: always
+
+# Build docker image job for linux/arm64
+linux/arm64:
+  variables:
+    TARGET_PLATFORM: "linux/arm64"
+  <<: *build_docker_image
 
 # Job to mirror upstream
 Mirror Upstream:

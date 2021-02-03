@@ -81,7 +81,7 @@ function tue-install-info
 
 function tue-install-debug
 {
-    if [ "$DEBUG" = "true" ]
+    if [ "$DEBUG" == "true" ]
     then
         echo -e "\e[0;34m[$TUE_INSTALL_CURRENT_TARGET] DEBUG: $*\033[0m"  | tee --append "$INSTALL_DETAILS_FILE"
     else
@@ -990,7 +990,7 @@ function tue-install-ros
     # First of all, make sure ROS itself is installed
     tue-install-target ros || tue-install-error "Failed to install target 'ROS'"
 
-    if [ "$install_type" = "system" ]
+    if [ "$install_type" == "system" ]
     then
         tue-install-debug "tue-install-system ros-$TUE_ROS_DISTRO-$src"
         tue-install-system ros-"$TUE_ROS_DISTRO"-"$src"
@@ -1008,7 +1008,7 @@ function tue-install-ros
 
     local ros_pkg_dir="$ROS_PACKAGE_INSTALL_DIR"/"$ros_pkg_name"
     local repos_dir
-    if [ "$install_type" = "git" ]
+    if [ "$install_type" == "git" ]
     then
         local output
         output=$(_git_split_url "$src")
@@ -1046,15 +1046,9 @@ function tue-install-ros
     fi
     tue-install-debug "repos_dir: $repos_dir"
 
-    if [ "$install_type" = "git" ]
+    if [ "$install_type" == "git" ]
     then
         tue-install-git "$src" "$repos_dir" "$version"
-    elif [ "$install_type" = "hg" ]
-    then
-        tue-install-hg "$src" "$repos_dir" "$version"
-    elif [ "$install_type" = "svn" ]
-    then
-        tue-install-svn "$src" "$repos_dir" "$version"
     else
         tue-install-error "Unknown ros install type: '${install_type}'"
     fi
@@ -1215,7 +1209,6 @@ TUE_INSTALL_STATE_DIR=$TUE_INSTALL_GENERAL_STATE_DIR/$stamp
 mkdir -p "$TUE_INSTALL_STATE_DIR"
 
 TUE_INSTALL_GIT_PULL_Q=()
-TUE_INSTALL_HG_PULL_Q=()
 
 TUE_INSTALL_SYSTEMS=
 TUE_INSTALL_PPA=
@@ -1225,10 +1218,11 @@ TUE_INSTALL_SNAPS=
 TUE_INSTALL_WARNINGS=
 TUE_INSTALL_INFOS=
 
-tue-install-system-now git python3-pip curl jq
+tue-install-system-now git python3-pip curl jq python3-yaml
 
-tue-install-pip3-now catkin-pkg PyYAML
-
+# Install using pip3 because the system package has conflict with
+# the debian package python3-catkin-pkg-modules provided by ROS
+tue-install-pip3-now catkin-pkg
 
 # Handling of targets
 if [[ -z "${targets// }" ]] #If only whitespace

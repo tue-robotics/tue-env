@@ -35,6 +35,9 @@ RUN apt-get update -qq && \
     adduser -u 1000 --disabled-password --gecos "" $USER && \
     usermod -aG sudo $USER && \
     usermod -aG adm $USER && \
+    usermod -aG dialout $USER && \
+    usermod -aG video $USER && \
+    usermod -aG audio $USER && \
     echo "%sudo ALL=(ALL) NOPASSWD:ALL" >> /etc/sudoers.d/"$USER"
 
 # Setup the current user and its home directory
