@@ -54,6 +54,12 @@
       when: never
     - when: always
 
+# Build docker image job for linux/arm64
+linux/arm64:
+  variables:
+    TARGET_PLATFORM: "linux/arm64"
+  <<: *build_docker_image
+
 # Job to mirror upstream
 Mirror Upstream:
   extends: .base
