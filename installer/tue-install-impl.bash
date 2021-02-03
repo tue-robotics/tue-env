@@ -1218,7 +1218,11 @@ TUE_INSTALL_SNAPS=
 TUE_INSTALL_WARNINGS=
 TUE_INSTALL_INFOS=
 
-tue-install-system-now git python3-pip curl jq python3-yaml python3-catkin-pkg
+tue-install-system-now git python3-pip curl jq python3-yaml
+
+# Install using pip3 because the system package has conflict with
+# the debian package python3-catkin-pkg-modules provided by ROS
+tue-install-pip3-now catkin-pkg
 
 # Handling of targets
 if [[ -z "${targets// }" ]] #If only whitespace
