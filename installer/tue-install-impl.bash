@@ -983,9 +983,9 @@ function _tue-install-pip-now
     if [ -n "$pips_to_install" ]
     then
         echo -e "Going to run the following command:\n"
-        echo -e "python${pv} -m pip install --user $pips_to_install <<< yes\n"
+        echo -e "python${pv} -m pip install --use-feature=2020-resolver --use-feature=fast-deps --user $pips_to_install <<< yes\n"
         # shellcheck disable=SC2048,SC2086
-        python"${pv}" -m pip install --user $pips_to_install <<< yes || tue-install-error "An error occurred while installing pip${pv} packages."
+        python"${pv}" -m pip install --use-feature=2020-resolver --use-feature=fast-deps --user $pips_to_install <<< yes || tue-install-error "An error occurred while installing pip${pv} packages."
     fi
 
     if [ -n "$git_pips_to_install" ]
@@ -993,9 +993,9 @@ function _tue-install-pip-now
         for pkg in $git_pips_to_install
         do
             echo -e "Going to run the following command:\n"
-            echo -e "python${pv} -m pip install --user $pkg <<< yes\n"
+            echo -e "python${pv} -m pip install --use-feature=2020-resolver --use-feature=fast-deps --user $pkg <<< yes\n"
             # shellcheck disable=SC2048,SC2086
-            python"${pv}" -m pip install --user $pkg <<< yes || tue-install-error "An error occurred while installing pip${pv} packages."
+            python"${pv}" -m pip install --use-feature=2020-resolver --use-feature=fast-deps --user $pkg <<< yes || tue-install-error "An error occurred while installing pip${pv} packages."
         done
     fi
 }
