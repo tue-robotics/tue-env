@@ -25,6 +25,8 @@ TUE_INSTALL_TARGETS_DIR=$TUE_ENV_TARGETS_DIR
 
 TUE_REPOS_DIR=$TUE_ENV_DIR/repos
 
+TUE_APT_GET_UPDATED_FILE=/tmp/tue_get_apt_get_updated
+
 # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # #
 
 function date_stamp
@@ -786,13 +788,12 @@ function tue-install-system-now
             ((i=i+1))
         done
 
-        local apt_get_updated=/tmp/tue_get_apt_get_updated
-        if [ ! -f "$apt_get_updated" ]
+        if [ ! -f "$TUE_APT_GET_UPDATED_FILE" ]
         then
             # Update once every boot. Or delete the tmp file if you need an update before installing a pkg.
             tue-install-debug "sudo apt-get update -qq"
             sudo apt-get update -qq
-            touch $apt_get_updated
+            touch $TUE_APT_GET_UPDATED_FILE
         fi
 
         tue-install-debug "sudo apt-get install --assume-yes -q $pkgs_to_install"
@@ -800,6 +801,15 @@ function tue-install-system-now
         sudo apt-get install --assume-yes -q $pkgs_to_install || tue-install-error "An error occurred while installing system packages."
         tue-install-debug "Installed $pkgs_to_install ($?)"
     fi
+}
+
+# # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # #
+
+function tue-install-apt-get-update
+{
+    tue-install-debug "tue-install-apt-get-update"
+    tue-install-debug "Requiring an update of apt-get before next 'apt-get install'"
+    rm -f $TUE_APT_GET_UPDATED_FILE
 }
 
 # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # #
@@ -873,8 +883,7 @@ function tue-install-ppa-now
     done
     if [ -n "$PPA_ADDED" ]
     then
-        tue-install-debug "sudo apt-get update -qq"
-        sudo apt-get update -qq
+        tue-install-apt-get-update
     fi
 }
 
