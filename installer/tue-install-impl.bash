@@ -792,7 +792,7 @@ function tue-install-system-now
         then
             # Update once every boot. Or delete the tmp file if you need an update before installing a pkg.
             tue-install-debug "sudo apt-get update -qq"
-            sudo apt-get update -qq
+            sudo apt-get update -qq || tue-install-error "An error occurred while updating apt-get."
             touch $TUE_APT_GET_UPDATED_FILE
         fi
 
