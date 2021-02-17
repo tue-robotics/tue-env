@@ -150,17 +150,17 @@ Taking the above into account, the following combinations for `install.yaml` are
 
 Both ROS distro specific as default can be 'null'. Prevered usage is default for current and feature distributions and exceptions for old distributions.
 
-#### Target / System / PIP / PIP2 / PIP3 / PPA / Snap / DPKG / Empty
+#### Target / System / PIP / PIP3 / PPA / Snap / DPKG / Empty
 
 ```yaml
-- type: [target/system/pip/pip2/pip3/ppa/snap/dpkg/empty]
+- type: [target/system/pip/pip3/ppa/snap/dpkg/empty]
   name: <Name of the candidate>
 ```
 
 Depending on Ubuntu distribution:
 
 ```yaml
-- type: [target/system/pip/pip2/pip3/ppa/snap/dpkg/empty]
+- type: [target/system/pip/pip3/ppa/snap/dpkg/empty]
   xenial:
     name: [null/<Name of the candidate>]
   default:
@@ -169,15 +169,15 @@ Depending on Ubuntu distribution:
 
 Both Ubuntu distribution specific as default can be 'null'. Prevered usage is default for current and feature distributions and exceptions for old distributions.
 
-#### (Target / System / PIP / PIP2 / PIP3 / PPA / Snap)-now
+#### (Target / System / PIP / PIP3 / PPA / Snap)-now
 
-The default installation method for targets of type `system`, `pip(2/3)`, `ppa` and `snap` is to collect all such targets in a list and install them simultaneously at the end of the `tue-get install` procedure. To install such a dependency immediately for a specific target, use the target type as `X-now`:
+The default installation method for targets of type `system`, `pip(3)`, `ppa` and `snap` is to collect all such targets in a list and install them simultaneously at the end of the `tue-get install` procedure. To install such a dependency immediately for a specific target, use the target type as `X-now`:
 
 ```yaml
-- type: [target/system/pip/pip2/pip3/ppa/snap]-now
+- type: [target/system/pip/pip3/ppa/snap]-now
   name: <Name of the candidate>
 
-- type: [target/system/pip/pip2/pip3/ppa/snap/dpkg]
+- type: [target/system/pip/pip3/ppa/snap/dpkg]
   name: <Name of the candidate>
 ```
 
@@ -205,11 +205,9 @@ generally used methods of installing packages:
 | `tue-install-cp`                | Analogous to `cp` but takes `sudo` into account and the source should be relative to target    |
 | `tue-install-dpkg`              | To install a debian dpkg file                                                                  |
 | `tue-install-git`               | To install a git repository                                                                    |
-| `tue-install-pip`               | To add a python pip2 package to a list to be installed at the end (deprecated)                 |
-| `tue-install-pip2`              | To add a python pip2 package to a list to be installed at the end                              |
+| `tue-install-pip`               | To add a python pip3 package to a list to be installed at the end (deprecated)                 |
 | `tue-install-pip3`              | To add a python pip3 package to a list to be installed at the end                              |
-| `tue-install-pip-now`           | To install python pip2 package, but ignores it if already installed (deprecated)               |
-| `tue-install-pip2-now`          | To install python pip2 package, but ignores it if already installed                            |
+| `tue-install-pip-now`           | To install python pip3 package, but ignores it if already installed (deprecated)               |
 | `tue-install-pip3-now`          | To install python pip3 package, but ignores it if already installed                            |
 | `tue-install-ppa`               | To add one PPA/DEB to a list to be added with `apt-add-repository` at the end, before apt-get  |
 | `tue-install-ppa-now`           | To add a PPA/DEB with `apt-add-repository`, use ^ inside of a DEB and spaces between items     |
@@ -226,7 +224,7 @@ installed).
 
 A general remark about the order of preference of package repositories:
 
-system > ppa > pip2 = pip3 > snap > git > hg > svn > dpkg (> pip, deprecated)
+system > ppa > pip3 > snap > git > hg > svn > dpkg (> pip, deprecated)
 
 ## CI
 
