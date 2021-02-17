@@ -9,5 +9,5 @@ jobs:
     steps:
       - uses: actions/checkout@v2
       - name: Script
-        run: python ci/delete_docker_tags.py --org "tuerobotics" --image "tue-env" "tue-env-cuda"  -t "${{ github.event.ref }}" --username "${{ secrets.DOCKER_HUB_USERNAME }}" --password "${{ secrets.DOCKER_HUB_PASSWORD }}"
+        run: python ci/delete-docker-tags.py --org "tuerobotics" --image "tue-env" "tue-env-cuda"  -t "${{ github.event.ref }}" --username "${{ secrets.DOCKER_HUB_USERNAME }}" --password "${{ secrets.DOCKER_HUB_PASSWORD }}"
 
