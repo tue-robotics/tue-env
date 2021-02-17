@@ -94,7 +94,7 @@ class DockerHub(object):
             return []
         return resp.get("results", [])
 
-    def tag_names(self, namespace, image, page_size=1000):
+    def tag_names(self, namespace, image, page_size=10000):
         tags = self.tags(namespace, image, page_size)
         return [tag["name"] for tag in tags]
 
