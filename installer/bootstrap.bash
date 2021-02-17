@@ -23,8 +23,11 @@ case $DISTRIB_RELEASE in
     "18.04")
         TUE_ROS_DISTRO=melodic
         ;;
+    "20.04")
+        TUE_ROS_DISTRO=noetic
+        ;;
     *)
-        echo "[tue-env](bootstrap) Ubuntu $DISTRIB_RELEASE is unsupported. Use either 16.04 or 18.04"
+        echo "[tue-env](bootstrap) Ubuntu $DISTRIB_RELEASE is unsupported. Use either 16.04, 18.04 or 20.04"
         exit 1
         ;;
 esac
