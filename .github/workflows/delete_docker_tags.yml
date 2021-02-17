@@ -8,6 +8,10 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v2
+      - name: Setup Python 3
+        uses: actions/setup-python@v2
+        with:
+          python-version: '3.x'
       - name: Script
         run: ci/delete_docker_tags.py --org "tuerobotics" --image "tue-env" "tue-env-cuda"  -t "${GITHUB_BASE_REF:-${GITHUB_REF#refs/heads/}}" --username "${{ secrets.DOCKER_HUB_USERNAME }}" --password "${{ secrets.DOCKER_HUB_PASSWORD }}"
 
