@@ -13,5 +13,5 @@ jobs:
         with:
           python-version: '3.x'
       - name: Script
-        run: ci/delete_docker_tags.py --org "tuerobotics" --image "tue-env" "tue-env-cuda"  -t "${GITHUB_BASE_REF:-${GITHUB_REF#refs/heads/}}" --username "${{ secrets.DOCKER_HUB_USERNAME }}" --password "${{ secrets.DOCKER_HUB_PASSWORD }}"
+        run: python ci/delete_docker_tags.py --org "tuerobotics" --image "tue-env" "tue-env-cuda"  -t "${{ github.event.ref }}" --username "${{ secrets.DOCKER_HUB_USERNAME }}" --password "${{ secrets.DOCKER_HUB_PASSWORD }}"
 
