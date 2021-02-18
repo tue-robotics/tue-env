@@ -963,11 +963,14 @@ function _tue-install-pip-now
 
     read -r -a pips_to_check <<< "$pips_to_check"
     local installed_versions
-    installed_versions=$(python"${pv}" "$TUE_INSTALL_SCRIPTS_DIR"/check-pip-pkg-installed-version.py "${pips_to_check[@]}")
-    local error_code=$?
-    if [ "$error_code" -gt 1 ]
+    if [ ${#pips_to_check[@]} -gt 0 ]
     then
-        tue-install-error "tue-install-pip${pv}-now: $installed_versions"
+        installed_versions=$(python"${pv}" "$TUE_INSTALL_SCRIPTS_DIR"/check-pip-pkg-installed-version.py "${pips_to_check[@]}")
+        local error_code=$?
+        if [ "$error_code" -gt 1 ]
+        then
+            tue-install-error "tue-install-pip${pv}-now: $installed_versions"
+        fi
     fi
     read -r -a installed_versions <<< "$installed_versions"
 
