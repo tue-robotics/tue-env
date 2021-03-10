@@ -774,7 +774,7 @@ function tue-install-system-now
         # Wait for apt-lock first (https://askubuntu.com/a/375031)
         i=0
         tput sc
-        while sudo fuser /var/lib/dpkg/lock-frontend >/dev/null 2>&1
+        while sudo fuser /var/lib/dpkg/lock >/dev/null 2>&1
         do
             case $((i % 4)) in
                 0 ) j="-" ;;
@@ -874,6 +874,24 @@ function tue-install-ppa-now
         then
             tue-install-system-now software-properties-common
             tue-install-info "Adding ppa: $ppa"
+
+            # Wait for apt-lock first (https://askubuntu.com/a/375031)
+            i=0
+            tput sc
+            while sudo fuser /var/lib/apt/lists/lock >/dev/null 2>&1
+            do
+                case $((i % 4)) in
+                    0 ) j="-" ;;
+                    1 ) j="\\" ;;
+                    2 ) j="|" ;;
+                    3 ) j="/" ;;
+                esac
+                tput rc
+                echo -en "\r[$j] Waiting for other software managers to finish..."
+                sleep 0.5
+                ((i=i+1))
+            done
+
             tue-install-debug "sudo add-apt-repository --yes $ppa"
             sudo add-apt-repository --yes "$ppa" || tue-install-error "An error occurred while adding ppa: $ppa"
             PPA_ADDED=true
