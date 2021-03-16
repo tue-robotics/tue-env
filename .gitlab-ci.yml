@@ -65,8 +65,14 @@
 # TODO: Split multiarch build into multiple jobs
 # Build docker image job for linux/arm64 and linux/amd64
 linux/arm64-linux/amd64:
-  variables:
-    TARGET_PLATFORM: "linux/arm64,linux/amd64"
+  rules:
+    - if: '$CI_PIPELINE_SOURCE == "merge_request_event"'
+      when: always
+      variables:
+        TARGET_PLATFORM: "linux/amd64"
+    - when: always
+      variables:
+        TARGET_PLATFORM: "linux/arm64,linux/amd64"
   <<: *build_docker_image
 
 # Job to mirror upstream
