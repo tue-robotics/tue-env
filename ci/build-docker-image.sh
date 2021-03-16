@@ -60,6 +60,7 @@ echo -e "\e[35m\e[1m CI_COMMIT              = ${CI_COMMIT} \e[0m"
 
 [ -z "$CI_REF_NAME" ] && CI_REF_NAME="pull"
 echo -e "\e[35m\e[1m CI_REF_NAME            = ${CI_REF_NAME} \e[0m"
+echo -e "\e[35m\e[1m CI_DOCKER_PLATFORMS    = ${CI_DOCKER_PLATFORMS} \e[0m"
 
 image_substring=$(basename "$CI_DOCKER_IMAGE_NAME")
 case $image_substring in
