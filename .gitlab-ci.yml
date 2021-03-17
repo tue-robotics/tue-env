@@ -16,16 +16,24 @@
 
 # Base config that other jobs extend from
 .base:
+  image: ${CI_REGISTRY}/${CI_PROJECT_NAMESPACE}/docker-buildx:latest
+
+  services:
+    - docker:dind
+
   variables:
     GIT_STRATEGY: clone
+    DOCKER_TLS_CERTDIR: "/certs"
+    DOCKER_DRIVER: overlay2
 
   tags:
-    - vm
     - linux
-    - ubuntu
     - docker
+    - privileged
 
   before_script:
+    - apk --update add git bash curl jq
+    - which ssh-agent || ( apk --update add openssh-client)
     # To build and push the docker image of private repository to the container registry SSH
     # needs to be setup in the CI environment
     - eval $(ssh-agent -s)
@@ -48,7 +56,7 @@
   script:
     - docker info
     - docker buildx inspect
-    - ci/build-docker-image.sh --ssh --image="$CI_REGISTRY/avular/common-tools/package-manager/tue-env" --branch=${CI_MERGE_REQUEST_TARGET_BRANCH_NAME:-$CI_COMMIT_BRANCH} --commit="$CI_COMMIT_SHA" --pull_request=${CI_MERGE_REQUEST_IID:-"false"} --ref-name="merge-requests" --user="gitlab-ci-token" --password="$CI_JOB_TOKEN" --registry="$CI_REGISTRY" --platforms="$TARGET_PLATFORM"
+    - ci/build-docker-image.sh --ssh --image="${CI_REGISTRY}/${CI_PROJECT_PATH}" --branch=${CI_MERGE_REQUEST_TARGET_BRANCH_NAME:-$CI_COMMIT_BRANCH} --commit="${CI_COMMIT_SHA}" --pull_request=${CI_MERGE_REQUEST_IID:-"false"} --ref-name="merge-requests" --user="gitlab-ci-token" --password="${CI_JOB_TOKEN}" --registry="${CI_REGISTRY}" --platforms="${TARGET_PLATFORM}"
   rules:
     - if: '$MIRROR_UPSTREAM == "true"'
       when: never
@@ -57,9 +65,22 @@
 # TODO: Split multiarch build into multiple jobs
 # Build docker image job for linux/arm64 and linux/amd64
 linux/arm64-linux/amd64:
-  variables:
-    TARGET_PLATFORM: "linux/arm64,linux/amd64"
   <<: *build_docker_image
+  rules:
+    - if: '$MIRROR_UPSTREAM == "true"'
+      when: never
+    - if: '$CI_PIPELINE_SOURCE == "merge_request_event"'
+      when: always
+      variables:
+        TARGET_PLATFORM: "linux/amd64"
+    - if: '$CI_COMMIT_BRANCH != $CI_DEFAULT_BRANCH'
+      when: always
+      variables:
+        TARGET_PLATFORM: "linux/amd64"
+    - if: '$CI_COMMIT_BRANCH == $CI_DEFAULT_BRANCH'
+      when: always
+      variables:
+        TARGET_PLATFORM: "linux/arm64,linux/amd64"
 
 # Job to mirror upstream
 Mirror Upstream:
