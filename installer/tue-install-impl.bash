@@ -25,6 +25,8 @@ TUE_INSTALL_TARGETS_DIR=$TUE_ENV_TARGETS_DIR
 
 TUE_REPOS_DIR=$TUE_ENV_DIR/repos
 
+TUE_APT_GET_UPDATED_FILE=/tmp/tue_get_apt_get_updated
+
 # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # #
 
 function _skip_in_ci
@@ -663,13 +665,12 @@ function tue-install-system-now
             ((i=i+1))
         done
 
-        local apt_get_updated=/tmp/tue_get_apt_get_updated
-        if [ ! -f "$apt_get_updated" ]
+        if [ ! -f "$TUE_APT_GET_UPDATED_FILE" ]
         then
             # Update once every boot. Or delete the tmp file if you need an update before installing a pkg.
             tue-install-debug "sudo apt-get update -qq"
-            sudo apt-get update -qq
-            touch $apt_get_updated
+            sudo apt-get update -qq || tue-install-error "An error occurred while updating apt-get."
+            touch $TUE_APT_GET_UPDATED_FILE
         fi
 
         tue-install-debug "sudo apt-get install --assume-yes -q $pkgs_to_install"
@@ -677,6 +678,15 @@ function tue-install-system-now
         sudo apt-get install --assume-yes -q $pkgs_to_install || tue-install-error "An error occurred while installing system packages."
         tue-install-debug "Installed $pkgs_to_install ($?)"
     fi
+}
+
+# # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # #
+
+function tue-install-apt-get-update
+{
+    tue-install-debug "tue-install-apt-get-update"
+    tue-install-debug "Requiring an update of apt-get before next 'apt-get install'"
+    rm -f $TUE_APT_GET_UPDATED_FILE
 }
 
 # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # #
@@ -750,8 +760,7 @@ function tue-install-ppa-now
     done
     if [ -n "$PPA_ADDED" ]
     then
-        tue-install-debug "sudo apt-get update -qq"
-        sudo apt-get update -qq
+        tue-install-apt-get-update
     fi
 }
 
@@ -858,9 +867,9 @@ function _tue-install-pip-now
     if [ -n "$pips_to_install" ]
     then
         echo -e "Going to run the following command:\n"
-        echo -e "python${pv} -m pip install --user $pips_to_install <<< yes\n"
+        echo -e "python${pv} -m pip install --use-feature=2020-resolver --use-feature=fast-deps --user $pips_to_install <<< yes\n"
         # shellcheck disable=SC2048,SC2086
-        python"${pv}" -m pip install --user $pips_to_install <<< yes || tue-install-error "An error occurred while installing pip${pv} packages."
+        python"${pv}" -m pip install --use-feature=2020-resolver --use-feature=fast-deps --user $pips_to_install <<< yes || tue-install-error "An error occurred while installing pip${pv} packages."
     fi
 
     if [ -n "$git_pips_to_install" ]
@@ -868,9 +877,9 @@ function _tue-install-pip-now
         for pkg in $git_pips_to_install
         do
             echo -e "Going to run the following command:\n"
-            echo -e "python${pv} -m pip install --user $pkg <<< yes\n"
+            echo -e "python${pv} -m pip install --use-feature=2020-resolver --use-feature=fast-deps --user $pkg <<< yes\n"
             # shellcheck disable=SC2048,SC2086
-            python"${pv}" -m pip install --user $pkg <<< yes || tue-install-error "An error occurred while installing pip${pv} packages."
+            python"${pv}" -m pip install --use-feature=2020-resolver --use-feature=fast-deps --user $pkg <<< yes || tue-install-error "An error occurred while installing pip${pv} packages."
         done
     fi
 }

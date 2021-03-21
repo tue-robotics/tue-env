@@ -182,9 +182,6 @@ then
     docker exec -e DOCKER_SSH_AUTH_SOCK="$DOCKER_SSH_AUTH_SOCK" -t tue-env bash -c 'eval "$(ssh-agent -s)" && ln -sf "$SSH_AUTH_SOCK" "$DOCKER_SSH_AUTH_SOCK" && grep -slR "PRIVATE" ~/.ssh/ | xargs ssh-add'
 fi
 
-# Refresh the apt cache in the docker image
-docker exec -t tue-env bash -c 'sudo apt-get update -qq'
-
 # Use docker environment variables in all exec commands instead of script variables
 # Catch the ROS_DISTRO of the docker container
 # stip carriage return from docker output by "tr -d '\r'"

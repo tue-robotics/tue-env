@@ -27,8 +27,8 @@ jobs:
     needs: linting
     steps:
       - uses: actions/checkout@v2
-      - name: Install
-        run: ci/update-docker.bash
+      - name: Docker info
+        run: docker info
       - name: Script
         run: ci/build-docker-image.sh --image="tuerobotics/tue-env" --branch="${GITHUB_BASE_REF:-${GITHUB_REF#refs/heads/}}" --commit="$GITHUB_SHA" --pull_request="${{ github.event_name == 'pull_request' }}" --user="${{ secrets.DOCKER_HUB_USERNAME }}" --password="${{ secrets.DOCKER_HUB_PASSWORD }}"
 
@@ -39,8 +39,8 @@ jobs:
     if: ${{ github.event_name != 'pull_request' && github.ref == 'refs/heads/master' }}
     steps:
       - uses: actions/checkout@v2
-      - name: Install
-        run: ci/update-docker.bash
+      - name: Docker info
+        run: docker info
       - name: Script
         run: ci/build-docker-image.sh --image="tuerobotics/tue-env-cuda" --branch="${GITHUB_BASE_REF:-${GITHUB_REF#refs/heads/}}" --commit="$GITHUB_SHA" --pull_request="${{ github.event_name == 'pull_request' }}" --user="${{ secrets.DOCKER_HUB_USERNAME }}" --password="${{ secrets.DOCKER_HUB_PASSWORD }}"
 
