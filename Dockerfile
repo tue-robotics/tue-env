@@ -67,6 +67,8 @@ RUN --mount=type=ssh,uid=1000 sed -e s/return//g -i ~/.bashrc && \
     source ~/.bashrc && \
     # Install target ros
     tue-get install ros --test-depend --branch="$BRANCH" && \
+    # Remove temp tue files
+    (rm -rf /tmp/tue* > /dev/null || true) && \
     # Show ownership of .tue
     namei -l ~/.tue && \
     # Check git remote origin

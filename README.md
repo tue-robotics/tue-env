@@ -209,6 +209,7 @@ generally used methods of installing packages:
 | Function Name                   | Description                                                                                    |
 |---------------------------------|------------------------------------------------------------------------------------------------|
 | `tue-install-add-text`          | To add/replace text in a file with `sudo` taken into account                                   |
+| `tue-install-apt-get-update`    | Make sure that during next `tue-install-system-now` call `apt-get` is updated                  |
 | `tue-install-cp`                | Analogous to `cp` but takes `sudo` into account and the source should be relative to target    |
 | `tue-install-dpkg`              | To install a debian dpkg file                                                                  |
 | `tue-install-git`               | To install a git repository                                                                    |
