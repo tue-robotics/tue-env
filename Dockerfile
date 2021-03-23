@@ -20,7 +20,7 @@ ARG REF_NAME=
 ENV DEBIAN_FRONTEND=noninteractive \
     LANG=C.UTF-8 \
     DOCKER=true \
-    USER=avular \
+    USER=amigo \
     TERM=xterm-256color
 
 # Set default shell to be bash
