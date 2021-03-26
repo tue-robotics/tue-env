@@ -137,11 +137,11 @@ Taking the above into account, the following combinations for `install.yaml` are
        source:
          type: system
          name: <Package name>
-     default:
+     noetic:
        source:
          type: git
          url: <Repository URL>
-     noetic:
+     default:
        source: null
    ```
 
