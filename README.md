@@ -136,15 +136,15 @@ Taking the above into account, the following combinations for `install.yaml` are
 
    ```yaml
    - type: ros
-     kinetic:
+     default:
        source:
          type: system
          name: <Package name>
-     noetic:
+     melodic:
        source:
          type: git
          url: <Repository URL>
-     default:
+     noetic:
        source: null
    ```
 
