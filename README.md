@@ -53,20 +53,23 @@ we provide an alias to `catkin build` as `tue-make` which would build the
 Upon executing the installation instructions mentioned in the previous section, `~/.tue/setup.bash` is automatically added in `.bashrc`. Sourcing `.bashrc` would make `tue-env` available to the bash session.
 
 ## Different environments
+
 To isolate builds you can use different environments. Each environment will contain a different copy of the repositories used. These environments can also be useful to seperate ROS1 from ROS2 installs.
 
 To initialise a new environment (for example the Pico robot):
-```
+
+```bash
 mkdir ~/ros/pico && tue-env init pico ~/ros/pico
 ```
 
 Now to switch to this environment and install a package you can:
-```
+
+```bash
 tue-env switch pico
 tue-get install ros-pico
 ```
-Or use `tue-env set-default` if you want this to be de default.
 
+Or use `tue-env set-default` if you want this to be de default.
 
 ## Guidelines on creating a new target
 
