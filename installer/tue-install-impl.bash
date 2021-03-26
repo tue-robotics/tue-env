@@ -295,7 +295,7 @@ function _try_branch_git
     local repo="$1"
     local branch="$2"
     tue-install-debug "git -C $repo checkout $branch --"
-    _try_branch_res=$(git -C "$repo" checkout "$branch" -- 2>&1)  # This is a "global" variable from tue-install-git
+    _try_branch_res=$(git -C "$repo" checkout "$branch" -- 2>&1)  # _try_branch_res is a "global" variable from tue-install-git
     tue-install-debug "_try_branch_res: $_try_branch_res"
 
     local _submodule_sync_res _submodule_sync_error_code
