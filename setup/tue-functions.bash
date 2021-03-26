@@ -838,7 +838,7 @@ function tue-get
     shift
 
     #Create btrfs snapshot if possible and usefull:
-    if [[ -z "BTRFS_SNAPSHOT" && "$cmd" =~ ^(install|update|remove)$ ]] && { df --print-type / | grep -q btrfs; }
+    if [[ -z "$BTRFS_SNAPSHOT" && "$cmd" =~ ^(install|update|remove)$ ]] && { df --print-type / | grep -q btrfs; }
     then
         echo "[tue-get] Creating btrfs snapshot"
         sudo mkdir -p /snap/root
