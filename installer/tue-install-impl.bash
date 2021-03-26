@@ -1367,8 +1367,11 @@ do
             export TUE_INSTALL_TEST_DEPEND="false"
             ;;
         --branch*)
+            echo "Usage of --branch is deprecated, switch to --try-branch"
+            ;;&
+        --try-branch* | --branch*)
             # shellcheck disable=SC2001
-            BRANCH=$(echo "$1" | sed -e 's/^[^=]*=//g')
+            BRANCH+=" "$(echo "$1" | sed -e 's/^[^=]*=//g')
             ;;
         --*)
             echo "unknown option $1"
