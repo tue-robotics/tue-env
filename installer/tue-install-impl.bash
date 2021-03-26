@@ -208,6 +208,7 @@ function tue-install-target
                 target_processed=true
             else
                 tue-install-debug "Parsing $install_file.yaml"
+                # Do not use 'local cmds=' because it does not preserve command output status ($?)
                 local now_cmd=""
                 [ "$now" == "true" ] && now_cmd="--now"
                 # Do not use 'local cmds=' because it does not preserve command output status ($?)
@@ -291,19 +292,21 @@ function _try_branch_git
         tue-install-error "Invalid _try_branch_git: needs two arguments (repo and branch)."
     fi
 
-    tue-install-debug "git -C $1 checkout $2 --"
-    _try_branch_res=$(git -C "$1" checkout "$2" -- 2>&1) # This is a "global" variable from tue-install-git
+    local repo="$1"
+    local branch="$2"
+    tue-install-debug "git -C $repo checkout $branch --"
+    _try_branch_res=$(git -C "$repo" checkout "$branch" -- 2>&1)  # This is a "global" variable from tue-install-git
     tue-install-debug "_try_branch_res: $_try_branch_res"
 
     local _submodule_sync_res _submodule_sync_error_code
-    tue-install-debug "git -C $1 submodule sync --recursive"
-    _submodule_sync_res=$(git -C "$1" submodule sync --recursive 2>&1)
+    tue-install-debug "git -C $repo submodule sync --recursive"
+    _submodule_sync_res=$(git -C "$repo" submodule sync --recursive 2>&1)
     _submodule_sync_error_code=$?
     tue-install-debug "_submodule_sync_res: $_submodule_sync_res"
 
     local _submodule_res
-    tue-install-debug "git -C $1 submodule update --init --recursive"
-    _submodule_res=$(git -C "$1" submodule update --init --recursive 2>&1)
+    tue-install-debug "git -C $repo submodule update --init --recursive"
+    _submodule_res=$(git -C "$repo" submodule update --init --recursive 2>&1)
     tue-install-debug "_submodule_res: $_submodule_res"
 
     if [[ $_try_branch_res == "Already on "* || $_try_branch_res == "fatal: invalid reference:"* ]]
@@ -487,7 +490,7 @@ Command: tue-install-cp $*"
             tue-install-debug "File $file and $cp_target are different, copying..."
             if "$root_required"
             then
-                tue-install-debug "Using elevated privileges (sudo)"
+                tue-install-debug "Using elevated privileges (sudo) to copy ${file} to ${cp_target}"
                 tue-install-pipe sudo mkdir --parents --verbose "$cp_target_parent_dir" && tue-install-pipe sudo cp --verbose "$file" "$cp_target"
             else
                 tue-install-pipe mkdir --parents --verbose "$cp_target_parent_dir" && tue-install-pipe cp --verbose "$file" "$cp_target"

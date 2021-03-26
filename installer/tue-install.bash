@@ -50,7 +50,7 @@ else
         then
             # prompt for conformation
             exec < /dev/tty
-            read -p "[tue-get] Could not update tue-get. Continue? " -n 1 -r
+            read -p "[tue-get] Could not update tue-get. Continue? [y/N]" -n 1 -r
             exec <&-
             echo    # (optional) move to a new line
             if [[ ! $REPLY =~ ^[Yy]$ ]]
