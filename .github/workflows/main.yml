@@ -17,9 +17,12 @@ jobs:
       - name: Shellcheck
         run: |
           shopt -s globstar
+          shellcheck --version
           shellcheck **/*.bash **/*.sh
       - name: Python Black
-        run: black -l 120 --check --diff --color .
+        run: |
+          black --version
+          black -l 120 --check --diff --color .
 
   docker_generation_tue_env:
     name: Docker Generation tue-env
