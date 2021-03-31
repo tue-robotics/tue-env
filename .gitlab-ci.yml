@@ -28,8 +28,7 @@
 
   tags:
     - linux
-    - docker
-    - privileged
+    - docker-privileged
 
   before_script:
     - apk --update add git bash curl jq
