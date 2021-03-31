@@ -30,6 +30,7 @@
   tags:
     - linux
     - docker-privileged
+    - x86_64
 
   before_script:
     - docker info
