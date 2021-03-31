@@ -29,8 +29,7 @@
 
   tags:
     - linux
-    - docker
-    - privileged
+    - docker-privileged
 
   before_script:
     - docker info
