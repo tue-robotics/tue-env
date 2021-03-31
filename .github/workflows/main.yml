@@ -33,7 +33,13 @@ jobs:
       - name: Docker info
         run: docker info
       - name: Script
-        run: ci/build-docker-image.sh --image="tuerobotics/tue-env" --branch="${GITHUB_BASE_REF:-${GITHUB_REF#refs/heads/}}" --commit="$GITHUB_SHA" --pull_request="${{ github.event_name == 'pull_request' }}" --user="${{ secrets.DOCKER_HUB_USERNAME }}" --password="${{ secrets.DOCKER_HUB_PASSWORD }}"
+        run: |
+          GITHUB_REF=${GITHUB_REF#refs/heads/}
+          GITHUB_REF=${GITHUB_REF#refs/tags/}
+          BRANCH=${GITHUB_BASE_REF:-${GITHUB_REF}}
+          PULLREQUEST=${{ github.event.number }}
+          PULLREQUEST=${PULLREQUEST:-false}
+          ci/build-docker-image.sh --image="tuerobotics/tue-env" --branch="${BRANCH}" --commit="$GITHUB_SHA" --pull_request="${PULLREQUEST}" --user="${{ secrets.DOCKER_HUB_USERNAME }}" --password="${{ secrets.DOCKER_HUB_PASSWORD }}"
 
   docker_generation_tue_env_cuda:
     name: Docker Generation tue-env-cuda
@@ -45,5 +51,11 @@ jobs:
       - name: Docker info
         run: docker info
       - name: Script
-        run: ci/build-docker-image.sh --image="tuerobotics/tue-env-cuda" --branch="${GITHUB_BASE_REF:-${GITHUB_REF#refs/heads/}}" --commit="$GITHUB_SHA" --pull_request="${{ github.event_name == 'pull_request' }}" --user="${{ secrets.DOCKER_HUB_USERNAME }}" --password="${{ secrets.DOCKER_HUB_PASSWORD }}"
-
+        run: |
+          GITHUB_REF=${GITHUB_REF#refs/heads/}
+          GITHUB_REF=${GITHUB_REF#refs/tags/}
+          BRANCH=${GITHUB_BASE_REF:-${GITHUB_REF}}
+          PULLREQUEST=${{ github.event.number }}
+          PULLREQUEST=${PULLREQUEST:-false}
+          ci/build-docker-image.sh --image="tuerobotics/tue-env-cuda" --branch="${BRANCH}" --commit="$GITHUB_SHA" --pull_request="${PULLREQUEST}" --user="${{ secrets.DOCKER_HUB_USERNAME }}" --password="${{ secrets.DOCKER_HUB_PASSWORD }}"
+   
