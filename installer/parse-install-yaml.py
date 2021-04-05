@@ -75,7 +75,7 @@ def main():
                         continue
 
                 source_type = source["type"]
-                if source_type == "git" or source_type == "hg":
+                if source_type == "git":
                     sub_dir = source.get("sub-dir", ".")
 
                     command = "tue-install-ros {0} {1} {2}".format(source_type, source["url"], sub_dir)
@@ -86,7 +86,7 @@ def main():
                 else:
                     return show_error("Unknown ROS install type: '{0}'".format(source_type))
 
-            elif install_type == "git" or install_type == "hg":
+            elif install_type == "git":
                 command = "tue-install-{0} {1} {2}".format(install_type, install_item["url"], install_item["path"])
                 if "version" in install_item:
                     command += " {0}".format(install_item["version"])
