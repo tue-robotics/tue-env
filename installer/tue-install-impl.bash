@@ -282,28 +282,6 @@ function _show_update_message
 
 # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # #
 
-function tue-install-svn
-{
-    tue-install-debug "tue-install-svn $*"
-
-    tue-install-system-now subversion
-    local res
-    if [ ! -d "$2" ]
-    then
-        res=$(svn co "$1" "$2" --trust-server-cert --non-interactive 2>&1)
-    else
-        res=$(svn up "$2" --trust-server-cert --non-interactive 2>&1)
-        if echo "$res" | grep -q "At revision";
-        then
-            res=
-        fi
-    fi
-
-    _show_update_message "$TUE_INSTALL_CURRENT_TARGET" "$res"
-}
-
-# # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # #
-
 function _try_branch_git
 {
     tue-install-debug "_try_branch_git $*"
@@ -1223,9 +1201,6 @@ function tue-install-ros
     elif [ "$install_type" == "hg" ]
     then
         tue-install-hg "$src" "$repos_dir" "$version"
-    elif [ "$install_type" == "svn" ]
-    then
-        tue-install-svn "$src" "$repos_dir" "$version"
     else
         tue-install-error "Unknown ros install type: '${install_type}'"
     fi
