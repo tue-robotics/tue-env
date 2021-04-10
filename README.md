@@ -228,6 +228,12 @@ A general remark about the order of preference of package repositories:
 
 system > ppa > pip2 = pip3 > snap > git > hg > svn > dpkg (> pip, deprecated)
 
+## CI
+
 ### Adding SSH support to a repository
 
 See [this](ci/README.md)
+
+## Bonus features
+
+If the `BTRFS_SNAPSHOT` variable is set, a snapshot is made upon every install, update and remove call of `tue-get`.

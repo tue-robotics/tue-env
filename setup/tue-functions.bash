@@ -328,9 +328,9 @@ function tue-make
     if [ -n "$TUE_ROS_DISTRO" ] && [ -d "$TUE_SYSTEM_DIR" ]
     then
         local build_tool=""
-        if [ -f "$TUE_SYSTEM_DIR"/devel/.built_by ]
+        if [ -f "$TUE_SYSTEM_DIR"/build/.built_by ]
         then
-            build_tool=$(cat "$TUE_SYSTEM_DIR"/devel/.built_by)
+            build_tool=$(cat "$TUE_SYSTEM_DIR"/build/.built_by)
         fi
         case $build_tool in
         'catkin build')
@@ -364,9 +364,9 @@ function tue-make-dev
     if [ -n "$TUE_ROS_DISTRO" ] && [ -d "$TUE_DEV_DIR" ]
     then
         local build_tool=""
-        if [ -f "$TUE_DEV_DIR"/devel/.built_by ]
+        if [ -f "$TUE_DEV_DIR"/build/.built_by ]
         then
-            build_tool=$(cat "$TUE_DEV_DIR"/devel/.built_by)
+            build_tool=$(cat "$TUE_DEV_DIR"/build/.built_by)
         fi
         case $build_tool in
         'catkin build')
@@ -838,8 +838,9 @@ function tue-get
     shift
 
     #Create btrfs snapshot if possible and usefull:
-    if [[ "$cmd" =~ ^(install|update|remove)$ ]] && { df --print-type / | grep -q btrfs; }
+    if [[ -n "$BTRFS_SNAPSHOT" && "$cmd" =~ ^(install|update|remove)$ ]] && { df --print-type / | grep -q btrfs; }
     then
+        echo "[tue-get] Creating btrfs snapshot"
         sudo mkdir -p /snap/root
         sudo btrfs subvolume snapshot / /snap/root/"$(date +%Y-%m-%d_%H:%M:%S)"
     fi
