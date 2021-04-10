@@ -398,9 +398,7 @@ function tue-install-git
         echo "$version" > "$version_cache_file"
         _try_branch_res=""
         _try_branch_git "$targetdir" "$version"
-        [ -n "$_try_branch_res" ] && res="${res:+${res} }$_try_branch_res"
-    else
-        rm "$version_cache_file" 2>/dev/null
+        [ -n "$_try_branch_res" ] && res="${res:+${res} }$_try_branch_res" || rm "$version_cache_file" 2>/dev/null
     done
 
     _show_update_message "$TUE_INSTALL_CURRENT_TARGET" "$res"
