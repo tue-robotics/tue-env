@@ -6,7 +6,7 @@ function _function_test
     # shellcheck disable=SC2048
     for func in $*
     do
-        declare -f "$func" > /dev/null || { echo -e "\033[38;5;1mFunction '$func' missing, resource the setup\033[0m" && function_missing="true"; }
+        declare -f "$func" > /dev/null || { echo -e "\e[38;5;1mFunction '$func' missing, resource the setup\e[0m" && function_missing="true"; }
     done
     [[ "$function_missing" == "true" ]] && exit 1
 }
@@ -45,11 +45,11 @@ function version_gt()
 
 function tue-install-error
 {
-    echo -e "\033[38;5;1m
+    echo -e "\e[38;5;1m
 Error while installing target '$TUE_INSTALL_CURRENT_TARGET':
 
     $1
-\033[0m" | tee --append "$INSTALL_DETAILS_FILE"
+\e[0m" | tee --append "$INSTALL_DETAILS_FILE"
     exit 1
 }
 
@@ -57,7 +57,7 @@ Error while installing target '$TUE_INSTALL_CURRENT_TARGET':
 
 function tue-install-warning
 {
-    echo -e "\033[33;5;1m[$TUE_INSTALL_CURRENT_TARGET] WARNING: $*\033[0m" | tee --append "$INSTALL_DETAILS_FILE"
+    echo -e "\e[33;5;1m[$TUE_INSTALL_CURRENT_TARGET] WARNING: $*\e[0m" | tee --append "$INSTALL_DETAILS_FILE"
     TUE_INSTALL_WARNINGS="    [$TUE_INSTALL_CURRENT_TARGET] $*\n${TUE_INSTALL_WARNINGS}"
 }
 
@@ -65,7 +65,7 @@ function tue-install-warning
 
 function tue-install-info
 {
-    echo -e "\e[0;36m[$TUE_INSTALL_CURRENT_TARGET] INFO: $*\033[0m"  | tee --append "$INSTALL_DETAILS_FILE"
+    echo -e "\e[0;36m[$TUE_INSTALL_CURRENT_TARGET] INFO: $*\e[0m"  | tee --append "$INSTALL_DETAILS_FILE"
     TUE_INSTALL_INFOS="    [$TUE_INSTALL_CURRENT_TARGET] $*\n${TUE_INSTALL_INFOS}"
 }
 
@@ -75,9 +75,9 @@ function tue-install-debug
 {
     if [ "$DEBUG" == "true" ]
     then
-        echo -e "\e[0;34m[$TUE_INSTALL_CURRENT_TARGET] DEBUG: $*\033[0m"  | tee --append "$INSTALL_DETAILS_FILE"
+        echo -e "\e[0;34m[$TUE_INSTALL_CURRENT_TARGET] DEBUG: $*\e[0m"  | tee --append "$INSTALL_DETAILS_FILE"
     else
-        echo -e "\e[0;34m[$TUE_INSTALL_CURRENT_TARGET] DEBUG: $*\033[0m"  | tee --append "$INSTALL_DETAILS_FILE" 1> /dev/null
+        echo -e "\e[0;34m[$TUE_INSTALL_CURRENT_TARGET] DEBUG: $*\e[0m"  | tee --append "$INSTALL_DETAILS_FILE" 1> /dev/null
     fi
 }
 
@@ -1426,13 +1426,13 @@ done
 # Display infos
 if [ -n "$TUE_INSTALL_INFOS" ]
 then
-    echo -e "\e[0;36m\nSome information you may have missed:\n\n$TUE_INSTALL_INFOS\033[0m"
+    echo -e "\e[0;36m\nSome information you may have missed:\n\n$TUE_INSTALL_INFOS\e[0m"
 fi
 
 # Display warnings
 if [ -n "$TUE_INSTALL_WARNINGS" ]
 then
-    echo -e "\033[33;5;1m\nOverview of warnings:\n\n$TUE_INSTALL_WARNINGS\033[0m"
+    echo -e "\e[33;5;1m\nOverview of warnings:\n\n$TUE_INSTALL_WARNINGS\e[0m"
 fi
 
 
