@@ -6,7 +6,7 @@ Package manager that can be used to install (ROS) dependencies
 
 ## Installation
 
-### Ubuntu 16.04/18.04
+### Ubuntu 20.04
 
 Standard tue-env installation with targets from [tue-env-targets](https://github.com/tue-robotics/tue-env-targets)
 
