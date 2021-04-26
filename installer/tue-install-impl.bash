@@ -83,6 +83,34 @@ function tue-install-debug
 
 # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # #
 
+function tue-install-echo
+{
+    echo -e "\e[0;1m[$TUE_INSTALL_CURRENT_TARGET]: $*\e[0m" | tee --append "$INSTALL_DETAILS_FILE"
+}
+
+# # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # #
+
+function tue-install-tee
+{
+    echo -e "$*" | tee --append "$INSTALL_DETAILS_FILE"
+}
+
+# # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # #
+
+function tue-install-pipe
+{
+    local pipefail_old
+    pipefail_old=$(set -o | grep pipefail | awk '{printf $2}')
+    [ "$pipefail_old" != "on" ] && set -o pipefail # set pipefail if not yet set
+    echo -e "\e[0;1m[$TUE_INSTALL_CURRENT_TARGET]: $*\e[0m" | tee --append "$INSTALL_DETAILS_FILE"
+    "$@" 2> >(sed $'s,.*,\e[31m&\e[m,'>&1) | tee --append "$INSTALL_DETAILS_FILE"
+    local return_code=$?
+    [ "$pipefail_old" != "on" ] && set +o pipefail # restore old pipefail setting
+    return $return_code
+}
+
+# # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # #
+
 function tue-install-target-now
 {
     tue-install-debug "tue-install-target-now $*"
@@ -187,8 +215,11 @@ function tue-install-target
                 then
                     for cmd in $cmds
                     do
+                        # Don't use tue-install-pipe here. As we are calling other tue-install functions, which already
+                        # implement tue-install-pipe for their external calls
                         tue-install-debug "Running following command: ${cmd//^/ }"
                         ${cmd//^/ } || tue-install-error "Error while running: ${cmd//^/ }"
+                        tue-install-debug "Done: Running following command: ${cmd//^/ }"
                     done
                     target_processed=true
                 else
@@ -206,6 +237,7 @@ function tue-install-target
                 tue-install-debug "Sourcing $install_file.bash"
                 # shellcheck disable=SC1090
                 source "$install_file".bash
+                tue-install-debug "Done: Sourcing $install_file.bash"
             fi
             target_processed=true
         fi
@@ -237,13 +269,13 @@ function _show_update_message
     # shellcheck disable=SC2086,SC2116
     if [ -n "$(echo $2)" ]
     then
-        echo -e "\n    \033[1m$1\033[0m"                          | tee --append "$INSTALL_DETAILS_FILE"
-        echo "--------------------------------------------------" | tee --append "$INSTALL_DETAILS_FILE"
-        echo -e "$2"                                              | tee --append "$INSTALL_DETAILS_FILE"
-        echo "--------------------------------------------------" | tee --append "$INSTALL_DETAILS_FILE"
-        echo ""                                                   | tee --append "$INSTALL_DETAILS_FILE"
+        tue-install-tee "\n    \e[1m$1\e[0m"
+        tue-install-tee "--------------------------------------------------"
+        tue-install-tee "$2"
+        tue-install-tee "--------------------------------------------------"
+        tue-install-tee ""
     else
-        echo -e "\033[1m$1\033[0m: up-to-date"                    | tee --append "$INSTALL_DETAILS_FILE"
+        tue-install-tee "\e[1m$1\e[0m: up-to-date"
     fi
 }
 
@@ -344,8 +376,7 @@ function tue-install-git
             # If different, switch url
             if [ "$current_url" != "$repo" ]
             then
-                tue-install-debug "git -C $targetdir remote set-url origin $repo"
-                git -C "$targetdir" remote set-url origin "$repo"
+                tue-install-pipe git -C "$targetdir" remote set-url origin "$repo" || tue-install-error "Could not change git url of '$targetdir' to '$repo'"
                 tue-install-info "URL has switched to $repo"
             fi
 
@@ -589,9 +620,9 @@ Command: tue-install-cp $*"
             if "$root_required"
             then
                 tue-install-debug "Using elevated privileges (sudo)"
-                sudo mkdir --parents --verbose "$cp_target_parent_dir" && sudo cp --verbose "$file" "$cp_target"
+                tue-install-pipe sudo mkdir --parents --verbose "$cp_target_parent_dir" && tue-install-pipe sudo cp --verbose "$file" "$cp_target"
             else
-                mkdir --parents --verbose "$cp_target_parent_dir" && cp --verbose "$file" "$cp_target"
+                tue-install-pipe mkdir --parents --verbose "$cp_target_parent_dir" && tue-install-pipe cp --verbose "$file" "$cp_target"
             fi
         else
             tue-install-debug "File $file and $cp_target are the same, no action needed"
@@ -621,8 +652,6 @@ function tue-install-add-text
     then
         tue-install-error "Invalid tue-install-add-text call. Usage: tue-install-add-text SOURCE_FILE TARGET_FILE"
     fi
-
-    tue-install-debug "tue-install-add-text $*"
 
     local source_file=$1
     # shellcheck disable=SC2088
@@ -768,8 +797,7 @@ function tue-install-system-now
 
     if [ -n "$pkgs_to_install" ]
     then
-        echo -e "Going to run the following command:\n"
-        echo -e "sudo apt-get install --assume-yes -q $pkgs_to_install\n"
+        tue-install-echo "Going to run the following command:\n\nsudo apt-get install --assume-yes -q $pkgs_to_install\n"
 
         # Wait for apt-lock first (https://askubuntu.com/a/375031)
         i=0
@@ -791,14 +819,12 @@ function tue-install-system-now
         if [ ! -f "$TUE_APT_GET_UPDATED_FILE" ]
         then
             # Update once every boot. Or delete the tmp file if you need an update before installing a pkg.
-            tue-install-debug "sudo apt-get update -qq"
-            sudo apt-get update -qq || tue-install-error "An error occurred while updating apt-get."
+            tue-install-pipe sudo apt-get update || tue-install-error "An error occurred while updating apt-get."
             touch $TUE_APT_GET_UPDATED_FILE
         fi
 
-        tue-install-debug "sudo apt-get install --assume-yes -q $pkgs_to_install"
         # shellcheck disable=SC2086
-        sudo apt-get install --assume-yes -q $pkgs_to_install || tue-install-error "An error occurred while installing system packages."
+        tue-install-pipe sudo apt-get install --assume-yes -q $pkgs_to_install || tue-install-error "An error occurred while installing system packages."
         tue-install-debug "Installed $pkgs_to_install ($?)"
     fi
 }
@@ -892,8 +918,7 @@ function tue-install-ppa-now
                 ((i=i+1))
             done
 
-            tue-install-debug "sudo add-apt-repository --yes $ppa"
-            sudo add-apt-repository --yes "$ppa" || tue-install-error "An error occurred while adding ppa: $ppa"
+            tue-install-pipe sudo add-apt-repository --yes "$ppa" || tue-install-error "An error occurred while adding ppa: $ppa"
             PPA_ADDED=true
         else
             tue-install-debug "$ppa is already added previously"
@@ -954,7 +979,7 @@ function _tue-install-pip-now
     if version_gt "$desired_pip_version" "$pip_version"
     then
         tue-install-debug "pip${pv} not yet version >=$desired_pip_version, but $pip_version"
-        python"${pv}" -m pip install --user --upgrade pip
+        tue-install-pipe python"${pv}" -m pip install --user --upgrade pip
         hash -r
     else
         tue-install-debug "Already pip${pv}>=$desired_pip_version"
@@ -1007,20 +1032,16 @@ function _tue-install-pip-now
 
     if [ -n "$pips_to_install" ]
     then
-        echo -e "Going to run the following command:\n"
-        echo -e "python${pv} -m pip install --use-feature=2020-resolver --use-feature=fast-deps --user $pips_to_install <<< yes\n"
         # shellcheck disable=SC2048,SC2086
-        python"${pv}" -m pip install --use-feature=2020-resolver --use-feature=fast-deps --user $pips_to_install <<< yes || tue-install-error "An error occurred while installing pip${pv} packages."
+        tue-install-pipe python"${pv}" -m pip install --use-feature=2020-resolver --use-feature=fast-deps --user $pips_to_install <<< yes || tue-install-error "An error occurred while installing pip${pv} packages."
     fi
 
     if [ -n "$git_pips_to_install" ]
     then
         for pkg in $git_pips_to_install
         do
-            echo -e "Going to run the following command:\n"
-            echo -e "python${pv} -m pip install --use-feature=2020-resolver --use-feature=fast-deps --user $pkg <<< yes\n"
             # shellcheck disable=SC2048,SC2086
-            python"${pv}" -m pip install --use-feature=2020-resolver --use-feature=fast-deps --user $pkg <<< yes || tue-install-error "An error occurred while installing pip${pv} packages."
+            tue-install-pipe python"${pv}" -m pip install --use-feature=2020-resolver --use-feature=fast-deps --user $pkg <<< yes || tue-install-error "An error occurred while installing pip${pv} packages."
         done
     fi
 }
@@ -1080,12 +1101,9 @@ function tue-install-snap-now
 
     if [ -n "$snaps_to_install" ]
     then
-        echo -e "Going to run the following command:\n"
         for pkg in $snaps_to_install
         do
-            echo -e "sudo snap install --classic $pkg <<< yes\n"
-            tue-install-debug "sudo snap install --classic $pkg <<< yes"
-            sudo snap install --classic "$pkg" <<< yes || tue-install-error "An error occurred while installing snap packages."
+            tue-install-pipe sudo snap install --classic "$pkg" <<< yes || tue-install-error "An error occurred while installing snap packages."
         done
     fi
 }
@@ -1109,10 +1127,8 @@ function tue-install-dpkg
     then
         tue-install-error "Invalid tue-install-dpkg call: needs package as argument."
     fi
-    tue-install-debug "Installing dpkg $1"
-    sudo dpkg --install "$1"
-    tue-install-debug "sudo apt-get --fix-broken --assume-yes -q install"
-    sudo apt-get --fix-broken --assume-yes -q install
+    tue-install-pipe sudo dpkg --install "$1"
+    tue-install-pipe sudo apt-get --fix-broken --assume-yes -q install || tue-install-error "An error occured while fixing dpkg install"
 }
 
 # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # #
