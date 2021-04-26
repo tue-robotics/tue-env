@@ -13,7 +13,7 @@ function tue-data
         mkdir -p ~/ros/data
         mv ~/ros/data-tmp-dir ~/ros/data/private
 
-        echo -e "\e[0;33m[IMPORTANT] I moved the data folder. '~/ros/data' has now become '~/ros/data/private'\033[0m"
+        echo -e "\e[0;33m[IMPORTANT] I moved the data folder. '~/ros/data' has now become '~/ros/data/private'\e[0m"
         echo ""
     fi
 
