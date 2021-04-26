@@ -193,7 +193,9 @@ It is preferred to include these `-now` dependencies in `install.yaml`. Only use
   version: [branch/commit/tag] (Optional field)
 ```
 
-### `tue-install` functions for `install.bash`
+### Writing `install.bash`
+
+#### Generic `tue-install` functions
 
 The following functions provided with `tue-env` must be preferred over any
 generally used methods of installing packages:
@@ -225,6 +227,20 @@ installed).
 A general remark about the order of preference of package repositories:
 
 system > ppa > pip3 > snap > git > hg > svn > dpkg (> pip, deprecated)
+
+#### Logging
+
+The following logging functions can be used:
+
+| Function Name         | Description                                                                                                                                                                                  |
+|-----------------------|----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------|
+| `tue-install-debug`   | Labeled print to the log file; Also prints to stdout when running `tue-get` with `--debug`                                                                                                   |
+| `tue-install-info`    | Labeled print to log file and stdout; Also printed again to stdout at the end of `tue-get`                                                                                                   |
+| `tue-install-warning` | Similar to `tue-install-info`, but prints in blinking yellow                                                                                                                                 |
+| `tue-install-error`   | Labeled print in red to log file and stdout and ends the execution of `tue-get`                                                                                                              |
+| `tue-install-echo`    | Labeled echo to log file and stdout                                                                                                                                                          |
+| `tue-install-tee`     | Plain print to log file and stdout                                                                                                                                                           |
+| `tue-install-pipe`    | Executes the command with its arguments. Both stdout and stderr are captured and printed to the log file and stdout. The stderr is converted to red. Return code of the command is preserved |
 
 ## CI
 
