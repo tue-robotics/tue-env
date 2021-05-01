@@ -103,6 +103,7 @@ function tue-install-pipe
     pipefail_old=$(set -o | grep pipefail | awk '{printf $2}')
     [ "$pipefail_old" != "on" ] && set -o pipefail # set pipefail if not yet set
     echo -e "\e[0;1m[$TUE_INSTALL_CURRENT_TARGET]: $*\e[0m" | tee --append "$INSTALL_DETAILS_FILE"
+    # Executes the command (all arguments), catch stdout and stderr, red styled, print them directly and to file
     "$@" 2> >(sed $'s,.*,\e[31m&\e[m,'>&1) | tee --append "$INSTALL_DETAILS_FILE"
     local return_code=$?
     [ "$pipefail_old" != "on" ] && set +o pipefail # restore old pipefail setting
