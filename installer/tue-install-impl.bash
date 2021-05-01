@@ -1034,7 +1034,7 @@ function _tue-install-pip-now
     if [ -n "$pips_to_install" ]
     then
         # shellcheck disable=SC2048,SC2086
-        tue-install-pipe python"${pv}" -m pip install --use-feature=fast-deps --user $pips_to_install <<< yes || tue-install-error "An error occurred while installing pip${pv} packages."
+        tue-install-pipe python"${pv}" -m pip install --user $pips_to_install <<< yes || tue-install-error "An error occurred while installing pip${pv} packages."
     fi
 
     if [ -n "$git_pips_to_install" ]
@@ -1042,7 +1042,7 @@ function _tue-install-pip-now
         for pkg in $git_pips_to_install
         do
             # shellcheck disable=SC2048,SC2086
-            tue-install-pipe python"${pv}" -m pip install --use-feature=fast-deps --user $pkg <<< yes || tue-install-error "An error occurred while installing pip${pv} packages."
+            tue-install-pipe python"${pv}" -m pip install --user $pkg <<< yes || tue-install-error "An error occurred while installing pip${pv} packages."
         done
     fi
 }
