@@ -3,8 +3,8 @@
 #       Dockerfile to build working Ubuntu image with tue-env
 # ----------------------------------------------------------------
 
-# Set default base image to Ubuntu 18.04
-ARG BASE_IMAGE=ubuntu:18.04
+# Set default base image to Ubuntu 20.04
+ARG BASE_IMAGE=ubuntu:20.04
 FROM $BASE_IMAGE
 
 # Build time arguments
@@ -28,7 +28,7 @@ SHELL ["/bin/bash", "-c"]
 # Install commands used in our scripts and standard present on a clean ubuntu
 # installation and setup a user with sudo priviledges
 RUN apt-get update -qq && \
-    apt-get install -qq --assume-yes --no-install-recommends apt-transport-https apt-utils ca-certificates curl dbus dialog git lsb-release openssh-client sudo tzdata wget > /dev/null && \
+    apt-get install -qq --assume-yes --no-install-recommends apt-transport-https apt-utils ca-certificates curl dbus dialog git keyboard-configuration lsb-release openssh-client sudo tzdata wget > /dev/null && \
     # Add amigo user
     adduser -u 1000 --disabled-password --gecos "" $USER && \
     usermod -aG sudo $USER && \
@@ -64,7 +64,7 @@ RUN --mount=type=ssh,uid=1000 sed -e s/return//g -i ~/.bashrc && \
     # Install target ros
     tue-get install ros --test-depend --branch="$BRANCH" && \
     # Remove temp tue files
-    (rm -rf /tmp/tue* > /dev/null || true) && \
+    (rm -rf /tmp/tue_* > /dev/null || true) && \
     # Show ownership of .tue
     namei -l ~/.tue && \
     # Check git remote origin

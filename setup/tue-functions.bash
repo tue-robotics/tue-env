@@ -300,6 +300,8 @@ function _git_https_or_ssh
     local input_url=$1
     local output_url
 
+    local test_var
+
     # TODO: Remove the use of TUE_USE_SSH when migration to TUE_GIT_USE_SSH is complete
     [[ -v "TUE_USE_SSH" ]] && test_var="TUE_USE_SSH"
 
@@ -308,7 +310,7 @@ function _git_https_or_ssh
     [[ "$input_url" == *"github"* ]] && [[ -v "TUE_GITHUB_USE_SSH" ]] && test_var="TUE_GITHUB_USE_SSH"
     [[ "$input_url" == *"gitlab"* ]] && [[ -v "TUE_GITLAB_USE_SSH" ]] && test_var="TUE_GITLAB_USE_SSH"
 
-    if [[ "${!test_var}" == "true" ]]
+    if [[ -n "$test_var" && "${!test_var}" == "true" ]]
     then
         output_url=$(_git_ssh "$input_url")
     else
@@ -529,7 +531,7 @@ function _tue-repo-status
                     break
                 fi
             done
-            [ "$allowed" != "true" ] && echo -e "\033[1m$name\033[0m is on branch '$current_branch'"
+            [ "$allowed" != "true" ] && echo -e "\e[1m$name\e[0m is on branch '$current_branch'"
         fi
         vctype=git
     elif [ -d "$pkg_dir"/.svn ]
@@ -549,7 +551,7 @@ function _tue-repo-status
         if [ -n "$status" ]
         then
             echo -e ""
-            echo -e "\033[38;5;1mM  \033[0m($vctype) \033[1m$name\033[0m"
+            echo -e "\e[38;5;1mM  \e[0m($vctype) \e[1m$name\e[0m"
             echo -e "--------------------------------------------------"
             echo -e "$status"
             echo -e "--------------------------------------------------"
@@ -592,7 +594,7 @@ function tue-git-status
         if branch=$(git -C "$pkg_dir" rev-parse --abbrev-ref HEAD 2>&1)
         then
             hash=$(git -C "$pkg_dir" rev-parse --short HEAD)
-            printf "\e[0;36m%-20s\033[0m %-15s %s\n" "$branch" "$hash" "$pkg"
+            printf "\e[0;36m%-20s\e[0m %-15s %s\n" "$branch" "$hash" "$pkg"
         fi
     done
 }
@@ -618,13 +620,13 @@ function tue-revert
             if git -C "$pkg_dir"  diff -s --exit-code "$new_hash" "$current_hash"
             then
                 newtime=$(git -C "$pkg_dir"  show -s --format=%ci)
-                printf "\e[0;36m%-20s\033[0m %-15s \e[1m%s\033[0m %s\n" "$branch is fine" "$new_hash" "$newtime" "$pkg"
+                printf "\e[0;36m%-20s\e[0m %-15s \e[1m%s\e[0m %s\n" "$branch is fine" "$new_hash" "$newtime" "$pkg"
             else
                 git -C "$pkg_dir"  checkout -q "$new_hash"
                 newbranch=$(git -C "$pkg_dir"  rev-parse --abbrev-ref HEAD 2>&1)
                 newtime=$(git -C "$pkg_dir"  show -s --format=%ci)
                 echo "$branch" > "$pkg_dir/.do_not_commit_this"
-                printf "\e[0;36m%-20s\033[0m %-15s \e[1m%s\033[0m %s\n" "$newbranch based on $branch" "$new_hash" "$newtime" "$pkg"
+                printf "\e[0;36m%-20s\e[0m %-15s \e[1m%s\e[0m %s\n" "$newbranch based on $branch" "$new_hash" "$newtime" "$pkg"
             fi
         else
             echo "Package $pkg could not be reverted, current state: $branch"
@@ -660,7 +662,7 @@ function _show_file
 {
     if [ -n "$2" ]
     then
-        echo -e "\033[1m[$1] $2\033[0m"
+        echo -e "\e[1m[$1] $2\e[0m"
         echo "--------------------------------------------------"
         if hash pygmentize 2> /dev/null
         then
@@ -1123,7 +1125,7 @@ function tue-checkout
                 current_branch=$(git -C "$pkg_dir" rev-parse --abbrev-ref HEAD)
                 if [[ "$current_branch" == "$branch" ]]
                 then
-                    echo -e "\033[1m$pkg\033[0m: Already on branch $branch"
+                    echo -e "\e[1m$pkg\e[0m: Already on branch $branch"
                 else
                     local res _checkout_res _checkout_return _submodule_res _submodule_return
                     _checkout_res=$(git -C "$pkg_dir" checkout "$branch" 2>&1)
@@ -1136,12 +1138,12 @@ function tue-checkout
 
                     if [ "$_checkout_return" == 0 ] && [ -z "$_submodule_res" ]
                     then
-                        echo -e "\033[1m$pkg\033[0m: checked-out $branch"
+                        echo -e "\e[1m$pkg\e[0m: checked-out $branch"
                     else
                         echo ""
-                        echo -e "    \033[1m$pkg\033[0m"
+                        echo -e "    \e[1m$pkg\e[0m"
                         echo "--------------------------------------------------"
-                        echo -e "\033[38;5;1m$res\033[0m"
+                        echo -e "\e[38;5;1m$res\e[0m"
                         echo "--------------------------------------------------"
                     fi
                 fi
@@ -1172,11 +1174,11 @@ function _tue-repos-do
     local mem_pwd=$PWD
 
     { [ -n "$TUE_DIR" ] && cd "$TUE_DIR"; } || { echo -e "TUE_DIR '$TUE_DIR' does not exist"; return 1; }
-    echo -e "\033[1m[tue-env]\033[0m"
+    echo -e "\e[1m[tue-env]\e[0m"
     eval "$@"
 
     { [ -n "$TUE_ENV_TARGETS_DIR" ] && cd "$TUE_ENV_TARGETS_DIR"; } || { echo -e "TUE_ENV_TARGETS_DIR '$TUE_ENV_TARGETS_DIR' does not exist"; return 1; }
-    echo -e "\033[1m[tue-env-targets]\033[0m"
+    echo -e "\e[1m[tue-env-targets]\e[0m"
     eval "$@"
 
     local repos_dir=$TUE_ENV_DIR/repos/github.com/tue-robotics
@@ -1190,7 +1192,7 @@ function _tue-repos-do
         if [ -d "$repo_dir" ]
         then
             cd "$repo_dir" || { echo -e "Directory '$TUE_ENV_TARGETS_DIR' does not exist"; return 1; }
-            echo -e "\033[1m[${repo%.git}]\033[0m"
+            echo -e "\e[1m[${repo%.git}]\e[0m"
             eval "$@"
         fi
     done
@@ -1217,7 +1219,7 @@ For example:
 
     if [ "$remote" == "origin" ]
     then
-        echo -e "\033[1mYou are not allowed to change the remote: 'origin'\033[0m"
+        echo -e "\e[1mYou are not allowed to change the remote: 'origin'\e[0m"
         return 1
     fi
 
@@ -1267,7 +1269,7 @@ For example:
 
     if [ "$remote" == "origin" ]
     then
-        echo -e "\033[1mYou are not allowed to change the remote: 'origin'\033[0m"
+        echo -e "\e[1mYou are not allowed to change the remote: 'origin'\e[0m"
         return 1
     fi
 
@@ -1291,7 +1293,7 @@ For example:
 
     if [ "$remote" == "origin" ]
     then
-        echo -e "\033[1mYou are not allowed to remove the remote: 'origin'\033[0m"
+        echo -e "\e[1mYou are not allowed to remove the remote: 'origin'\e[0m"
         return 1
     fi
 
@@ -1322,7 +1324,7 @@ For example:
 
     if [ "$remote" == "origin" ]
     then
-        echo -e "\033[1mYou are not allowed to remove the remote: 'origin'\033[0m"
+        echo -e "\e[1mYou are not allowed to remove the remote: 'origin'\e[0m"
         return 1
     fi
 

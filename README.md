@@ -6,7 +6,7 @@ Package manager that can be used to install (ROS) dependencies
 
 ## Installation
 
-### Ubuntu 16.04/18.04
+### Ubuntu 20.04
 
 Standard tue-env installation with targets from [tue-env-targets](https://github.com/tue-robotics/tue-env-targets)
 
@@ -150,17 +150,17 @@ Taking the above into account, the following combinations for `install.yaml` are
 
 Both ROS distro specific as default can be 'null'. Prevered usage is default for current and feature distributions and exceptions for old distributions.
 
-#### Target / System / PIP / PIP2 / PIP3 / PPA / Snap / DPKG / Empty
+#### Target / System / PIP / PIP3 / PPA / Snap / DPKG / Empty
 
 ```yaml
-- type: [target/system/pip/pip2/pip3/ppa/snap/dpkg/empty]
+- type: [target/system/pip/pip3/ppa/snap/dpkg/empty]
   name: <Name of the candidate>
 ```
 
 Depending on Ubuntu distribution:
 
 ```yaml
-- type: [target/system/pip/pip2/pip3/ppa/snap/dpkg/empty]
+- type: [target/system/pip/pip3/ppa/snap/dpkg/empty]
   xenial:
     name: [null/<Name of the candidate>]
   default:
@@ -169,15 +169,15 @@ Depending on Ubuntu distribution:
 
 Both Ubuntu distribution specific as default can be 'null'. Prevered usage is default for current and feature distributions and exceptions for old distributions.
 
-#### (Target / System / PIP / PIP2 / PIP3 / PPA / Snap)-now
+#### (Target / System / PIP / PIP3 / PPA / Snap)-now
 
-The default installation method for targets of type `system`, `pip(2/3)`, `ppa` and `snap` is to collect all such targets in a list and install them simultaneously at the end of the `tue-get install` procedure. To install such a dependency immediately for a specific target, use the target type as `X-now`:
+The default installation method for targets of type `system`, `pip(3)`, `ppa` and `snap` is to collect all such targets in a list and install them simultaneously at the end of the `tue-get install` procedure. To install such a dependency immediately for a specific target, use the target type as `X-now`:
 
 ```yaml
-- type: [target/system/pip/pip2/pip3/ppa/snap]-now
+- type: [target/system/pip/pip3/ppa/snap]-now
   name: <Name of the candidate>
 
-- type: [target/system/pip/pip2/pip3/ppa/snap/dpkg]
+- type: [target/system/pip/pip3/ppa/snap/dpkg]
   name: <Name of the candidate>
 ```
 
@@ -193,7 +193,9 @@ It is preferred to include these `-now` dependencies in `install.yaml`. Only use
   version: [branch/commit/tag] (Optional field)
 ```
 
-### `tue-install` functions for `install.bash`
+### Writing `install.bash`
+
+#### Generic `tue-install` functions
 
 The following functions provided with `tue-env` must be preferred over any
 generally used methods of installing packages:
@@ -205,11 +207,9 @@ generally used methods of installing packages:
 | `tue-install-cp`                | Analogous to `cp` but takes `sudo` into account and the source should be relative to target    |
 | `tue-install-dpkg`              | To install a debian dpkg file                                                                  |
 | `tue-install-git`               | To install a git repository                                                                    |
-| `tue-install-pip`               | To add a python pip2 package to a list to be installed at the end (deprecated)                 |
-| `tue-install-pip2`              | To add a python pip2 package to a list to be installed at the end                              |
+| `tue-install-pip`               | To add a python pip3 package to a list to be installed at the end (deprecated)                 |
 | `tue-install-pip3`              | To add a python pip3 package to a list to be installed at the end                              |
-| `tue-install-pip-now`           | To install python pip2 package, but ignores it if already installed (deprecated)               |
-| `tue-install-pip2-now`          | To install python pip2 package, but ignores it if already installed                            |
+| `tue-install-pip-now`           | To install python pip3 package, but ignores it if already installed (deprecated)               |
 | `tue-install-pip3-now`          | To install python pip3 package, but ignores it if already installed                            |
 | `tue-install-ppa`               | To add one PPA/DEB to a list to be added with `apt-add-repository` at the end, before apt-get  |
 | `tue-install-ppa-now`           | To add a PPA/DEB with `apt-add-repository`, use ^ inside of a DEB and spaces between items     |
@@ -226,7 +226,21 @@ installed).
 
 A general remark about the order of preference of package repositories:
 
-system > ppa > pip2 = pip3 > snap > git > hg > svn > dpkg (> pip, deprecated)
+system > ppa > pip3 > snap > git > hg > svn > dpkg (> pip, deprecated)
+
+#### Logging
+
+The following logging functions can be used:
+
+| Function Name         | Description                                                                                                                                                                                  |
+|-----------------------|----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------|
+| `tue-install-debug`   | Labeled print to the log file; Also prints to stdout when running `tue-get` with `--debug`                                                                                                   |
+| `tue-install-info`    | Labeled print to log file and stdout; Also printed again to stdout at the end of `tue-get`                                                                                                   |
+| `tue-install-warning` | Similar to `tue-install-info`, but prints in blinking yellow                                                                                                                                 |
+| `tue-install-error`   | Labeled print in red to log file and stdout and ends the execution of `tue-get`                                                                                                              |
+| `tue-install-echo`    | Labeled echo to log file and stdout                                                                                                                                                          |
+| `tue-install-tee`     | Plain print to log file and stdout                                                                                                                                                           |
+| `tue-install-pipe`    | Executes the command with its arguments. Both stdout and stderr are captured and printed to the log file and stdout. The stderr is converted to red. Return code of the command is preserved |
 
 ## CI
 
