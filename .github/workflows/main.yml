@@ -7,7 +7,7 @@ jobs:
     name: Linting
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@v2
+      - uses: actions/checkout@v2.3.4
       - name: Setup Python 3
         uses: actions/setup-python@v2
         with:
@@ -29,7 +29,7 @@ jobs:
     runs-on: ubuntu-latest
     needs: linting
     steps:
-      - uses: actions/checkout@v2
+      - uses: actions/checkout@v2.3.4
       - name: Docker info
         run: docker info
       - name: Script
@@ -47,7 +47,7 @@ jobs:
     needs: linting
     if: ${{ github.event_name != 'pull_request' && github.ref == 'refs/heads/master' }}
     steps:
-      - uses: actions/checkout@v2
+      - uses: actions/checkout@v2.3.4
       - name: Docker info
         run: docker info
       - name: Script
