@@ -26,11 +26,6 @@
     DOCKER_TLS_CERTDIR: "/certs"
     DOCKER_DRIVER: overlay2
 
-  tags:
-    - linux
-    - docker-privileged
-    - x86_64
-
   before_script:
     - apk --update add git bash curl jq
     - which ssh-agent || ( apk --update add openssh-client)
@@ -60,27 +55,36 @@
   rules:
     - if: '$MIRROR_UPSTREAM == "true"'
       when: never
-    - when: always
 
 # TODO: Split multiarch build into multiple jobs
 # Build docker image job for linux/arm64 and linux/amd64
-linux/arm64-linux/amd64:
+amd64:
   extends: .build_docker_image_template
+  tags:
+    - linux
+    - docker-privileged
+    - x86_64
+  variables:
+    TARGET_PLATFORM: "amd64"
   rules:
-    - if: '$MIRROR_UPSTREAM == "true"'
-      when: never
     - if: '$CI_PIPELINE_SOURCE == "merge_request_event"'
       when: always
-      variables:
-        TARGET_PLATFORM: "linux/amd64"
     - if: '$CI_COMMIT_BRANCH != $CI_DEFAULT_BRANCH'
       when: always
-      variables:
-        TARGET_PLATFORM: "linux/amd64"
     - if: '$CI_COMMIT_BRANCH == $CI_DEFAULT_BRANCH'
       when: always
-      variables:
-        TARGET_PLATFORM: "linux/arm64,linux/amd64"
+
+arm64:
+  extends: .build_docker_image_template
+  tags:
+    - linux
+    - docker-privileged
+    - arm64
+  variables:
+    TARGET_PLATFORM: "arm64"
+  rules:
+    - if: '$CI_COMMIT_BRANCH == $CI_DEFAULT_BRANCH'
+      when: always
 
 # Job to mirror upstream
 Mirror Upstream:
