@@ -51,7 +51,7 @@
 # Job template to build docker image
 # variables to be defined:
 #   1.  TARGET_PLATFORM (linux/amd64, linux/arm64)
-.build_docker_image_template: &build_docker_image
+.build_docker_image_template:
   extends: .base
   script:
     - docker info
@@ -65,7 +65,7 @@
 # TODO: Split multiarch build into multiple jobs
 # Build docker image job for linux/arm64 and linux/amd64
 linux/arm64-linux/amd64:
-  <<: *build_docker_image
+  extends: .build_docker_image_template
   rules:
     - if: '$MIRROR_UPSTREAM == "true"'
       when: never
