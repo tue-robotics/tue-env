@@ -86,7 +86,7 @@ else
     CI_DOCKER_IMAGE_TAG=$(echo "$CI_BRANCH" | tr '[:upper:]' '[:lower:]' | sed -e 's:/:_:g')
 fi
 
-CI_DOCKER_IMAGE_NAME="$CI_DOCKER_IMAGE_NAME":"$CI_DOCKER_IMAGE_TAG"
+CI_DOCKER_IMAGE_NAME="${CI_DOCKER_IMAGE_NAME}:${CI_DOCKER_IMAGE_TAG}-${CI_DOCKER_PLATFORMS}"
 echo -e "\e[35m\e[1m Creating docker $CI_DOCKER_IMAGE_NAME \e[0m"
 
 # Make sure a known hosts file exists on the host in the workingdir
@@ -105,7 +105,7 @@ fi
 
 if [ -n "$CI_DOCKER_PLATFORMS" ]
 then
-    DOCKER_PLATFORMS="--platform=${CI_DOCKER_PLATFORMS}"
+    DOCKER_PLATFORMS="--platform=linux/${CI_DOCKER_PLATFORMS}"
     echo -e "\e[35m\e[1m Creating a new docker context for multi arch builds \e[0m"
     docker context create multiarch-environment
     echo -e "\e[35m\e[1m Creating a new buildx builder for multi arch builds \e[0m"
