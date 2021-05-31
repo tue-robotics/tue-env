@@ -99,6 +99,8 @@ arm64:
   rules:
     - if: '$MIRROR_UPSTREAM == "true"'
       when: 'never'
+    - if: '$CI_PIPELINE_SOURCE == "merge_request_event"'
+      when: 'never'
     - if: '$CI_COMMIT_BRANCH == $CI_DEFAULT_BRANCH'
       variables:
         PUSH_IMAGE: "true"
