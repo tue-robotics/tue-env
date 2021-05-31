@@ -73,7 +73,6 @@ stages:
     - if: '$MIRROR_UPSTREAM == "true"'
       when: never
 
-# TODO: Split multiarch build into multiple jobs
 # Build docker image job for linux/arm64 and linux/amd64
 amd64:
   extends: .build_docker_image_template
@@ -85,11 +84,10 @@ amd64:
     TARGET_PLATFORM: "amd64"
   rules:
     - if: '$CI_PIPELINE_SOURCE == "merge_request_event"'
-      when: always
     - if: '$CI_COMMIT_BRANCH != $CI_DEFAULT_BRANCH'
-      when: always
     - if: '$CI_COMMIT_BRANCH == $CI_DEFAULT_BRANCH'
-      when: always
+      variables:
+        PUSH_IMAGE: "true"
 
 arm64:
   extends: .build_docker_image_template
@@ -101,7 +99,8 @@ arm64:
     TARGET_PLATFORM: "arm64"
   rules:
     - if: '$CI_COMMIT_BRANCH == $CI_DEFAULT_BRANCH'
-      when: always
+      variables:
+        PUSH_IMAGE: "true"
 
 # Job to mirror upstream
 Mirror Upstream:
