@@ -62,7 +62,8 @@
         --user="gitlab-ci-token" \
         --password="${CI_JOB_TOKEN}" \
         --registry="${CI_REGISTRY}" \
-        --platforms="${TARGET_PLATFORM}"
+        --platforms="${TARGET_PLATFORM}" \
+        --push_image="${PUSH_IMAGE:-"false"}"
   rules:
     - if: '$MIRROR_UPSTREAM == "true"'
       when: never

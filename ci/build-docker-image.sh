@@ -48,6 +48,9 @@ do
         --platforms=* )
             CI_DOCKER_PLATFORMS="${i#*=}" ;;
 
+        --push_image=* )
+            CI_DOCKER_PUSH_IMAGE="${i#*=}" ;;
+
         * )
             echo -e "Error! Unknown input variable '$i'"
             exit 1 ;;
@@ -114,14 +117,16 @@ then
 fi
 
 # push the new Docker image to the Docker registry only after acceptance of pull request
+DOCKER_PUSH=false
 if [ "$CI_PULL_REQUEST" == "false" ]
 then
-    # Authenticate to the Docker registry
-    echo -e "\e[35m\e[1m Authenticating docker registry $CI_DOCKER_REGISTRY \e[0m"
-    echo "$CI_DOCKER_PASSWORD" | docker login "$CI_DOCKER_REGISTRY" -u "$CI_DOCKER_USER" --password-stdin
-    DOCKER_PUSH=true
-else
-    DOCKER_PUSH=false
+    if [ "$CI_DOCKER_PUSH_IMAGE" == "true" ]
+    then
+        # Authenticate to the Docker registry
+        echo -e "\e[35m\e[1m Authenticating docker registry $CI_DOCKER_REGISTRY \e[0m"
+        echo "$CI_DOCKER_PASSWORD" | docker login "$CI_DOCKER_REGISTRY" -u "$CI_DOCKER_USER" --password-stdin
+        DOCKER_PUSH=true
+    fi
 fi
 
 # build the Docker image (this will use the Dockerfile in the root of the repo)
