@@ -48,6 +48,9 @@ do
         --platforms=* )
             CI_DOCKER_PLATFORMS="${i#*=}" ;;
 
+        --push_image=* )
+            CI_DOCKER_PUSH_IMAGE="${i#*=}" ;;
+
         * )
             echo -e "Error! Unknown input variable '$i'"
             exit 1 ;;
@@ -86,7 +89,7 @@ else
     CI_DOCKER_IMAGE_TAG=$(echo "$CI_BRANCH" | tr '[:upper:]' '[:lower:]' | sed -e 's:/:_:g')
 fi
 
-CI_DOCKER_IMAGE_NAME="$CI_DOCKER_IMAGE_NAME":"$CI_DOCKER_IMAGE_TAG"
+CI_DOCKER_IMAGE_NAME="${CI_DOCKER_IMAGE_NAME}:${CI_DOCKER_IMAGE_TAG}-${CI_DOCKER_PLATFORMS}"
 echo -e "\e[35m\e[1m Creating docker $CI_DOCKER_IMAGE_NAME \e[0m"
 
 # Make sure a known hosts file exists on the host in the workingdir
@@ -105,7 +108,7 @@ fi
 
 if [ -n "$CI_DOCKER_PLATFORMS" ]
 then
-    DOCKER_PLATFORMS="--platform=${CI_DOCKER_PLATFORMS}"
+    DOCKER_PLATFORMS="--platform=linux/${CI_DOCKER_PLATFORMS}"
     echo -e "\e[35m\e[1m Creating a new docker context for multi arch builds \e[0m"
     docker context create multiarch-environment
     echo -e "\e[35m\e[1m Creating a new buildx builder for multi arch builds \e[0m"
@@ -114,14 +117,16 @@ then
 fi
 
 # push the new Docker image to the Docker registry only after acceptance of pull request
+DOCKER_PUSH=false
 if [ "$CI_PULL_REQUEST" == "false" ]
 then
-    # Authenticate to the Docker registry
-    echo -e "\e[35m\e[1m Authenticating docker registry $CI_DOCKER_REGISTRY \e[0m"
-    echo "$CI_DOCKER_PASSWORD" | docker login "$CI_DOCKER_REGISTRY" -u "$CI_DOCKER_USER" --password-stdin
-    DOCKER_PUSH=true
-else
-    DOCKER_PUSH=false
+    if [ "$CI_DOCKER_PUSH_IMAGE" == "true" ]
+    then
+        # Authenticate to the Docker registry
+        echo -e "\e[35m\e[1m Authenticating docker registry $CI_DOCKER_REGISTRY \e[0m"
+        echo "$CI_DOCKER_PASSWORD" | docker login "$CI_DOCKER_REGISTRY" -u "$CI_DOCKER_USER" --password-stdin
+        DOCKER_PUSH=true
+    fi
 fi
 
 # build the Docker image (this will use the Dockerfile in the root of the repo)

@@ -15,6 +15,10 @@
 #      - LOCAL_REMOTE_BRANCH
 
 # Base config that other jobs extend from
+stages:
+  - build
+  - release
+
 .base:
   image: ${CI_REGISTRY}/${CI_PROJECT_NAMESPACE}/docker-buildx:latest
 
@@ -25,11 +29,6 @@
     GIT_STRATEGY: clone
     DOCKER_TLS_CERTDIR: "/certs"
     DOCKER_DRIVER: overlay2
-
-  tags:
-    - linux
-    - docker-privileged
-    - x86_64
 
   before_script:
     - apk --update add git bash curl jq
@@ -51,40 +50,81 @@
 # Job template to build docker image
 # variables to be defined:
 #   1.  TARGET_PLATFORM (linux/amd64, linux/arm64)
-.build_docker_image_template: &build_docker_image
+.build_docker_image_template:
   extends: .base
+  stage: build
   script:
     - docker info
     - docker buildx inspect
-    - ci/build-docker-image.sh --ssh --image="${CI_REGISTRY}/${CI_PROJECT_PATH}" --branch=${CI_MERGE_REQUEST_TARGET_BRANCH_NAME:-$CI_COMMIT_BRANCH} --commit="${CI_COMMIT_SHA}" --pull_request=${CI_MERGE_REQUEST_IID:-"false"} --ref-name="merge-requests" --user="gitlab-ci-token" --password="${CI_JOB_TOKEN}" --registry="${CI_REGISTRY}" --platforms="${TARGET_PLATFORM}"
-  rules:
-    - if: '$MIRROR_UPSTREAM == "true"'
-      when: never
-    - when: always
+    - |
+      ci/build-docker-image.sh \
+        --ssh \
+        --image="${CI_REGISTRY}/${CI_PROJECT_PATH}" \
+        --branch=${CI_MERGE_REQUEST_TARGET_BRANCH_NAME:-$CI_COMMIT_BRANCH} \
+        --commit="${CI_COMMIT_SHA}" \
+        --pull_request=${CI_MERGE_REQUEST_IID:-"false"} \
+        --ref-name="merge-requests" \
+        --user="gitlab-ci-token" \
+        --password="${CI_JOB_TOKEN}" \
+        --registry="${CI_REGISTRY}" \
+        --platforms="${TARGET_PLATFORM}" \
+        --push_image="${PUSH_IMAGE:-"false"}"
 
-# TODO: Split multiarch build into multiple jobs
 # Build docker image job for linux/arm64 and linux/amd64
-linux/arm64-linux/amd64:
-  <<: *build_docker_image
+amd64:
+  extends: .build_docker_image_template
+  tags:
+    - linux
+    - docker-privileged
+    - x86_64
+  variables:
+    TARGET_PLATFORM: "amd64"
   rules:
     - if: '$MIRROR_UPSTREAM == "true"'
-      when: never
+      when: 'never'
     - if: '$CI_PIPELINE_SOURCE == "merge_request_event"'
-      when: always
-      variables:
-        TARGET_PLATFORM: "linux/amd64"
     - if: '$CI_COMMIT_BRANCH != $CI_DEFAULT_BRANCH'
-      when: always
-      variables:
-        TARGET_PLATFORM: "linux/amd64"
     - if: '$CI_COMMIT_BRANCH == $CI_DEFAULT_BRANCH'
-      when: always
       variables:
-        TARGET_PLATFORM: "linux/arm64,linux/amd64"
+        PUSH_IMAGE: "true"
+
+arm64:
+  extends: .build_docker_image_template
+  tags:
+    - linux
+    - docker-privileged
+    - arm64
+  variables:
+    TARGET_PLATFORM: "arm64"
+  rules:
+    - if: '$MIRROR_UPSTREAM == "true"'
+      when: 'never'
+    - if: '$CI_PIPELINE_SOURCE == "merge_request_event"'
+      when: 'never'
+    - if: '$CI_COMMIT_BRANCH == $CI_DEFAULT_BRANCH'
+      variables:
+        PUSH_IMAGE: "true"
+
+release:
+  extends: .base
+  stage: release
+  tags:
+    - linux
+    - docker-privileged
+  script:
+    - echo "${CI_JOB_TOKEN}" | docker login ${CI_REGISTRY} -u "gitlab-ci-token" --password-stdin
+    - docker manifest create ${CI_REGISTRY}/${CI_PROJECT_PATH}:latest ${CI_REGISTRY}/${CI_PROJECT_PATH}:latest-amd64 ${CI_REGISTRY}/${CI_PROJECT_PATH}:latest-arm64
+    - docker manifest push ${CI_REGISTRY}/${CI_PROJECT_PATH}:latest
+    - docker manifest inspect --verbose ${CI_REGISTRY}/${CI_PROJECT_PATH}:latest
+  rules:
+    - if: '$MIRROR_UPSTREAM == "true"'
+      when: 'never'
+    - if: '$CI_COMMIT_BRANCH == $CI_DEFAULT_BRANCH'
 
 # Job to mirror upstream
 Mirror Upstream:
   extends: .base
+  stage: build
   script:
     - ci/mirror-upstream.bash --upstream-remote-url="$REMOTE_URL" --local-remote-url="git@gitlab.com:$CI_PROJECT_PATH" --upstream-remote-branch="$REMOTE_BRANCH" --local-remote-branch="$LOCAL_REMOTE_BRANCH" --user="$GITLAB_USER_NAME" --email="$GITLAB_USER_EMAIL"
   rules:
