@@ -124,6 +124,9 @@ release:
 # Job to mirror upstream
 Mirror Upstream:
   extends: .base
+  tags:
+    - linux
+    - docker-privileged
   stage: build
   script:
     - ci/mirror-upstream.bash --upstream-remote-url="$REMOTE_URL" --local-remote-url="git@gitlab.com:$CI_PROJECT_PATH" --upstream-remote-branch="$REMOTE_BRANCH" --local-remote-branch="$LOCAL_REMOTE_BRANCH" --user="$GITLAB_USER_NAME" --email="$GITLAB_USER_EMAIL"
