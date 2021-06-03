@@ -130,7 +130,7 @@ then
                 git -C "$TUE_ENV_TARGETS_DIR" checkout "$BRANCH" 2>&1
                 git -C "$TUE_ENV_TARGETS_DIR" submodule sync --recursive 2>&1
                 git -C "$TUE_ENV_TARGETS_DIR" submodule update --init --recursive 2>&1
-                echo -en "Switched to branch $BRANCH"
+                echo -e "Switched to branch $BRANCH"
             fi
         else
             echo # (Optional) move to a new line
