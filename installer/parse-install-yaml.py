@@ -1,7 +1,5 @@
 #! /usr/bin/env python3
 
-from __future__ import print_function
-
 from os import environ
 import sys
 import yaml
@@ -45,7 +43,6 @@ def main():
     now_cache = {
         "system-now": [],
         "pip-now": [],
-        "pip2-now": [],
         "pip3-now": [],
         "ppa-now": [],
         "snap-now": [],
@@ -60,7 +57,7 @@ def main():
             if install_type == "empty":
                 return 0
 
-            elif install_type == "ros":
+            if install_type == "ros":
                 if "source" in install_item:
                     source = install_item["source"]
                 else:
@@ -77,7 +74,7 @@ def main():
                         continue
 
                 source_type = source["type"]
-                if source_type == "svn" or source_type == "git" or source_type == "hg":
+                if source_type == "git":
                     sub_dir = source.get("sub-dir", ".")
 
                     command = "tue-install-ros {0} {1} {2}".format(source_type, source["url"], sub_dir)
@@ -93,7 +90,7 @@ def main():
                 source = install_item["source"]
                 source_type = source["type"]
 
-                if source_type in ["svn", "git", "hg"]:
+                if source_type == "git":
                     sub_dir = source.get("sub-dir", '.')
 
                     command = "tue-install-ros {0} {1} {2}".format(source_type, source["url"], sub_dir)
@@ -102,7 +99,7 @@ def main():
                 else:
                     return show_error("Unknown catkin install type: '{0}'".format(source_type))
 
-            elif install_type == "svn" or install_type == "git" or install_type == "hg":
+            elif install_type == "git":
                 command = "tue-install-{0} {1} {2}".format(install_type, install_item["url"], install_item["path"])
                 if "version" in install_item:
                     command += " {0}".format(install_item["version"])
@@ -111,7 +108,6 @@ def main():
                 "target",
                 "system",
                 "pip",
-                "pip2",
                 "pip3",
                 "ppa",
                 "snap",
@@ -119,7 +115,6 @@ def main():
                 "target-now",
                 "system-now",
                 "pip-now",
-                "pip2-now",
                 "pip3-now",
                 "ppa-now",
                 "snap-now",
