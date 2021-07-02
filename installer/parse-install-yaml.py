@@ -107,6 +107,7 @@ def main():
                 "pip3-now",
                 "ppa-now",
                 "snap-now",
+                "rosdep",
             ]:
                 if now and "now" not in install_type:
                     install_type += "-now"
