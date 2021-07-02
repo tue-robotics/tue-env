@@ -994,7 +994,8 @@ function tue-install-rosdep
     rosdep_db=$(rosdep db --filter-for-installers=apt)  # pip extension would be nice in the future
     success=true
     system_targets=""
-    for dep in "$@"
+    # shellcheck disable=SC2048
+    for dep in "$*"
     do
         system_target=$(grep -o -P "(?<=^${dep} -> ).*" <<< "$rosdep_db") || { success=false; break; }
         system_targets="${system_targets} ${system_target}"
@@ -1007,7 +1008,8 @@ function tue-install-rosdep
         rosdep_db=$(rosdep db --filter-for-installers=apt)
         system_targets=""
 
-        for dep in "$@"
+        # shellcheck disable=SC2048
+        for dep in $*
         do
             if system_target=$(grep -o -P "(?<=^${dep} -> ).*" <<< "$rosdep_db")
             then
