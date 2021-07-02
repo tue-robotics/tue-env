@@ -20,6 +20,7 @@ function tue-env
         switch         - Switch to a different environment
         config         - Configures current environment
         set-default    - Set default environment
+        unset-default  - No default environment
         init-targets   - (Re-)Initialize the target list
         targets        - Changes directory to targets directory
         list           - List all possible environments
@@ -162,6 +163,10 @@ Purged environment directory of '$env'"""
         echo "$1" > "$TUE_DIR"/user/config/default_env
         echo "[tue-env] Default environment set to $1"
 
+    elif [[ $cmd == "unset-default" ]]
+    then
+        rm "${TUE_DIR}/user/config/default_env" 2> /dev/null
+        echo "[tue-env] Unset default environment"
     elif [[ $cmd == "init-targets" ]]
     then
         if [ -z "$1" ] || { [ -z "$TUE_ENV" ] && [ -z "$2" ]; }
@@ -274,7 +279,7 @@ function _tue-env
 
     if [ "$COMP_CWORD" -eq 1 ]
     then
-        mapfile -t COMPREPLY < <(compgen -W "init list switch list-current remove cd set-default config init-targets targets" -- "$cur")
+        mapfile -t COMPREPLY < <(compgen -W "init list switch list-current remove cd set-default unset-default config init-targets targets" -- "$cur")
     else
         cmd=${COMP_WORDS[1]}
         if [[ $cmd == "switch" ]] || [[ $cmd == "remove" ]] || [[ $cmd == "cd" ]] || [[ $cmd == "set-default" ]] || [[ $cmd == "init-targets" ]] || [[ $cmd == "targets" ]]

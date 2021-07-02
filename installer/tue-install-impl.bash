@@ -984,7 +984,7 @@ function tue-install-snap-now
 
 function tue-install-rosdep
 {
-    tue-install-debug "tue-install-rosdep $@"
+    tue-install-debug "tue-install-rosdep $*"
 
     if [ -z "$1" ]
     then
@@ -994,9 +994,9 @@ function tue-install-rosdep
     rosdep_db=$(rosdep db --filter-for-installers=apt)  # pip extension would be nice in the future
     success=true
     system_targets=""
-    for dep in $@
+    for dep in "$@"
     do
-        system_target=$(grep -o -P "(?<=^${dep} -> ).*" <<<$rosdep_db) || { success=false; break; }
+        system_target=$(grep -o -P "(?<=^${dep} -> ).*" <<< "$rosdep_db") || { success=false; break; }
         system_targets="${system_targets} ${system_target}"
     done
 
@@ -1007,9 +1007,9 @@ function tue-install-rosdep
         rosdep_db=$(rosdep db --filter-for-installers=apt)
         system_targets=""
 
-        for dep in $@
+        for dep in "$@"
         do
-            if system_target=$(grep -o -P "(?<=^${dep} -> ).*" <<<$rosdep_db)
+            if system_target=$(grep -o -P "(?<=^${dep} -> ).*" <<< "$rosdep_db")
             then
                 system_targets="${system_targets} ${system_target}"
             else
@@ -1160,7 +1160,7 @@ function tue-install-ros
                 for dep in $deps
                 do
                     # Try installing as a target from the targets directory. Fallback to rosdep
-                    tue-install-target ${prepend}${dep} && continue
+                    tue-install-target "ros-${dep}" && continue
                     tue-install-target "$dep" && continue
                     tue-install-debug "Dependency ${dep} has no target, adding to rosdep list"
                     TUE_INSTALL_ROSDEPS="${dep} ${TUE_INSTALL_ROSDEPS}"
