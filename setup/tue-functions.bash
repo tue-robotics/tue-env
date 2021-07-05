@@ -6,6 +6,9 @@ TUE_SYSTEM_DIR=$TUE_ENV_DIR/system
 export TUE_DEV_DIR
 export TUE_SYSTEM_DIR
 
+TUE_REPOS_DIR="${TUE_ENV_DIR}"/repos
+export TUE_REPOS_DIR
+
 # ----------------------------------------------------------------------------------------------------
 #                                        HELPER FUNCTIONS
 # ----------------------------------------------------------------------------------------------------
