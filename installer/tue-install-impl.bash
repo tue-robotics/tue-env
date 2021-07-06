@@ -1,14 +1,5 @@
 #! /usr/bin/env bash
 
-# shellcheck disable=SC1091
-source /etc/lsb-release
-if [ "$DISTRIB_RELEASE" == "18.04" ]
-then
-    default_pv=2
-else
-    default_pv=3
-fi
-
 function _function_test
 {
     local function_missing="false"
@@ -961,16 +952,8 @@ function _tue-install-pip
 # Needed for backward compatibility
 function tue-install-pip
 {
-    _tue-install-pip "$default_pv" "$@"
+    _tue-install-pip "3" "$@"
 }
-
-if [ $default_pv == 2 ]
-then
-    function tue-install-pip2
-    {
-        _tue-install-pip "2" "$@"
-    }
-fi
 
 function tue-install-pip3
 {
@@ -1071,16 +1054,8 @@ function _tue-install-pip-now
 # Needed for backward compatibility
 function tue-install-pip-now
 {
-    _tue-install-pip-now "$default_pv" "$@"
+    _tue-install-pip-now "3" "$@"
 }
-
-if [ $default_pv == 2 ]
-then
-    function tue-install-pip2-now
-    {
-        _tue-install-pip-now "2" "$@"
-    }
-fi
 
 function tue-install-pip3-now
 {
@@ -1415,7 +1390,6 @@ TUE_INSTALL_HG_PULL_Q=()
 
 TUE_INSTALL_SYSTEMS=
 TUE_INSTALL_PPA=
-TUE_INSTALL_PIP2S=
 TUE_INSTALL_PIP3S=
 TUE_INSTALL_SNAPS=
 
@@ -1425,12 +1399,7 @@ TUE_INSTALL_INFOS=
 # Make sure tools used by this installer are installed
 # Needed for mercurial install:
 # gcc, python-dev, python3-docutils, python3-pkg-resources, python3-setuptools, python3-wheel
-if [ $default_pv == 3 ]
-then
-    tue-install-system-now curl git gcc jq python-is-python3 python3-pip python3-dev python3-docutils python3-pkg-resources python3-setuptools python3-wheel wget
-else
-    tue-install-system-now curl git gcc jq python-pip python-dev python-docutils python-pkg-resources python-setuptools python-wheel python3-pip python3-dev python3-docutils python3-pkg-resources python3-setuptools python3-wheel wget
-fi
+tue-install-system-now curl git gcc jq python-is-python3 python3-pip python3-dev python3-docutils python3-pkg-resources python3-setuptools python3-wheel wget
 
 tue-install-pip3-now catkin-pkg PyYAML "mercurial>=5.3"
 
@@ -1509,16 +1478,6 @@ then
 
     tue-install-debug "calling: tue-install-system-now $TUE_INSTALL_SYSTEMS"
     tue-install-system-now "$TUE_INSTALL_SYSTEMS"
-fi
-
-
-# Installing all python2 (pip2) targets, which are collected during the install
-if [ -n "$TUE_INSTALL_PIP2S" ]
-then
-    TUE_INSTALL_CURRENT_TARGET="PIP2"
-
-    tue-install-debug "calling: tue-install-pip2-now $TUE_INSTALL_PIP2S"
-    tue-install-pip2-now "$TUE_INSTALL_PIP2S"
 fi
 
 

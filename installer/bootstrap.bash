@@ -17,14 +17,11 @@ fi
 
 # Set ROS version
 case $DISTRIB_RELEASE in
-    "18.04")
-        TUE_ROS_DISTRO=melodic
-        ;;
     "20.04")
         TUE_ROS_DISTRO=noetic
         ;;
     *)
-        echo "[tue-env](bootstrap) Ubuntu $DISTRIB_RELEASE is unsupported. Use 18.04 or 20.04"
+        echo "[tue-env](bootstrap) Ubuntu $DISTRIB_RELEASE is unsupported. Use 20.04"
         exit 1
         ;;
 esac
