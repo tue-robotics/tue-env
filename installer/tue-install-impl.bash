@@ -1427,9 +1427,9 @@ TUE_INSTALL_INFOS=
 # gcc, python-dev, python3-docutils, python3-pkg-resources, python3-setuptools, python3-wheel
 if [ $default_pv == 3 ]
 then
-    tue-install-system-now git gcc python-is-python3 python3-pip python3-dev python3-docutils python3-pkg-resources python3-setuptools python3-wheel
+    tue-install-system-now curl git gcc jq python-is-python3 python3-pip python3-dev python3-docutils python3-pkg-resources python3-setuptools python3-wheel wget
 else
-    tue-install-system-now git gcc python-pip python-dev python-docutils python-pkg-resources python-setuptools python-wheel python3-pip python3-dev python3-docutils python3-pkg-resources python3-setuptools python3-wheel
+    tue-install-system-now curl git gcc jq python-pip python-dev python-docutils python-pkg-resources python-setuptools python-wheel python3-pip python3-dev python3-docutils python3-pkg-resources python3-setuptools python3-wheel wget
 fi
 
 tue-install-pip3-now catkin-pkg PyYAML "mercurial>=5.3"
