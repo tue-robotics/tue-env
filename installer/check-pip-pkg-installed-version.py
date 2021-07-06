@@ -1,7 +1,5 @@
 #! /usr/bin/env python3
 
-from __future__ import print_function
-
 import sys
 from pip._internal.req.constructors import install_req_from_line
 
