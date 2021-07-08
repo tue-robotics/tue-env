@@ -117,7 +117,7 @@ Taking the above into account, the following combinations for `install.yaml` are
    ```yaml
    - type: ros
      source:
-       type: [git/hg/svn]
+       type: git
        url: <Repository URL>
        sub-dir: <Sub directory of the repository> (Optional field)
        version: <Version to be installed> (Optional field)
@@ -184,10 +184,10 @@ The default installation method for targets of type `system`, `pip(3)`, `ppa` an
 `target-now` will install a target directly recursively. So also all its dependencies will be installed directly, by converting them from `XX` to `XX-now`. Except `ROS` and `DPKG` are excluded. ROS dependencies are excluded, because ROS packages should only be used at runtime, because it requires either a compilation and/or resourcing the workspace.
 It is preferred to include these `-now` dependencies in `install.yaml`. Only use the corresponding bash function in `install.bash` if no other solution is possible.
 
-#### GIT / HG / SVN
+#### GIT
 
 ```yaml
-- type: [git/hg/svn]
+- type: git
   url: <url>
   path: <path/where/to/clone>
   version: [branch/commit/tag] (Optional field)
@@ -215,7 +215,6 @@ generally used methods of installing packages:
 | `tue-install-ppa-now`           | To add a PPA/DEB with `apt-add-repository`, use ^ inside of a DEB and spaces between items     |
 | `tue-install-snap`              | To add a snap package to a list to be installed at the end                                     |
 | `tue-install-snap-now`          | To install a snap                                                                              |
-| `tue-install-svn`               | To install a svn repository                                                                    |
 | `tue-install-system`            | To add `deb` package to a list of packages to be installed at the end with `apt-get`           |
 | `tue-install-system-now`        | To install `deb` packages with `apt-get` right away, but ignores it if already installed       |
 | `tue-install-get-releases`      | To get a released asset from a github repository and place it in the requested directory       |
@@ -226,7 +225,7 @@ installed).
 
 A general remark about the order of preference of package repositories:
 
-system > ppa > pip3 > snap > git > hg > svn > dpkg (> pip, deprecated)
+system > ppa > pip3 > snap > git > dpkg (> pip, deprecated)
 
 #### Logging
 

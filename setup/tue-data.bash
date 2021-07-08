@@ -66,7 +66,7 @@ function tue-data
         # Determine current directory relative to local data dir root
         local rel_dir=${PWD#$LOCAL_DATA_DIR}
 
-        rsync "$ROBOTICSSRV_LOGIN":"$REMOTE_DATA_DIR"/"$rel_dir"/ . -av --progress --exclude=".svn"
+        rsync "$ROBOTICSSRV_LOGIN":"$REMOTE_DATA_DIR"/"$rel_dir"/ . -av --progress --exclude=".git"
     elif [[ $cmd == "store" ]]
     then
         if [ -z "$1" ]
@@ -97,7 +97,7 @@ For example, to store everything in the current folder, use:
         # Determine current directory relative to local data dir root
         local rel_dir=${target#$LOCAL_DATA_DIR}
 
-        rsync "$LOCAL_DATA_DIR"/./"$rel_dir" "$ROBOTICSSRV_LOGIN":"$REMOTE_DATA_DIR"/ -av --relative --progress --exclude=".svn"
+        rsync "$LOCAL_DATA_DIR"/./"$rel_dir" "$ROBOTICSSRV_LOGIN":"$REMOTE_DATA_DIR"/ -av --relative --progress --exclude=".git"
     fi
 }
 

@@ -534,14 +534,6 @@ function _tue-repo-status
             [ "$allowed" != "true" ] && echo -e "\e[1m$name\e[0m is on branch '$current_branch'"
         fi
         vctype=git
-    elif [ -d "$pkg_dir"/.svn ]
-    then
-        status=$(svn status "$pkg_dir")
-        vctype=svn
-    elif [ -d "$pkg_dir"/.hg ]
-    then
-        status=$(hg --cwd "$pkg_dir" status .)
-        vctype=hg
     else
         vctype=unknown
     fi
