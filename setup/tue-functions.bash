@@ -246,6 +246,11 @@ function _git_split_url
 {
     local url=$1
 
+    # The regex can be further constrained using regex101.com
+    if ! grep -P -q "^(?:(?:git@[^:]+:)|(?:https://))[^:]+\.git$" <<< "${url}"; then
+        return 1
+    fi
+
     local web_address
     local domain_name
     local repo_address
@@ -272,6 +277,10 @@ function _git_https
     local output
     output=$(_git_split_url "$url")
 
+    if [[ -z "${output}" ]]; then
+        return 1
+    fi
+
     local array
     read -r -a array <<< "$output"
     local domain_name=${array[0]}
@@ -288,6 +297,10 @@ function _git_ssh
 
     local output
     output=$(_git_split_url "$url")
+
+    if [[ -z "${output}" ]]; then
+        return 1
+    fi
 
     local array
     read -r -a array <<< "$output"
@@ -316,6 +329,10 @@ function _git_https_or_ssh
         output_url=$(_git_ssh "$input_url")
     else
         output_url=$(_git_https "$input_url")
+    fi
+
+    if [[ -z "${output_url}" ]]; then
+        return 1
     fi
 
     echo "$output_url"
