@@ -692,7 +692,7 @@ function tue-install-system-now
         fi
 
         # shellcheck disable=SC2086
-        tue-install-pipe sudo apt-get install --assume-yes -q $pkgs_to_install || tue-install-error "An error occurred while installing system packages."
+        tue-install-pipe sudo apt-get install --assume-yes $pkgs_to_install || tue-install-error "An error occurred while installing system packages."
         tue-install-debug "Installed $pkgs_to_install ($?)"
     fi
 }
