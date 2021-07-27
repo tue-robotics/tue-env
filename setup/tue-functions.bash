@@ -614,7 +614,7 @@ function tue-revert
                 newtime=$(git -C "$pkg_dir"  show -s --format=%ci)
                 printf "\e[0;36m%-20s\e[0m %-15s \e[1m%s\e[0m %s\n" "$branch is fine" "$new_hash" "$newtime" "$pkg"
             else
-                git -C "$pkg_dir"  checkout -q "$new_hash"
+                git -C "$pkg_dir"  checkout -q "$new_hash" --
                 newbranch=$(git -C "$pkg_dir"  rev-parse --abbrev-ref HEAD 2>&1)
                 newtime=$(git -C "$pkg_dir"  show -s --format=%ci)
                 echo "$branch" > "$pkg_dir/.do_not_commit_this"
@@ -639,7 +639,7 @@ function tue-revert-undo
         if [ -f "$pkg_dir/.do_not_commit_this" ]
         then
             echo "$pkg"
-            git -C "$pkg_dir" checkout "$(cat "$pkg_dir"/.do_not_commit_this)"
+            git -C "$pkg_dir" checkout "$(cat "$pkg_dir"/.do_not_commit_this)" --
             rm "$pkg_dir/.do_not_commit_this"
         fi
     done
@@ -1120,7 +1120,7 @@ function tue-checkout
                     echo -e "\e[1m$pkg\e[0m: Already on branch $branch"
                 else
                     local res _checkout_res _checkout_return _submodule_res _submodule_return
-                    _checkout_res=$(git -C "$pkg_dir" checkout "$branch" 2>&1)
+                    _checkout_res=$(git -C "$pkg_dir" checkout "$branch" -- 2>&1)
                     _checkout_return=$?
                     [ -n "$_checkout_res" ] && res="${res:+${res} }$_checkout_res"
                     _submodule_res=$(git -C "$pkg_dir" submodule update --init --recursive 2>&1)
@@ -1342,10 +1342,10 @@ For example:
     exists=$(git show-ref refs/heads/"$branch")
     if [ -n "$exists" ]
     then
-        git checkout "$branch"
+        git checkout "$branch" --
         git branch -u "$remote"/"$branch" "$branch"
     else
-        git checkout --track -b "$branch" "$remote"/"$branch"
+        git checkout --track -b "$branch" "$remote"/"$branch" --
     fi
 }
 
