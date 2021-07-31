@@ -291,8 +291,8 @@ function _try_branch_git
         tue-install-error "Invalid _try_branch_git: needs two arguments (repo and branch)."
     fi
 
-    tue-install-debug "git -C $1 checkout $2"
-    _try_branch_res=$(git -C "$1" checkout "$2" 2>&1) # This is a "global" variable from tue-install-git
+    tue-install-debug "git -C $1 checkout $2 --"
+    _try_branch_res=$(git -C "$1" checkout "$2" -- 2>&1) # This is a "global" variable from tue-install-git
     tue-install-debug "_try_branch_res: $_try_branch_res"
 
     local _submodule_sync_res _submodule_sync_error_code
