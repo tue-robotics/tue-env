@@ -306,7 +306,7 @@ function _try_branch_git
     _submodule_res=$(git -C "$1" submodule update --init --recursive 2>&1)
     tue-install-debug "_submodule_res: $_submodule_res"
 
-    if [[ $_try_branch_res == "Already on "* || $_try_branch_res == "error: pathspec"* ]]
+    if [[ $_try_branch_res == "Already on "* || $_try_branch_res == "fatal: invalid reference:"* ]]
     then
         _try_branch_res=
     fi
