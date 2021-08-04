@@ -1064,14 +1064,6 @@ function tue-install-ros
         repos_dir=${repos_dir//[^a-zA-Z0-9\/\.-]/_}
     fi
 
-    # For backwards compatibility: if the ros_pkg_dir already exists and is NOT
-    # a symbolic link, then update this direcory instead of creating a symbolic
-    # link from the repos directory. In other words, the ros_pkg_dir becomes the
-    # repos_dir
-    if [[ -d $ros_pkg_dir && ! -L $ros_pkg_dir ]]
-    then
-        repos_dir=$ros_pkg_dir
-    fi
     tue-install-debug "repos_dir: $repos_dir"
 
     if [ "$install_type" == "git" ]
