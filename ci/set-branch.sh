@@ -4,9 +4,6 @@ BRANCH=""
 for i in "$@"
 do
     case $i in
-        -r=* | --repo=* )
-            REPO="${i#*=}"
-        ;;
         -b=* | --branch=* )
             BRANCH="${i#*=}"
         ;;
@@ -21,12 +18,7 @@ do
     shift
 done
 
-echo -e "\e[35m\e[1mREPO   = ${REPO}\e[0m"
-echo -e "\e[35m\e[1mBRANCH = ${BRANCH}\e[0m"
-
-echo -e "\e[35m\e[1mGetting default branch by GitHub API of: ${REPO}\e[0m"
-
-DEFAULT_BRANCH=$(curl -H "Accept: application/vnd.github.v3+json" https://api.github.com/repos/"${REPO}" 2>/dev/null | jq ".default_branch" -r)
+DEFAULT_BRANCH=$(git remote show origin 2>/dev/null | grep HEAD | awk '{print $3}')
 
 echo -e "\e[35m\e[1mBRANCH         = ${BRANCH}\e[0m"
 echo -e "\e[35m\e[1mDEFAULT_BRANCH = ${DEFAULT_BRANCH}\e[0m"

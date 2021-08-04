@@ -15,7 +15,7 @@ before_install:
   - ALL=$([ "$TRAVIS_EVENT_TYPE" == "cron" ] && echo "true") || true
   - source packages.sh --pullrequest=$TRAVIS_PULL_REQUEST --branch=$TRAVIS_PULL_REQUEST_BRANCH --commit-range=$TRAVIS_COMMIT_RANGE --all=$ALL # add all folders which need to be excluded as an argument
   # Set BRANCH based on default branch
-  - source set-branch.sh --repo=$TRAVIS_REPO_SLUG --branch=$TRAVIS_BRANCH
+  - source set-branch.sh --branch=$TRAVIS_BRANCH
 
 env:
   # Run following in root of repo:
