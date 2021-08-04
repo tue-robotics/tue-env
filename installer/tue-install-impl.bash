@@ -1056,16 +1056,6 @@ function tue-install-ros
         local domain_name=${array[0]}
         local repo_address=${array[1]}
         repos_dir="$TUE_REPOS_DIR"/"$domain_name"/"$repo_address"
-        ## temp; Move repo to new location
-        local repos_dir_old="$TUE_REPOS_DIR"/"$src"
-        repos_dir_old=${repos_dir_old// /_}
-        repos_dir_old=${repos_dir_old//[^a-zA-Z0-9\/\.-]/_}
-        if [ -d "$repos_dir_old" ]
-        then
-            tue-install-debug "mv $repos_dir_old $repos_dir"
-            mv "$repos_dir_old" "$repos_dir"
-        fi
-        # temp; end
     else
         repos_dir="$TUE_REPOS_DIR"/"$src"
         # replace spaces with underscores
