@@ -31,4 +31,4 @@ else
     echo -e "\e[35m\e[1mOn a feature branch, keeping the BRANCH variable: ${BRANCH}\e[0m"
 fi
 
-export BRANCh
+export BRANCH
