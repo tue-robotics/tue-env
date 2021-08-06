@@ -11,7 +11,7 @@ set -o errexit
 # Execute script only in a CI environment
 if [ "$CI" != "true" ]
 then
-    echo -e "\e[35m\e[1m Error!\e[0m Trying to execute a CI script in a non-CI environment. Exiting script."
+    echo -e "\e[35m\e[1mError!\e[0m Trying to execute a CI script in a non-CI environment. Exiting script."
     exit 1
 fi
 
@@ -45,26 +45,26 @@ do
             # unknown option
             if [[ -n "$i" ]]
             then
-                echo -e "\e[35m\e[1m Unknown input argument '$i'. Check CI .yml file \e[0m"
+                echo -e "\e[35m\e[1mUnknown input argument '$i'. Check CI .yml file \e[0m"
                 exit 1
             fi ;;
     esac
     shift
 done
 
-echo -e "\e[35m\e[1m PACKAGE      = ${PACKAGE} \e[0m"
-echo -e "\e[35m\e[1m BRANCH       = ${BRANCH} \e[0m"
-echo -e "\e[35m\e[1m COMMIT       = ${COMMIT} \e[0m"
-echo -e "\e[35m\e[1m PULL_REQUEST = ${PULL_REQUEST} \e[0m"
+echo -e "\e[35m\e[1mPACKAGE      = ${PACKAGE}\e[0m"
+echo -e "\e[35m\e[1mBRANCH       = ${BRANCH}\e[0m"
+echo -e "\e[35m\e[1mCOMMIT       = ${COMMIT}\e[0m"
+echo -e "\e[35m\e[1mPULL_REQUEST = ${PULL_REQUEST}\e[0m"
 
 # Set default value for IMAGE_NAME
 [ -z "$IMAGE_NAME" ] && IMAGE_NAME='tuerobotics/tue-env'
-echo -e "\e[35m\e[1m IMAGE_NAME   = ${IMAGE_NAME} \e[0m"
+echo -e "\e[35m\e[1mIMAGE_NAME   = ${IMAGE_NAME}\e[0m"
 
 if [ "$USE_SSH" == "true" ]
 then
     SSH_KEY_FINGERPRINT=$(ssh-keygen -lf /dev/stdin <<< "$SSH_KEY" | awk '{print $2}')
-    echo -e "\e[35m\e[1m SSH_KEY      = ${SSH_KEY_FINGERPRINT} \e[0m"
+    echo -e "\e[35m\e[1mSSH_KEY      = ${SSH_KEY_FINGERPRINT}\e[0m"
 fi
 
 echo -e "\e[35m\e[1m
@@ -83,7 +83,7 @@ Optionally fix your compilation errors and re-run only the last command
 # shellcheck disable=SC2153
 if [ -n "$PACKAGES" ] && ! echo "$PACKAGES" | grep -sqw "$PACKAGE"
 then
-    echo -e "\e[35m\e[1m No changes in this package, so no need to run CI \e[0m"
+    echo -e "\e[35m\e[1mNo changes in this package, so no need to run CI\e[0m"
     exit 0
 fi
 
@@ -100,15 +100,15 @@ docker rm tue-env &> /dev/null || true
 # Pull the identical branch name from dockerhub if exist, use master as fallback
 if [[ -n "${BRANCH_TAG}" ]]
 then
-    echo -e "\e[35m\e[1m Trying to fetch docker image: $IMAGE_NAME:$BRANCH_TAG \e[0m"
+    echo -e "\e[35m\e[1mTrying to fetch docker image: $IMAGE_NAME:$BRANCH_TAG\e[0m"
     if ! docker pull "$IMAGE_NAME:$BRANCH_TAG"
     then
-        echo -e "\e[35m\e[1m No worries, we just test against the master branch: $IMAGE_NAME:$MASTER_TAG \e[0m"
+        echo -e "\e[35m\e[1mNo worries, we just test against the master branch: $IMAGE_NAME:$MASTER_TAG\e[0m"
         docker pull "$IMAGE_NAME":"$MASTER_TAG"
         BRANCH_TAG=$MASTER_TAG
     fi
 else
-    echo -e "\e[35m\e[1m No --branch argument provided. Trying to fetch docker image: $IMAGE_NAME:$MASTER_TAG \e[0m"
+    echo -e "\e[35m\e[1mNo --branch argument provided. Trying to fetch docker image: $IMAGE_NAME:$MASTER_TAG\e[0m"
     docker pull "$IMAGE_NAME":"$MASTER_TAG"
     BRANCH_TAG=$MASTER_TAG
 fi
@@ -139,7 +139,7 @@ fi
 # stip carriage return from docker output by "tr -d '\r'"
 # see https://unix.stackexchange.com/a/487185
 ROS_DISTRO=$(docker exec -t tue-env bash -c 'source ~/.bashrc; echo "$ROS_DISTRO"' | tr -d '\r')
-echo -e "\e[35m\e[1m ROS_DISTRO = ${ROS_DISTRO}\e[0m"
+echo -e "\e[35m\e[1mROS_DISTRO = ${ROS_DISTRO}\e[0m"
 
 TUE_SYSTEM_DIR=$(docker exec -t tue-env bash -c 'source ~/.bashrc; echo "$TUE_SYSTEM_DIR"' | tr -d '\r')
 DOCKER_HOME=$(docker exec -t tue-env bash -c 'source ~/.bashrc; echo "$HOME"' | tr -d '\r')
@@ -154,31 +154,31 @@ then
     # After a tue-get run, we checkout forced, just to be sure.
 
     # First install only the git repo of the package so that appropriate branch can be checked out later
-    echo -e "\e[35m\e[1m tue-get install ros-$PACKAGE --no-ros-deps\e[0m"
+    echo -e "\e[35m\e[1mtue-get install ros-$PACKAGE --no-ros-deps\e[0m"
     docker exec tue-env bash -c 'source ~/.bashrc; tue-get install ros-"$PACKAGE" --no-ros-deps'
 
     # Fetch the merged branch
-    echo -e "\e[35m\e[1m git -C ~${TUE_SYSTEM_DIR#$DOCKER_HOME}/src/$PACKAGE fetch origin pull/$PULL_REQUEST/merge:PULLREQUEST\e[0m"
+    echo -e "\e[35m\e[1mgit -C ~${TUE_SYSTEM_DIR#$DOCKER_HOME}/src/$PACKAGE fetch origin pull/$PULL_REQUEST/merge:PULLREQUEST\e[0m"
     docker exec -t tue-env bash -c 'source ~/.bashrc; git -C "$TUE_SYSTEM_DIR"/src/"$PACKAGE" fetch origin pull/$PULL_REQUEST/merge:PULLREQUEST'
 
     # Install the package completely
-    echo -e "\e[35m\e[1m tue-get install ros-$PACKAGE --test-depend --branch=PULLREQUEST\e[0m"
+    echo -e "\e[35m\e[1mtue-get install ros-$PACKAGE --test-depend --branch=PULLREQUEST\e[0m"
     docker exec tue-env bash -c 'source ~/.bashrc; tue-get install ros-"$PACKAGE" --test-depend --branch=PULLREQUEST'
 
     # Checkout -f to be really sure
-    echo -e "\e[35m\e[1m git -C ~${TUE_SYSTEM_DIR#$DOCKER_HOME}/src/$PACKAGE checkout -f PULLREQUEST --\e[0m"
+    echo -e "\e[35m\e[1mgit -C ~${TUE_SYSTEM_DIR#$DOCKER_HOME}/src/$PACKAGE checkout -f PULLREQUEST --\e[0m"
     docker exec -t tue-env bash -c 'source ~/.bashrc; git -C "$TUE_SYSTEM_DIR"/src/"$PACKAGE" checkout -f PULLREQUEST --'
 else
     # First install only the git repo of the package so that appropriate branch can be checked out later
-    echo -e "\e[35m\e[1m tue-get install ros-$PACKAGE --no-ros-deps --branch=$BRANCH\e[0m"
+    echo -e "\e[35m\e[1mtue-get install ros-$PACKAGE --no-ros-deps --branch=$BRANCH\e[0m"
     docker exec tue-env bash -c 'source ~/.bashrc; tue-get install ros-"$PACKAGE" --no-ros-deps --branch=$BRANCH'
 
     # Install the package
-    echo -e "\e[35m\e[1m tue-get install ros-$PACKAGE --test-depend --branch=$BRANCH\e[0m"
+    echo -e "\e[35m\e[1mtue-get install ros-$PACKAGE --test-depend --branch=$BRANCH\e[0m"
     docker exec tue-env bash -c 'source ~/.bashrc; tue-get install ros-"$PACKAGE" --test-depend --branch="$BRANCH"'
 
     # Set the package to the right commit
-    echo -e "\e[35m\e[1m Reset package to this commit\e[0m"
-    echo -e "\e[35m\e[1m git -C ~${TUE_SYSTEM_DIR#$DOCKER_HOME}/src/$PACKAGE reset --hard $COMMIT\e[0m"
+    echo -e "\e[35m\e[1mReset package to this commit\e[0m"
+    echo -e "\e[35m\e[1mgit -C ~${TUE_SYSTEM_DIR#$DOCKER_HOME}/src/$PACKAGE reset --hard $COMMIT\e[0m"
     docker exec -t tue-env bash -c 'source ~/.bashrc; git -C "$TUE_SYSTEM_DIR"/src/"$PACKAGE" reset --hard "$COMMIT"'
 fi
