@@ -67,7 +67,7 @@ function _show_dep
         outstr="${outstr}$1"  # Add package
         if [[ "$VERBOSE" = "true" ]]
         then
-            outstr="$outstr $version $githash"  # Add version
+            outstr="${outstr} ${version} ${githash}"  # Add version
         fi
         echo "$outstr"
     fi
