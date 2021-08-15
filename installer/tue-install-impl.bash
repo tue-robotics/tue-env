@@ -1100,6 +1100,8 @@ function tue-install-ros
         then
             # Create a symbolic link to the system workspace
             ln -s "$repos_dir"/"$sub_dir" "$ros_pkg_dir"
+        else
+            tue-install-error "'$ros_pkg_dir' should not exist or be a symlink, any other option is incorrect"
         fi
 
         if [[ "$TUE_INSTALL_SKIP_ROS_DEPS" != "all" ]]
