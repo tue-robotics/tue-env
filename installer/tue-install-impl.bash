@@ -1093,7 +1093,10 @@ function tue-install-ros
                 rm "$ros_pkg_dir"
                 ln -s "$repos_dir"/"$sub_dir" "$ros_pkg_dir"
             fi
-        elif [ ! -d "$ros_pkg_dir" ]
+        elif [ -d "$ros_pkg_dir" ]
+        then
+            tue-install-error "Can not create a symlink at '$ros_pkg_dir' as it is a directory"
+        elif [ ! -e "$ros_pkg_dir" ]
         then
             # Create a symbolic link to the system workspace
             ln -s "$repos_dir"/"$sub_dir" "$ros_pkg_dir"
