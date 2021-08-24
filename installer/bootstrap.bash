@@ -16,12 +16,42 @@ then
 fi
 
 # Set ROS version
+TUE_ROS_DISTRO=
+TUE_ROS_VERSION=
+
 case $DISTRIB_RELEASE in
     "18.04")
         TUE_ROS_DISTRO=melodic
+        TUE_ROS_VERSION=1
         ;;
     "20.04")
-        TUE_ROS_DISTRO=noetic
+        for i in "$@"
+        do
+            case $i in
+                --ros-version=* )
+                    ros_version="${i#*=}"
+
+                    if [[ "${ros_version}" -eq 2 ]]; then
+                        TUE_ROS_DISTRO=galactic
+                        TUE_ROS_VERSION=2
+
+                    elif [[ "${ros_version}" -eq 1 ]]; then
+                        TUE_ROS_DISTRO=noetic
+                        TUE_ROS_VERSION=1
+
+                    else
+                        echo "[tue-env](bootstrap) Error! ROS ${ros_version} is unsupported with tue-env."
+                        exit 1
+                    fi
+                    ;;
+                * )
+                    echo "[tue-env](bootstrap) Error! Unknown argument '${i}' provided to bootstrap script."
+                    exit 1
+                    ;;
+            esac
+        done
+
+        [[ -z "${TUE_ROS_VERSION}" ]] && { TUE_ROS_DISTRO=noetic; TUE_ROS_VERSION=1; }
         ;;
     *)
         echo "[tue-env](bootstrap) Ubuntu $DISTRIB_RELEASE is unsupported. Please use Ubuntu 20.04."
@@ -96,6 +126,7 @@ tue-env init "$workspace" "$workspace_dir" "$env_targets_url"
 
 # Configure environment
 tue-env config "$workspace" set "TUE_ROS_DISTRO" "$TUE_ROS_DISTRO"
+tue-env config "$workspace" set "TUE_ROS_VERSION" "$TUE_ROS_VERSION"
 tue-env config "$workspace" git-use-ssh
 tue-env config "$workspace" github-use-https
 
