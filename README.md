@@ -48,7 +48,7 @@ script.
 ## Usage
 
 With `tue-get` you can install various targets which mostly are ros packages.
-The list of packages can be seen [here](https://github.com/tue-robotics/tue-env-targets).
+The list of packages can be seen [here](https://gitlab.com/avular/common-tools/package-manager/tue-env-targets).
 
 ```bash
 tue-get install <TARGET_NAME>
