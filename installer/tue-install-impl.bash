@@ -6,7 +6,7 @@ function _function_test
     # shellcheck disable=SC2048
     for func in $*
     do
-        declare -f "$func" > /dev/null || { echo -e "\e[38;5;1mFunction '$func' missing, resource the setup\e[0m" && function_missing="true"; }
+        declare -f "$func" > /dev/null || { echo -e "\e[38;1mFunction '$func' missing, resource the setup\e[0m" && function_missing="true"; }
     done
     [[ "$function_missing" == "true" ]] && exit 1
 }
@@ -45,7 +45,7 @@ function version_gt()
 
 function tue-install-error
 {
-    echo -e "\e[38;5;1m
+    echo -e "\e[38;1m
 Error while installing target '$TUE_INSTALL_CURRENT_TARGET':
 
     $1
@@ -57,7 +57,7 @@ Error while installing target '$TUE_INSTALL_CURRENT_TARGET':
 
 function tue-install-warning
 {
-    echo -e "\e[33;5;1m[$TUE_INSTALL_CURRENT_TARGET] WARNING: $*\e[0m" | tee --append "$INSTALL_DETAILS_FILE"
+    echo -e "\e[33;1m[$TUE_INSTALL_CURRENT_TARGET] WARNING: $*\e[0m" | tee --append "$INSTALL_DETAILS_FILE"
     TUE_INSTALL_WARNINGS="    [$TUE_INSTALL_CURRENT_TARGET] $*\n${TUE_INSTALL_WARNINGS}"
 }
 
@@ -1301,7 +1301,7 @@ fi
 # Display warnings
 if [ -n "$TUE_INSTALL_WARNINGS" ]
 then
-    echo -e "\e[33;5;1m\nOverview of warnings:\n\n$TUE_INSTALL_WARNINGS\e[0m"
+    echo -e "\e[33;1m\nOverview of warnings:\n\n$TUE_INSTALL_WARNINGS\e[0m"
 fi
 
 

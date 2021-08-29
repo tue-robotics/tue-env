@@ -72,7 +72,7 @@ function _show_dep
         echo "$outstr"
     fi
 
-    [ ! -f "$TUE_ENV_DIR"/.env/dependencies/"$1" ] && echo -e "\e[38;5;1mNo dependency file exists of $1\e[0m" && return 1
+    [ ! -f "$TUE_ENV_DIR"/.env/dependencies/"$1" ] && echo -e "\e[38;1mNo dependency file exists of $1\e[0m" && return 1
     while read -r t
     do
         _show_dep "$t" "$2" "$((indent + 1))" "$tmp" || return 1

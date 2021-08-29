@@ -543,7 +543,7 @@ function _tue-repo-status
         if [ -n "$status" ]
         then
             echo -e ""
-            echo -e "\e[38;5;1mM  \e[0m($vctype) \e[1m$name\e[0m"
+            echo -e "\e[38;1mM  \e[0m($vctype) \e[1m$name\e[0m"
             echo -e "--------------------------------------------------"
             echo -e "$status"
             echo -e "--------------------------------------------------"
@@ -1135,7 +1135,7 @@ function tue-checkout
                         echo ""
                         echo -e "    \e[1m$pkg\e[0m"
                         echo "--------------------------------------------------"
-                        echo -e "\e[38;5;1m$res\e[0m"
+                        echo -e "\e[38;1m$res\e[0m"
                         echo "--------------------------------------------------"
                     fi
                 fi
