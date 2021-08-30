@@ -7,7 +7,7 @@ function _function_test
     # shellcheck disable=SC2048
     for func in $*
     do
-        declare -f "$func" > /dev/null || { echo -e "\e[38;5;1mFunction '$func' missing, resource the setup\e[0m" && function_missing="true"; }
+        declare -f "$func" > /dev/null || { echo -e "\e[38;1mFunction '$func' missing, resource the setup\e[0m" && function_missing="true"; }
     done
     [[ "$function_missing" == "true" ]] && exit 1
 }
