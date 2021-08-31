@@ -51,6 +51,9 @@ do
         --push_image=* )
             CI_DOCKER_PUSH_IMAGE="${i#*=}" ;;
 
+        --ros_version=* )
+            CI_ROS_VERSION="${i#*=}" ;;
+
         * )
             echo -e "Error! Unknown input variable '$i'"
             exit 1 ;;
@@ -64,6 +67,7 @@ echo -e "\e[35m\e[1m CI_COMMIT              = ${CI_COMMIT} \e[0m"
 [ -z "$CI_REF_NAME" ] && CI_REF_NAME="pull"
 echo -e "\e[35m\e[1m CI_REF_NAME            = ${CI_REF_NAME} \e[0m"
 echo -e "\e[35m\e[1m CI_DOCKER_PLATFORMS    = ${CI_DOCKER_PLATFORMS} \e[0m"
+echo -e "\e[35m\e[1m CI_ROS_VERSION         = ${CI_ROS_VERSION} \e[0m"
 
 image_substring=$(basename "$CI_DOCKER_IMAGE_NAME")
 case $image_substring in
@@ -89,7 +93,7 @@ else
     CI_DOCKER_IMAGE_TAG=$(echo "$CI_BRANCH" | tr '[:upper:]' '[:lower:]' | sed -e 's:/:_:g')
 fi
 
-CI_DOCKER_IMAGE_NAME="${CI_DOCKER_IMAGE_NAME}:${CI_DOCKER_IMAGE_TAG}-${CI_DOCKER_PLATFORMS}"
+CI_DOCKER_IMAGE_NAME="${CI_DOCKER_IMAGE_NAME}:${CI_DOCKER_IMAGE_TAG}-ros${CI_ROS_VERSION}-${CI_DOCKER_PLATFORMS}"
 echo -e "\e[35m\e[1m Creating docker $CI_DOCKER_IMAGE_NAME \e[0m"
 
 # Make sure a known hosts file exists on the host in the workingdir
@@ -134,7 +138,7 @@ echo -e "\e[35m\e[1m Building docker image with push=${DOCKER_PUSH} \e[0m"
 docker buildx build --output=type=image,push="$DOCKER_PUSH" "$DOCKER_SSH_ARGS" "$DOCKER_PLATFORMS" \
     --build-arg BRANCH="$CI_BRANCH" --build-arg PULL_REQUEST="$CI_PULL_REQUEST" --build-arg COMMIT="$CI_COMMIT" \
     --build-arg CI="$CI" --build-arg REF_NAME="$CI_REF_NAME" --build-arg BASE_IMAGE="$BASE_IMAGE" \
-    -t "$CI_DOCKER_IMAGE_NAME" .
+    -t "$CI_DOCKER_IMAGE_NAME" --build-arg ROS_VERSION="$CI_ROS_VERSION" .
 
 if [ "$DOCKER_PUSH" == "true" ]
 then
