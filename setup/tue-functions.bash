@@ -325,7 +325,17 @@ export -f _git_https_or_ssh # otherwise not available in sourced files
 
 function tue-make
 {
-    if [ -n "$TUE_ROS_DISTRO" ] && [ -d "$TUE_SYSTEM_DIR" ]
+    [[ -z "${TUE_ROS_DISTRO}" ]] && { echo -e "\033[38;5;1mError! tue-env variable TUE_ROS_DISTRO not set.\033[0m"; return 1; }
+
+    local ros_version="${TUE_ROS_VERSION}"
+    local ros_version_warning="tue-env variable TUE_ROS_VERSION is not set. This will not be allowed in the future.\nUsing value from ROS_VERSION for now."
+    local ros_version_warning_display=
+    [[ -z "${ros_version}" ]] && [[ -n "${ROS_VERSION}" ]] && { ros_version="${ROS_VERSION}"; ros_version_warning_display="true"; echo -e "\033[33;1m${ros_version_warning}\033[0m"; }
+    [[ -z "${ros_version}" ]] && { echo -e "\033[38;5;1mError! TUE_ROS_VERSION is not set.\nSet TUE_ROS_VERSION before executing this function.\033[0m"; return 1; }
+
+    [[ ! -d "${TUE_SYSTEM_DIR}" ]] && { echo -e "\033[38;5;1mError! The workspace '${TUE_SYSTEM_DIR}' does not exist. Run 'tue-get install ros${ros_version}' first.\033[0m"; return 1; }
+
+    if [ "${ros_version}" == "1" ]
     then
         local build_tool=""
         if [ -f "$TUE_SYSTEM_DIR"/devel/.built_by ]
@@ -346,6 +356,17 @@ function tue-make
             return 1
             ;;
         esac
+    elif [ "${ros_version}" == "2" ]
+    then
+        mkdir -p "$TUE_SYSTEM_DIR"/src
+        colcon --log-base "$TUE_SYSTEM_DIR"/log build --merge-install --symlink-install --base-paths "$TUE_SYSTEM_DIR"/src --build-base "$TUE_SYSTEM_DIR"/build --install-base "$TUE_SYSTEM_DIR"/install
+    else
+        echo -e "\033[38;1mError! ROS_VERSION '${ros_version}' is not supported by tue-env.\033[0m"
+        return 1
+    fi
+
+    if [[ -n "${ros_version_warning_display}" ]]; then
+        echo -e "\033[33;1mOverview of warnings:\n\n${ros_version_warning}\033[0m"
     fi
 }
 export -f tue-make
