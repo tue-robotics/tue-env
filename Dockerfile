@@ -60,7 +60,7 @@ RUN --mount=type=ssh,uid=1000 sed -e s/return//g -i ~/.bashrc && \
     source bootstrap.bash && \
     # Make tue-env to be available to the environment
     source ~/.bashrc && \
-    echo $SHELLOPTS && \
+    echo "Shell options: ${SHELLOPTS}" && \
     # Set all git repositories to use HTTPS urls (Needed for local image builds)
     tue-env config ros-"$TUE_ROS_DISTRO" git-use-https && \
     # Install target ros
