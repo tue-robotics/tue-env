@@ -14,6 +14,8 @@ ARG BRANCH=
 ARG PULL_REQUEST=false
 ARG COMMIT=
 ARG REF_NAME=
+# Default is empty and gives ROS1, for ROS2 use --build-arg ROS_VERSION=2
+ARG ROS_VERSION=
 
 # Inform scripts that no questions should be asked and set some environment
 # variables to prevent warnings and errors
@@ -62,11 +64,11 @@ RUN --mount=type=ssh,uid=1000 sed -e s/return//g -i ~/.bashrc && \
     export COMMIT=$COMMIT && \
     export REF_NAME=$REF_NAME && \
     # Run the standard installation script
-    source bootstrap.bash && \
+    source bootstrap.bash --ros-version="$ROS_VERSION" && \
     # Make tue-env to be available to the environment
     source ~/.bashrc && \
     # Install target ros
-    tue-get install ros --test-depend --branch="$BRANCH" && \
+    tue-get install ros${ROS_VERSION} --test-depend --branch="$BRANCH" && \
     # Remove temp tue files
     (rm -rf /tmp/tue* > /dev/null || true) && \
     # Show ownership of .tue
