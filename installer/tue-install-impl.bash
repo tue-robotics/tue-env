@@ -997,7 +997,11 @@ function tue-install-ros
     fi
 
     # First of all, make sure ROS itself is installed
-    tue-install-target ros || tue-install-error "Failed to install target 'ROS'"
+    local ros_version="${TUE_ROS_VERSION}"
+    [[ -z "${ros_version}" ]] && [[ -n "${ROS_VERSION}" ]] && { ros_version="${ROS_VERSION}"; [[ "$TUE_ROS_VERSION_WARNING_COUNT" -lt 1 ]] && tue-install-warning "tue-env variable TUE_ROS_VERSION is not set. This will not be allowed in the future.\nUsing value from ROS_VERSION for now."; ((TUE_ROS_VERSION_WARNING_COUNT=TUE_ROS_VERSION_WARNING_COUNT+1)); }
+    [[ -z "${ros_version}" ]] && { ros_version=1; [[ "$TUE_ROS_VERSION_WARNING_COUNT" -lt 1 ]] && tue-install-warning "tue-env variable TUE_ROS_VERSION is not set. This will not be allowed in the future.\nUsing default value 1 for now."; ((TUE_ROS_VERSION_WARNING_COUNT=TUE_ROS_VERSION_WARNING_COUNT+1)); }
+
+    tue-install-target ros${ros_version} || tue-install-error "Failed to install target 'ros${ros_version}'"
 
     if [ "$install_type" == "system" ]
     then
@@ -1226,6 +1230,8 @@ TUE_INSTALL_SNAPS=
 
 TUE_INSTALL_WARNINGS=
 TUE_INSTALL_INFOS=
+
+TUE_ROS_VERSION_WARNING_COUNT=
 
 tue-install-system-now git python3-pip curl jq python3-yaml
 

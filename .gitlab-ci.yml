@@ -68,10 +68,11 @@ stages:
         --password="${CI_JOB_TOKEN}" \
         --registry="${CI_REGISTRY}" \
         --platforms="${TARGET_PLATFORM}" \
-        --push_image="${PUSH_IMAGE:-"false"}"
+        --push_image="${PUSH_IMAGE:-"false"}" \
+        --ros_version="${ROS_VERSION:-"1"}"
 
 # Build docker image job for linux/arm64 and linux/amd64
-amd64:
+amd64_ros1:
   extends: .build_docker_image_template
   tags:
     - linux
@@ -79,6 +80,7 @@ amd64:
     - x86_64
   variables:
     TARGET_PLATFORM: "amd64"
+    ROS_VERSION: "1"
   rules:
     - if: '$MIRROR_UPSTREAM == "true"'
       when: 'never'
@@ -88,7 +90,7 @@ amd64:
       variables:
         PUSH_IMAGE: "true"
 
-arm64:
+arm64_ros1:
   extends: .build_docker_image_template
   tags:
     - linux
@@ -96,6 +98,7 @@ arm64:
     - arm64
   variables:
     TARGET_PLATFORM: "arm64"
+    ROS_VERSION: "1"
   rules:
     - if: '$MIRROR_UPSTREAM == "true"'
       when: 'never'
@@ -105,7 +108,43 @@ arm64:
       variables:
         PUSH_IMAGE: "true"
 
-release:
+amd64_ros2:
+  extends: .build_docker_image_template
+  tags:
+    - linux
+    - docker-privileged
+    - x86_64
+  variables:
+    TARGET_PLATFORM: "amd64"
+    ROS_VERSION: "2"
+  rules:
+    - if: '$MIRROR_UPSTREAM == "true"'
+      when: 'never'
+    - if: '$CI_PIPELINE_SOURCE == "merge_request_event"'
+    - if: '$CI_COMMIT_BRANCH != $CI_DEFAULT_BRANCH'
+    - if: '$CI_COMMIT_BRANCH == $CI_DEFAULT_BRANCH'
+      variables:
+        PUSH_IMAGE: "true"
+
+arm64_ros2:
+  extends: .build_docker_image_template
+  tags:
+    - linux
+    - docker-privileged
+    - arm64
+  variables:
+    TARGET_PLATFORM: "arm64"
+    ROS_VERSION: "2"
+  rules:
+    - if: '$MIRROR_UPSTREAM == "true"'
+      when: 'never'
+    - if: '$CI_PIPELINE_SOURCE == "merge_request_event"'
+      when: 'never'
+    - if: '$CI_COMMIT_BRANCH == $CI_DEFAULT_BRANCH'
+      variables:
+        PUSH_IMAGE: "true"
+
+release_ros1:
   extends: .base
   stage: release
   tags:
@@ -113,9 +152,25 @@ release:
     - docker-privileged
   script:
     - echo "${CI_JOB_TOKEN}" | docker login ${CI_REGISTRY} -u "gitlab-ci-token" --password-stdin
-    - docker manifest create ${CI_REGISTRY}/${CI_PROJECT_PATH}:latest ${CI_REGISTRY}/${CI_PROJECT_PATH}:latest-amd64 ${CI_REGISTRY}/${CI_PROJECT_PATH}:latest-arm64
+    - docker manifest create ${CI_REGISTRY}/${CI_PROJECT_PATH}:latest ${CI_REGISTRY}/${CI_PROJECT_PATH}:latest-ros1-amd64 ${CI_REGISTRY}/${CI_PROJECT_PATH}:latest-ros1-arm64
     - docker manifest push ${CI_REGISTRY}/${CI_PROJECT_PATH}:latest
     - docker manifest inspect --verbose ${CI_REGISTRY}/${CI_PROJECT_PATH}:latest
+  rules:
+    - if: '$MIRROR_UPSTREAM == "true"'
+      when: 'never'
+    - if: '$CI_COMMIT_BRANCH == $CI_DEFAULT_BRANCH'
+
+release_ros2:
+  extends: .base
+  stage: release
+  tags:
+    - linux
+    - docker-privileged
+  script:
+    - echo "${CI_JOB_TOKEN}" | docker login ${CI_REGISTRY} -u "gitlab-ci-token" --password-stdin
+    - docker manifest create ${CI_REGISTRY}/${CI_PROJECT_PATH}:latest-ros2 ${CI_REGISTRY}/${CI_PROJECT_PATH}:latest-ros2-amd64 ${CI_REGISTRY}/${CI_PROJECT_PATH}:latest-ros2-arm64
+    - docker manifest push ${CI_REGISTRY}/${CI_PROJECT_PATH}:latest-ros2
+    - docker manifest inspect --verbose ${CI_REGISTRY}/${CI_PROJECT_PATH}:latest-ros2
   rules:
     - if: '$MIRROR_UPSTREAM == "true"'
       when: 'never'

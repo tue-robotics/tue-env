@@ -21,9 +21,11 @@ cat ~/.ssh/<KEY_NAME>.pub
 ##### Installing the tue-env
 Download the bootstrap.bash file manually from gitlab.com (https://gitlab.com/avular/common-tools/package-manager/tue-env/-/blob/master/installer/bootstrap.bash)
 
-1. Bootstrap the package manager 
+1. Bootstrap the package manager
    ```bash
-   source [DOWNLOAD DIRECTORY]/bootstrap.bash
+   source [DOWNLOAD DIRECTORY]/bootstrap.bash # for default ROS1
+   # Or
+   source [DOWNLOAD DIRECTORY]/bootstrap.bash --ros-version=2 # for ROS2
    ```
 2. Install target(s)
    ```bash
