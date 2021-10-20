@@ -313,8 +313,8 @@ function _try_branch_git
     then
         _try_branch_res=
     fi
-    [ "$_submodule_sync_error_code" -gt 0 ] && [ -n "$_submodule_sync_res" ] && _try_branch_res="${res:+${res} }$_submodule_sync_res"
-    [ -n "$_submodule_res" ] && _try_branch_res="${_try_branch_res:+${_try_branch_res} }$_submodule_res"
+    [ "$_submodule_sync_error_code" -gt 0 ] && [ -n "$_submodule_sync_res" ] && _try_branch_res="${res:+${res}\n}$_submodule_sync_res"
+    [ -n "$_submodule_res" ] && _try_branch_res="${_try_branch_res:+${_try_branch_res}\n}$_submodule_res"
 }
 
 # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # #
@@ -374,13 +374,13 @@ function tue-install-git
             submodule_sync_res=$(git -C "$targetdir" submodule sync --recursive)
             submodule_sync_error_code=$?
             tue-install-debug "submodule_sync_res: $submodule_sync_res"
-            [ "$submodule_sync_error_code" -gt 0 ] && [ -n "$submodule_sync_res" ] && res="${res:+${res} }$submodule_sync_res"
+            [ "$submodule_sync_error_code" -gt 0 ] && [ -n "$submodule_sync_res" ] && res="${res:+${res}\n}$submodule_sync_res"
 
             local submodule_res
             tue-install-debug "git -C $targetdir submodule update --init --recursive"
             submodule_res=$(git -C "$targetdir" submodule update --init --recursive 2>&1)
             tue-install-debug "submodule_res: $submodule_res"
-            [ -n "$submodule_res" ] && res="${res:+${res} }$submodule_res"
+            [ -n "$submodule_res" ] && res="${res:+${res}\n}$submodule_res"
 
             if [ "$res" == "Already up to date." ]
             then
@@ -398,7 +398,7 @@ function tue-install-git
         echo "$version" > "$version_cache_file"
         _try_branch_res=""
         _try_branch_git "$targetdir" "$version"
-        [ -n "$_try_branch_res" ] && res="${res:+${res} }$_try_branch_res"
+        [ -n "$_try_branch_res" ] && res="${res:+${res}\n}$_try_branch_res"
     else
         rm "$version_cache_file" 2>/dev/null
     fi
@@ -408,7 +408,7 @@ function tue-install-git
     then
         _try_branch_res=""
         _try_branch_git "$targetdir" "$BRANCH"
-        [ -n "$_try_branch_res" ] && res="${res:+${res} }$_try_branch_res"
+        [ -n "$_try_branch_res" ] && res="${res:+${res}\n}$_try_branch_res"
     fi
 
     _show_update_message "$TUE_INSTALL_CURRENT_TARGET" "$res"
