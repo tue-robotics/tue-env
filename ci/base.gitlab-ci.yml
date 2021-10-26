@@ -1,0 +1,51 @@
+# Setup SSH keys in the environment to allow cloning across all repositories that have enabled
+# the deploy key CI_DEPLOY_KEY that is associated with the private key in CI_SSH_KEY_PRIVATE
+.ssh_keys: &ssh_keys
+  - eval $(ssh-agent -s)
+  - |
+    cat <<EOT | ssh-add -
+    -----BEGIN OPENSSH PRIVATE KEY-----
+    ${CI_SSH_KEY_PRIVATE}
+    -----END OPENSSH PRIVATE KEY-----
+    EOT
+  - mkdir -p ~/.ssh
+  - chmod 700 ~/.ssh
+  - ssh-keyscan gitlab.com >> ~/.ssh/known_hosts
+  - chmod 644 ~/.ssh/known_hosts
+
+# Common script to create manifest for multi-arch images
+.manifest:
+  script:
+    - TARGET_IMAGE="${TARGET_IMAGE_BASE_NAME}:${TARGET_IMAGE_TAG}"
+    - docker manifest create ${TARGET_IMAGE} ${TARGET_IMAGE}-amd64 ${TARGET_IMAGE}-arm64
+    - docker manifest push ${TARGET_IMAGE}
+    - docker manifest inspect --verbose ${TARGET_IMAGE}
+
+# Setups basic pre-conditions for the Docker images build:
+# - Installing prerequisites
+# - Setup SSH keys
+# - Loging into docker registry
+.base:
+  image: ${CI_REGISTRY_IMAGE}/docker-buildx:latest
+
+  services:
+    - docker:dind
+
+  stage: build
+
+  variables:
+    GIT_STRATEGY: clone
+    DOCKER_TLS_CERTDIR: "/certs"
+    DOCKER_DRIVER: overlay2
+
+  before_script:
+    - apk --update add git bash curl jq openssh-client
+    - *ssh_keys
+    - echo "${CI_JOB_TOKEN}" | docker login ${CI_REGISTRY} -u gitlab-ci-token --password-stdin
+    - |
+      TARGET_IMAGE_TAG_BRANCH=${CI_MERGE_REQUEST_TARGET_BRANCH_NAME:-$CI_COMMIT_BRANCH}
+      if [[ "${TARGET_IMAGE_TAG_BRANCH}" == "${CI_DEFAULT_BRANCH}" ]]; then
+          TARGET_IMAGE_TAG="latest"
+      else
+          TARGET_IMAGE_TAG=$(echo "${TARGET_IMAGE_TAG_BRANCH}" | tr '[:upper:]' '[:lower:]' | sed -e 's:/:_:g')
+      fi
