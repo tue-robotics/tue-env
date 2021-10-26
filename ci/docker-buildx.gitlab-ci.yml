@@ -1,0 +1,80 @@
+.buildx:
+  extends: .base
+  image: docker:latest
+  stage: Environment
+  variables:
+    DOCKERFILE: 'dockerfiles/docker-buildx.Dockerfile'
+    TARGET_IMAGE_BASE_NAME: '${CI_REGISTRY_IMAGE}/docker-buildx'
+  script:
+    - |
+      TARGET_IMAGE="${TARGET_IMAGE_BASE_NAME}:${TARGET_IMAGE_TAG}-${TARGET_PLATFORM}"
+      PUSH_IMAGE="${PUSH_IMAGE:-"false"}"
+    - |
+      echo -e "\e[35;1mCI_BRANCH         = ${CI_COMMIT_BRANCH}\e[0m"
+      echo -e "\e[35;1mCI_DEFAULT_BRANCH = ${CI_DEFAULT_BRANCH}\e[0m"
+      echo -e "\e[35;1mPUSH_IMAGE        = ${PUSH_IMAGE}\e[0m"
+    - docker build --file ${DOCKERFILE} --build-arg TARGET_PLATFORM=${TARGET_PLATFORM} -t ${TARGET_IMAGE} .
+    - |
+      if [[ "${PUSH_IMAGE}" == "true" ]]; then
+          docker push ${TARGET_IMAGE}
+      fi
+  rules:
+    - if: '$CI_COMMIT_BRANCH == $CI_DEFAULT_BRANCH && $CI_PIPELINE_SOURCE != "schedule"'
+      changes:
+        - ci/docker-buildx*
+        - dockerfiles/docker-buildx*
+      variables:
+        PUSH_IMAGE: "true"
+    - if: '$CI_COMMIT_BRANCH == $CI_DEFAULT_BRANCH && $CI_PIPELINE_SOURCE == "schedule"'
+      variables:
+        PUSH_IMAGE: "true"
+    # - if: $IMAGES == "all" || $IMAGES =~ /(^|\s)(docker-buildx(:(20.04|all))?)(\s|$)/
+
+docker-buildx [amd64]:
+  extends: .buildx
+  tags:
+    - linux
+    - docker-privileged
+    - x86_64
+  variables:
+    TARGET_PLATFORM: 'amd64'
+  rules:
+    - if: '$CI_PIPELINE_SOURCE == "merge_request_event"'
+      changes:
+        - ci/docker-buildx*
+        - dockerfiles/docker-buildx*
+    - if: '$CI_COMMIT_BRANCH != $CI_DEFAULT_BRANCH'
+      changes:
+        - ci/docker-buildx*
+        - dockerfiles/docker-buildx*
+    - !reference [.buildx, rules]
+
+docker-buildx [arm64]:
+  extends: .buildx
+  tags:
+    - linux
+    - docker-privileged
+    - arm64
+  variables:
+    TARGET_PLATFORM: 'arm64'
+  rules:
+    - if: '$CI_PIPELINE_SOURCE == "merge_request_event"'
+      when: 'never'
+    - if: '$CI_COMMIT_BRANCH != $CI_DEFAULT_BRANCH'
+      when: 'never'
+    - !reference [.buildx, rules]
+
+docker-buildx:
+  extends: .buildx
+  tags:
+    - linux
+    - docker-privileged
+  script:
+    - !reference [.manifest, script]
+  needs: ["docker-buildx [amd64]", "docker-buildx [arm64]"]
+  rules:
+    - if: '$CI_PIPELINE_SOURCE == "merge_request_event"'
+      when: 'never'
+    - if: '$CI_COMMIT_BRANCH != $CI_DEFAULT_BRANCH'
+      when: 'never'
+    - !reference [.buildx, rules]
