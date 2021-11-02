@@ -6,8 +6,8 @@ hash git 2> /dev/null || sudo apt-get install --assume-yes -qq git
 hash lsb_release 2> /dev/null || sudo apt-get install --assume-yes -qq lsb-release
 
 # Check if OS is Ubuntu
-# shellcheck disable=SC1091
-source /etc/lsb-release
+DISTRIB_ID="$(lsb_release -si)"
+DISTRIB_RELEASE="$(lsb_release -sr)"
 
 if [ "$DISTRIB_ID" != "Ubuntu" ]
 then
