@@ -63,8 +63,8 @@ esac
 env_url="git@gitlab.com:avular/common-tools/package-manager/tue-env.git"
 env_targets_url="git@gitlab.com:avular/common-tools/package-manager/tue-env-targets.git"
 env_dir="$HOME/.tue"
-workspace="ros-$TUE_ROS_DISTRO"
-workspace_dir="$HOME/ros/$TUE_ROS_DISTRO"
+workspace="avular"
+workspace_dir="$HOME/avular"
 
 # Move old environments and installer
 if [ -d "$env_dir" ] && [ -z "$CI" ]
