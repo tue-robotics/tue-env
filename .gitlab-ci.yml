@@ -16,42 +16,20 @@
 
 # Base config that other jobs extend from
 stages:
+  - Environment
   - build
   - release
 
-.base:
-  image: ${CI_REGISTRY}/${CI_PROJECT_NAMESPACE}/docker-buildx:latest
-
-  services:
-    - docker:dind
-
-  variables:
-    GIT_STRATEGY: clone
-    DOCKER_TLS_CERTDIR: "/certs"
-    DOCKER_DRIVER: overlay2
-
-  before_script:
-    - apk --update add git bash curl jq
-    - which ssh-agent || ( apk --update add openssh-client)
-    # To build and push the docker image of private repository to the container registry SSH
-    # needs to be setup in the CI environment
-    - eval $(ssh-agent -s)
-    - |
-      cat <<EOT | ssh-add -
-      -----BEGIN OPENSSH PRIVATE KEY-----
-      ${CI_SSH_KEY_PRIVATE}
-      -----END OPENSSH PRIVATE KEY-----
-      EOT
-    - mkdir -p ~/.ssh
-    - chmod 700 ~/.ssh
-    - ssh-keyscan gitlab.com >> ~/.ssh/known_hosts
-    - chmod 644 ~/.ssh/known_hosts
+include:
+  - local: 'ci/base.gitlab-ci.yml'
+  - local: 'ci/docker-buildx.gitlab-ci.yml'
 
 # Job template to build docker image
 # variables to be defined:
 #   1.  TARGET_PLATFORM (linux/amd64, linux/arm64)
 .build_docker_image_template:
   extends: .base
+  image: ${CI_REGISTRY}/${CI_PROJECT_NAMESPACE}/docker-buildx:latest
   stage: build
   script:
     - docker info
