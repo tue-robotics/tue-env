@@ -6,8 +6,8 @@ hash git 2> /dev/null || sudo apt-get install --assume-yes -qq git
 hash lsb_release 2> /dev/null || sudo apt-get install --assume-yes -qq lsb-release
 
 # Check if OS is Ubuntu
-# shellcheck disable=SC1091
-source /etc/lsb-release
+DISTRIB_ID="$(lsb_release -si)"
+DISTRIB_RELEASE="$(lsb_release -sr)"
 
 if [ "$DISTRIB_ID" != "Ubuntu" ]
 then
@@ -63,8 +63,8 @@ esac
 env_url="git@gitlab.com:avular/common-tools/package-manager/tue-env.git"
 env_targets_url="git@gitlab.com:avular/common-tools/package-manager/tue-env-targets.git"
 env_dir="$HOME/.tue"
-workspace="ros-$TUE_ROS_DISTRO"
-workspace_dir="$HOME/ros/$TUE_ROS_DISTRO"
+workspace="avular"
+workspace_dir="$HOME/avular"
 
 # Move old environments and installer
 if [ -d "$env_dir" ] && [ -z "$CI" ]

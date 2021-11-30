@@ -131,6 +131,10 @@ then
         echo "$CI_DOCKER_PASSWORD" | docker login "$CI_DOCKER_REGISTRY" -u "$CI_DOCKER_USER" --password-stdin
         DOCKER_PUSH=true
     fi
+else
+    if [[ "${CI_DOCKER_PUSH_IMAGE}" == "true" ]]; then
+        echo -e "\e[33;1m--push_image=true with --pull_request=true is not allowed. Docker images are not push in a non-branch pipeline\e[0m"
+    fi
 fi
 
 # build the Docker image (this will use the Dockerfile in the root of the repo)
