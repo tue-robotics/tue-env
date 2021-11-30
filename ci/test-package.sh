@@ -40,10 +40,10 @@ then
     exit 0
 fi
 
-# Run unit tests
-echo -e "\e[35m\e[1mRun tests on this package (catkin run_tests --this --no-deps -DCATKIN_ENABLE_TESTING=ON)\e[0m"
-docker exec -t tue-env bash -c 'source ~/.bashrc; cd "$TUE_SYSTEM_DIR"/src/"$PACKAGE" && catkin run_tests --this --no-status --no-deps -DCATKIN_ENABLE_TESTING=ON'
+# Build test targets
+echo -e "\e[35m\e[1mBuild test targets of this package (catkin build --this --no-deps -DCATKIN_ENABLE_TESTING=ON)\e[0m"
+docker exec -t tue-env bash -c 'source ~/.bashrc; cd "$TUE_SYSTEM_DIR"/src/"$PACKAGE" && catkin build --this --no-status --no-deps -DCATKIN_ENABLE_TESTING=ON'
 
-# Check results of unit tests
-echo -e "\e[35m\e[1mCheck results of the tests on this package (catkin_test_results build/$PACKAGE)\e[0m"
-docker exec -t tue-env bash -c 'source ~/.bashrc; cd "$TUE_SYSTEM_DIR" && [ ! -d build/"$PACKAGE" ] || catkin_test_results build/"$PACKAGE"'
+# Run unit tests
+echo -e "\e[35m\e[1mRun tests on this package (catkin test --this --no-deps -DCATKIN_ENABLE_TESTING=ON)\e[0m"
+docker exec -t tue-env bash -c 'source ~/.bashrc; cd "$TUE_SYSTEM_DIR"/src/"$PACKAGE" && catkin test --this --no-status --no-deps -DCATKIN_ENABLE_TESTING=ON'
