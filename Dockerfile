@@ -22,7 +22,7 @@ ARG ROS_VERSION=
 ENV DEBIAN_FRONTEND=noninteractive \
     LANG=C.UTF-8 \
     DOCKER=true \
-    USER=avular \
+    USER=docker \
     TERM=xterm-256color
 
 # Set default shell to be bash
