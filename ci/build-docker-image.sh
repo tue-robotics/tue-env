@@ -48,6 +48,12 @@ do
     esac
 done
 
+echo -e "\e[35m\e[1mCI_BRANCH             = ${CI_BRANCH}\e[0m"
+echo -e "\e[35m\e[1mCI_PULL_REQUEST       = ${CI_PULL_REQUEST}\e[0m"
+echo -e "\e[35m\e[1mCI_COMMIT             = ${CI_COMMIT}\e[0m"
+echo -e "\e[35m\e[1mCI_DOCKER_IMAGE_NAME  = ${CI_DOCKER_IMAGE_NAME}\e[0m"
+echo -e "\e[35m\e[1mCI_DOCKER_SSH         = ${CI_DOCKER_SSH}\e[0m"
+
 image_substring=$(basename "$CI_DOCKER_IMAGE_NAME")
 case $image_substring in
     tue-env )
