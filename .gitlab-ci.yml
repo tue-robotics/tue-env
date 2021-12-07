@@ -29,22 +29,22 @@ include:
 #   1.  TARGET_PLATFORM (linux/amd64, linux/arm64)
 .build_docker_image_template:
   extends: .base
-  image: ${CI_REGISTRY}/${CI_PROJECT_NAMESPACE}/docker-buildx:latest
+  variables:
+    TARGET_IMAGE_BASE_NAME: '${CI_REGISTRY}/${CI_PROJECT_PATH}'
   stage: build
   script:
     - docker info
     - docker buildx inspect
+    - TARGET_IMAGE="${TARGET_IMAGE_BASE_NAME}:${TARGET_IMAGE_TAG}-${TARGET_PLATFORM}"
     - |
       ci/build-docker-image.sh \
         --ssh \
-        --image="${CI_REGISTRY}/${CI_PROJECT_PATH}" \
+        --image="${TARGET_IMAGE}" \
         --branch=${CI_MERGE_REQUEST_TARGET_BRANCH_NAME:-$CI_COMMIT_BRANCH} \
         --commit="${CI_COMMIT_SHA}" \
         --pull_request=${CI_MERGE_REQUEST_IID:-"false"} \
         --ref-name="merge-requests" \
-        --user="gitlab-ci-token" \
-        --password="${CI_JOB_TOKEN}" \
-        --registry="${CI_REGISTRY}" \
+        --docker_login="false" \
         --platforms="${TARGET_PLATFORM}" \
         --push_image="${PUSH_IMAGE:-"false"}" \
         --ros_version="${ROS_VERSION:-"1"}"
