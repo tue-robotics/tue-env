@@ -1,0 +1,144 @@
+.tue-env:
+  extends: .base
+  stage: Package Manager
+  variables:
+    DOCKERFILE: "dockerfiles/tue-env.Dockerfile"
+    TARGET_IMAGE_BASE_NAME: '${CI_REGISTRY_IMAGE}/ros-${ROS_DISTRO}'
+  script:
+    - TARGET_IMAGE="${TARGET_IMAGE_BASE_NAME}:${TARGET_IMAGE_TAG}-${TARGET_PLATFORM}"
+    - |
+      ci/build-docker-image.sh \
+        --ssh \
+        --image="${TARGET_IMAGE}" \
+        --branch=${CI_MERGE_REQUEST_TARGET_BRANCH_NAME:-$CI_COMMIT_BRANCH} \
+        --commit="${CI_COMMIT_SHA}" \
+        --pull_request=${CI_MERGE_REQUEST_IID:-"false"} \
+        --ref-name="merge-requests" \
+        --docker_file="${DOCKERFILE}" \
+        --docker_login="false" \
+        --platforms="${TARGET_PLATFORM}" \
+        --push_image="${PUSH_IMAGE:-"false"}" \
+        --ros_version="${ROS_VERSION:-"1"}"
+
+  rules:
+    - if: '$CI_COMMIT_BRANCH == $CI_DEFAULT_BRANCH && $CI_PIPELINE_SOURCE != "schedule"'
+      changes:
+        - ci/tue-env**
+        - dockerfiles/tue-env**
+      variables:
+        PUSH_IMAGE: "true"
+    - if: '$CI_COMMIT_BRANCH == $CI_DEFAULT_BRANCH && $CI_PIPELINE_SOURCE == "schedule"'
+      variables:
+        PUSH_IMAGE: "true"
+    # - if: $IMAGES == "all" || $IMAGES =~ /(^|\s)(tue-env(:(latest|all))?)(\s|$)/
+
+ROS Galactic [amd64]:
+  extends: .tue-env
+  tags:
+    - linux
+    - docker-privileged
+    - x86_64
+  variables:
+    TARGET_PLATFORM: 'amd64'
+    ROS_VERSION: '2'
+    ROS_DISTRO: 'galactic'
+  rules:
+    - if: '$CI_PIPELINE_SOURCE == "merge_request_event"'
+      changes:
+        - ci/tue-env**
+        - dockerfiles/tue-env**
+    - if: '$CI_COMMIT_BRANCH != $CI_DEFAULT_BRANCH'
+      changes:
+        - ci/tue-env**
+        - dockerfiles/tue-env**
+    - !reference [.tue-env, rules]
+
+ROS Galactic [arm64]:
+  extends: .tue-env
+  tags:
+    - linux
+    - docker-privileged
+    - arm64
+  variables:
+    TARGET_PLATFORM: 'arm64'
+    ROS_VERSION: '2'
+    ROS_DISTRO: 'galactic'
+  rules:
+    - if: '$CI_PIPELINE_SOURCE == "merge_request_event"'
+      when: 'never'
+    - if: '$CI_COMMIT_BRANCH != $CI_DEFAULT_BRANCH'
+      when: 'never'
+    - !reference [.tue-env, rules]
+
+ROS Galactic:
+  tags:
+    - linux
+    - docker-privileged
+  extends: .tue-env
+  variables:
+    ROS_DISTRO: 'galactic'
+  script:
+    - !reference [.manifest, script]
+  needs: ["ROS Galactic [amd64]", "ROS Galactic [arm64]"]
+  rules:
+    - if: '$CI_PIPELINE_SOURCE == "merge_request_event"'
+      when: 'never'
+    - if: '$CI_COMMIT_BRANCH != $CI_DEFAULT_BRANCH'
+      when: 'never'
+    - !reference [.tue-env, rules]
+
+
+ROS Noetic [amd64]:
+  extends: .tue-env
+  tags:
+    - linux
+    - docker-privileged
+    - x86_64
+  variables:
+    TARGET_PLATFORM: 'amd64'
+    ROS_VERSION: '1'
+    ROS_DISTRO: 'noetic'
+  rules:
+    - if: '$CI_PIPELINE_SOURCE == "merge_request_event"'
+      changes:
+        - ci/tue-env**
+        - dockerfiles/tue-env**
+    - if: '$CI_COMMIT_BRANCH != $CI_DEFAULT_BRANCH'
+      changes:
+        - ci/tue-env**
+        - dockerfiles/tue-env**
+    - !reference [.tue-env, rules]
+
+ROS Noetic [arm64]:
+  extends: .tue-env
+  tags:
+    - linux
+    - docker-privileged
+    - arm64
+  variables:
+    TARGET_PLATFORM: 'arm64'
+    ROS_VERSION: '1'
+    ROS_DISTRO: 'noetic'
+  rules:
+    - if: '$CI_PIPELINE_SOURCE == "merge_request_event"'
+      when: 'never'
+    - if: '$CI_COMMIT_BRANCH != $CI_DEFAULT_BRANCH'
+      when: 'never'
+    - !reference [.tue-env, rules]
+
+ROS Noetic:
+  tags:
+    - linux
+    - docker-privileged
+  extends: .tue-env
+  variables:
+    ROS_DISTRO: 'noetic'
+  script:
+    - !reference [.manifest, script]
+  needs: ["ROS Noetic [amd64]", "ROS Noetic [arm64]"]
+  rules:
+    - if: '$CI_PIPELINE_SOURCE == "merge_request_event"'
+      when: 'never'
+    - if: '$CI_COMMIT_BRANCH != $CI_DEFAULT_BRANCH'
+      when: 'never'
+    - !reference [.tue-env, rules]
