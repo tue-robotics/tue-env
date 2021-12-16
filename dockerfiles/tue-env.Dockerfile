@@ -76,4 +76,6 @@ RUN --mount=type=ssh,uid=1000 sed -e s/return//g -i ~/.bashrc && \
     # Check git remote origin
     git -C ~/.tue remote -v && \
     # Show the branches of tue-env
-    git -C ~/.tue branch
+    git -C ~/.tue branch && \
+    # Remove docker-clean. APT will be able to autocomplete packages now
+    sudo rm /etc/apt/apt.conf.d/docker-clean
