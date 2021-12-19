@@ -1,5 +1,5 @@
 .buildx:
-  extends: .base
+  extends: .build_image_base
   image: docker:latest
   stage: Environment
   variables:
