@@ -45,7 +45,7 @@ function version_gt()
 
 function tue-install-error
 {
-    echo -e "\e[31;1m
+    echo -e "\e[31m
 Error while installing target '$TUE_INSTALL_CURRENT_TARGET':
 
     $1
