@@ -25,7 +25,7 @@
 # - Installing prerequisites
 # - Setup SSH keys
 # - Loging into docker registry
-.base:
+.build_image_base:
   image: ${CI_REGISTRY_IMAGE}/docker-buildx:latest
 
   services:

@@ -1,5 +1,5 @@
 .tue-env:
-  extends: .base
+  extends: .build_image_base
   stage: Package Manager
   variables:
     DOCKERFILE: "dockerfiles/tue-env.Dockerfile"
