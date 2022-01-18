@@ -49,6 +49,8 @@ function tue-install-error
 Error while installing target '$TUE_INSTALL_CURRENT_TARGET':
 
     $1
+
+Logfile: $INSTALL_DETAILS_FILE
 \e[0m" | tee --append "$INSTALL_DETAILS_FILE"
     exit 1
 }
