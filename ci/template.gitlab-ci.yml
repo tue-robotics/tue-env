@@ -3,81 +3,22 @@
 # Prerequisities:
 # 1. Generate a password less SSH key on a local machine
 # 2. Add the public key as a deploy key to the repository/group
+#    - Settings > Repository > Deploy keys.
+#    Either add the public key here or enable one from "Privately accessible deploy keys"
 # 3. Add the private key as a variable (e.g. SSH_KEY_PRIVATE) to the repository/group
+# 4. Allow the CI deploy key to have write access if using "Mirror Upstream"
+#    - Settings > Repository > Deploy keys > Enabled deploy keys
+#    Edit the required key, check "Grant write permissions to this key" and click "Save changes"
 #
-# Scheduled branch mirroring:
-# 1. Allow the CI deploy key to have write access
-# 2. In the pipelines schedule configuration, set:
-#      - MIRROR_UPSTREAM = true
-# 3. Set the remaining variables to appropriate values:
-#      - REMOTE_URL
-#      - REMOTE_BRANCH
-#      - LOCAL_REMOTE_BRANCH
+# 5. Install Build Test Job requires the variable ROS_DISTRO to be set in the CI pipeline.
+#    Either set this as a global variable before including this template into a repository
+#    or set it as a pipeline variable.
 
-# Base config that other jobs extend from
-.base:
-  image: docker:latest
+stages:
+  - Install Build Test 
+  - Mirror Upstream
 
-  services:
-    - docker:dind
-
-  variables:
-    DOCKER_TLS_CERTDIR: "/certs"
-    DOCKER_DRIVER: overlay2
-    SHARED_PATH: "/builds/shared/$CI_PROJECT_PATH"
-    GIT_STRATEGY: clone
-
-  tags:
-    - linux
-    - docker-privileged
-    - x86_64
-
-  before_script:
-    - docker info
-    - apk --update add git bash
-    - which ssh-agent || ( apk --update add openssh-client )
-    # To clone the tue-env repository and get the install-package.sh & build-package.sh scripts
-    # SSH needs to be setup in the CI environment
-    - eval $(ssh-agent -s)
-    - |
-      cat <<EOT | ssh-add -
-      -----BEGIN OPENSSH PRIVATE KEY-----
-      ${CI_SSH_KEY_PRIVATE}
-      -----END OPENSSH PRIVATE KEY-----
-      EOT
-    - mkdir -p ~/.ssh
-    - chmod 700 ~/.ssh
-    - ssh-keyscan gitlab.com >> ~/.ssh/known_hosts
-    - chmod 644 ~/.ssh/known_hosts
-    - git clone --depth=1 --single-branch git@gitlab.com:avular/common-tools/package-manager/tue-env.git /tmp/tue-env
-    - mv /tmp/tue-env/ci/* .
-    # The known_hosts file is merged in the tue-env docker container to make sure the correct
-    # signature of the git server is setup and does not require input using CLI
-    - mkdir -p "$SHARED_PATH"/.ssh
-    - ssh-keyscan gitlab.com > "$SHARED_PATH"/.ssh/known_hosts
-    - |
-      cat <<EOT > "${SHARED_PATH}"/.ssh/ci_ssh_key
-      -----BEGIN OPENSSH PRIVATE KEY-----
-      ${CI_SSH_KEY_PRIVATE}
-      -----END OPENSSH PRIVATE KEY-----
-      EOT
-    # Authenticate the docker registry where the docker images stored
-    - echo "$CI_JOB_TOKEN" | docker login $CI_REGISTRY -u gitlab-ci-token --password-stdin
-
-Install, Build, Test:
-  extends: .base
-  script:
-    - ./install-package.sh --package="$CI_PROJECT_NAME" --branch=${CI_MERGE_REQUEST_TARGET_BRANCH_NAME:-$CI_COMMIT_BRANCH} --commit="$CI_COMMIT_SHA" --pullrequest=${CI_MERGE_REQUEST_IID:-"false"} --image="$CI_REGISTRY/avular/common-tools/package-manager/tue-env" --shared="$SHARED_PATH" --ref-name="merge-requests" --ssh --ssh-key="${SHARED_PATH}/.ssh/ci_ssh_key"
-    - ./build-package.sh -p="$CI_PROJECT_NAME"
-    - ./test-package.sh -p="$CI_PROJECT_NAME"
-  rules:
-    - if: '$MIRROR_UPSTREAM == "true"'
-      when: never
-    - when: always
-
-Mirror Upstream:
-  extends: .base
-  script:
-    - ./mirror-upstream.bash --upstream-remote-url="$REMOTE_URL" --local-remote-url="git@gitlab.com:$CI_PROJECT_PATH" --upstream-remote-branch="$REMOTE_BRANCH" --local-remote-branch="$LOCAL_REMOTE_BRANCH" --user="$GITLAB_USER_NAME" --email="$GITLAB_USER_EMAIL"
-  rules:
-    - if: '$MIRROR_UPSTREAM == "true"'
+include:
+  - local: 'ci/base.gitlab-ci.yml'
+  - local: 'ci/install-build-test.gitlab-ci.yml'
+  - local: 'ci/mirror-upstream.gitlab-ci.yml'
