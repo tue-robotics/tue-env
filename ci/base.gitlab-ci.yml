@@ -37,6 +37,7 @@
     GIT_STRATEGY: clone
     DOCKER_TLS_CERTDIR: "/certs"
     DOCKER_DRIVER: overlay2
+    SHARED_PATH: "/builds/shared/$CI_PROJECT_PATH"
 
   before_script:
     - apk --update add git bash curl jq openssh-client
