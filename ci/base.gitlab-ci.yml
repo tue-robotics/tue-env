@@ -26,7 +26,7 @@
 # - Setup SSH keys
 # - Loging into docker registry
 .build_image_base:
-  image: ${CI_REGISTRY_IMAGE}/docker-buildx:latest
+  image: ${IMAGE_REGISTRY}/docker-buildx:latest
 
   services:
     - docker:dind
@@ -38,6 +38,7 @@
     DOCKER_TLS_CERTDIR: "/certs"
     DOCKER_DRIVER: overlay2
     SHARED_PATH: "/builds/shared/$CI_PROJECT_PATH"
+    IMAGE_REGISTRY: "$CI_REGISTRY_IMAGE"
 
   before_script:
     - apk --update add git bash curl jq openssh-client
