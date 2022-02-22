@@ -1,0 +1,32 @@
+# Scheduled branch mirroring:
+# 1. Allow the CI deploy key to have write access
+# 2. In the pipelines schedule configuration, set:
+#      - MIRROR_UPSTREAM = true
+# 3. Set the remaining variables to appropriate values:
+#      - REMOTE_URL
+#      - REMOTE_BRANCH
+#      - LOCAL_REMOTE_BRANCH
+
+Mirror Upstream:
+  extends: .build_image_base
+  variables:
+    IMAGE_REGISTRY: "${CI_REGISTRY}/avular/common-tools/package-manager/tue-env"
+
+  stage: Mirror Upstream
+  tags:
+    - linux
+    - docker-privileged
+    - x86_64
+  script:
+    - git clone --depth=1 --single-branch git@gitlab.com:avular/common-tools/package-manager/tue-env.git /tmp/tue-env
+    - mv /tmp/tue-env/ci/* .
+    - |
+      ./mirror-upstream.bash \
+      --upstream-remote-url="${REMOTE_URL}" \
+      --local-remote-url="git@gitlab.com:${CI_PROJECT_PATH}" \
+      --upstream-remote-branch="${REMOTE_BRANCH}" \
+      --local-remote-branch="${LOCAL_REMOTE_BRANCH}" \
+      --user="${GITLAB_USER_NAME}" \
+      --email="${GITLAB_USER_EMAIL}"
+  rules:
+    - if: '$MIRROR_UPSTREAM == "true"'

@@ -1,0 +1,47 @@
+# This job requires the setting of variable ROS_DISTRO
+
+Install, Build, Test:
+  extends: .build_image_base
+  variables:
+    IMAGE_REGISTRY: "${CI_REGISTRY}/avular/common-tools/package-manager/tue-env"
+
+  stage: Install Build Test
+  tags:
+    - linux
+    - docker-privileged
+    - x86_64
+  script:
+    - |
+      if [[ -z "${ROS_DISTRO}" ]]; then
+        echo "Error! Mandatory job variable ROS_DISTRO is not set."
+        exit 1
+      fi
+    - git clone --depth=1 --single-branch git@gitlab.com:avular/common-tools/package-manager/tue-env.git /tmp/tue-env
+    - mv /tmp/tue-env/ci/* .
+    # The known_hosts file is merged in the tue-env docker container to make sure the correct
+    # signature of the git server is setup and does not require input using CLI
+    - mkdir -p "${SHARED_PATH}"/.ssh
+    - ssh-keyscan gitlab.com > "${SHARED_PATH}"/.ssh/known_hosts
+    - |
+      cat <<EOT > "${SHARED_PATH}"/.ssh/ci_ssh_key
+      -----BEGIN OPENSSH PRIVATE KEY-----
+      ${CI_SSH_KEY_PRIVATE}
+      -----END OPENSSH PRIVATE KEY-----
+      EOT
+    - |
+      ./install-package.sh \
+        --package="${CI_PROJECT_NAME}" \
+        --branch=${CI_MERGE_REQUEST_TARGET_BRANCH_NAME:-$CI_COMMIT_BRANCH} \
+        --commit="${CI_COMMIT_SHA}" \
+        --pullrequest=${CI_MERGE_REQUEST_IID:-"false"} \
+        --image="${CI_REGISTRY}/avular/common-tools/package-manager/tue-env/ros-${ROS_DISTRO}" \
+        --shared="${SHARED_PATH}" \
+        --ref-name="merge-requests" \
+        --ssh \
+        --ssh-key="${SHARED_PATH}/.ssh/ci_ssh_key"
+    - ./build-package.sh -p="${CI_PROJECT_NAME}"
+    - ./test-package.sh -p="${CI_PROJECT_NAME}"
+  rules:
+    - if: '$MIRROR_UPSTREAM == "true"'
+      when: never
+    - when: always
