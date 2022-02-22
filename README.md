@@ -239,4 +239,5 @@ A general remark about the order of preference of package repositories:
 system > ppa > pip2 = pip3 > snap > git > hg > svn > dpkg (> pip, deprecated)
 
 ### Adding SSH support to a repository
-See [this](ci/README.md)
+- For Travis CI, see [this](docs/CI_Travis_Setup.md)
+- For GitLab CI/CD, see [this](docs/CI_GitLab_Setup.rst)
