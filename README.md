@@ -121,7 +121,7 @@ Taking the above into account, the following combinations for `install.yaml` are
 ```yaml
 - type: ros
   source:
-    type: [git/hg/svn]
+    type: git
     url: <Repository URL>
     sub-dir: <Sub directory of the repository> (Optional field)
     version: <Version to be installed> (Optional field)
@@ -161,43 +161,43 @@ Both ROS distro specific as default can be 'null'. Prevered usage is default for
 This target type is similar to a ROS source target with only difference being a catkin package is independent of any ROS
 dependencies and solely depends on catkin. Examples of such packages are `librealsense`, `gtsam`, etc.
 
-#### Target / System / PIP / PIP2 / PIP3 / PPA / Snap / DPKG / Empty
+#### Target / System / PIP / PIP3 / PPA / Snap / DPKG / Empty
 ```yaml
-- type: [target/system/pip/pip2/pip3/ppa/snap/dpkg/empty]
+- type: [target/system/pip/pip3/ppa/snap/dpkg/empty]
   name: <Name of the candidate>
 ```
 
 Depending on Ubuntu distribution:
 
 ```yaml
-- type: [target/system/pip/pip2/pip3/ppa/snap/dpkg/empty]
+- type: [target/system/pip/pip3/ppa/snap/dpkg/empty]
   xenial:
     name: [null/<Name of the candidate>]
   default:
     name: [null/<Name of the candidate>]
 ```
 
-Both Ubuntu distribution specific as default can be 'null'. Prevered usage is default for current and feature distributions and exceptions for old distributions.
+Both Ubuntu distribution specific as default can be 'null'. Prefered usage is default for current and feature distributions and exceptions for old distributions.
 
-#### (Target / System / PIP / PIP2 / PIP3 / PPA / Snap)-now
+#### (Target / System / PIP / PIP3 / PPA / Snap)-now
 
-The default installation method for targets of type `system`, `pip(2/3)`, `ppa` and `snap` is to collect all such targets in a list and install them simultaneously at the end of the `tue-get install` procedure. To install such a dependency immediately for a specific target, use the target type as `X-now`:
+The default installation method for targets of type `system`, `pip(3)`, `ppa` and `snap` is to collect all such targets in a list and install them simultaneously at the end of the `tue-get install` procedure. To install such a dependency immediately for a specific target, use the target type as `X-now`:
 
 ```yaml
-- type: [target/system/pip/pip2/pip3/ppa/snap]-now
+- type: [target/system/pip/pip3/ppa/snap]-now
   name: <Name of the candidate>
 
-- type: [target/system/pip/pip2/pip3/ppa/snap/dpkg]
+- type: [target/system/pip/pip3/ppa/snap/dpkg]
   name: <Name of the candidate>
 ```
 
 `target-now` will install a target directly recursively. So also all its dependencies will be installed directly, by converting them from `XX` to `XX-now`. Except `ROS` and `DPKG` are excluded. ROS dependencies are excluded, because ROS packages should only be used at runtime, because it requires either a compilation and/or resourcing the workspace.
 It is preferred to include these `-now` dependencies in `install.yaml`. Only use the corresponding bash function in `install.bash` if no other solution is possible.
 
-#### GIT / HG / SVN
+#### GIT
 
 ```yaml
-- type: [git/hg/svn]
+- type: git
   url: <url>
   path: <path/where/to/clone>
   version: [branch/commit/tag] (Optional field)
@@ -208,27 +208,22 @@ It is preferred to include these `-now` dependencies in `install.yaml`. Only use
 The following functions provided with `tue-env` must be preferred over any
 generally used methods of installing packages:
 
-| Function Name                   | Description                                                                                    |
-|---------------------------------|------------------------------------------------------------------------------------------------|
-| `tue-install-add-text`          | To add/replace text in a file with `sudo` taken into account                                   |
-| `tue-install-apt-get-update`    | Make sure that during next `tue-install-system-now` call `apt-get` is updated                  |
-| `tue-install-cp`                | Analogous to `cp` but takes `sudo` into account and the source should be relative to target    |
-| `tue-install-dpkg`              | To install a debian dpkg file                                                                  |
-| `tue-install-git`               | To install a git repository                                                                    |
-| `tue-install-pip`               | To add a python pip2 package to a list to be installed at the end (deprecated)                 |
-| `tue-install-pip2`              | To add a python pip2 package to a list to be installed at the end                              |
-| `tue-install-pip3`              | To add a python pip3 package to a list to be installed at the end                              |
-| `tue-install-pip-now`           | To install python pip2 package, but ignores it if already installed (deprecated)               |
-| `tue-install-pip2-now`          | To install python pip2 package, but ignores it if already installed                            |
-| `tue-install-pip3-now`          | To install python pip3 package, but ignores it if already installed                            |
-| `tue-install-ppa`               | To add one PPA/DEB to a list to be added with `apt-add-repository` at the end, before apt-get  |
-| `tue-install-ppa-now`           | To add a PPA/DEB with `apt-add-repository`, use ^ inside of a DEB and spaces between items     |
-| `tue-install-snap`              | To add a snap package to a list to be installed at the end                                     |
-| `tue-install-snap-now`          | To install a snap                                                                              |
-| `tue-install-svn`               | To install a svn repository                                                                    |
-| `tue-install-system`            | To add `deb` package to a list of packages to be installed at the end with `apt-get`           |
-| `tue-install-system-now`        | To install `deb` packages with `apt-get` right away, but ignores it if already installed       |
-| `tue-install-get-releases`      | To get a released asset from a github repository and place it in the requested directory       |
+| Function Name                                   | Description                                                                                    |
+|-------------------------------------------------|------------------------------------------------------------------------------------------------|
+| `tue-install-add-text`                          | To add/replace text in a file with `sudo` taken into account                                   |
+| `tue-install-apt-get-update`                    | Make sure that during next `tue-install-system-now` call `apt-get` is updated                  |
+| `tue-install-cp`                                | Analogous to `cp` but takes `sudo` into account and the source should be relative to target    |
+| `tue-install-dpkg`                              | To install a debian dpkg file                                                                  |
+| `tue-install-git`                               | To install a git repository                                                                    |
+| `tue-install-pip` or `tue-install-pip3`         | To add a python pip3 package to a list to be installed at the end (deprecated)                 |
+| `tue-install-pip-now` or `tue-install-pip3-now` | To install python pip2 package, but ignores it if already installed (deprecated)               |
+| `tue-install-ppa`                               | To add one PPA/DEB to a list to be added with `apt-add-repository` at the end, before apt-get  |
+| `tue-install-ppa-now`                           | To add a PPA/DEB with `apt-add-repository`, use ^ inside of a DEB and spaces between items     |
+| `tue-install-snap`                              | To add a snap package to a list to be installed at the end                                     |
+| `tue-install-snap-now`                          | To install a snap                                                                              |
+| `tue-install-system`                            | To add `deb` package to a list of packages to be installed at the end with `apt-get`           |
+| `tue-install-system-now`                        | To install `deb` packages with `apt-get` right away, but ignores it if already installed       |
+| `tue-install-get-releases`                      | To get a released asset from a github repository and place it in the requested directory       |
 
 The input arguments for each of the above mentioned commands can be found by
 simply executing the command in a bash session (provided tue-env is correctly
@@ -236,7 +231,7 @@ installed).
 
 A general remark about the order of preference of package repositories:
 
-system > ppa > pip2 = pip3 > snap > git > hg > svn > dpkg (> pip, deprecated)
+system > ppa > pip = pip3 > snap > git > dpkg
 
 ### Adding SSH support to a repository
 - For Travis CI, see [this](docs/CI_Travis_Setup.md)
