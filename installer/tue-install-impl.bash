@@ -1008,11 +1008,6 @@ function tue-install-ros
         return 0
     fi
 
-    if [ -z "$ROS_PACKAGE_INSTALL_DIR" ]
-    then
-        tue-install-error "Environment variable ROS_PACKAGE_INSTALL_DIR not set."
-    fi
-
     # Make sure the ROS package install dir exists
     tue-install-debug "Creating ROS package install dir: $ROS_PACKAGE_INSTALL_DIR"
     mkdir -p "$ROS_PACKAGE_INSTALL_DIR"
