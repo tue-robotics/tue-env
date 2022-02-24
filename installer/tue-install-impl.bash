@@ -23,8 +23,6 @@ mkdir -p "$TUE_INSTALL_INSTALLED_DIR"
 
 TUE_INSTALL_TARGETS_DIR=$TUE_ENV_TARGETS_DIR
 
-TUE_REPOS_DIR=$TUE_ENV_DIR/repos
-
 TUE_APT_GET_UPDATED_FILE=/tmp/tue_get_apt_get_updated
 
 # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # #
@@ -1008,11 +1006,6 @@ function tue-install-ros
         tue-install-debug "tue-install-system ros-$TUE_ROS_DISTRO-$src"
         tue-install-system ros-"$TUE_ROS_DISTRO"-"$src"
         return 0
-    fi
-
-    if [ -z "$ROS_PACKAGE_INSTALL_DIR" ]
-    then
-        tue-install-error "Environment variable ROS_PACKAGE_INSTALL_DIR not set."
     fi
 
     # Make sure the ROS package install dir exists

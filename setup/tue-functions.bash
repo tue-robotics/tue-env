@@ -6,6 +6,9 @@ TUE_SYSTEM_DIR=$TUE_ENV_DIR/system
 export TUE_DEV_DIR
 export TUE_SYSTEM_DIR
 
+TUE_REPOS_DIR="${TUE_ENV_DIR}"/repos
+export TUE_REPOS_DIR
+
 # ----------------------------------------------------------------------------------------------------
 #                                        HELPER FUNCTIONS
 # ----------------------------------------------------------------------------------------------------
@@ -32,8 +35,8 @@ function tue-apt-select-mirror
     # It uses apt-select to generate a new sources.list, based on the current one.
     # All Arguments to this functions are passed on to apt-select, so check the
     # apt-select documentation for all options.
-    hash pip2 2> /dev/null|| sudo apt-get install --assume-yes python-pip
-    hash apt-select 2> /dev/null|| sudo -H pip2 install apt-select
+    hash pip3 2> /dev/null|| sudo apt-get install --assume-yes python3-pip
+    hash apt-select 2> /dev/null|| sudo python3 pip3 install -U apt-select
 
     local mem_pwd=$PWD
     # shellcheck disable=SC2164
@@ -243,6 +246,11 @@ function _git_split_url
 {
     local url=$1
 
+    # The regex can be further constrained using regex101.com
+    if ! grep -P -q "^(?:(?:git@[^:]+:)|(?:https://))[^:]+\.git$" <<< "${url}"; then
+        return 1
+    fi
+
     local web_address
     local domain_name
     local repo_address
@@ -269,6 +277,10 @@ function _git_https
     local output
     output=$(_git_split_url "$url")
 
+    if [[ -z "${output}" ]]; then
+        return 1
+    fi
+
     local array
     read -r -a array <<< "$output"
     local domain_name=${array[0]}
@@ -285,6 +297,10 @@ function _git_ssh
 
     local output
     output=$(_git_split_url "$url")
+
+    if [[ -z "${output}" ]]; then
+        return 1
+    fi
 
     local array
     read -r -a array <<< "$output"
@@ -313,6 +329,10 @@ function _git_https_or_ssh
         output_url=$(_git_ssh "$input_url")
     else
         output_url=$(_git_https "$input_url")
+    fi
+
+    if [[ -z "${output_url}" ]]; then
+        return 1
     fi
 
     echo "$output_url"
