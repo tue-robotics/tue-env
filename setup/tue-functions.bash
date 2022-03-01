@@ -338,6 +338,36 @@ function _git_https_or_ssh
 }
 export -f _git_https_or_ssh # otherwise not available in sourced files
 
+#######################################
+# Generate the path where a cloned git repository will be stored, based on its url
+# Globals:
+#   TUE_REPOS_DIR, used as the base directory of the generated path
+# Arguments:
+#   URL, A valid git repository url
+# Return:
+#   Path where the repository must be cloned
+#######################################
+function _git_url_to_repos_dir
+{
+    local url=$1
+    local output
+    output=$(_git_split_url "$url")
+
+    if [[ -z "${output}" ]]; then
+        return 1
+    fi
+
+    local array
+    read -r -a array <<< "$output"
+    local domain_name=${array[0]}
+    local repo_address=${array[1]}
+    local repos_dir=
+    repos_dir="$TUE_REPOS_DIR"/"$domain_name"/"$repo_address"
+
+    echo "${repos_dir}"
+}
+export -f _git_url_to_repos_dir # otherwise not available in sourced files
+
 # ----------------------------------------------------------------------------------------------------
 #                                            TUE-MAKE
 # ----------------------------------------------------------------------------------------------------
