@@ -297,16 +297,40 @@ function tue-install-git
 
     local repo=$1
     local repo_pre="$repo"
-    local targetdir=$2
-    local version=$3
 
     # Change url to https/ssh
     repo=$(_git_https_or_ssh "$repo")
-    if ! grep -q "^git@.*\.git$\|^https://.*\.git$" <<< "$repo"
-    then
+    if [[ -z "${repo}" ]]; then
         # shellcheck disable=SC2140
         tue-install-error "repo: '$repo' is invalid. It is generated from: '$repo_pre'\n"\
 "The problem will probably be solved by resourcing the setup"
+    fi
+
+    local targetdir
+    targetdir=$(_git_url_to_repos_dir "${repo_pre}")
+
+    local version=
+
+    shift
+    if [[ $# -gt 2 ]]; then
+        tue-install-error "Invalid number of arguments"
+    fi
+
+    if [[ -n $1 ]]; then
+        for i in "$@"; do
+            case $i in
+                --target-dir=* )
+                    targetdir="${i#*=}"  ;;
+                --version=* )
+                    version="${i#*=}" ;;
+                * )
+                    tue-install-error "Unknown input variable ${i}" ;;
+            esac
+        done
+    fi
+
+    if [[ -z "${targetdir}" ]]; then
+        tue-install-error "Target directory path cannot be empty"
     fi
 
     if [ ! -d "$targetdir" ]
@@ -980,8 +1004,6 @@ function tue-install-ros
 
     local install_type=$1
     local src=$2
-    local sub_dir=$3
-    local version=$4
 
     tue-install-debug "Installing ros package: type: $install_type, source: $src"
 
@@ -1008,38 +1030,49 @@ function tue-install-ros
         return 0
     fi
 
+    if [ "$install_type" != "git" ]
+    then
+        tue-install-error "Unknown ros install type: '${install_type}'"
+    fi
+
+    local repos_dir
+    local version
+    local sub_dir
+
+    if [[ -n $3 ]]; then
+        for i in "${@:3}"; do
+            case $i in
+                --target-dir=* )
+                    repos_dir="${i#*=}"
+                    ;;
+
+                --version=* )
+                    version="${i#*=}"
+                    ;;
+
+                --sub-dir=* )
+                    sub_dir="${i#*=}"
+                    ;;
+
+                * )
+                    tue-install-error "Unknown input variable ${i}"
+                    ;;
+            esac
+        done
+    fi
+
     # Make sure the ROS package install dir exists
     tue-install-debug "Creating ROS package install dir: $ROS_PACKAGE_INSTALL_DIR"
     mkdir -p "$ROS_PACKAGE_INSTALL_DIR"
 
     local ros_pkg_dir="$ROS_PACKAGE_INSTALL_DIR"/"$ros_pkg_name"
-    local repos_dir
-    if [ "$install_type" == "git" ]
-    then
-        local output
-        output=$(_git_split_url "$src")
 
-        local array
-        read -r -a array <<< "$output"
-        local domain_name=${array[0]}
-        local repo_address=${array[1]}
-        repos_dir="$TUE_REPOS_DIR"/"$domain_name"/"$repo_address"
-        ## temp; Move repo to new location
-        local repos_dir_old="$TUE_REPOS_DIR"/"$src"
-        repos_dir_old=${repos_dir_old// /_}
-        repos_dir_old=${repos_dir_old//[^a-zA-Z0-9\/\.-]/_}
-        if [ -d "$repos_dir_old" ]
-        then
-            tue-install-debug "mv $repos_dir_old $repos_dir"
-            mv "$repos_dir_old" "$repos_dir"
+    # If repos_dir is unset, try generating the default path from git url
+    if [[ -z "${repos_dir}" ]]; then
+        repos_dir=$(_git_url_to_repos_dir "${src}")
+        if [[ -z "${repos_dir}" ]]; then
+            tue-install-error "Could not create repos_dir path url"
         fi
-        # temp; end
-    else
-        repos_dir="$TUE_REPOS_DIR"/"$src"
-        # replace spaces with underscores
-        repos_dir=${repos_dir// /_}
-        # now, clean out anything that's not alphanumeric or an underscore
-        repos_dir=${repos_dir//[^a-zA-Z0-9\/\.-]/_}
     fi
 
     # For backwards compatibility: if the ros_pkg_dir already exists and is NOT
@@ -1052,12 +1085,7 @@ function tue-install-ros
     fi
     tue-install-debug "repos_dir: $repos_dir"
 
-    if [ "$install_type" == "git" ]
-    then
-        tue-install-git "$src" "$repos_dir" "$version"
-    else
-        tue-install-error "Unknown ros install type: '${install_type}'"
-    fi
+    tue-install-git "$src" --target-dir="$repos_dir" --version="$version"
 
     if [ -d "$repos_dir" ]
     then
