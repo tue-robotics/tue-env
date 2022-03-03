@@ -45,7 +45,7 @@
     - *ssh_keys
     - echo "${CI_JOB_TOKEN}" | docker login ${CI_REGISTRY} -u gitlab-ci-token --password-stdin
     - |
-      TARGET_IMAGE_TAG_BRANCH=${CI_MERGE_REQUEST_TARGET_BRANCH_NAME:-$CI_COMMIT_BRANCH}
+      TARGET_IMAGE_TAG_BRANCH=${CI_MERGE_REQUEST_TARGET_BRANCH_NAME:-${CI_COMMIT_BRANCH:-$CI_COMMIT_TAG}}
       if [[ "${TARGET_IMAGE_TAG_BRANCH}" == "${CI_DEFAULT_BRANCH}" ]]; then
           TARGET_IMAGE_TAG="latest"
       else
