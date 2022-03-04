@@ -23,7 +23,7 @@
       if [[ -f ${DOCKERFILE} ]]; then
         echo -e "\e[35;1mDockerfile found at ${DOCKERFILE} relative to the root of the repository. This will be used instead of the template Dockerfile from tue-env."
       else
-        git clone --depth=1 --single-branch --branch="feat/add_docker_image_generator" git@gitlab.com:avular/common-tools/package-manager/tue-env.git /tmp/tue-env
+        git clone --depth=1 --single-branch git@gitlab.com:avular/common-tools/package-manager/tue-env.git /tmp/tue-env
         mkdir -p $(dirname "${DOCKERFILE}")
         mv /tmp/tue-env/${DOCKERFILE} $(dirname "${DOCKERFILE}")
       fi
