@@ -39,6 +39,10 @@ def main():
 
     commands = []
 
+    def commands_append(command: str):
+        command = command.replace(" ", "^")
+        commands.append(command)
+
     # Combine now calls
     now_cache = {
         "system-now": [],
@@ -139,14 +143,12 @@ def main():
         if not command:
             return show_error("Invalid install.yaml file")
 
-        command = command.replace(" ", "^")
-        commands.append(command)
+        commands_append(command)
 
     for install_type, pkg_list in now_cache.items():
         if pkg_list:
             command = "tue-install-{0} {1}".format(install_type, " ".join(pkg_list))
-            command = command.replace(" ", "^")
-            commands.append(command)
+            commands_append(command)
 
     commands = " ".join(commands)
 
