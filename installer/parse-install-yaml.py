@@ -43,7 +43,6 @@ def main():
     now_cache = {
         "system-now": [],
         "pip-now": [],
-        "pip2-now": [],
         "pip3-now": [],
         "ppa-now": [],
         "snap-now": [],
@@ -95,7 +94,6 @@ def main():
                 "target",
                 "system",
                 "pip",
-                "pip2",
                 "pip3",
                 "ppa",
                 "snap",
@@ -103,7 +101,6 @@ def main():
                 "target-now",
                 "system-now",
                 "pip-now",
-                "pip2-now",
                 "pip3-now",
                 "ppa-now",
                 "snap-now",
