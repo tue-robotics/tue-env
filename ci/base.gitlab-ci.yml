@@ -17,7 +17,18 @@
 .manifest:
   script:
     - TARGET_IMAGE="${TARGET_IMAGE_BASE_NAME}:${TARGET_IMAGE_TAG}"
-    - docker manifest create ${TARGET_IMAGE} ${TARGET_IMAGE}-amd64 ${TARGET_IMAGE}-arm64
+    - |
+      IMAGES_TO_COMBINE=
+      for arch in amd64 arm64; do
+        if docker manifest inspect ${TARGET_IMAGE}-${arch}; then
+          IMAGES_TO_COMBINE="${IMAGES_TO_COMBINE} ${TARGET_IMAGE}-${arch}"
+        fi
+      done
+      if [[ -z "${IMAGES_TO_COMBINE}" ]]; then
+        echo -e "Error! No images to combine!"
+        exit 1
+      fi
+    - docker manifest create ${TARGET_IMAGE} ${IMAGES_TO_COMBINE}
     - docker manifest push ${TARGET_IMAGE}
     - docker manifest inspect --verbose ${TARGET_IMAGE}
 
