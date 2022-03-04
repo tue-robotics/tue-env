@@ -1,0 +1,90 @@
+.package-release-base:
+  extends: .build_image_base
+  stage: Package Release
+  variables:
+    IMAGE_REGISTRY: "${CI_REGISTRY}/avular/common-tools/package-manager/tue-env"
+    DOCKERFILE: "dockerfiles/package-release.Dockerfile"
+    TARGET_IMAGE_BASE_NAME: "${CI_REGISTRY_IMAGE}"
+    BASE_IMAGE: ${CI_REGISTRY}/avular/common-tools/package-manager/tue-env/ros-${ROS_DISTRO}:latest
+    BUILD_WS: "false"
+  script:
+    - TARGET_IMAGE="${TARGET_IMAGE_BASE_NAME}:${TARGET_IMAGE_TAG}-${TARGET_PLATFORM}"
+    - PUSH_IMAGE="${PUSH_IMAGE:-"false"}"
+    - BUILD_WS="${BUILD_WS:-"false"}"
+    - |
+      if [[ -z "${ROS_DISTRO}" ]]; then
+        echo -e "\e[35;1mError! Mandatory job variable ROS_DISTRO is not set.\e[0m"
+        exit 1
+      fi
+      if [[ -z "${PACKAGE}" ]]; then
+        echo -e "\e[35;1mError! Mandatory job variable PACKAGE is not set.\e[0m"
+        exit 1
+      fi
+      if [[ -f ${DOCKERFILE} ]]; then
+        echo -e "\e[35;1mDockerfile found at ${DOCKERFILE} relative to the root of the repository. This will be used instead of the template Dockerfile from tue-env."
+      else
+        git clone --depth=1 --single-branch --branch="feat/add_docker_image_generator" git@gitlab.com:avular/common-tools/package-manager/tue-env.git /tmp/tue-env
+        mkdir -p $(dirname "${DOCKERFILE}")
+        mv /tmp/tue-env/${DOCKERFILE} $(dirname "${DOCKERFILE}")
+      fi
+    - |
+      echo -e "\e[35;1mCI_BRANCH         = ${CI_COMMIT_BRANCH:-${CI_COMMIT_TAG}}\e[0m"
+      echo -e "\e[35;1mCI_DEFAULT_BRANCH = ${CI_DEFAULT_BRANCH}\e[0m"
+      echo -e "\e[35;1mCHECKOUT_BRANCH   = ${CI_COMMIT_BRANCH:-${CI_COMMIT_TAG}}\e[0m]"
+      echo -e "\e[35;1mTARGET_PLATFORM   = ${TARGET_PLATFORM}\e[0m"
+      echo -e "\e[35;1mBASE_IMAGE        = ${BASE_IMAGE}\e[0m"
+      echo -e "\e[35;1mTARGET_IMAGE      = ${TARGET_IMAGE}\e[0m"
+      echo -e "\e[35;1mPUSH_IMAGE        = ${PUSH_IMAGE}\e[0m"
+      echo -e "\e[35;1mPACKAGE           = ${PACKAGE}\e[0m"
+      echo -e "\e[35;1mBUILD_WS          = ${BUILD_WS}\e[0m"
+    - |
+      MOUNT_DIR=".tmp/repos"
+      mkdir -p "${MOUNT_DIR}"
+      DOCKER_BUILDKIT=1 docker build --ssh=default \
+        --file "${DOCKERFILE}" \
+        --build-arg BASE_IMAGE="${BASE_IMAGE}" \
+        --build-arg CI=true \
+        --build-arg BRANCH="${CI_COMMIT_BRANCH:-${CI_COMMIT_TAG}}" \
+        --build-arg PACKAGE="${PACKAGE}" \
+        --build-arg BUILD_WS="${BUILD_WS}" \
+        --tag "${TARGET_IMAGE}" .
+    - |
+      if [[ "${PUSH_IMAGE}" == "true" ]]; then
+          docker push ${TARGET_IMAGE}
+      fi
+
+  rules:
+    - if: '$CI_COMMIT_TAG || $CI_COMMIT_BRANCH == $CI_DEFAULT_BRANCH || $CI_PIPELINE_SOURCE=="web"'
+      variables:
+        PUSH_IMAGE: "true"
+    - if: '$CI_PIPELINE_SOURCE == "merge_request_event"'
+      when: 'never'
+    - if: '$CI_COMMIT_BRANCH != $CI_DEFAULT_BRANCH'
+      when: 'never'
+
+# Job templates that need to be extended
+.package-release [amd64]:
+  extends: .package-release-base
+  tags:
+    - linux
+    - docker-privileged
+    - x86_64
+  variables:
+    TARGET_PLATFORM: 'amd64'
+
+.package-release [arm64]:
+  extends: .package-release-base
+  tags:
+    - linux
+    - docker-privileged
+    - arm64
+  variables:
+    TARGET_PLATFORM: 'arm64'
+
+.package-release:
+  extends: .package-release-base
+  tags:
+    - linux
+    - docker-privileged
+  script:
+    - !reference [.manifest, script]
