@@ -43,6 +43,20 @@ def main():
         command = command.replace(" ", "^")
         commands.append(command)
 
+    def get_distro_item(item: dict, key: str, release_version: str, release_type: str):
+        if key in item:
+            value = item[key]
+            if value is None:
+                raise ValueError(f"'{key}' is defined, but has no value")
+        else:
+            if release_version in item:
+                value = item[release_version][key]
+            elif "default" in item:
+                value = item["default"][key]
+            else:
+                return show_error(f"{release_type} distro {release_version} or 'default' not specified in install.yaml")
+        return value
+
     # Combine now calls
     now_cache = {
         "system-now": [],
@@ -62,20 +76,14 @@ def main():
                 return 0
 
             elif install_type == "ros":
-                if "source" in install_item:
-                    source = install_item["source"]
-                else:
-                    if ros_release in install_item:
-                        source = install_item[ros_release]["source"]
-                    elif "default" in install_item:
-                        source = install_item["default"]["source"]
-                    else:
-                        return show_error(
-                            "ROS distro {} or 'default' not specified in install.yaml".format(ros_release)
-                        )
-                    # Both release and default are allowed to be None
-                    if source is None:
-                        continue
+                try:
+                    source = get_distro_item(install_item, "source", ros_release, "ROS")
+                except ValueError as e:
+                    return show_error(f"[{install_type}]: {e.args[0]}")
+
+                # Both release and default are allowed to be None
+                if source is None:
+                    continue
 
                 source_type = source["type"]
                 if source_type == "git":
@@ -112,20 +120,14 @@ def main():
                 if now and "now" not in install_type:
                     install_type += "-now"
 
-                if "name" in install_item:
-                    pkg_name = install_item["name"]
-                else:
-                    if ubuntu_release in install_item:
-                        pkg_name = install_item[ubuntu_release]["name"]
-                    elif "default" in install_item:
-                        pkg_name = install_item["default"]["name"]
-                    else:
-                        return show_error(
-                            "Ubuntu distro {} or 'default' not specified in install.yaml".format(ubuntu_release)
-                        )
-                    # Both release and default are allowed to be None
-                    if pkg_name is None:
-                        continue
+                try:
+                    pkg_name = get_distro_item(install_item, "name", ubuntu_release, "Ubuntu")
+                except ValueError as e:
+                    return show_error(f"[{install_type}]: {e.args[0]}")
+
+                # Both release and default are allowed to be None
+                if pkg_name is None:
+                    continue
 
                 # Cache install types which accept multiple pkgs at once
                 if install_type in now_cache:
