@@ -252,9 +252,21 @@ function tue-install-rosdep
             tue-install-debug "rosdep correctly resolved to: ${rosdep_res[*]}"
 
             case ${rosdep_res[0]} in
-                "#apt") tue-install-system ${rosdep_res[1]}
+                "#apt")
+                    if [ "$now" == "true" ]
+                    then
+                        tue-install-system-now "${rosdep_res[1]}"
+                    else
+                        tue-install-system "${rosdep_res[1]}"
+                    fi
                 ;;
-                "#pip") tue-install-pip ${rosdep_res[1]}
+                "#pip")
+                    if [ "$now" == "true" ]
+                    then
+                        tue-install-pip-now "${rosdep_res[1]}"
+                    else
+                        tue-install-pip "${rosdep_res[1]}"
+                    fi
                 ;;
                 *) tue-install-debug "Unsupported rosdep output: ${rosdep_res[*]}";
                    TUE_INSTALL_CURRENT_TARGET=$parent_target;
