@@ -416,7 +416,6 @@ function tue-install-target
                     tue-install-error "Invalid install.yaml: $cmds"
                 fi
             fi
-            unset cmds # unset cmds as we are not using local, because of the error code.
         fi
 
         if [ -f "$install_file".bash ]
