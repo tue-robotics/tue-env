@@ -241,8 +241,36 @@ function tue-install-rosdep
     TUE_INSTALL_CURRENT_TARGET=$target
     TUE_INSTALL_CURRENT_TARGET_DIR=$TUE_INSTALL_TARGETS_DIR/$target
 
+    local state_file="$TUE_INSTALL_STATE_DIR"/"$target"
+    local state_file_now="${state_file}-now"
+
+    # Determine if this target needs to be executed
+    local execution_needed="true"
+
+    if [ -f "$state_file_now" ]
+    then
+        tue-install-debug "File $state_file_now does exist, so installation has already been executed with 'now' option. No execution is needed"
+        execution_needed="false"
+    elif [ -f "$state_file" ]
+    then
+        if [ "$now" == "true" ]
+        then
+            tue-install-debug "File $state_file_now doesn't exist, but file $state_file does. So installation has been executed yet, but not with the 'now' option. Going to execute it with 'now' option."
+        else
+            tue-install-debug "File $state_file_now does exist. 'now' is not enabled, so no execution needed."
+            execution_needed="false"
+        fi
+    else
+        if [ "$now" == "true" ]
+        then
+            tue-install-debug "Files $state_file_now and $state_file don't exist. Going to execute with 'now' option."
+        else
+            tue-install-debug "Files $state_file_now and $state_file don't exist. Going to execute without 'now' option."
+        fi
+    fi
+
     # If file exist, target has been resolved correctly in the past.
-    if [ ! -f "$TUE_INSTALL_STATE_DIR"/"$target" ]
+    if [ "$execution_needed" == "true" ]
     then
         tue-install-debug "Target '$target' has not yet been resolved by rosdep, going to installation procedure"
 
@@ -288,7 +316,12 @@ function tue-install-rosdep
 
             _set_dependencies "$parent_target" "$target"
 
-            touch "$TUE_INSTALL_STATE_DIR"/"$target"
+            if [ "$now" == "true" ]
+            then
+                touch "$state_file_now"
+            else
+                touch "$state_file"
+            fi
 
             TUE_INSTALL_CURRENT_TARGET=$parent_target
             TUE_INSTALL_CURRENT_TARGET_DIR=$TUE_INSTALL_TARGETS_DIR/$parent_target
@@ -308,6 +341,20 @@ function tue-install-rosdep
         TUE_INSTALL_CURRENT_TARGET_DIR=$TUE_INSTALL_TARGETS_DIR/$parent_target
         return 0
     fi
+}
+
+# # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # #
+
+function tue-install-target-now
+{
+    tue-install-debug "tue-install-target-now $*"
+
+    local target
+    target=$1
+
+    tue-install-debug "calling: tue-install-target $target true"
+    tue-install-target "$target" "true"
+    return $?
 }
 
 # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # #
