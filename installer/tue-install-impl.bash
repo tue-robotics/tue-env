@@ -276,10 +276,15 @@ function tue-install-rosdep
 
         # Check if target can be resolved by rosdep
         tue-install-debug "rosdep resolve $target"
-        local rosdep_res rosdep_return_code
+        local rosdep_res
+        local rosdep_return_code
         rosdep_res=$(rosdep resolve "$target" 2>&1)
         rosdep_return_code=$?
-        read -r -a rosdep_res <<< rosdep_res
+
+        local IFS=$'\n'
+        mapfile -t rosdep_res <<< "$rosdep_res"
+        unset IFS
+
         if [ $rosdep_return_code -eq 0 ]
         then
             tue-install-debug "rosdep correctly resolved to: ${rosdep_res[*]}"
