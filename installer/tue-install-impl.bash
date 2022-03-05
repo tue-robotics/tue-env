@@ -274,6 +274,11 @@ function tue-install-rosdep
     then
         tue-install-debug "Target '$target' has not yet been resolved by rosdep, going to installation procedure"
 
+        # Empty the target's dependency file
+        tue-install-debug "Emptying $TUE_INSTALL_DEPENDENCIES_DIR/$target"
+        truncate -s 0 "$TUE_INSTALL_DEPENDENCIES_DIR"/"$target"
+        local target_processed=false
+
         # Check if target can be resolved by rosdep
         tue-install-debug "rosdep resolve $target"
         local rosdep_res
