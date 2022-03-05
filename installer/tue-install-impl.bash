@@ -810,15 +810,18 @@ function _tue-install-pip
     local pv=$1
     shift
     tue-install-debug "tue-install-pip${pv} $*"
+    local name="$*"
+    name="${name// /^}"
 
     if [ -z "$1" ]
     then
         tue-install-error "Invalid tue-install-pip${pv} call: needs package as argument."
     fi
-    tue-install-debug "Adding $1 to pip${pv} list"
+
+    tue-install-debug "Adding $name to pip${pv} list"
     local list=TUE_INSTALL_PIP"${pv}"S
     # shellcheck disable=SC2140
-    declare -g "$list"="$1 ${!list}"
+    declare -g "$list"="$name ${!list}"
 }
 
 # Needed for backward compatibility
@@ -848,11 +851,7 @@ function _tue-install-pip-now
     # Make sure pip is up-to-date before checking version and installing
     local pip_version desired_pip_version
     pip_version=$(python"${pv}" -m pip --version | awk '{print $2}')
-    desired_pip_version="21"
-    if [ "$pv" == 2 ]
-    then
-        desired_pip_version="20"
-    fi
+    desired_pip_version="22"
     if version_gt "$desired_pip_version" "$pip_version"
     then
         tue-install-debug "pip${pv} not yet version >=$desired_pip_version, but $pip_version"
@@ -863,7 +862,9 @@ function _tue-install-pip-now
     fi
 
     local pips_to_check=""
+    local pips_to_check_w_options=""
     local pips_to_install=""
+    local pips_to_install_w_options=""
     local git_pips_to_install=""
     # shellcheck disable=SC2048
     for pkg in $*
@@ -872,11 +873,86 @@ function _tue-install-pip-now
         then
             git_pips_to_install="$git_pips_to_install $pkg"
         else
-            pips_to_check="$pips_to_check $pkg"
+            read -r -a pkg_split <<< "${pkg//^/ }"
+            if [ ${#pkg_split[@]} -gt 1 ]
+            then
+                pips_to_check_w_options="$pips_to_check_w_options $pkg"
+            else
+                pips_to_check="$pips_to_check $pkg"
+            fi
         fi
     done
 
-    read -r -a pips_to_check <<< "$pips_to_check"
+    if [ -n "$pips_to_check" ]
+    then
+        local indexes_to_install=""
+        # shellcheck disable=SC2086
+        _tue-install-pip-check "$pv" $pips_to_check
+
+        read -r -a pips_to_check <<< "$pips_to_check"
+
+        for idx in $indexes_to_install
+        do
+            local pkg_req="${pips_to_check[$idx]}"
+            tue-install-debug "Going to install $pkg_req"
+            pips_to_install="$pips_to_install $pkg_req"
+        done
+    fi
+
+    if [ -n "$pips_to_check_w_options" ]
+    then
+        local indexes_to_install=""
+        local pips_to_check_options_removed=""
+        for pkg in $pips_to_check_w_options
+        do
+            read -r -a pkg_split <<< "${pkg//^/ }"
+            pips_to_check_options_removed="$pips_to_check_options_removed ${pkg_split[0]}"
+        done
+        # shellcheck disable=SC2086
+        _tue-install-pip-check "$pv" $pips_to_check_options_removed
+
+        read -r -a pips_to_check_w_options <<< "$pips_to_check_w_options"
+
+        for idx in $indexes_to_install
+        do
+            local pkg_req="${pips_to_check_w_options[$idx]}"
+            tue-install-debug "Going to install $pkg_req"
+            pips_to_install_w_options="$pips_to_install_w_options $pkg_req"
+        done
+    fi
+
+    if [ -n "$pips_to_install" ]
+    then
+        # shellcheck disable=SC2048,SC2086
+        tue-install-pipe python"${pv}" -m pip install --user $pips_to_install <<< yes || tue-install-error "An error occurred while installing pip${pv} packages."
+    fi
+
+    if [ -n "$pips_to_install_w_options" ]
+    then
+        for pkg in $pips_to_install_w_options
+        do
+            # shellcheck disable=SC2048,SC2086
+            tue-install-pipe python"${pv}" -m pip install --user ${pkg//^/ } <<< yes || tue-install-error "An error occurred while installing pip${pv} packages with options."
+        done
+    fi
+
+    if [ -n "$git_pips_to_install" ]
+    then
+        for pkg in $git_pips_to_install
+        do
+            # shellcheck disable=SC2048,SC2086
+            tue-install-pipe python"${pv}" -m pip install --user $pkg <<< yes || tue-install-error "An error occurred while installing pip${pv} git packages."
+        done
+    fi
+}
+
+function _tue-install-pip-check
+{
+    tue-install-debug "_tue-install-pip-check $*"
+    local pv=$1
+    shift
+
+    local pips_to_check=("$@")
     local installed_versions
     if [ ${#pips_to_check[@]} -gt 0 ]
     then
@@ -884,7 +960,7 @@ function _tue-install-pip-now
         local error_code=$?
         if [ "$error_code" -gt 1 ]
         then
-            tue-install-error "tue-install-pip${pv}-now: $installed_versions"
+            tue-install-error "_tue-install-pip${pv}-check: $installed_versions"
         fi
     fi
     read -r -a installed_versions <<< "$installed_versions"
@@ -901,26 +977,11 @@ function _tue-install-pip-now
         pkg_installed="${pkg_installed//^/ }"
         if [[ "$error_code" -eq 1 && "$pkg_installed" == "None" ]]
         then
-            pips_to_install="$pips_to_install $pkg_req"
+            indexes_to_install="$indexes_to_install $idx"  # indexes_to_install is a "global" variable from tue-install-pip-now
         else
             tue-install-debug "$pkg_req is already installed, $pkg_installed"
         fi
     done
-
-    if [ -n "$pips_to_install" ]
-    then
-        # shellcheck disable=SC2048,SC2086
-        tue-install-pipe python"${pv}" -m pip install --user $pips_to_install <<< yes || tue-install-error "An error occurred while installing pip${pv} packages."
-    fi
-
-    if [ -n "$git_pips_to_install" ]
-    then
-        for pkg in $git_pips_to_install
-        do
-            # shellcheck disable=SC2048,SC2086
-            tue-install-pipe python"${pv}" -m pip install --user $pkg <<< yes || tue-install-error "An error occurred while installing pip${pv} packages."
-        done
-    fi
 }
 
 # Needed for backward compatibility
