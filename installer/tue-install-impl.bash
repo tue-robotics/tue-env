@@ -240,14 +240,17 @@ function tue-install-rosdep
     TUE_INSTALL_CURRENT_TARGET_DIR=$TUE_INSTALL_TARGETS_DIR/$target
 
     # If file exist, target has been resolved correctly in the past.
-    if [ ! -f $TUE_INSTALL_STATE_DIR/$target ]
+    if [ ! -f "$TUE_INSTALL_STATE_DIR"/"$target" ]
     then
         tue-install-debug "Target '$target' has not yet been resolved by rosdep, going to installation procedure"
 
         # Check if target can be resolved by rosdep
         tue-install-debug "rosdep resolve $target"
-        rosdep_res=($(rosdep resolve $target 2>&1))
-        if [ $? -eq 0 ]
+        local rosdep_res rosdep_return_code
+        rosdep_res=$(rosdep resolve "$target" 2>&1)
+        rosdep_return_code=$?
+        read -r -a rosdep_res <<< rosdep_res
+        if [ $rosdep_return_code -eq 0 ]
         then
             tue-install-debug "rosdep correctly resolved to: ${rosdep_res[*]}"
 
@@ -275,15 +278,15 @@ function tue-install-rosdep
                 ;;
             esac
 
-            if [[ ${rosdep[1]} == "ros-"* ]]
+            if [[ ${rosdep_res[1]} == "ros-"* ]]
             then
                 # Also make sure ros is installed
                 tue-install-target ros || tue-install-error "Failed to install target 'ROS'"
             fi
 
-            _set_dependencies $parent_target $target
+            _set_dependencies "$parent_target" "$target"
 
-            touch $TUE_INSTALL_STATE_DIR/$target
+            touch "$TUE_INSTALL_STATE_DIR"/"$target"
 
             TUE_INSTALL_CURRENT_TARGET=$parent_target
             TUE_INSTALL_CURRENT_TARGET_DIR=$TUE_INSTALL_TARGETS_DIR/$parent_target
@@ -297,7 +300,7 @@ function tue-install-rosdep
     else
         tue-install-debug "Target '$target' already resolved correctly by rosdep, skipping it this time."
 
-        _set_dependencies $parent_target $target
+        _set_dependencies "$parent_target" "$target"
 
         TUE_INSTALL_CURRENT_TARGET=$parent_target
         TUE_INSTALL_CURRENT_TARGET_DIR=$TUE_INSTALL_TARGETS_DIR/$parent_target
@@ -318,14 +321,13 @@ function tue-install-target
     tue-install-debug "Installing $target"
 
     # Check if valid target received as input
-    if [ ! -d $TUE_INSTALL_TARGETS_DIR/$target ]
+    if [ ! -d "$TUE_INSTALL_TARGETS_DIR"/"$target" ]
     then
         # Targets starting with 'ros-' will never be resolved by rosdep
         if [[ "$target" != "ros-"* ]]
         then
             # Check if can be resolved by rosdep
-            tue-install-rosdep $target
-            if [ $? -eq 0 ]
+            if tue-install-rosdep "$target" "$now"
             then
                 return 0
             else
@@ -343,7 +345,7 @@ function tue-install-target
     TUE_INSTALL_CURRENT_TARGET=$target
     TUE_INSTALL_CURRENT_TARGET_DIR=$TUE_INSTALL_TARGETS_DIR/$target
 
-    _set_dependencies $parent_target $target
+    _set_dependencies "$parent_target" "$target"
 
     local state_file state_file_now
     state_file="$TUE_INSTALL_STATE_DIR"/"$target"
