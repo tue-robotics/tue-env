@@ -194,6 +194,7 @@ DOCKER_HOME=$(docker exec -t tue-env bash -c 'source ~/.bashrc; echo "$HOME"' | 
 
 # First install only the git repo of the package so that appropriate branch can be checked out later
 echo -e "\e[35m\e[1m tue-get install $PACKAGE --no-ros-deps\e[0m"
+docker exec tue-env bash -c 'echo "debconf debconf/frontend select Noninteractive" | sudo debconf-set-selections'
 docker exec tue-env bash -c 'source ~/.bashrc; tue-get install "$PACKAGE" --no-ros-deps'
 
 if [[ $PULL_REQUEST != "false" ]]
