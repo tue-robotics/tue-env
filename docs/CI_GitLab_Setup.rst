@@ -44,16 +44,18 @@ For using the *Mirror Upstream* job, the enabled deploy key must have write perm
 Adding CI config file to the repository
 =======================================
 To enable GitLab CI/CD on a repository, it is necessary to add a ``.gitlab-ci.yml`` file to the root of the repository.
-This file must contain the following content:
+This file must at least contain the following content:
 
 .. code-block:: yaml
-
-    variables:
-      ROS_DISTRO: <DESIRED_ROS_DISTRO>
 
     include:
       - project: 'avular/common-tools/package-manager/tue-env'
         file: '/ci/template.gitlab-ci.yml'
+
+    Install, Build & Test:
+        extends: .install_build_test
+        variables:
+            ROS_DISTRO: <DESIRED_ROS_DISTRO>
 
 where ``<DESIRED_ROS_DISTRO>`` should be replaced with one of the supported ``ROS`` distro from the table below:
 
@@ -64,3 +66,33 @@ where ``<DESIRED_ROS_DISTRO>`` should be replaced with one of the supported ``RO
 +------------------------+-----------------------------------+
 | Galactic Geochelone    | ``galactic``                      |
 +------------------------+-----------------------------------+
+
+To mirror an upstream repository the following content must also be in ``.gitlab-ci.yml``:
+
+.. code-block:: yaml
+
+    Mirror Upstream:
+        extends: .mirror_upstream
+
+To build docker images for a package add either or all of the following content to ``.gitlab-ci.yml``
+
+.. code-block:: yaml
+
+    Package Release [amd64]:
+        extends: .package-release [amd64]
+        variables:
+            ROS_DISTRO: <DESIRED_ROS_DISTRO>
+            PACKAGE: <DESIRED_PACKAGE>
+
+    Package Release [arm64]:
+        extends: .package-release [arm64]
+        variables:
+            ROS_DISTRO: <DESIRED_ROS_DISTRO>
+            PACKAGE: <DESIRED_PACKAGE>
+
+    Package Release:
+        extends: .package-release
+        needs: ['Package Release [amd64]', 'Package Release [arm64]']
+
+The ``needs`` field should be adapated accordingly if only one of ``Package Release [amd64]`` and ``Package Release [arm64]``
+are added to ``.gitlab-ci.yml``

@@ -1,6 +1,6 @@
 # This job requires the setting of variable ROS_DISTRO
 
-Install, Build, Test:
+.install_build_test:
   extends: .build_image_base
   variables:
     IMAGE_REGISTRY: "${CI_REGISTRY}/avular/common-tools/package-manager/tue-env"

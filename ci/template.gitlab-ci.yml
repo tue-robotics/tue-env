@@ -15,10 +15,12 @@
 #    or set it as a pipeline variable.
 
 stages:
-  - Install Build Test 
+  - Install Build Test
+  - Package Release
   - Mirror Upstream
 
 include:
   - local: 'ci/base.gitlab-ci.yml'
   - local: 'ci/install-build-test.gitlab-ci.yml'
   - local: 'ci/mirror-upstream.gitlab-ci.yml'
+  - local: 'ci/package-release.gitlab-ci.yml'

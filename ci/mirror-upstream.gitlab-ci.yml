@@ -7,7 +7,7 @@
 #      - REMOTE_BRANCH
 #      - LOCAL_REMOTE_BRANCH
 
-Mirror Upstream:
+.mirror_upstream:
   extends: .build_image_base
   variables:
     IMAGE_REGISTRY: "${CI_REGISTRY}/avular/common-tools/package-manager/tue-env"
