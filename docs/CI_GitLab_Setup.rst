@@ -73,3 +73,26 @@ To mirror an upstream repository the following content must also be in ``.gitlab
 
     Mirror Upstream:
         extends: .mirror_upstream
+
+To build docker images for a package add either or all of the following content to ``.gitlab-ci.yml``
+
+.. code-block:: yaml
+
+    Package Release [amd64]:
+        extends: .package-release [amd64]
+        variables:
+            ROS_DISTRO: <DESIRED_ROS_DISTRO>
+            PACKAGE: <DESIRED_PACKAGE>
+
+    Package Release [arm64]:
+        extends: .package-release [arm64]
+        variables:
+            ROS_DISTRO: <DESIRED_ROS_DISTRO>
+            PACKAGE: <DESIRED_PACKAGE>
+
+    Package Release:
+        extends: .package-release
+        needs: ['Package Release [amd64]', 'Package Release [arm64]']
+
+The ``needs`` field should be adapated accordingly if only one of ``Package Release [amd64]`` and ``Package Release [arm64]``
+are added to ``.gitlab-ci.yml``
