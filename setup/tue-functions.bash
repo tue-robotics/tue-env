@@ -394,6 +394,7 @@ function tue-make
         case $build_tool in
         'catkin build')
             catkin build --workspace "$TUE_SYSTEM_DIR" "$@"
+            return $?
             ;;
         '')
             catkin config --init --mkdirs --workspace "$TUE_SYSTEM_DIR" --extend /opt/ros/"$TUE_ROS_DISTRO" -DCMAKE_BUILD_TYPE=RelWithDebInfo -DCATKIN_ENABLE_TESTING=OFF
@@ -409,6 +410,7 @@ function tue-make
     then
         mkdir -p "$TUE_SYSTEM_DIR"/src
         colcon --log-base "$TUE_SYSTEM_DIR"/log build --merge-install --symlink-install --base-paths "$TUE_SYSTEM_DIR"/src --build-base "$TUE_SYSTEM_DIR"/build --install-base "$TUE_SYSTEM_DIR"/install
+        return $?
     else
         echo -e "\033[38;1mError! ROS_VERSION '${ros_version}' is not supported by tue-env.\033[0m"
         return 1
