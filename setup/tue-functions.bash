@@ -325,6 +325,13 @@ export -f _git_https_or_ssh # otherwise not available in sourced files
 #                                            TUE-MAKE
 # ----------------------------------------------------------------------------------------------------
 
+# catkin build/test worflow
+# catkin build -DCATKIN_ENABLE_TESTING=OFF # As we don't install test dependencies by default. Test shouldn't be build
+# When you want to test, make sure the test dependencies are installed
+# catkin build -DCATKIN_ENABLE_TESTING=ON # This will trigger cmake and will create the targets and build the tests
+# catkin test # Run the tests. This will not trigger cmake, so it isn't needed to provide -DCATKIN_ENABLE_TESTING=ON.
+
+
 function tue-make
 {
     if [ -n "$TUE_ROS_DISTRO" ] && [ -d "$TUE_SYSTEM_DIR" ]
@@ -339,7 +346,7 @@ function tue-make
             catkin build --workspace "$TUE_SYSTEM_DIR" "$@"
             ;;
         '')
-            catkin config --init --mkdirs --workspace "$TUE_SYSTEM_DIR" --extend /opt/ros/"$TUE_ROS_DISTRO" -DCMAKE_BUILD_TYPE=RelWithDebInfo
+            catkin config --init --mkdirs --workspace "$TUE_SYSTEM_DIR" --extend /opt/ros/"$TUE_ROS_DISTRO" -DCMAKE_BUILD_TYPE=RelWithDebInfo -DCATKIN_ENABLE_TESTING=OFF
             catkin build --workspace "$TUE_SYSTEM_DIR" "$@"
             touch "$TUE_SYSTEM_DIR"/devel/.catkin # hack to allow overlaying to this ws while being empty
             ;;
@@ -375,7 +382,7 @@ function tue-make-dev
             catkin build --workspace "$TUE_DEV_DIR" "$@"
             ;;
         '')
-            catkin config --init --mkdirs --workspace "$TUE_DEV_DIR" --extend "$TUE_SYSTEM_DIR"/devel -DCMAKE_BUILD_TYPE=RelWithDebInfo
+            catkin config --init --mkdirs --workspace "$TUE_DEV_DIR" --extend "$TUE_SYSTEM_DIR"/devel -DCMAKE_BUILD_TYPE=RelWithDebInfo -DCATKIN_ENABLE_TESTING=OFF
             catkin build --workspace "$TUE_DEV_DIR" "$@"
             touch "$TUE_DEV_DIR"/devel/.catkin # hack to allow overlaying to this ws while being empty
             ;;
