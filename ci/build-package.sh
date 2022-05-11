@@ -40,7 +40,21 @@ then
     exit 0
 fi
 
-# Use docker environment variables in all exec commands instead of script variables
-# Compile the package
-echo -e "\e[35m\e[1m Compile the package (catkin build --this --no-status) \e[0m"
-docker exec -t tue-env bash -c 'source ~/.bashrc; cd "$TUE_SYSTEM_DIR"/src/"$PACKAGE" && catkin build --this --no-status'
+# Compile package
+docker exec -i tue-env bash <<EOF
+#!/bin/bash
+
+set -e -o pipefail
+
+source ~/.bashrc
+
+if [ "\${TUE_ROS_VERSION}" == "1" ]; then
+    cd "\$TUE_SYSTEM_DIR"/src/"\$PACKAGE"
+    echo -e "\e[35m\e[1m catkin build --this --no-status \e[0m"
+    catkin build --this --no-status
+elif [ "\${TUE_ROS_VERSION}" == "2" ]; then
+    cd "\$TUE_SYSTEM_DIR"
+    echo -e "\e[35m\e[1m colcon build --merge-install --event-handlers status- --packages-up-to \$PACKAGE \e[0m"
+    colcon build --merge-install --event-handlers status- --packages-up-to \$PACKAGE
+fi
+EOF

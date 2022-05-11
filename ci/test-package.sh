@@ -41,9 +41,40 @@ then
 fi
 
 # Run unit tests
-echo -e "\e[35m\e[1m Run tests on this package (catkin run_tests --this --no-status --no-deps -DCATKIN_ENABLE_TESTING=ON) \e[0m"
-docker exec -t tue-env bash -c 'source ~/.bashrc; cd "$TUE_SYSTEM_DIR"/src/"$PACKAGE" && catkin run_tests --this --no-status --no-deps -DCATKIN_ENABLE_TESTING=ON'
+docker exec -i tue-env bash <<EOF
+#!/bin/bash
 
-# Check results of unit tests
-echo -e "\e[35m\e[1m Check results of the tests on this package (catkin_test_results build/$PACKAGE) \e[0m"
-docker exec -t tue-env bash -c 'source ~/.bashrc; cd "$TUE_SYSTEM_DIR" && [ ! -d build/"$PACKAGE" ] || catkin_test_results build/"$PACKAGE"'
+set -e -o pipefail
+
+source ~/.bashrc
+
+if [ "\${TUE_ROS_VERSION}" == "1" ]; then
+    cd "\$TUE_SYSTEM_DIR"/src/"\$PACKAGE"
+    echo -e "\e[35m\e[1m catkin test --this --no-status --no-deps -DCATKIN_ENABLE_TESTING=ON \e[0m"
+    catkin test --this --no-status --no-deps -DCATKIN_ENABLE_TESTING=ON
+elif [ "\${TUE_ROS_VERSION}" == "2" ]; then
+    cd "\$TUE_SYSTEM_DIR"
+    echo -e "\e[35m\e[1m colcon test --merge-install --event-handlers status- --ctest-args --output-on-failure --packages-up-to \$PACKAGE \e[0m"
+    colcon test --merge-install --event-handlers status- --ctest-args --output-on-failure --packages-up-to \$PACKAGE
+fi
+EOF
+
+
+# Retreive test results
+docker exec -i tue-env bash <<EOF
+#!/bin/bash
+
+set -e -o pipefail
+
+source ~/.bashrc
+
+if [ "\${TUE_ROS_VERSION}" == "1" ]; then
+    cd "\$TUE_SYSTEM_DIR"
+    echo -e "\e[35m\e[1m catkin_test_results build/\$PACKAGE \e[0m"
+    catkin_test_results build/"\$PACKAGE"
+elif [ "\${TUE_ROS_VERSION}" == "2" ]; then
+    cd "\$TUE_SYSTEM_DIR"
+    echo -e "\e[35m\e[1m colcon test-result --test-result-base build/\$PACKAGE \e[0m"
+    colcon test-result --test-result-base build/\$PACKAGE
+fi
+EOF

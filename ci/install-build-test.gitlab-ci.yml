@@ -16,7 +16,7 @@
         echo "Error! Mandatory job variable ROS_DISTRO is not set."
         exit 1
       fi
-    - git clone --depth=1 --single-branch git@gitlab.com:avular/common-tools/package-manager/tue-env.git /tmp/tue-env
+    - git clone -q --depth=1 --branch=${TUE_ENV_BRANCH:-master} git@gitlab.com:avular/common-tools/package-manager/tue-env.git /tmp/tue-env
     - mv /tmp/tue-env/ci/* .
     # The known_hosts file is merged in the tue-env docker container to make sure the correct
     # signature of the git server is setup and does not require input using CLI
