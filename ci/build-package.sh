@@ -50,8 +50,8 @@ source ~/.bashrc
 
 if [ "\${TUE_ROS_VERSION}" == "1" ]; then
     cd "\$TUE_SYSTEM_DIR"/src/"\$PACKAGE"
-    echo -e "\e[35m\e[1m catkin build --this --no-status \e[0m"
-    catkin build --this --no-status
+    echo -e "\e[35m\e[1m catkin build --this --no-status --cmake-args -DCATKIN_ENABLE_TESTING=ON \e[0m"
+    catkin build --this --no-status --cmake-args -DCATKIN_ENABLE_TESTING=ON
 elif [ "\${TUE_ROS_VERSION}" == "2" ]; then
     cd "\$TUE_SYSTEM_DIR"
     echo -e "\e[35m\e[1m colcon build --merge-install --event-handlers status- --packages-up-to \$PACKAGE \e[0m"
