@@ -67,6 +67,27 @@ where ``<DESIRED_ROS_DISTRO>`` should be replaced with one of the supported ``RO
 | Galactic Geochelone    | ``galactic``                      |
 +------------------------+-----------------------------------+
 
+Multi-package repositories
+--------------------------
+By default the CI job tries to build the package with the same name of the repository. When dealing with multi-package repositories, this may not be desired default behaviour.
+To override the default behaviour add the variable ``PACKAGE_NAME`` with the desired package to the CI job.
+The amount of jobs is not limited to one. For every package a new job can be created by extending ``.install_build_test`` with the ``PACKAGE_NAME`` variable set to the appropriate value
+
+.. code-block:: yaml
+
+    include:
+      - project: 'avular/common-tools/package-manager/tue-env'
+        file: '/ci/template.gitlab-ci.yml'
+
+    Install, Build & Test:
+        extends: .install_build_test
+        variables:
+            ROS_DISTRO: <DESIRED_ROS_DISTRO>
+            PACKAGE_NAME: <DESIRED_ROS_PACKAGE>
+
+
+Upstream Mirroring
+------------------
 To mirror an upstream repository the following content must also be in ``.gitlab-ci.yml``:
 
 .. code-block:: yaml
@@ -74,6 +95,9 @@ To mirror an upstream repository the following content must also be in ``.gitlab
     Mirror Upstream:
         extends: .mirror_upstream
 
+
+Docker image creation
+---------------------
 To build docker images for a package add either or all of the following content to ``.gitlab-ci.yml``
 
 .. code-block:: yaml
