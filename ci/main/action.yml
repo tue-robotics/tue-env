@@ -18,7 +18,8 @@ runs:
       with:
         path: |
           ~/.ccache
-        key: ${{ runner.os }}-${{ github.event.repository.name }}-${{ inputs.package }}
+        key: ${{ runner.os }}-${{ github.event.repository.name }}-${{ inputs.package }}-${{ github.sha }}
+        restore-keys: ${{ runner.os }}-${{ github.event.repository.name }}-${{ inputs.package }}
     - name: Install
       id: install
       run: |
