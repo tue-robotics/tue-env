@@ -128,6 +128,9 @@ mkdir -p "$HOME"/.ccache
 # shellcheck disable=SC2086
 docker run --detach --interactive --tty -e CI="true" -e PACKAGE="$PACKAGE" -e BRANCH="$BRANCH" -e COMMIT="$COMMIT" -e PULL_REQUEST="$PULL_REQUEST" --name tue-env --mount type=bind,source=$HOME/.ccache,target=$DOCKER_HOME/.ccache $DOCKER_MOUNT_KNOWN_HOSTS_ARGS "$IMAGE_NAME:$BRANCH_TAG"
 
+# Own the ~/.ccache folder for permissions
+docker exec -t tue-env bash -c "sudo chown 1000:1000 ~/.ccache"
+
 if [ "$MERGE_KNOWN_HOSTS" == "true" ]
 then
     docker exec -t tue-env bash -c "sudo chown 1000:1000 /tmp/known_hosts_extra && ~/.tue/ci/ssh-merge-known_hosts.py ~/.ssh/known_hosts /tmp/known_hosts_extra --output ~/.ssh/known_hosts"
