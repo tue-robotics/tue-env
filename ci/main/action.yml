@@ -13,6 +13,12 @@ inputs:
 runs:
   using: "composite"
   steps:
+    - name: Cache ccache
+      uses: actions/cache@v3
+      with:
+        path: |
+          ~/.ccache
+        key: ${{ runner.os }}-${{ github.event.repository.name }}-${{ inputs.package }}
     - name: Install
       id: install
       run: |
