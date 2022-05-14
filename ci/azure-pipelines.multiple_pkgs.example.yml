@@ -51,6 +51,15 @@ jobs:
     strategy:
       matrix: $[ dependencies.package_selection.outputs['matrix.json_string'] ]
     steps:
+    - task: Cache@2
+      displayName: Cache ccache
+      inputs:
+        key: '"$(Agent.OS)" | ccache | "$(System.TeamProject)" | $(PACKAGE) | "$(Build.SourceVersion)"'
+        restoreKeys: |
+          "$(Agent.OS)" | ccache | "$(System.TeamProject)" | $(PACKAGE)
+          "$(Agent.OS)" | ccache | "$(System.TeamProject)"
+          "$(Agent.OS)" | ccache
+        path: $(HOME)/.ccache
     - task: Bash@3
       inputs:
         targetType: 'inline'

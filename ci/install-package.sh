@@ -119,9 +119,17 @@ then
     DOCKER_MOUNT_KNOWN_HOSTS_ARGS="--mount type=bind,source=$HOME/.ssh/known_hosts,target=/tmp/known_hosts_extra"
 fi
 
+DOCKER_HOME=$(docker run --name tue-env --rm "$IMAGE_NAME:$BRANCH_TAG" bash -c 'echo "$HOME"' | tr -d '\r')
+
+# Make sure the ~/.ccache folder exists
+mkdir -p "$HOME"/.ccache
+
 # Run the docker image along with setting new environment variables
 # shellcheck disable=SC2086
-docker run --detach --interactive --tty -e CI="true" -e PACKAGE="$PACKAGE" -e BRANCH="$BRANCH" -e COMMIT="$COMMIT" -e PULL_REQUEST="$PULL_REQUEST" --name tue-env $DOCKER_MOUNT_KNOWN_HOSTS_ARGS "$IMAGE_NAME:$BRANCH_TAG"
+docker run --detach --interactive --tty -e CI="true" -e PACKAGE="$PACKAGE" -e BRANCH="$BRANCH" -e COMMIT="$COMMIT" -e PULL_REQUEST="$PULL_REQUEST" --name tue-env --mount type=bind,source=$HOME/.ccache,target=$DOCKER_HOME/.ccache $DOCKER_MOUNT_KNOWN_HOSTS_ARGS "$IMAGE_NAME:$BRANCH_TAG"
+
+# Own the ~/.ccache folder for permissions
+docker exec -t tue-env bash -c "sudo chown 1000:1000 -R ~/.ccache"
 
 if [ "$MERGE_KNOWN_HOSTS" == "true" ]
 then
@@ -142,7 +150,6 @@ ROS_DISTRO=$(docker exec -t tue-env bash -c 'source ~/.bashrc; echo "$ROS_DISTRO
 echo -e "\e[35m\e[1mROS_DISTRO = ${ROS_DISTRO}\e[0m"
 
 TUE_SYSTEM_DIR=$(docker exec -t tue-env bash -c 'source ~/.bashrc; echo "$TUE_SYSTEM_DIR"' | tr -d '\r')
-DOCKER_HOME=$(docker exec -t tue-env bash -c 'source ~/.bashrc; echo "$HOME"' | tr -d '\r')
 
 if [[ $PULL_REQUEST != "false" ]]
 then

@@ -63,6 +63,8 @@ RUN --mount=type=ssh,uid=1000 sed -e s/return//g -i ~/.bashrc && \
     tue-env config ros-"$TUE_ROS_DISTRO" git-use-https && \
     # Install target ros
     tue-get install ros --test-depend && \
+    # Install target ccache
+    tue-get install ccache --test-depend && \
     # Remove temp tue files
     (rm -rf /tmp/tue_* > /dev/null || true) && \
     # Show ownership of .tue
