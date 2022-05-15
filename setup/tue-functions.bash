@@ -1511,7 +1511,7 @@ function tue-robocup-set-roboticssrv
 
 function tue-robocup-set-timezone-robocup
 {
-    sudo timedatectl set-timezone Australia/Sydney
+    sudo timedatectl set-timezone Asia/Bangkok
 }
 
 function tue-robocup-set-timezone-home
