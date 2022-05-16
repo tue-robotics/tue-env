@@ -60,6 +60,9 @@ do
         --docker_file=* )
             CI_DOCKER_FILE="${i#*=}" ;;
 
+        --base_image=* )
+            CI_DOCKER_BASE_IMAGE="${i#*=}" ;;
+
         * )
             echo -e "Error! Unknown input variable '$i'"
             exit 1 ;;
@@ -78,6 +81,9 @@ echo -e "\e[35m\e[1m CI_ROS_VERSION         = ${CI_ROS_VERSION} \e[0m"
 [ -z "$CI_DOCKER_LOGIN" ] && CI_DOCKER_LOGIN="false"
 echo -e "\e[35m\e[1m CI_DOCKER_LOGIN        = ${CI_DOCKER_LOGIN} \e[0m"
 
+[ -z "$CI_DOCKER_BASE_IMAGE" ] && CI_DOCKER_BASE_IMAGE="ubuntu:20.04"
+echo -e "\e[35m\e[1m CI_DOCKER_BASE_IMAGE   = ${CI_DOCKER_BASE_IMAGE} \e[0m"
+
 # Declare arrays for storing the constructed docker build arguments
 CI_DOCKER_BUILD_ARGS=()
 CI_DOCKER_BUILDX_ARGS=()
@@ -87,16 +93,6 @@ image_dirname="$(dirname "${CI_DOCKER_IMAGE_NAME}")"
 image_substring=$(basename "$CI_DOCKER_IMAGE_NAME")
 image_name="${image_substring%%:*}"
 image_name_tag="${image_substring#*:}"
-case $image_name in
-    tue-env | ros-* )
-        BASE_IMAGE="ubuntu:20.04" ;;
-    tue-env-cuda )
-        BASE_IMAGE="nvidia/cuda:10.0-cudnn7-devel-ubuntu20.04" ;;
-    * )
-        echo -e "Error! Unknown image tag subname provided."
-        echo -e "Supported names are 'tue-env', 'tue-env-cuda' or 'ros-*'"
-        exit 1
-esac
 
 # Create tag based on branch name
 default_branch=$(git symbolic-ref refs/remotes/origin/HEAD --short 2>/dev/null | sed 's@^origin/@@')
@@ -111,7 +107,7 @@ else
 fi
 
 CI_DOCKER_BUILD_ARGS+=("--build-arg=BRANCH=$CI_BRANCH" "--build-arg=PULL_REQUEST=$CI_PULL_REQUEST" "--build-arg=COMMIT=$CI_COMMIT" "--build-arg=CI=$CI" \
-    "--build-arg=REF_NAME=$CI_REF_NAME" "--build-arg=BASE_IMAGE=$BASE_IMAGE" "--build-arg=ROS_VERSION=$CI_ROS_VERSION")
+    "--build-arg=REF_NAME=$CI_REF_NAME" "--build-arg=BASE_IMAGE=$CI_DOCKER_BASE_IMAGE" "--build-arg=ROS_VERSION=$CI_ROS_VERSION")
 
 # Check the constructed Docker image name against the input
 image_name_expected="${image_dirname}/${image_name}:${CI_DOCKER_IMAGE_TAG}-${CI_DOCKER_PLATFORMS}"
