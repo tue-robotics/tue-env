@@ -18,7 +18,8 @@
         --docker_login="false" \
         --platforms="${TARGET_PLATFORM}" \
         --push_image="${PUSH_IMAGE:-"false"}" \
-        --ros_version="${ROS_VERSION:-"1"}"
+        --ros_version="${ROS_VERSION:-"1"}" \
+        --base_image="${BASE_IMAGE}"
 
   rules:
     - if: '$CI_COMMIT_BRANCH == $CI_DEFAULT_BRANCH && $CI_PIPELINE_SOURCE != "schedule"'
@@ -31,6 +32,64 @@
       variables:
         PUSH_IMAGE: "true"
     # - if: $IMAGES == "all" || $IMAGES =~ /(^|\s)(tue-env(:(latest|all))?)(\s|$)/
+
+ROS Humble [amd64]:
+  extends: .tue-env
+  tags:
+    - linux
+    - docker-privileged
+    - x86_64
+  variables:
+    TARGET_PLATFORM: 'amd64'
+    ROS_VERSION: '2'
+    ROS_DISTRO: 'humble'
+    BASE_IMAGE: 'ubuntu:22.04'
+  rules:
+    - if: '$CI_PIPELINE_SOURCE == "merge_request_event"'
+      changes:
+        - ci/tue-env**
+        - dockerfiles/tue-env**
+    - if: '$CI_COMMIT_BRANCH != $CI_DEFAULT_BRANCH'
+      changes:
+        - ci/tue-env**
+        - dockerfiles/tue-env**
+    - !reference [.tue-env, rules]
+
+ROS Humble [arm64]:
+  extends: .tue-env
+  tags:
+    - linux
+    - docker-privileged
+    - arm64
+  variables:
+    TARGET_PLATFORM: 'arm64'
+    ROS_VERSION: '2'
+    ROS_DISTRO: 'humble'
+    BASE_IMAGE: 'ubuntu:22.04'
+  rules:
+    - if: '$CI_PIPELINE_SOURCE == "merge_request_event"'
+      when: 'never'
+    - if: '$CI_COMMIT_BRANCH != $CI_DEFAULT_BRANCH'
+      when: 'never'
+    - !reference [.tue-env, rules]
+
+ROS Humble:
+  tags:
+    - linux
+    - docker-privileged
+  extends: .tue-env
+  variables:
+    ROS_DISTRO: 'humble'
+  script:
+    - !reference [.manifest, script]
+  needs: ["ROS Humble [amd64]", "ROS Humble [arm64]"]
+  rules:
+    - if: '$CI_PIPELINE_SOURCE == "merge_request_event"'
+      when: 'never'
+    - if: '$CI_COMMIT_BRANCH != $CI_DEFAULT_BRANCH'
+      when: 'never'
+    - !reference [.tue-env, rules]
+
 
 ROS Galactic [amd64]:
   extends: .tue-env
