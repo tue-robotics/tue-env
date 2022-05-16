@@ -53,8 +53,12 @@ case $DISTRIB_RELEASE in
 
         [[ -z "${TUE_ROS_VERSION}" ]] && { TUE_ROS_DISTRO=noetic; TUE_ROS_VERSION=1; }
         ;;
+    "22.04")
+        TUE_ROS_DISTRO=humble
+        TUE_ROS_VERSION=2
+        ;;
     *)
-        echo "[tue-env](bootstrap) Ubuntu $DISTRIB_RELEASE is unsupported. Please use Ubuntu 20.04."
+        echo "[tue-env](bootstrap) Ubuntu $DISTRIB_RELEASE is unsupported. Please use one of Ubuntu 18.04, 20.04 or 22.04."
         exit 1
         ;;
 esac
