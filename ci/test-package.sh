@@ -54,8 +54,8 @@ if [ "\${TUE_ROS_VERSION}" == "1" ]; then
     catkin test --this --no-status --no-deps
 elif [ "\${TUE_ROS_VERSION}" == "2" ]; then
     cd "\$TUE_SYSTEM_DIR"
-    echo -e "\e[35m\e[1m colcon test --merge-install --event-handlers status- --ctest-args --output-on-failure --packages-select \$PACKAGE \e[0m"
-    colcon test --merge-install --event-handlers status- --ctest-args --output-on-failure --packages-select \$PACKAGE
+    echo -e "\e[35m\e[1m colcon test --merge-install --event-handlers status- console_direct+ --return-code-on-test-failure --packages-select \$PACKAGE \e[0m"
+    colcon test --merge-install --event-handlers status- console_direct+ --return-code-on-test-failure --packages-select \$PACKAGE
 fi
 EOF
 
