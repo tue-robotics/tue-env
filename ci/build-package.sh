@@ -54,7 +54,7 @@ if [ "\${TUE_ROS_VERSION}" == "1" ]; then
     catkin build --this --no-status --cmake-args -DCATKIN_ENABLE_TESTING=ON
 elif [ "\${TUE_ROS_VERSION}" == "2" ]; then
     cd "\$TUE_SYSTEM_DIR"
-    echo -e "\e[35m\e[1m colcon build --merge-install --event-handlers status- --packages-up-to \$PACKAGE \e[0m"
-    colcon build --merge-install --event-handlers status- --packages-up-to \$PACKAGE
+    echo -e "\e[35m\e[1m colcon build --merge-install --event-handlers status- --cmake-args -DBUILD_TESTING=ON --packages-up-to \$PACKAGE \e[0m"
+    colcon build --merge-install --event-handlers status- --cmake-args -DBUILD_TESTING=ON --packages-up-to \$PACKAGE
 fi
 EOF
