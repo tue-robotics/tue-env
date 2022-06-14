@@ -67,6 +67,8 @@ RUN --mount=type=ssh,uid=1000 sed -e s/return//g -i ~/.bashrc && \
     source bootstrap.bash --ros-version="$ROS_VERSION" && \
     # Make tue-env to be available to the environment
     source ~/.bashrc && \
+    # Install Avular Common
+    tue-get install avular-common && \
     # Install target ros
     tue-get install ros${ROS_VERSION} --test-depend --branch="$BRANCH" && \
     # Remove temp tue files
