@@ -32,7 +32,7 @@ SHELL ["/bin/bash", "-c"]
 # installation and setup a user with sudo priviledges
 RUN apt-get update -qq && \
     echo "resolvconf resolvconf/linkify-resolvconf boolean false" | debconf-set-selections && \
-    apt-get install -qq --assume-yes --no-install-recommends apt-transport-https apt-utils bash-completion ca-certificates curl dbus debconf-utils dialog git lsb-release iproute2 iputils-ping net-tools openssh-client resolvconf sudo systemd tzdata wget > /dev/null && \
+    apt-get install -qq --assume-yes --no-install-recommends apt-transport-https apt-utils bash-completion ca-certificates curl dbus debconf-utils dialog git lsb-release iproute2 iputils-ping net-tools openssh-client psmisc resolvconf sudo systemd tzdata wget > /dev/null && \
     # Add defined user
     adduser -u 1000 --disabled-password --gecos "" $USER && \
     usermod -aG sudo $USER && \
