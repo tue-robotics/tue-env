@@ -409,7 +409,14 @@ function tue-make
     elif [ "${ros_version}" == "2" ]
     then
         mkdir -p "$TUE_SYSTEM_DIR"/src
-        colcon --log-base "$TUE_SYSTEM_DIR"/log build --merge-install --symlink-install --base-paths "$TUE_SYSTEM_DIR"/src --build-base "$TUE_SYSTEM_DIR"/build --install-base "$TUE_SYSTEM_DIR"/install "$@"
+
+        # Disable symlink install for production
+        if [ "${CI_INSTALL}" == "true" ]
+        then
+            colcon --log-base "$TUE_SYSTEM_DIR"/log build --merge-install --base-paths "$TUE_SYSTEM_DIR"/src --build-base "$TUE_SYSTEM_DIR"/build --install-base "$TUE_SYSTEM_DIR"/install "$@"
+        else
+            colcon --log-base "$TUE_SYSTEM_DIR"/log build --merge-install --symlink-install --base-paths "$TUE_SYSTEM_DIR"/src --build-base "$TUE_SYSTEM_DIR"/build --install-base "$TUE_SYSTEM_DIR"/install "$@"
+        fi
         return $?
     else
         echo -e "\033[38;1mError! ROS_VERSION '${ros_version}' is not supported by tue-env.\033[0m"

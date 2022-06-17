@@ -31,5 +31,5 @@ RUN --mount=type=ssh,uid=1000 \
     # Install the target
     tue-get install ${PACKAGE} --branch="$BRANCH" && \
     # Make workspace
-    if [[ "$BUILD_WS" == "true" ]]; then tue-make; fi && \
+    if [[ "$BUILD_WS" == "true" ]]; then CI_INSTALL=true tue-make; fi && \
     source ~/.bashrc
