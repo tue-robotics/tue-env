@@ -40,7 +40,10 @@
     - |
       MOUNT_DIR=".tmp/repos"
       mkdir -p "${MOUNT_DIR}"
-      DOCKER_BUILDKIT=1 docker build --ssh=default \
+      docker buildx build \
+        --platform=linux/${TARGET_PLATFORM} \
+        --output=type=image,push=${PUSH_IMAGE} \
+        --ssh=default \
         --file "${DOCKERFILE}" \
         --build-arg BASE_IMAGE="${BASE_IMAGE}" \
         --build-arg CI=true \
@@ -48,10 +51,6 @@
         --build-arg PACKAGE="${PACKAGE}" \
         --build-arg BUILD_WS="${BUILD_WS}" \
         --tag "${TARGET_IMAGE}" .
-    - |
-      if [[ "${PUSH_IMAGE}" == "true" ]]; then
-          docker push ${TARGET_IMAGE}
-      fi
 
   rules:
     - if: '$CI_COMMIT_TAG || $CI_COMMIT_BRANCH == $CI_DEFAULT_BRANCH || $CI_PIPELINE_SOURCE=="web"'
