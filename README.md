@@ -150,17 +150,17 @@ Taking the above into account, the following combinations for `install.yaml` are
 
 Both ROS distro specific as default can be 'null'. Prevered usage is default for current and feature distributions and exceptions for old distributions.
 
-#### Target / System / PIP / PIP3 / PPA / Snap / DPKG / Empty
+#### Target / System / PIP / PIP3 / PPA / Snap / Gem / DPKG / Empty
 
 ```yaml
-- type: [target/system/pip/pip3/ppa/snap/dpkg/empty]
+- type: [target/system/pip/pip3/ppa/snap/gem/dpkg/empty]
   name: <Name of the candidate>
 ```
 
 Depending on Ubuntu distribution:
 
 ```yaml
-- type: [target/system/pip/pip3/ppa/snap/dpkg/empty]
+- type: [target/system/pip/pip3/ppa/snap/gem/dpkg/empty]
   xenial:
     name: [null/<Name of the candidate>]
   default:
@@ -169,15 +169,15 @@ Depending on Ubuntu distribution:
 
 Both Ubuntu distribution specific as default can be 'null'. Prevered usage is default for current and feature distributions and exceptions for old distributions.
 
-#### (Target / System / PIP / PIP3 / PPA / Snap)-now
+#### (Target / System / PIP / PIP3 / PPA / Snap / Gem)-now
 
-The default installation method for targets of type `system`, `pip(3)`, `ppa` and `snap` is to collect all such targets in a list and install them simultaneously at the end of the `tue-get install` procedure. To install such a dependency immediately for a specific target, use the target type as `X-now`:
+The default installation method for targets of type `system`, `pip(3)`, `ppa`, `snap` and `gem` is to collect all such targets in a list and install them simultaneously at the end of the `tue-get install` procedure. To install such a dependency immediately for a specific target, use the target type as `X-now`:
 
 ```yaml
-- type: [target/system/pip/pip3/ppa/snap]-now
+- type: [target/system/pip/pip3/ppa/snap/gem]-now
   name: <Name of the candidate>
 
-- type: [target/system/pip/pip3/ppa/snap/dpkg]
+- type: [target/system/pip/pip3/ppa/snap/gem/dpkg]
   name: <Name of the candidate>
 ```
 
@@ -215,6 +215,8 @@ generally used methods of installing packages:
 | `tue-install-ppa-now`           | To add a PPA/DEB with `apt-add-repository`, use ^ inside of a DEB and spaces between items     |
 | `tue-install-snap`              | To add a snap package to a list to be installed at the end                                     |
 | `tue-install-snap-now`          | To install a snap                                                                              |
+| `tue-install-gem`               | To add a gem package to a list to be installed at the end                                     |
+| `tue-install-gem-now`           | To install a gem                                                                              |
 | `tue-install-system`            | To add `deb` package to a list of packages to be installed at the end with `apt-get`           |
 | `tue-install-system-now`        | To install `deb` packages with `apt-get` right away, but ignores it if already installed       |
 | `tue-install-get-releases`      | To get a released asset from a github repository and place it in the requested directory       |
@@ -225,7 +227,7 @@ installed).
 
 A general remark about the order of preference of package repositories:
 
-system > ppa > pip3 > snap > git > dpkg (> pip, deprecated)
+system > ppa > pip3 > snap > gem > git > dpkg (> pip, deprecated)
 
 #### Logging
 

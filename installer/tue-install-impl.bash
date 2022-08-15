@@ -1048,6 +1048,55 @@ function tue-install-snap-now
 
 # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # #
 
+function tue-install-gem
+{
+    tue-install-debug "tue-install-gem $*"
+
+    if [ -z "$1" ]
+    then
+        tue-install-error "Invalid tue-install-gem call: needs package as argument."
+    fi
+    tue-install-debug "Adding $1 to gem list"
+    TUE_INSTALL_GEMS="$1 $TUE_INSTALL_GEMS"
+}
+
+# # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # #
+
+function tue-install-gem-now
+{
+    tue-install-debug "tue-install-gem-now $*"
+
+    if [ -z "$1" ]
+    then
+        tue-install-error "Invalid tue-install-gem-now call: needs package as argument."
+    fi
+
+    tue-install-system-now rubygems-integration
+
+    local gems_to_install gems_installed
+    gems_to_install=""
+    gems_installed=$(gem list)
+    # shellcheck disable=SC2048
+    for pkg in $*
+    do
+        if [[ ! $gems_installed == *$pkg* ]] # Check if pkg is not already installed
+        then
+            gems_to_install="$gems_to_install $pkg"
+            tue-install-debug "gem pkg: $pkg is not yet installed"
+        else
+            tue-install-debug "gems pkg: $pkg is already installed"
+        fi
+    done
+
+    if [ -n "$gems_to_install" ]
+    then
+        # shellcheck disable=SC2086
+        tue-install-pipe sudo gem install $gems_to_install || tue-install-error "An error occurred while installing gem packages." #<<< yes
+    fi
+}
+
+# # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # #
+
 function tue-install-dpkg-now
 {
     tue-install-debug "tue-install-dpkg-now $*"
@@ -1305,6 +1354,7 @@ TUE_INSTALL_SYSTEMS=
 TUE_INSTALL_PPA=
 TUE_INSTALL_PIP3S=
 TUE_INSTALL_SNAPS=
+TUE_INSTALL_GEMS=
 
 TUE_INSTALL_WARNINGS=
 TUE_INSTALL_INFOS=
@@ -1409,6 +1459,15 @@ then
 
     tue-install-debug "calling: tue-install-snap-now $TUE_INSTALL_SNAPS"
     tue-install-snap-now "$TUE_INSTALL_SNAPS"
+fi
+
+# Installing all gem targets, which are collected during the install
+if [ -n "$TUE_INSTALL_GEMS" ]
+then
+    TUE_INSTALL_CURRENT_TARGET="GEM"
+
+    tue-install-debug "calling: tue-install-gem-now $TUE_INSTALL_GEMS"
+    tue-install-gem-now "$TUE_INSTALL_GEMS"
 fi
 
 TUE_INSTALL_CURRENT_TARGET="main-loop"
