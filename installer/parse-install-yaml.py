@@ -64,6 +64,7 @@ def main():
         "pip3-now": [],
         "ppa-now": [],
         "snap-now": [],
+        "gem-now": [],
     }
 
     for install_item in install_items:
@@ -109,6 +110,7 @@ def main():
                 "pip3",
                 "ppa",
                 "snap",
+                "gem",
                 "dpkg",
                 "target-now",
                 "system-now",
@@ -116,6 +118,7 @@ def main():
                 "pip3-now",
                 "ppa-now",
                 "snap-now",
+                "gem-now",
             ]:
                 if now and "now" not in install_type:
                     install_type += "-now"
