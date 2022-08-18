@@ -1071,7 +1071,7 @@ function tue-install-gem-now
         tue-install-error "Invalid tue-install-gem-now call: needs package as argument."
     fi
 
-    tue-install-system-now rubygems-integration
+    tue-install-system-now ruby ruby-dev rubygems-integration
 
     local gems_to_install gems_installed
     gems_to_install=""
