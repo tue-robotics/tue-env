@@ -16,6 +16,7 @@ ARG COMMIT=
 ARG REF_NAME=
 # Default is empty and gives ROS1, for ROS2 use --build-arg ROS_VERSION=2
 ARG ROS_VERSION=
+ARG ROS_DISTRO=
 
 # Inform scripts that no questions should be asked and set some environment
 # variables to prevent warnings and errors
@@ -64,7 +65,7 @@ RUN --mount=type=ssh,uid=1000 sed -e s/return//g -i ~/.bashrc && \
     export COMMIT=$COMMIT && \
     export REF_NAME=$REF_NAME && \
     # Run the standard installation script
-    source bootstrap.bash --ros-version="$ROS_VERSION" && \
+    source bootstrap.bash --ros-version="$ROS_VERSION" --ros-distro="$ROS_DISTRO" && \
     # Make tue-env to be available to the environment
     source ~/.bashrc && \
     # Install Avular Common
