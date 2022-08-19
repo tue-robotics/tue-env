@@ -32,16 +32,34 @@ case $DISTRIB_RELEASE in
                     ros_version="${i#*=}"
 
                     if [[ "${ros_version}" -eq 2 ]]; then
-                        TUE_ROS_DISTRO=galactic
                         TUE_ROS_VERSION=2
-
                     elif [[ "${ros_version}" -eq 1 ]]; then
                         TUE_ROS_DISTRO=noetic
                         TUE_ROS_VERSION=1
-
                     else
                         echo "[tue-env](bootstrap) Error! ROS ${ros_version} is unsupported with tue-env."
                         exit 1
+                    fi
+                    ;;
+
+                --ros-distro=* )
+                    if [[ -z "${TUE_ROS_VERSION}" ]]; then
+                        echo "[tue-env](bootstrap) Error! Set --ros-version before --ros-distro."
+                        exit 1
+                    fi
+
+                    ros_distro="${i#*=}"
+                    if [[ "${TUE_ROS_VERSION}" -eq 2 ]]; then
+                        if [[ "${ros_distro}" == "foxy" ]]; then
+                            TUE_ROS_DISTRO=foxy
+                        elif [[ "${ros_distro}" == "galactic" ]]; then
+                            TUE_ROS_DISTRO=galactic
+                        else
+                            echo "[tue-env](bootstrap) Error! ROS ${ros_distro} is unsupported with tue-env."
+                            exit 1
+                        fi
+                    else
+                        echo "[tue-env](bootstrap) Using default ROS_DISTRO '${TUE_ROS_DISTRO}' with ROS_VERSION '${TUE_ROS_VERSION}'"
                     fi
                     ;;
                 * )

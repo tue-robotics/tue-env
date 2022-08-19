@@ -19,6 +19,7 @@
         --platforms="${TARGET_PLATFORM}" \
         --push_image="${PUSH_IMAGE:-"false"}" \
         --ros_version="${ROS_VERSION:-"1"}" \
+        --ros_distro="${ROS_DISTRO}" \
         --base_image="${BASE_IMAGE}"
 
   rules:
@@ -139,6 +140,62 @@ ROS Galactic:
   script:
     - !reference [.manifest, script]
   needs: ["ROS Galactic [amd64]", "ROS Galactic [arm64]"]
+  rules:
+    - if: '$CI_PIPELINE_SOURCE == "merge_request_event"'
+      when: 'never'
+    - if: '$CI_COMMIT_BRANCH != $CI_DEFAULT_BRANCH'
+      when: 'never'
+    - !reference [.tue-env, rules]
+
+
+ROS Foxy [amd64]:
+  extends: .tue-env
+  tags:
+    - linux
+    - docker-privileged
+    - x86_64
+  variables:
+    TARGET_PLATFORM: 'amd64'
+    ROS_VERSION: '2'
+    ROS_DISTRO: 'foxy'
+  rules:
+    - if: '$CI_PIPELINE_SOURCE == "merge_request_event"'
+      changes:
+        - ci/tue-env**
+        - dockerfiles/tue-env**
+    - if: '$CI_COMMIT_BRANCH != $CI_DEFAULT_BRANCH'
+      changes:
+        - ci/tue-env**
+        - dockerfiles/tue-env**
+    - !reference [.tue-env, rules]
+
+ROS Foxy [arm64]:
+  extends: .tue-env
+  tags:
+    - linux
+    - docker-privileged
+    - arm64
+  variables:
+    TARGET_PLATFORM: 'arm64'
+    ROS_VERSION: '2'
+    ROS_DISTRO: 'foxy'
+  rules:
+    - if: '$CI_PIPELINE_SOURCE == "merge_request_event"'
+      when: 'never'
+    - if: '$CI_COMMIT_BRANCH != $CI_DEFAULT_BRANCH'
+      when: 'never'
+    - !reference [.tue-env, rules]
+
+ROS Foxy:
+  tags:
+    - linux
+    - docker-privileged
+  extends: .tue-env
+  variables:
+    ROS_DISTRO: 'foxy'
+  script:
+    - !reference [.manifest, script]
+  needs: ["ROS Foxy [amd64]", "ROS Foxy [arm64]"]
   rules:
     - if: '$CI_PIPELINE_SOURCE == "merge_request_event"'
       when: 'never'
