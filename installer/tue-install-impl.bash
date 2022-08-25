@@ -191,7 +191,7 @@ function tue-install-target
                 [ "$now" == "true" ] && now_cmd="--now"
                 # Do not use 'local cmds=' because it does not preserve command output status ($?)
                 local cmds
-                if cmds=$("$TUE_INSTALL_SCRIPTS_DIR"/parse-install-yaml.py "$install_file".yaml $now_cmd)
+                if cmds=$("$TUE_INSTALL_SCRIPTS_DIR"/parse_install_yaml.py "$install_file".yaml $now_cmd)
                 then
                     for cmd in $cmds
                     do

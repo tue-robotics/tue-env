@@ -88,7 +88,7 @@ def catkin_git(source: dict) -> str:
 
 def main():
     if not 2 <= len(sys.argv) <= 3:
-        return show_error("Usage: parse-install-yaml install.yaml [--now]")
+        return show_error("Usage: parse_install_yaml install.yaml [--now]")
 
     now = False
     if len(sys.argv) == 3:
@@ -97,7 +97,13 @@ def main():
         else:
             return show_error("Unknown option: {0}".format(sys.argv[2]))
 
-    with open(sys.argv[1]) as f:
+    result = installyaml_parser(sys.argv[1], now)
+    if result["commands"]:
+        print(result["commands"])
+
+
+def installyaml_parser(path: str, now: bool=False) -> str:
+    with open(path) as f:
         try:
             install_items = yaml.load(f, yaml.CSafeLoader)
         except AttributeError:
@@ -107,6 +113,8 @@ def main():
 
     if not isinstance(install_items, list):
         return show_error("Root of install.yaml file should be a YAML sequence")
+
+    system_packages = []
 
     commands = []
 
@@ -126,7 +134,7 @@ def main():
             install_type = install_item["type"]
 
             if install_type == "empty":
-                return 0
+                return {"system_packages": system_packages, "commands": commands}
 
             if install_type == "ros":
                 if "source" in install_item:
@@ -148,6 +156,7 @@ def main():
                 if source_type == "git":
                     command = "tue-install-ros {}".format(catkin_git(source))
                 elif source_type == "system":
+                    system_packages.append("ros-{distro}-{package}".format(distro=ros_release, package=source["name"]))
                     command = "tue-install-ros system {0}".format(source["name"])
                 else:
                     return show_error("Unknown ROS install type: '{0}'".format(source_type))
@@ -183,11 +192,17 @@ def main():
 
                 if "name" in install_item:
                     pkg_name = install_item["name"]
+                    if "system" in install_type:
+                        system_packages.append(install_item["name"])
                 else:
                     if ubuntu_release in install_item:
                         pkg_name = install_item[ubuntu_release]["name"]
+                        if "system" in install_type:
+                            system_packages.append(install_item["name"])
                     elif "default" in install_item:
                         pkg_name = install_item["default"]["name"]
+                        if "system" in install_type:
+                            system_packages.append(install_item["name"])
                     else:
                         return show_error(
                             "Ubuntu distro {} or 'default' not specified in install.yaml".format(ubuntu_release)
@@ -223,9 +238,7 @@ def main():
 
     commands = " ".join(commands)
 
-    print(commands)
-
-    return 0
+    return {"system_packages": system_packages, "commands": commands}
 
 
 if __name__ == "__main__":
