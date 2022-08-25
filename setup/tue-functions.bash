@@ -440,6 +440,74 @@ function _tue-make
 complete -F _tue-make tue-make
 
 # ----------------------------------------------------------------------------------------------------
+#                                             TUE-GENERATE-DEB
+# ----------------------------------------------------------------------------------------------------
+
+function tue-generate-deb
+{
+    [[ -z "${TUE_ROS_DISTRO}" ]] && { echo -e "\033[31;1mError! tue-env variable TUE_ROS_DISTRO not set.\033[0m"; return 1; }
+
+    [[ -z "${TUE_ROS_VERSION}" ]] && { echo -e "\033[31;1mError! TUE_ROS_VERSION is not set.\nSet TUE_ROS_VERSION before executing this function.\033[0m"; return 1; }
+
+    [[ ! -d "${TUE_SYSTEM_DIR}" ]] && { echo -e "\033[31;1mError! The workspace '${TUE_SYSTEM_DIR}' does not exist. Run 'tue-get install ros${TUE_ROS_VERSION}' first.\033[0m"; return 1; }
+
+    [[ "${TUE_ROS_VERSION}" != "2" ]] && { echo -e "\033[31;1mError! This command is supported only with TUE_ROS_VERSION=2.\033[0m"; return 1; }
+
+    local packages_list=
+    if [[ -z "${1}" ]]; then
+        echo -e "\033[33;1mNo packages specified, so packaging the entire workspace. \033[0m"
+        for pkg in $(ls "${TUE_SYSTEM_DIR}"/src/); do
+            packages_list="${pkg} ${packages_list}"
+        done
+
+        if [[ -z "${packages_list}" ]]; then
+            echo -e "\033[31;1mError! No source packages found in workspace to package.\033[0m"
+            return 1
+        fi
+    else
+        packages_list="$@"
+    fi
+
+    # Check if packages are built
+    local PACKAGES_NOT_BUILT=
+    for package in $packages_list; do
+        if [[ ! -d "${TUE_SYSTEM_DIR}"/install/"${package}" ]]; then
+            PACKAGES_NOT_BUILT="${package} ${PACKAGES_NOT_BUILT}"
+        fi
+    done
+
+    if [[ -n "${PACKAGES_NOT_BUILT}" ]]; then
+        echo -e "\033[31;1mThe following packages are not built: \033[0m${PACKAGES_NOT_BUILT}\033[31;1m. Hence cannot be packaged.\033[0m"
+        return 1
+    fi
+
+    local RELEASE_DIR="${TUE_SYSTEM_DIR}"/release
+    local cur_dir="${PWD}"
+
+    local timestamp="$(date +%Y%m%d%H%M%S)"
+
+    for package in $packages_list; do
+        pkg_rel_dir="$("${TUE_DIR}"/installer/generate_deb_control.py "${RELEASE_DIR}" "${TUE_SYSTEM_DIR}"/src/"${package}"/package.xml "${timestamp}")"
+
+        cd "${RELEASE_DIR}"
+
+        if [[ ! -d "${pkg_rel_dir}" ]]; then
+            echo -e "\033[31;1mError! Expected release dir for package '${package}' not created.\033[0m"
+            cd "${cur_dir}"
+            return 1
+        fi
+
+        mkdir -p "${pkg_rel_dir}"/opt/ros/"${TUE_ROS_DISTRO}"
+        cp -r "${TUE_SYSTEM_DIR}"/install/"${package}"/* "${pkg_rel_dir}"/opt/ros/"${TUE_ROS_DISTRO}"/
+
+        dpkg-deb --build --root-owner-group "${pkg_rel_dir}"
+        rm -rf "${pkg_rel_dir}"
+    done
+
+    cd "${cur_dir}"
+}
+
+# ----------------------------------------------------------------------------------------------------
 #                                             TUE-STATUS
 # ----------------------------------------------------------------------------------------------------
 
