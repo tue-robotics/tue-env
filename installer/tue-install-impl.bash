@@ -1118,7 +1118,7 @@ function tue-install-ros
                 # Catkin
                 tue-install-debug "Parsing $pkg_xml"
                 local deps
-                deps=$("$TUE_INSTALL_SCRIPTS_DIR"/parse-package-xml.py "$pkg_xml")
+                deps=$("$TUE_INSTALL_SCRIPTS_DIR"/parse_package_xml.py "$pkg_xml")
                 tue-install-debug "Parsed package.xml\n$deps"
 
                 for dep in $deps
