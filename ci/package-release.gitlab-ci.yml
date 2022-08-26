@@ -30,15 +30,17 @@
         mv /tmp/tue-env/${DOCKERFILE} $(dirname "${DOCKERFILE}")
       fi
     - |
-      echo -e "\e[35;1mCI_BRANCH         = ${CI_COMMIT_BRANCH:-${CI_COMMIT_TAG}}\e[0m"
-      echo -e "\e[35;1mCI_DEFAULT_BRANCH = ${CI_DEFAULT_BRANCH}\e[0m"
-      echo -e "\e[35;1mCHECKOUT_BRANCH   = ${CI_COMMIT_BRANCH:-${CI_COMMIT_TAG}}\e[0m]"
-      echo -e "\e[35;1mTARGET_PLATFORM   = ${TARGET_PLATFORM}\e[0m"
-      echo -e "\e[35;1mBASE_IMAGE        = ${BASE_IMAGE}\e[0m"
-      echo -e "\e[35;1mTARGET_IMAGE      = ${TARGET_IMAGE}\e[0m"
-      echo -e "\e[35;1mPUSH_IMAGE        = ${PUSH_IMAGE}\e[0m"
-      echo -e "\e[35;1mPACKAGE           = ${PACKAGE}\e[0m"
-      echo -e "\e[35;1mBUILD_WS          = ${BUILD_WS}\e[0m"
+      echo -e "\e[35;1mCI_BRANCH            = ${CI_COMMIT_BRANCH:-${CI_COMMIT_TAG}}\e[0m"
+      echo -e "\e[35;1mCI_DEFAULT_BRANCH    = ${CI_DEFAULT_BRANCH}\e[0m"
+      echo -e "\e[35;1mCHECKOUT_BRANCH      = ${CI_COMMIT_BRANCH:-${CI_COMMIT_TAG}}\e[0m]"
+      echo -e "\e[35;1mTARGET_PLATFORM      = ${TARGET_PLATFORM}\e[0m"
+      echo -e "\e[35;1mBASE_IMAGE           = ${BASE_IMAGE}\e[0m"
+      echo -e "\e[35;1mTARGET_IMAGE         = ${TARGET_IMAGE}\e[0m"
+      echo -e "\e[35;1mPUSH_IMAGE           = ${PUSH_IMAGE}\e[0m"
+      echo -e "\e[35;1mPACKAGE              = ${PACKAGE}\e[0m"
+      echo -e "\e[35;1mBUILD_WS             = ${BUILD_WS}\e[0m"
+      echo -e "\e[35;1mRELEASE_DEB          = ${RELEASE_DEB}\e[0m"
+      echo -e "\e[35;1mPACKAGE_REGISTRY_URL = ${PACKAGE_REGISTRY_URL}\e[0m"
     - |
       MOUNT_DIR=".tmp/repos"
       RELEASE_DIR=".tmp/release"
