@@ -7,6 +7,8 @@
     TARGET_IMAGE_BASE_NAME: "${CI_REGISTRY_IMAGE}"
     BASE_IMAGE: ${CI_REGISTRY}/avular/common-tools/package-manager/tue-env/ros-${ROS_DISTRO}:latest
     BUILD_WS: "false"
+    RELEASE_DEB: "false"
+    PACKAGE_REGISTRY_URL: "${CI_API_V4_URL}/projects/${CI_PROJECT_ID}/packages/generic"
   script:
     - TARGET_IMAGE="${TARGET_IMAGE_BASE_NAME}:${TARGET_IMAGE_TAG}-${TARGET_PLATFORM}"
     - PUSH_IMAGE="${PUSH_IMAGE:-"false"}"
@@ -21,7 +23,7 @@
         exit 1
       fi
       if [[ -f ${DOCKERFILE} ]]; then
-        echo -e "\e[35;1mDockerfile found at ${DOCKERFILE} relative to the root of the repository. This will be used instead of the template Dockerfile from tue-env."
+        echo -e "\e[35;1mDockerfile found at ${DOCKERFILE} relative to the root of the repository. This will be used instead of the template Dockerfile from tue-env.\e[0m"
       else
         git clone --depth=1 --single-branch git@gitlab.com:avular/common-tools/package-manager/tue-env.git /tmp/tue-env
         mkdir -p $(dirname "${DOCKERFILE}")
@@ -39,7 +41,8 @@
       echo -e "\e[35;1mBUILD_WS          = ${BUILD_WS}\e[0m"
     - |
       MOUNT_DIR=".tmp/repos"
-      mkdir -p "${MOUNT_DIR}"
+      RELEASE_DIR=".tmp/release"
+      mkdir -p "${MOUNT_DIR}" "${RELEASE_DIR}"
       docker buildx build \
         --platform=linux/${TARGET_PLATFORM} \
         --output=type=image,push=${PUSH_IMAGE} \
@@ -51,6 +54,22 @@
         --build-arg PACKAGE="${PACKAGE}" \
         --build-arg BUILD_WS="${BUILD_WS}" \
         --tag "${TARGET_IMAGE}" .
+      ls "${RELEASE_DIR}"
+    - |
+      if [[ "${RELEASE_DEB}" == "true" ]]; then
+        echo -e "\e[32;1mReleasing debian files to GitLab package registry\e[0m"
+        for deb in "${RELEASE_DIR}"/*; do
+          DEB_PACKAGE="$(basename "${deb}")"
+          pkgwithversion="${DEB_PACKAGE%%-build*}"
+          PACKAGE_NAME="${pkgwithversion%%_*}"
+          PACKAGE_VERSION="${pkgwithversion##*_}"
+
+          PACKAGE_URL=${PACKAGE_REGISTRY_URL}/${PACKAGE_NAME}/${PACKAGE_VERSION}/${DEB_PACKAGE}
+          echo -e "\e[35;1mPACKAGE_URL=${PACKAGE_URL}\e[0m"
+
+          curl --header "JOB-TOKEN: ${CI_JOB_TOKEN}" --upload-file "${deb}" ${PACKAGE_URL}
+        done
+      fi
 
   rules:
     - if: '$CI_COMMIT_TAG || $CI_COMMIT_BRANCH == $CI_DEFAULT_BRANCH || $CI_PIPELINE_SOURCE=="web"'

@@ -15,6 +15,7 @@ RUN mkdir -p -m 0700 ~/.ssh && ssh-keyscan gitlab.com >> ~/.ssh/known_hosts
 # Remove interactive check from bashrc, otherwise bashrc refuses to execute
 RUN --mount=type=ssh,uid=1000 \
     --mount=type=bind,source=.tmp/repos,target=/home/docker/avular/repos,readwrite \
+    --mount=type=bind,source=.tmp/release,target=/home/docker/avular/system/release,readwrite \
     sudo chown 1000:1000 -R /home/docker/avular/repos && \
     # Remove return statement from .bashrc
     sed -e s/return//g -i ~/.bashrc && \
@@ -31,5 +32,5 @@ RUN --mount=type=ssh,uid=1000 \
     # Install the target
     tue-get install ${PACKAGE} --branch="$BRANCH" && \
     # Make workspace
-    if [[ "$BUILD_WS" == "true" ]]; then CI_INSTALL=true tue-make; fi && \
+    if [[ "$BUILD_WS" == "true" ]]; then CI_INSTALL=true tue-make --cmake-args -DBUILD_TESTING=OFF; tue-generate-deb; fi && \
     source ~/.bashrc
