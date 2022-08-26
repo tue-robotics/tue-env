@@ -17,6 +17,7 @@ RUN --mount=type=ssh,uid=1000 \
     --mount=type=bind,source=.tmp/repos,target=/home/docker/avular/repos,readwrite \
     --mount=type=bind,source=.tmp/release,target=/home/docker/avular/system/release,readwrite \
     sudo chown 1000:1000 -R /home/docker/avular/repos && \
+    sudo chown 1000:1000 -R /home/docker/avular/system/release && \
     # Remove return statement from .bashrc
     sed -e s/return//g -i ~/.bashrc && \
     # Set the CI args in the container as docker currently provides no method to
