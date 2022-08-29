@@ -52,7 +52,7 @@
     IMAGE_REGISTRY: "$CI_REGISTRY_IMAGE"
 
   before_script:
-    - apk --update add git bash curl jq openssh-client
+    - apk --update add git bash curl jq openssh-client tree
     - *ssh_keys
     - echo "${CI_JOB_TOKEN}" | docker login ${CI_REGISTRY} -u gitlab-ci-token --password-stdin
     - |
