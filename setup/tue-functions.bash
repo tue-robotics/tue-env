@@ -443,10 +443,10 @@ function _tue-make
 complete -F _tue-make tue-make
 
 # ----------------------------------------------------------------------------------------------------
-#                                             TUE-GENERATE-DEB
+#                                             TUE-DEB FUNCTIONS
 # ----------------------------------------------------------------------------------------------------
 
-function tue-generate-deb
+function tue-deb-generate
 {
     [[ -z "${TUE_ROS_DISTRO}" ]] && { echo -e "\033[31;1mError! tue-env variable TUE_ROS_DISTRO not set.\033[0m"; return 1; }
 
