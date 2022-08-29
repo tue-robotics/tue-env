@@ -8,6 +8,9 @@ export TUE_WS_DIR
 TUE_REPOS_DIR="${TUE_ENV_DIR}"/repos
 export TUE_REPOS_DIR
 
+TUE_RELEASE_DIR="${TUE_SYSTEM_DIR}"/release
+export TUE_RELEASE_DIR
+
 # ----------------------------------------------------------------------------------------------------
 #                                        HELPER FUNCTIONS
 # ----------------------------------------------------------------------------------------------------
@@ -481,15 +484,14 @@ function tue-generate-deb
         return 1
     fi
 
-    local RELEASE_DIR="${TUE_SYSTEM_DIR}"/release
     local cur_dir="${PWD}"
 
     local timestamp="$(date +%Y%m%d%H%M%S)"
 
     for package in $packages_list; do
-        pkg_rel_dir="$("${TUE_DIR}"/installer/generate_deb_control.py "${RELEASE_DIR}" "${TUE_SYSTEM_DIR}"/src/"${package}"/package.xml "${timestamp}")"
+        pkg_rel_dir="$("${TUE_DIR}"/installer/generate_deb_control.py "${TUE_RELEASE_DIR}" "${TUE_SYSTEM_DIR}"/src/"${package}"/package.xml "${timestamp}")"
 
-        cd "${RELEASE_DIR}"
+        cd "${TUE_RELEASE_DIR}"
 
         if [[ ! -d "${pkg_rel_dir}" ]]; then
             echo -e "\033[31;1mError! Expected release dir for package '${package}' not created.\033[0m"
