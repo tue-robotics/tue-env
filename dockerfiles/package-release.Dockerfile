@@ -9,6 +9,9 @@ ARG PULL_REQUEST=false
 ARG COMMIT=
 ARG PACKAGE=
 ARG BUILD_WS=false
+ARG RELEASE_DEB=
+ARG REGISTRY_URL=
+ARG TOKEN=
 
 # Add gitlab.com to trusted hosts for SSH
 RUN mkdir -p -m 0700 ~/.ssh && ssh-keyscan gitlab.com >> ~/.ssh/known_hosts
@@ -34,4 +37,5 @@ RUN --mount=type=ssh,uid=1000 \
     tue-get install ${PACKAGE} --branch="$BRANCH" && \
     # Make workspace
     if [[ "$BUILD_WS" == "true" ]]; then CI_INSTALL=true tue-make --cmake-args -DBUILD_TESTING=OFF; tue-deb-generate; fi && \
+    if [[ "${RELEASE_DEB}" == "true" ]]; then tue-deb-gitlab-release --registry-url="${REGISTRY_URL}" --token="${TOKEN}"; fi && \
     source ~/.bashrc

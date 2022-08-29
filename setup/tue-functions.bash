@@ -509,6 +509,52 @@ function tue-deb-generate
     cd "${cur_dir}"
 }
 
+function tue-deb-gitlab-release
+{
+    echo -e "\e[32;1mReleasing debian files to GitLab package registry\e[0m"
+
+    local REGISTRY_URL=
+    local TOKEN=
+
+    for i in "$@"; do
+        case $i in
+            --registry-url=* )
+                REGISTRY_URL="${i#*=}"
+                ;;
+
+            --token=* )
+                TOKEN="${i#*=}"
+                ;;
+
+            * )
+                echo -e "\e[31;1mError! Unknown argument ${i}."
+                return 1
+                ;;
+        esac
+    done
+
+    if [[ -z "${REGISTRY_URL}" ]] || [[ -z "${TOKEN}" ]]; then
+        echo -e "\e[31;1mError! Mandatory arguments --registry-url and --token not specified"
+        return 1
+    fi
+
+    local deb_pkg=
+    local pkg=
+    local version=
+
+    for deb in ${TUE_RELEASE_DIR}/*; do
+        deb_pkg="$(basename "${deb}")"
+        pkgwithversion="${deb_pkg%%-build*}"
+        pkg="${pkgwithversion%%_*}"
+        version="${pkgwithversion##*_}"
+
+        PACKAGE_URL=${REGISTRY_URL}/${pkg}/${version}/${deb_pkg}
+        echo -e "\e[35;1mPACKAGE_URL=${PACKAGE_URL}\e[0m"
+
+        curl --header "JOB-TOKEN: ${TOKEN}" --upload-file "${deb}" ${PACKAGE_URL}
+    done
+}
+
 # ----------------------------------------------------------------------------------------------------
 #                                             TUE-STATUS
 # ----------------------------------------------------------------------------------------------------
