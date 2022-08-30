@@ -4,14 +4,16 @@ export TUE_DIR
 
 # Load tue-env tool
 # shellcheck disable=SC1090
-source "$TUE_DIR"/setup/tue-env.bash
+ext=
+hash register-python-argcomplete3 2> /dev/null && ext="3"
+eval "$(register-python-argcomplete${ext} tue-env)"
 
 # ------------------------------------------
 # Helper function for checking if all env vars are set
 function _tue-check-env-vars
 {
     [ -n "$TUE_DIR" ] && [ -n "$TUE_ENV" ] && [ -n "$TUE_ENV_DIR" ] \
-       && [ -n "$TUE_BIN" ] && [ -n "$TUE_ENV_TARGETS_DIR" ] && return 0
+        && [ -n "$TUE_ENV_TARGETS_DIR" ] && return 0
     echo "[tue] Not all needed environment variables are set."
     return 1
 }
@@ -19,44 +21,29 @@ export -f _tue-check-env-vars
 
 if [ -z "$TUE_ENV" ]
 then
-    if [ ! -f "$TUE_DIR"/user/config/default_env ]
-    then
-        # No environment, so all environment specific setup below does not need to be sourced
+    TUE_ENV=$(tue-env name)
+    if [[ -z "${TUE_ENV}" ]]; then
         return 0
     fi
-
-    TUE_ENV=$(cat "$TUE_DIR"/user/config/default_env)
     export TUE_ENV
-
-    if [ ! -f "$TUE_DIR"/user/envs/"$TUE_ENV" ]
-    then
-        echo "[tue] No such environment: '$TUE_ENV'"
-        return 1
-    fi
 fi
 
-TUE_ENV_DIR=$(cat "$TUE_DIR"/user/envs/"$TUE_ENV")
+TUE_ENV_DIR=$(tue-env locate)
 export TUE_ENV_DIR
-
-if [ ! -d "$TUE_ENV_DIR" ]
-then
-    echo "[tue] Environment directory '$TUE_ENV_DIR' (environment '$TUE_ENV') does not exist"
-    return 1
-fi
-
-export TUE_ENV_TARGETS_DIR=$TUE_ENV_DIR/.env/targets
-
-if [ ! -d "$TUE_ENV_TARGETS_DIR" ]
-then
-    echo "[tue] Targets directory '$TUE_ENV_TARGETS_DIR' (environment '$TUE_ENV') does not exist"
-    return 1
-fi
-
 if [ -f "$TUE_ENV_DIR"/.env/setup/user_setup.bash ]
 then
     # shellcheck disable=SC1090
     source "$TUE_ENV_DIR"/.env/setup/user_setup.bash
 fi
+
+TUE_ENV_TARGETS_DIR="$(tue-env targets-dir)"
+export TUE_ENV_TARGETS_DIR
+
+function _tue-env-targets
+{
+    [[ -n ${TUE_ENV_TARGETS_DIR} ]] && cd ${TUE_ENV_TARGETS_DIR}
+}
+alias tue-env-targets="_tue-env-targets"
 
 # -----------------------------------------
 # Load all the bash functions
@@ -69,17 +56,10 @@ then
     source "$TUE_DIR"/setup/tue-misc.bash
 fi
 
-export TUE_BIN=$TUE_DIR/bin
-
 # .local/bin is needed in the path for all user installs like pip. It gets added automatically on reboot but not on CI
 if [[ :$PATH: != *:$HOME/.local/bin:* ]]
 then
     export PATH=$HOME/.local/bin${PATH:+:${PATH}}
-fi
-
-if [[ :$PATH: != *:$TUE_BIN:* ]]
-then
-    export PATH=$TUE_BIN${PATH:+:${PATH}}
 fi
 
 if [ -f "$TUE_ENV_DIR"/.env/setup/target_setup.bash ]

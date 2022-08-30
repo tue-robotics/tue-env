@@ -81,6 +81,25 @@ case $DISTRIB_RELEASE in
         ;;
 esac
 
+# Add .local/bin to path if not already present
+if [[ :$PATH: != *:$HOME/.local/bin:* ]]
+then
+    export PATH=$HOME/.local/bin${PATH:+:${PATH}}
+fi
+
+if ! grep -q "PATH=\$HOME/.local/bin\${PATH:+:\${PATH}}" ~/.bashrc;
+then
+    echo "
+
+# Add .local/bin to path
+if [[ :\$PATH: != *:\$HOME/.local/bin:* ]]
+then
+    export PATH=\$HOME/.local/bin\${PATH:+:\${PATH}}
+fi
+" >> ~/.bashrc
+fi
+
+
 # Script variables
 env_url="git@gitlab.com:avular/common-tools/package-manager/tue-env.git"
 env_targets_url="git@gitlab.com:avular/common-tools/package-manager/tue-env-targets.git"
@@ -138,13 +157,21 @@ fi
 # Source the installer commands
 # No need to follow to a file which is already checked by CI
 # shellcheck disable=SC1090
-source "$env_dir"/setup.bash
+python3 -m pip install --user "$env_dir"
 
-# Create ros environment directory
-mkdir -p "$workspace_dir"
+# Add loading of TU/e tools (tue-env, tue-get, etc) to bashrc
+# shellcheck disable=SC2088
+if ! grep -q "tue-env setup-location" ~/.bashrc;
+then
+    echo "
+# Load TU/e tools
+source \"\$(tue-env setup-location)\"" >> ~/.bashrc
+fi
+
+source ~/.bashrc
 
 # Initialize ros environment directory incl. targets
-tue-env init "$workspace" "$workspace_dir" "$env_targets_url"
+tue-env init "$workspace" --dir "$workspace_dir" --targets-git-url "$env_targets_url"
 
 # Configure environment
 tue-env config "$workspace" set "TUE_ROS_DISTRO" "$TUE_ROS_DISTRO"
@@ -152,19 +179,10 @@ tue-env config "$workspace" set "TUE_ROS_VERSION" "$TUE_ROS_VERSION"
 tue-env config "$workspace" git-use-ssh
 tue-env config "$workspace" github-use-https
 
-# Add loading of TU/e tools (tue-env, tue-get, etc) to bashrc
-# shellcheck disable=SC2088
-if ! grep -q "$env_dir/setup.bash" ~/.bashrc;
-then
-    echo "
-# Load TU/e tools
-source $env_dir/setup.bash" >> ~/.bashrc
-fi
-
 # Set this environment as default
 tue-env set-default "$workspace"
 
 # Activate the default environment
 # No need to follow to file which is already checked by CI
 # shellcheck disable=SC1090
-source "$env_dir"/setup.bash
+source ~/.bashrc

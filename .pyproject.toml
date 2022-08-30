@@ -1,0 +1,7 @@
+# This file is not being used as it is hidden
+# The reason this is hidden is its current configuration is disallowing local install of package using --user arg
+[build-system]
+requires = [
+  "setuptools >= 40.9.0"
+]
+build-backend = "setuptools.build_meta"

@@ -16,8 +16,14 @@ def main():
 
 
 def packagexml_parser(path: str) -> dict:
+
+    if not os.path.exists(path):
+        raise Exception(f"package.xml not found in given path '{path}'")
+
     tree = ET.parse(path)
     doc = tree.getroot()
+    if not doc.tag == "package":
+        raise Exception("Invalid package.xml. The tree must have <package> as the root element.")
 
     dep_set = set()
 

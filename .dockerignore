@@ -2,5 +2,5 @@
 #
 # Ignore the entire local repository
 /**
-!installer/bootstrap.bash
+!bootstrap.bash
 !known_hosts

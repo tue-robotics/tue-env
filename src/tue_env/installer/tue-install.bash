@@ -20,42 +20,46 @@ then
     echo "[tue-get] 'TUE_DIR' $TUE_DIR doesn't exist"
     exit 1
 else
-    current_url=$(git -C "$TUE_DIR" config --get remote.origin.url)
-    new_url=$(_git_https_or_ssh "$current_url")
-
-    if ! grep -q "^git@.*\.git$\|^https://.*\.git$" <<< "$new_url"
+    check_editable="$(python3 -m tue_env.check_editable_install)"
+    if [[ "${check_editable}" == "True" ]]
     then
-        # shellcheck disable=SC2140
-        echo -e "[tue-get] (tue-env) new_url: '$new_url' is invalid. It is generated from the current_url: '$current_url'\n"\
-"The problem will probably be solved by resourcing the setup"
-        exit 1
-    fi
+        current_url=$(git -C "$TUE_DIR" config --get remote.origin.url)
+        new_url=$(_git_https_or_ssh "$current_url")
 
-
-    if [ "$current_url" != "$new_url" ]
-    then
-        git -C "$TUE_DIR" remote set-url origin "$new_url"
-        echo -e "[tue-get] Origin has switched to $new_url"
-    fi
-
-    if [[ -n "$CI" ]]
-    then
-        # Do not update with continuous integration but do fetch to refresh available branches
-        echo -e "[tue-get] Fetching tue-get... "
-        git -C "$TUE_DIR" fetch
-    else
-        echo -en "[tue-get] Updating tue-get... "
-
-        if ! git -C "$TUE_DIR" pull --ff-only --prune
+        if ! grep -q "^git@.*\.git$\|^https://.*\.git$" <<< "$new_url"
         then
-            # prompt for conformation
-            exec < /dev/tty
-            read -p "[tue-get] Could not update tue-get. Continue? " -n 1 -r
-            exec <&-
-            echo    # (optional) move to a new line
-            if [[ ! $REPLY =~ ^[Yy]$ ]]
+            # shellcheck disable=SC2140
+            echo -e "[tue-get] (tue-env) new_url: '$new_url' is invalid. It is generated from the current_url: '$current_url'\n"\
+    "The problem will probably be solved by resourcing the setup"
+            exit 1
+        fi
+
+
+        if [ "$current_url" != "$new_url" ]
+        then
+            git -C "$TUE_DIR" remote set-url origin "$new_url"
+            echo -e "[tue-get] Origin has switched to $new_url"
+        fi
+
+        if [[ -n "$CI" ]]
+        then
+            # Do not update with continuous integration but do fetch to refresh available branches
+            echo -e "[tue-get] Fetching tue-get... "
+            git -C "$TUE_DIR" fetch
+        else
+            echo -en "[tue-get] Updating tue-get... "
+
+            if ! git -C "$TUE_DIR" pull --ff-only --prune
             then
-                exit 1
+                # prompt for conformation
+                exec < /dev/tty
+                read -p "[tue-get] Could not update tue-get. Continue? " -n 1 -r
+                exec <&-
+                echo    # (optional) move to a new line
+                if [[ ! $REPLY =~ ^[Yy]$ ]]
+                then
+                    exit 1
+                fi
             fi
         fi
     fi
