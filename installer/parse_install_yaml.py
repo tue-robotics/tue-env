@@ -193,16 +193,16 @@ def installyaml_parser(path: str, now: bool=False) -> str:
                 if "name" in install_item:
                     pkg_name = install_item["name"]
                     if "system" in install_type:
-                        system_packages.append(install_item["name"])
+                        system_packages.append(pkg_name)
                 else:
                     if ubuntu_release in install_item:
                         pkg_name = install_item[ubuntu_release]["name"]
                         if "system" in install_type:
-                            system_packages.append(install_item["name"])
+                            system_packages.append(pkg_name)
                     elif "default" in install_item:
                         pkg_name = install_item["default"]["name"]
                         if "system" in install_type:
-                            system_packages.append(install_item["name"])
+                            system_packages.append(pkg_name)
                     else:
                         return show_error(
                             "Ubuntu distro {} or 'default' not specified in install.yaml".format(ubuntu_release)
