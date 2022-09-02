@@ -371,6 +371,25 @@ function _git_url_to_repos_dir
 }
 export -f _git_url_to_repos_dir # otherwise not available in sourced files
 
+######################################################################################################################
+# Perform a deep fetch on a git repository
+#
+# Arguments:
+#   repo_dir, Path to valid git directory
+#     If no directory path specified, current dir is assumed
+######################################################################################################################
+function tue-git-deep-fetch
+{
+    local repo_dir="${1}"
+
+    if [[ -z "${repo_dir}" ]]; then
+        repo_dir="."
+    fi
+
+    git -C "${repo_dir}" config remote.origin.fetch "+refs/heads/*:refs/remotes/origin/*"
+    git -C "${repo_dir}" remote update
+}
+
 # ----------------------------------------------------------------------------------------------------
 #                                            TUE-MAKE
 # ----------------------------------------------------------------------------------------------------
