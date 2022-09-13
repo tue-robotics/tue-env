@@ -1,6 +1,6 @@
 # tue-env
 
-[![CI](https://github.com/tue-robotics/tue-env/workflows/CI/badge.svg)](https://github.com/tue-robotics/tue-env/actions)
+[![CI](https://github.com/tue-robotics/tue-env/actions/workflows/main.yml/badge.svg)](https://github.com/tue-robotics/tue-env/actions/workflows/main.yml)
 
 Package manager that can be used to install (ROS) dependencies
 
