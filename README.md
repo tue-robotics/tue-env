@@ -29,9 +29,7 @@ Download the bootstrap.bash file manually from gitlab.com (https://gitlab.com/av
    ```
 2. Install target(s)
    ```bash
-   tue-get install idrive-robot # for installation on the i-drive
-   # Or
-   tue-get install idrive-dev   # includes idrive-robot plus extra simulation tools
+   tue-get install [package_name]
    ```
 3. Build sources
    ```bash
