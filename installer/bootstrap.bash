@@ -6,8 +6,8 @@ hash git 2> /dev/null || sudo apt-get install --assume-yes -qq git
 hash lsb_release 2> /dev/null || sudo apt-get install --assume-yes -qq lsb-release
 
 # Check if OS is Ubuntu
-# shellcheck disable=SC1091
-source /etc/lsb-release
+DISTRIB_ID="$(lsb_release -si)"
+DISTRIB_RELEASE="$(lsb_release -sr)"
 
 if [ "$DISTRIB_ID" != "Ubuntu" ]
 then
@@ -16,26 +16,90 @@ then
 fi
 
 # Set ROS version
+TUE_ROS_DISTRO=
+TUE_ROS_VERSION=
+
 case $DISTRIB_RELEASE in
     "20.04")
-        TUE_ROS_DISTRO=noetic
+        for i in "$@"
+        do
+            case $i in
+                --ros-version=* )
+                    ros_version="${i#*=}"
+
+                    if [[ "${ros_version}" -eq 2 ]]
+                    then
+                        TUE_ROS_VERSION=2
+                    elif [[ "${ros_version}" -eq 1 ]]
+                    then
+                        TUE_ROS_DISTRO=noetic
+                        TUE_ROS_VERSION=1
+                    else
+                        echo "[tue-env](bootstrap) Error! ROS ${ros_version} is unsupported with tue-env."
+                        exit 1
+                    fi
+                    ;;
+
+                --ros-distro=* )
+                    if [[ -z "${TUE_ROS_VERSION}" ]]
+                    then
+                        echo "[tue-env](bootstrap) Error! Set --ros-version before --ros-distro."
+                        exit 1
+                    fi
+
+                    ros_distro="${i#*=}"
+                    if [[ "${TUE_ROS_VERSION}" -eq 2 ]]
+                    then
+                        if [[ "${ros_distro}" == "foxy" ]]
+                        then
+                            TUE_ROS_DISTRO=foxy
+                        elif [[ "${ros_distro}" == "galactic" ]]
+                        then
+                            TUE_ROS_DISTRO=galactic
+                        else
+                            echo "[tue-env](bootstrap) Error! ROS ${ros_distro} is unsupported with tue-env."
+                            exit 1
+                        fi
+                    else
+                        echo "[tue-env](bootstrap) Using default ROS_DISTRO '${TUE_ROS_DISTRO}' with ROS_VERSION '${TUE_ROS_VERSION}'"
+                    fi
+                    ;;
+                * )
+                    echo "[tue-env](bootstrap) Error! Unknown argument '${i}' provided to bootstrap script."
+                    exit 1
+                    ;;
+            esac
+        done
+
+        [[ -z "${TUE_ROS_VERSION}" ]] && { TUE_ROS_DISTRO=noetic; TUE_ROS_VERSION=1; }
+        ;;
+    "22.04")
+        TUE_ROS_DISTRO=humble
+        TUE_ROS_VERSION=2
         ;;
     *)
-        echo "[tue-env](bootstrap) Ubuntu $DISTRIB_RELEASE is unsupported. Use 20.04"
+        echo "[tue-env](bootstrap) Ubuntu $DISTRIB_RELEASE is unsupported. Please use one of Ubuntu 20.04 or 22.04."
         exit 1
         ;;
 esac
 
+# Script variables
+env_url="https://github.com/tue-robotics/tue-env.git"
+env_targets_url="https://github.com/tue-robotics/tue-env-targets.git"
+env_dir="$HOME/.tue"
+workspace="ros-$TUE_ROS_DISTRO"
+workspace_dir="$HOME/ros/$TUE_ROS_DISTRO"
+
 # Move old environments and installer
-if [ -d ~/.tue ] && [ -z "$CI" ]
+if [ -d "$env_dir" ] && [ -z "$CI" ]
 then
-    FILES=$(find ~/.tue/user/envs -maxdepth 1 -type f)
+    FILES=$(find "$env_dir"/user/envs -maxdepth 1 -type f)
     date_now=$(date +%F_%R)
     for env in $FILES
     do
         mv -f "$(cat "$env")" "$(cat "$env")"."$date_now"
     done
-    mv -f ~/.tue ~/.tue."$date_now"
+    mv -f "$env_dir" "$env_dir"."$date_now"
 fi
 
 # If in CI with Docker, then clone tue-env with BRANCH when not testing a PR
@@ -49,55 +113,58 @@ then
             if [ -n "$BRANCH" ]
             then
                 echo -e "[tue-env](bootstrap) Cloning tue-env repository with branch: $BRANCH at commit: $COMMIT"
-                git clone -q --single-branch --branch "$BRANCH" https://github.com/tue-robotics/tue-env.git ~/.tue
+                git clone -q --single-branch --branch "$BRANCH" "$env_url" "$env_dir"
             else
                 echo -e "[tue-env](bootstrap) Cloning tue-env repository with default branch at commit: $COMMIT"
-                git clone -q --single-branch https://github.com/tue-robotics/tue-env.git ~/.tue
+                git clone -q --single-branch "$env_url" "$env_dir"
             fi
-            git -C ~/.tue reset --hard "$COMMIT"
+            git -C "$env_dir" reset --hard "$COMMIT"
         else
             echo -e "[tue-env](bootstrap) Error! CI branch or commit is unset"
             return 1
         fi
     else
         echo -e "[tue-env](bootstrap) Testing Pull Request"
-        git clone -q --depth=10 https://github.com/tue-robotics/tue-env.git ~/.tue
-        git -C ~/.tue fetch origin pull/"$PULL_REQUEST"/merge:PULLREQUEST
-        git -C ~/.tue checkout PULLREQUEST
+        [ -z "$REF_NAME" ] && { echo "Error! Environment variable REF_NAME is not set."; exit 1; }
+
+        git clone -q --depth=10 "$env_url" "$env_dir"
+        git -C "$env_dir" fetch origin "$REF_NAME"/"$PULL_REQUEST"/merge:PULLREQUEST || { echo "Error! Could not fetch refs"; exit 1; }
+        git -C "$env_dir" checkout PULLREQUEST
     fi
 else
     # Update installer
     echo -e "[tue-env](bootstrap) Cloning tue-env repository"
-    git clone https://github.com/tue-robotics/tue-env.git ~/.tue
+    git clone "$env_url" "$env_dir"
 fi
 
 # Source the installer commands
 # No need to follow to a file which is already checked by CI
 # shellcheck disable=SC1090
-source ~/.tue/setup.bash
+source "$env_dir"/setup.bash
 
 # Create ros environment directory
-mkdir -p ~/ros/$TUE_ROS_DISTRO
+mkdir -p "$workspace_dir"
 
 # Initialize ros environment directory incl. targets
-tue-env init ros-$TUE_ROS_DISTRO ~/ros/$TUE_ROS_DISTRO https://github.com/tue-robotics/tue-env-targets.git
+tue-env init "$workspace" "$workspace_dir" "$env_targets_url"
 
-# Set the correct ROS version for this environment
-echo "export TUE_ROS_DISTRO=$TUE_ROS_DISTRO" >> ~/ros/$TUE_ROS_DISTRO/.env/setup/user_setup.bash
+# Configure environment
+tue-env config "$workspace" set "TUE_ROS_DISTRO" "$TUE_ROS_DISTRO"
+tue-env config "$workspace" set "TUE_ROS_VERSION" "$TUE_ROS_VERSION"
 
 # Add loading of TU/e tools (tue-env, tue-get, etc) to bashrc
 # shellcheck disable=SC2088
-if ! grep -q '~/.tue/setup.bash' ~/.bashrc;
+if ! grep -q "$env_dir/setup.bash" ~/.bashrc;
 then
-    echo '
+    echo "
 # Load TU/e tools
-source ~/.tue/setup.bash' >> ~/.bashrc
+source $env_dir/setup.bash" >> ~/.bashrc
 fi
 
 # Set this environment as default
-tue-env set-default ros-$TUE_ROS_DISTRO
+tue-env set-default "$workspace"
 
 # Activate the default environment
 # No need to follow to file which is already checked by CI
 # shellcheck disable=SC1090
-source ~/.tue/setup.bash
+source "$env_dir"/setup.bash
