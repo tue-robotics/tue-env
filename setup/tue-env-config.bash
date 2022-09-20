@@ -108,6 +108,15 @@ function tue-env-not-install-doc-depend
     echo -e "[tue-env](config) Environment '$env' set to not install doc dependencies"
 }
 
+function tue-env-set
+{
+    local option="$1"
+    local value="$2"
+    _set_export_option "$option" "$value" "$tue_env_dir"/.env/setup/user_setup.bash
+
+    echo -e "[tue-env](config) Environment '$env' has '$option' set to '$value'"
+}
+
 if [ -z "$1" ]
 then
     echo -e "[tue-env](config) no environment set or provided"

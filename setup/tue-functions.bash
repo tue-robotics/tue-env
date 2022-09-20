@@ -1,10 +1,15 @@
 #! /usr/bin/env bash
 
-# shellcheck disable=SC2153
-TUE_DEV_DIR=$TUE_ENV_DIR/dev
-TUE_SYSTEM_DIR=$TUE_ENV_DIR/system
-export TUE_DEV_DIR
+TUE_SYSTEM_DIR="${TUE_ENV_DIR}"/system
+TUE_WS_DIR="${TUE_SYSTEM_DIR}"
 export TUE_SYSTEM_DIR
+export TUE_WS_DIR
+
+TUE_REPOS_DIR="${TUE_ENV_DIR}"/repos
+export TUE_REPOS_DIR
+
+TUE_RELEASE_DIR="${TUE_SYSTEM_DIR}"/release
+export TUE_RELEASE_DIR
 
 # ----------------------------------------------------------------------------------------------------
 #                                        HELPER FUNCTIONS
@@ -32,8 +37,8 @@ function tue-apt-select-mirror
     # It uses apt-select to generate a new sources.list, based on the current one.
     # All Arguments to this functions are passed on to apt-select, so check the
     # apt-select documentation for all options.
-    hash pip2 2> /dev/null|| sudo apt-get install --assume-yes python-pip
-    hash apt-select 2> /dev/null|| sudo -H pip2 install apt-select
+    hash pip3 2> /dev/null|| sudo apt-get install --assume-yes python3-pip
+    hash apt-select 2> /dev/null|| sudo python3 pip3 install -U apt-select
 
     local mem_pwd=$PWD
     # shellcheck disable=SC2164
@@ -243,6 +248,11 @@ function _git_split_url
 {
     local url=$1
 
+    # The regex can be further constrained using regex101.com
+    if ! grep -P -q "^(?:(?:git@[^:]+:)|(?:https://))[^:]+\.git$" <<< "${url}"; then
+        return 1
+    fi
+
     local web_address
     local domain_name
     local repo_address
@@ -269,6 +279,10 @@ function _git_https
     local output
     output=$(_git_split_url "$url")
 
+    if [[ -z "${output}" ]]; then
+        return 1
+    fi
+
     local array
     read -r -a array <<< "$output"
     local domain_name=${array[0]}
@@ -286,6 +300,10 @@ function _git_ssh
     local output
     output=$(_git_split_url "$url")
 
+    if [[ -z "${output}" ]]; then
+        return 1
+    fi
+
     local array
     read -r -a array <<< "$output"
     local domain_name=${array[0]}
@@ -300,8 +318,6 @@ function _git_https_or_ssh
     local input_url=$1
     local output_url
 
-    local test_var
-
     # TODO: Remove the use of TUE_USE_SSH when migration to TUE_GIT_USE_SSH is complete
     [[ -v "TUE_USE_SSH" ]] && test_var="TUE_USE_SSH"
 
@@ -310,40 +326,97 @@ function _git_https_or_ssh
     [[ "$input_url" == *"github"* ]] && [[ -v "TUE_GITHUB_USE_SSH" ]] && test_var="TUE_GITHUB_USE_SSH"
     [[ "$input_url" == *"gitlab"* ]] && [[ -v "TUE_GITLAB_USE_SSH" ]] && test_var="TUE_GITLAB_USE_SSH"
 
-    if [[ -n "$test_var" && "${!test_var}" == "true" ]]
+    if [[ "${!test_var}" == "true" ]]
     then
         output_url=$(_git_ssh "$input_url")
     else
         output_url=$(_git_https "$input_url")
     fi
 
+    if [[ -z "${output_url}" ]]; then
+        return 1
+    fi
+
     echo "$output_url"
 }
 export -f _git_https_or_ssh # otherwise not available in sourced files
+
+#######################################
+# Generate the path where a cloned git repository will be stored, based on its url
+# Globals:
+#   TUE_REPOS_DIR, used as the base directory of the generated path
+# Arguments:
+#   URL, A valid git repository url
+# Return:
+#   Path where the repository must be cloned
+#######################################
+function _git_url_to_repos_dir
+{
+    local url=$1
+    local output
+    output=$(_git_split_url "$url")
+
+    if [[ -z "${output}" ]]; then
+        return 1
+    fi
+
+    local array
+    read -r -a array <<< "$output"
+    local domain_name=${array[0]}
+    local repo_address=${array[1]}
+    local repos_dir=
+    repos_dir="$TUE_REPOS_DIR"/"$domain_name"/"$repo_address"
+
+    echo "${repos_dir}"
+}
+export -f _git_url_to_repos_dir # otherwise not available in sourced files
+
+######################################################################################################################
+# Perform a deep fetch on a git repository
+#
+# Arguments:
+#   repo_dir, Path to valid git directory
+#     If no directory path specified, current dir is assumed
+######################################################################################################################
+function tue-git-deep-fetch
+{
+    local repo_dir="${1}"
+
+    if [[ -z "${repo_dir}" ]]; then
+        repo_dir="."
+    fi
+
+    git -C "${repo_dir}" config remote.origin.fetch "+refs/heads/*:refs/remotes/origin/*"
+    git -C "${repo_dir}" remote update
+}
 
 # ----------------------------------------------------------------------------------------------------
 #                                            TUE-MAKE
 # ----------------------------------------------------------------------------------------------------
 
-# catkin build/test worflow
-# catkin build -DCATKIN_ENABLE_TESTING=OFF # As we don't install test dependencies by default. Test shouldn't be build
-# When you want to test, make sure the test dependencies are installed
-# catkin build -DCATKIN_ENABLE_TESTING=ON # This will trigger cmake and will create the targets and build the tests
-# catkin test # Run the tests. This will not trigger cmake, so it isn't needed to provide -DCATKIN_ENABLE_TESTING=ON.
-
-
 function tue-make
 {
-    if [ -n "$TUE_ROS_DISTRO" ] && [ -d "$TUE_SYSTEM_DIR" ]
+    [[ -z "${TUE_ROS_DISTRO}" ]] && { echo -e "\033[38;5;1mError! tue-env variable TUE_ROS_DISTRO not set.\033[0m"; return 1; }
+
+    local ros_version="${TUE_ROS_VERSION}"
+    local ros_version_warning="tue-env variable TUE_ROS_VERSION is not set. This will not be allowed in the future.\nUsing value from ROS_VERSION for now."
+    local ros_version_warning_display=
+    [[ -z "${ros_version}" ]] && [[ -n "${ROS_VERSION}" ]] && { ros_version="${ROS_VERSION}"; ros_version_warning_display="true"; echo -e "\033[33;1m${ros_version_warning}\033[0m"; }
+    [[ -z "${ros_version}" ]] && { echo -e "\033[38;5;1mError! TUE_ROS_VERSION is not set.\nSet TUE_ROS_VERSION before executing this function.\033[0m"; return 1; }
+
+    [[ ! -d "${TUE_SYSTEM_DIR}" ]] && { echo -e "\033[38;5;1mError! The workspace '${TUE_SYSTEM_DIR}' does not exist. Run 'tue-get install ros${ros_version}' first.\033[0m"; return 1; }
+
+    if [ "${ros_version}" == "1" ]
     then
         local build_tool=""
-        if [ -f "$TUE_SYSTEM_DIR"/build/.built_by ]
+        if [ -f "$TUE_SYSTEM_DIR"/devel/.built_by ]
         then
-            build_tool=$(cat "$TUE_SYSTEM_DIR"/build/.built_by)
+            build_tool=$(cat "$TUE_SYSTEM_DIR"/devel/.built_by)
         fi
         case $build_tool in
         'catkin build')
             catkin build --workspace "$TUE_SYSTEM_DIR" "$@"
+            return $?
             ;;
         '')
             catkin config --init --mkdirs --workspace "$TUE_SYSTEM_DIR" --extend /opt/ros/"$TUE_ROS_DISTRO" -DCMAKE_BUILD_TYPE=RelWithDebInfo -DCATKIN_ENABLE_TESTING=OFF
@@ -355,6 +428,26 @@ function tue-make
             return 1
             ;;
         esac
+    elif [ "${ros_version}" == "2" ]
+    then
+        mkdir -p "$TUE_SYSTEM_DIR"/src
+
+        # Disable symlink install for production
+        if [ "${CI_INSTALL}" == "true" ]
+        then
+            rm -rf "$TUE_SYSTEM_DIR"/install
+            colcon --log-base "$TUE_SYSTEM_DIR"/log build --base-paths "$TUE_SYSTEM_DIR"/src --build-base "$TUE_SYSTEM_DIR"/build --install-base "$TUE_SYSTEM_DIR"/install "$@"
+        else
+            colcon --log-base "$TUE_SYSTEM_DIR"/log build --merge-install --symlink-install --base-paths "$TUE_SYSTEM_DIR"/src --build-base "$TUE_SYSTEM_DIR"/build --install-base "$TUE_SYSTEM_DIR"/install --cmake-args -DCMAKE_EXPORT_COMPILE_COMMANDS=ON "$@"
+        fi
+        return $?
+    else
+        echo -e "\033[38;1mError! ROS_VERSION '${ros_version}' is not supported by tue-env.\033[0m"
+        return 1
+    fi
+
+    if [[ -n "${ros_version_warning_display}" ]]; then
+        echo -e "\033[33;1mOverview of warnings:\n\n${ros_version_warning}\033[0m"
     fi
 }
 export -f tue-make
@@ -368,96 +461,118 @@ function _tue-make
 
 complete -F _tue-make tue-make
 
-function tue-make-dev
+# ----------------------------------------------------------------------------------------------------
+#                                             TUE-DEB FUNCTIONS
+# ----------------------------------------------------------------------------------------------------
+
+function tue-deb-generate
 {
-    if [ -n "$TUE_ROS_DISTRO" ] && [ -d "$TUE_DEV_DIR" ]
-    then
-        local build_tool=""
-        if [ -f "$TUE_DEV_DIR"/build/.built_by ]
-        then
-            build_tool=$(cat "$TUE_DEV_DIR"/build/.built_by)
-        fi
-        case $build_tool in
-        'catkin build')
-            catkin build --workspace "$TUE_DEV_DIR" "$@"
-            ;;
-        '')
-            catkin config --init --mkdirs --workspace "$TUE_DEV_DIR" --extend "$TUE_SYSTEM_DIR"/devel -DCMAKE_BUILD_TYPE=RelWithDebInfo -DCATKIN_ENABLE_TESTING=OFF
-            catkin build --workspace "$TUE_DEV_DIR" "$@"
-            touch "$TUE_DEV_DIR"/devel/.catkin # hack to allow overlaying to this ws while being empty
-            ;;
-        *)
-            echo -e "\e$build_tool is not supported (anymore), use catkin tools\e[0m"
+    [[ -z "${TUE_ROS_DISTRO}" ]] && { echo -e "\033[31;1mError! tue-env variable TUE_ROS_DISTRO not set.\033[0m"; return 1; }
+
+    [[ -z "${TUE_ROS_VERSION}" ]] && { echo -e "\033[31;1mError! TUE_ROS_VERSION is not set.\nSet TUE_ROS_VERSION before executing this function.\033[0m"; return 1; }
+
+    [[ ! -d "${TUE_SYSTEM_DIR}" ]] && { echo -e "\033[31;1mError! The workspace '${TUE_SYSTEM_DIR}' does not exist. Run 'tue-get install ros${TUE_ROS_VERSION}' first.\033[0m"; return 1; }
+
+    [[ "${TUE_ROS_VERSION}" != "2" ]] && { echo -e "\033[31;1mError! This command is supported only with TUE_ROS_VERSION=2.\033[0m"; return 1; }
+
+    local packages_list=
+    if [[ -z "${1}" ]]; then
+        echo -e "\033[33;1mNo packages specified, so packaging the entire workspace. \033[0m"
+        for pkg in $(ls "${TUE_SYSTEM_DIR}"/src/); do
+            packages_list="${pkg} ${packages_list}"
+        done
+
+        if [[ -z "${packages_list}" ]]; then
+            echo -e "\033[31;1mError! No source packages found in workspace to package.\033[0m"
             return 1
-            ;;
+        fi
+    else
+        packages_list="$@"
+    fi
+
+    # Check if packages are built
+    local PACKAGES_NOT_BUILT=
+    for package in $packages_list; do
+        if [[ ! -d "${TUE_SYSTEM_DIR}"/install/"${package}" ]]; then
+            PACKAGES_NOT_BUILT="${package} ${PACKAGES_NOT_BUILT}"
+        fi
+    done
+
+    if [[ -n "${PACKAGES_NOT_BUILT}" ]]; then
+        echo -e "\033[31;1mThe following packages are not built: \033[0m${PACKAGES_NOT_BUILT}\033[31;1m. Hence cannot be packaged.\033[0m"
+        return 1
+    fi
+
+    local cur_dir="${PWD}"
+
+    local timestamp="$(date +%Y%m%d%H%M%S)"
+
+    for package in $packages_list; do
+        pkg_rel_dir="$("${TUE_DIR}"/installer/generate_deb_control.py "${TUE_RELEASE_DIR}" "${TUE_SYSTEM_DIR}"/src/"${package}"/package.xml "${timestamp}")"
+
+        cd "${TUE_RELEASE_DIR}"
+
+        if [[ ! -d "${pkg_rel_dir}" ]]; then
+            echo -e "\033[31;1mError! Expected release dir for package '${package}' not created.\033[0m"
+            cd "${cur_dir}"
+            return 1
+        fi
+
+        mkdir -p "${pkg_rel_dir}"/opt/ros/"${TUE_ROS_DISTRO}"
+        cp -r "${TUE_SYSTEM_DIR}"/install/"${package}"/* "${pkg_rel_dir}"/opt/ros/"${TUE_ROS_DISTRO}"/
+
+        dpkg-deb --build --root-owner-group "${pkg_rel_dir}"
+        rm -rf "${pkg_rel_dir}"
+    done
+
+    cd "${cur_dir}"
+}
+
+function tue-deb-gitlab-release
+{
+    echo -e "\e[32;1mReleasing debian files to GitLab package registry\e[0m"
+
+    local REGISTRY_URL=
+    local TOKEN=
+
+    for i in "$@"; do
+        case $i in
+            --registry-url=* )
+                REGISTRY_URL="${i#*=}"
+                ;;
+
+            --token=* )
+                TOKEN="${i#*=}"
+                ;;
+
+            * )
+                echo -e "\e[31;1mError! Unknown argument ${i}."
+                return 1
+                ;;
         esac
-    fi
-}
-export -f tue-make-dev
-
-function _tue-make-dev
-{
-    local cur=${COMP_WORDS[COMP_CWORD]}
-
-    mapfile -t COMPREPLY < <(compgen -W "$(_list_subdirs "$TUE_DEV_DIR"/src)" -- "$cur")
-}
-complete -F _tue-make-dev tue-make-dev
-
-# ----------------------------------------------------------------------------------------------------
-#                                              TUE-DEV
-# ----------------------------------------------------------------------------------------------------
-
-function tue-dev
-{
-    if [ -z "$1" ]
-    then
-        _list_subdirs "$TUE_DEV_DIR"/src
-        return 0
-    fi
-
-    for pkg in "$@"
-    do
-        if [ ! -d "$TUE_SYSTEM_DIR"/src/"$pkg" ]
-        then
-            echo "[tue-dev] '$pkg' does not exist in the system workspace."
-        elif [ -d "$TUE_DEV_DIR"/src/"$pkg" ]
-        then
-            echo "[tue-dev] '$pkg' is already in the dev workspace."
-        else
-            ln -s "$TUE_SYSTEM_DIR"/src/"$pkg" "$TUE_DEV_DIR"/src/"$pkg"
-        fi
     done
 
-    # Call rospack such that the linked directories are indexed
-    rospack profile &> /dev/null
-}
+    if [[ -z "${REGISTRY_URL}" ]] || [[ -z "${TOKEN}" ]]; then
+        echo -e "\e[31;1mError! Mandatory arguments --registry-url and --token not specified"
+        return 1
+    fi
 
-function tue-dev-clean
-{
-    for f in $(_list_subdirs "$TUE_DEV_DIR"/src)
-    do
-        # Test if f is a symbolic link
-        if [[ -L $TUE_DEV_DIR/src/$f ]]
-        then
-            echo "Cleaned '$f'"
-            rm "$TUE_DEV_DIR"/src/"$f"
-        fi
+    local deb_pkg=
+    local pkg=
+    local version=
+
+    for deb in ${TUE_RELEASE_DIR}/*; do
+        deb_pkg="$(basename "${deb}")"
+        pkgwithversion="${deb_pkg%%-build*}"
+        pkg="${pkgwithversion%%_*}"
+        version="${pkgwithversion##*_}"
+
+        PACKAGE_URL=${REGISTRY_URL}/${pkg}/${version}/${deb_pkg}
+        echo -e "\e[35;1mPACKAGE_URL=${PACKAGE_URL}\e[0m"
+
+        curl --header "JOB-TOKEN: ${TOKEN}" --upload-file "${deb}" ${PACKAGE_URL}
     done
-
-    rm -rf "$TUE_DEV_DIR"/devel/share
-    rm -rf "$TUE_DEV_DIR"/devel/etc
-    rm -rf "$TUE_DEV_DIR"/devel/include
-    rm -rf "$TUE_DEV_DIR"/devel/lib
-    rm -rf "$TUE_DEV_DIR"/build
 }
-
-function _tue-dev
-{
-    local cur=${COMP_WORDS[COMP_CWORD]}
-
-    mapfile -t COMPREPLY < <(compgen -W "$(_list_subdirs "$TUE_SYSTEM_DIR"/src)" -- "$cur")
-}
-complete -F _tue-dev tue-dev
 
 # ----------------------------------------------------------------------------------------------------
 #                                             TUE-STATUS
@@ -538,9 +653,17 @@ function _tue-repo-status
                     break
                 fi
             done
-            [ "$allowed" != "true" ] && echo -e "\e[1m$name\e[0m is on branch '$current_branch'"
+            [ "$allowed" != "true" ] && echo -e "\033[1m$name\033[0m is on branch '$current_branch'"
         fi
         vctype=git
+    elif [ -d "$pkg_dir"/.svn ]
+    then
+        status=$(svn status "$pkg_dir")
+        vctype=svn
+    elif [ -d "$pkg_dir"/.hg ]
+    then
+        status=$(hg --cwd "$pkg_dir" status .)
+        vctype=hg
     else
         vctype=unknown
     fi
@@ -550,7 +673,7 @@ function _tue-repo-status
         if [ -n "$status" ]
         then
             echo -e ""
-            echo -e "\e[38;1mM  \e[0m($vctype) \e[1m$name\e[0m"
+            echo -e "\033[38;5;1mM  \033[0m($vctype) \033[1m$name\033[0m"
             echo -e "--------------------------------------------------"
             echo -e "$status"
             echo -e "--------------------------------------------------"
@@ -593,7 +716,7 @@ function tue-git-status
         if branch=$(git -C "$pkg_dir" rev-parse --abbrev-ref HEAD 2>&1)
         then
             hash=$(git -C "$pkg_dir" rev-parse --short HEAD)
-            printf "\e[0;36m%-20s\e[0m %-15s %s\n" "$branch" "$hash" "$pkg"
+            printf "\e[0;36m%-20s\033[0m %-15s %s\n" "$branch" "$hash" "$pkg"
         fi
     done
 }
@@ -619,13 +742,13 @@ function tue-revert
             if git -C "$pkg_dir"  diff -s --exit-code "$new_hash" "$current_hash"
             then
                 newtime=$(git -C "$pkg_dir"  show -s --format=%ci)
-                printf "\e[0;36m%-20s\e[0m %-15s \e[1m%s\e[0m %s\n" "$branch is fine" "$new_hash" "$newtime" "$pkg"
+                printf "\e[0;36m%-20s\033[0m %-15s \e[1m%s\033[0m %s\n" "$branch is fine" "$new_hash" "$newtime" "$pkg"
             else
-                git -C "$pkg_dir"  checkout -q "$new_hash" --
+                git -C "$pkg_dir"  checkout -q "$new_hash"
                 newbranch=$(git -C "$pkg_dir"  rev-parse --abbrev-ref HEAD 2>&1)
                 newtime=$(git -C "$pkg_dir"  show -s --format=%ci)
                 echo "$branch" > "$pkg_dir/.do_not_commit_this"
-                printf "\e[0;36m%-20s\e[0m %-15s \e[1m%s\e[0m %s\n" "$newbranch based on $branch" "$new_hash" "$newtime" "$pkg"
+                printf "\e[0;36m%-20s\033[0m %-15s \e[1m%s\033[0m %s\n" "$newbranch based on $branch" "$new_hash" "$newtime" "$pkg"
             fi
         else
             echo "Package $pkg could not be reverted, current state: $branch"
@@ -646,7 +769,7 @@ function tue-revert-undo
         if [ -f "$pkg_dir/.do_not_commit_this" ]
         then
             echo "$pkg"
-            git -C "$pkg_dir" checkout "$(cat "$pkg_dir"/.do_not_commit_this)" --
+            git -C "$pkg_dir" checkout "$(cat "$pkg_dir"/.do_not_commit_this)"
             rm "$pkg_dir/.do_not_commit_this"
         fi
     done
@@ -661,7 +784,7 @@ function _show_file
 {
     if [ -n "$2" ]
     then
-        echo -e "\e[1m[$1] $2\e[0m"
+        echo -e "\033[1m[$1] $2\033[0m"
         echo "--------------------------------------------------"
         if hash pygmentize 2> /dev/null
         then
@@ -839,9 +962,8 @@ function tue-get
     shift
 
     #Create btrfs snapshot if possible and usefull:
-    if [[ -n "$BTRFS_SNAPSHOT" && "$cmd" =~ ^(install|update|remove)$ ]] && { df --print-type / | grep -q btrfs; }
+    if [[ "$cmd" =~ ^(install|update|remove)$ ]] && { df --print-type / | grep -q btrfs; }
     then
-        echo "[tue-get] Creating btrfs snapshot"
         sudo mkdir -p /snap/root
         sudo btrfs subvolume snapshot / /snap/root/"$(date +%Y-%m-%d_%H:%M:%S)"
     fi
@@ -1124,10 +1246,10 @@ function tue-checkout
                 current_branch=$(git -C "$pkg_dir" rev-parse --abbrev-ref HEAD)
                 if [[ "$current_branch" == "$branch" ]]
                 then
-                    echo -e "\e[1m$pkg\e[0m: Already on branch $branch"
+                    echo -e "\033[1m$pkg\033[0m: Already on branch $branch"
                 else
                     local res _checkout_res _checkout_return _submodule_res _submodule_return
-                    _checkout_res=$(git -C "$pkg_dir" checkout "$branch" -- 2>&1)
+                    _checkout_res=$(git -C "$pkg_dir" checkout "$branch" 2>&1)
                     _checkout_return=$?
                     [ -n "$_checkout_res" ] && res="${res:+${res} }$_checkout_res"
                     _submodule_res=$(git -C "$pkg_dir" submodule update --init --recursive 2>&1)
@@ -1137,12 +1259,12 @@ function tue-checkout
 
                     if [ "$_checkout_return" == 0 ] && [ -z "$_submodule_res" ]
                     then
-                        echo -e "\e[1m$pkg\e[0m: checked-out $branch"
+                        echo -e "\033[1m$pkg\033[0m: checked-out $branch"
                     else
                         echo ""
-                        echo -e "    \e[1m$pkg\e[0m"
+                        echo -e "    \033[1m$pkg\033[0m"
                         echo "--------------------------------------------------"
-                        echo -e "\e[38;1m$res\e[0m"
+                        echo -e "\033[38;5;1m$res\033[0m"
                         echo "--------------------------------------------------"
                     fi
                 fi
@@ -1162,7 +1284,7 @@ source "$TUE_DIR"/setup/tue-data.bash
 #                                             TUE-ROBOCUP
 # ----------------------------------------------------------------------------------------------------
 
-export TUE_ROBOCUP_BRANCH="rwc2022"
+export TUE_ROBOCUP_BRANCH="rwc2019"
 
 function _tue-repos-do
 {
@@ -1173,11 +1295,11 @@ function _tue-repos-do
     local mem_pwd=$PWD
 
     { [ -n "$TUE_DIR" ] && cd "$TUE_DIR"; } || { echo -e "TUE_DIR '$TUE_DIR' does not exist"; return 1; }
-    echo -e "\e[1m[tue-env]\e[0m"
+    echo -e "\033[1m[tue-env]\033[0m"
     eval "$@"
 
     { [ -n "$TUE_ENV_TARGETS_DIR" ] && cd "$TUE_ENV_TARGETS_DIR"; } || { echo -e "TUE_ENV_TARGETS_DIR '$TUE_ENV_TARGETS_DIR' does not exist"; return 1; }
-    echo -e "\e[1m[tue-env-targets]\e[0m"
+    echo -e "\033[1m[tue-env-targets]\033[0m"
     eval "$@"
 
     local repos_dir=$TUE_ENV_DIR/repos/github.com/tue-robotics
@@ -1191,7 +1313,7 @@ function _tue-repos-do
         if [ -d "$repo_dir" ]
         then
             cd "$repo_dir" || { echo -e "Directory '$TUE_ENV_TARGETS_DIR' does not exist"; return 1; }
-            echo -e "\e[1m[${repo%.git}]\e[0m"
+            echo -e "\033[1m[${repo%.git}]\033[0m"
             eval "$@"
         fi
     done
@@ -1218,7 +1340,7 @@ For example:
 
     if [ "$remote" == "origin" ]
     then
-        echo -e "\e[1mYou are not allowed to change the remote: 'origin'\e[0m"
+        echo -e "\033[1mYou are not allowed to change the remote: 'origin'\033[0m"
         return 1
     fi
 
@@ -1268,7 +1390,7 @@ For example:
 
     if [ "$remote" == "origin" ]
     then
-        echo -e "\e[1mYou are not allowed to change the remote: 'origin'\e[0m"
+        echo -e "\033[1mYou are not allowed to change the remote: 'origin'\033[0m"
         return 1
     fi
 
@@ -1292,7 +1414,7 @@ For example:
 
     if [ "$remote" == "origin" ]
     then
-        echo -e "\e[1mYou are not allowed to remove the remote: 'origin'\e[0m"
+        echo -e "\033[1mYou are not allowed to remove the remote: 'origin'\033[0m"
         return 1
     fi
 
@@ -1323,7 +1445,7 @@ For example:
 
     if [ "$remote" == "origin" ]
     then
-        echo -e "\e[1mYou are not allowed to remove the remote: 'origin'\e[0m"
+        echo -e "\033[1mYou are not allowed to remove the remote: 'origin'\033[0m"
         return 1
     fi
 
@@ -1349,10 +1471,10 @@ For example:
     exists=$(git show-ref refs/heads/"$branch")
     if [ -n "$exists" ]
     then
-        git checkout "$branch" --
+        git checkout "$branch"
         git branch -u "$remote"/"$branch" "$branch"
     else
-        git checkout --track -b "$branch" "$remote"/"$branch" --
+        git checkout --track -b "$branch" "$remote"/"$branch"
     fi
 }
 
@@ -1511,7 +1633,7 @@ function tue-robocup-set-roboticssrv
 
 function tue-robocup-set-timezone-robocup
 {
-    sudo timedatectl set-timezone Asia/Bangkok
+    sudo timedatectl set-timezone Australia/Sydney
 }
 
 function tue-robocup-set-timezone-home
