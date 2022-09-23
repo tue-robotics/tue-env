@@ -13,6 +13,20 @@
   - ssh-keyscan gitlab.com >> ~/.ssh/known_hosts
   - chmod 644 ~/.ssh/known_hosts
 
+.docker_auth_config: &docker_auth_confg
+  - mkdir -p $HOME/.docker
+  - DOCKER_AUTH_CONFIG=$(echo -n "gitlab-ci-token:${CI_JOB_TOKEN}" | base64)
+  - |
+    cat <<EOT >>$HOME/.docker/config.json
+    {
+      "auths": {
+        "${CI_REGISTRY}": {
+          "auth": "${DOCKER_AUTH_CONFIG}"
+        }
+      }
+    }
+    EOT
+
 # Common script to create manifest for multi-arch images
 .manifest:
   script:
@@ -54,7 +68,7 @@
   before_script:
     - apk --update add git bash curl jq openssh-client tree
     - *ssh_keys
-    - echo "${CI_JOB_TOKEN}" | docker login ${CI_REGISTRY} -u gitlab-ci-token --password-stdin
+    - *docker_auth_confg
     - |
       TARGET_IMAGE_TAG_BRANCH=${CI_MERGE_REQUEST_TARGET_BRANCH_NAME:-${CI_COMMIT_BRANCH:-$CI_COMMIT_TAG}}
       if [[ "${TARGET_IMAGE_TAG_BRANCH}" == "${CI_DEFAULT_BRANCH}" ]]; then
