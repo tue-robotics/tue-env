@@ -2,11 +2,11 @@
   extends: .build_image_base
   stage: Package Release
   variables:
-    BASE_IMAGE_REGISTRY: "${CI_REGISTRY}/avular/common-tools/package-manager/tue-env"
+    IMAGE_REGISTRY: "${CI_REGISTRY}/avular/common-tools/package-manager/tue-env"
     BASE_IMAGE: ${IMAGE_REGISTRY}/ros-${ROS_DISTRO}:latest
     DOCKERFILE: "dockerfiles/package-release.Dockerfile"
     TARGET_IMAGE_BASE_NAME: "${CI_REGISTRY_IMAGE}"
-    LOGIN_TO_TARGET_IMAGE_REGISTRY: "false" # Only needs to be set to true if the target image should be pushed to an image repository other than ${BASE_IMAGE_REGISTRY}
+    LOGIN_TO_TARGET_IMAGE_REGISTRY: "false" # Only needs to be set to true if the target image should be pushed to an image repository other than ${IMAGE_REGISTRY}
     TARGET_IMAGE_REGISTRY: "" # Only needs to be set if LOGIN_TO_TARGET_IMAGE_REGISTRY = true
     BUILD_WS: "false"
     RELEASE_DEB: "false"
@@ -36,7 +36,7 @@
       echo -e "\e[35;1mCI_DEFAULT_BRANCH              = ${CI_DEFAULT_BRANCH}\e[0m"
       echo -e "\e[35;1mCHECKOUT_BRANCH                = ${CI_COMMIT_BRANCH:-${CI_COMMIT_TAG}}\e[0m]"
       echo -e "\e[35;1mTARGET_PLATFORM                = ${TARGET_PLATFORM}\e[0m"
-      echo -e "\e[35;1mBASE_IMAGE_REGISTRY            = ${BASE_IMAGE_REGISTRY}\e[0m"
+      echo -e "\e[35;1mIMAGE_REGISTRY                 = ${IMAGE_REGISTRY}\e[0m"
       echo -e "\e[35;1mBASE_IMAGE                     = ${BASE_IMAGE}\e[0m"
       echo -e "\e[35;1mTARGET_IMAGE_BASE_NAME         = ${TARGET_IMAGE_BASE_NAME}\e[0m"
       echo -e "\e[35;1mLOGIN_TO_TARGET_IMAGE_REGISTRY = ${LOGIN_TO_TARGET_IMAGE_REGISTRY}\e[0m"
