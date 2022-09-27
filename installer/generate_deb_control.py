@@ -17,7 +17,6 @@ Version: {version}
 Architecture: {arch}
 Maintainer: {maintainer}
 Description: {description}
-Depends: {dependencies}
 """
 
 
@@ -57,7 +56,9 @@ def generate_control_file(path: str) -> dict:
     if "ament_cmake" in build_type:
         package = "ros-" + TUE_ROS_DISTRO + "-" + package
 
-    control_file = CONTROL_FILE_TEMPLATE.format(package=package, version=version, arch=arch, maintainer=maintainer_string, description=description, dependencies=system_dep_string)
+    control_file = CONTROL_FILE_TEMPLATE.format(package=package, version=version, arch=arch, maintainer=maintainer_string, description=description)
+    if system_dep_string:
+        control_file += f"Depends: {system_dep_string}\n"
 
     return {"package": package, "version": version, "arch": arch, "control": control_file}
 
