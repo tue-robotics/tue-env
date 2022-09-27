@@ -521,7 +521,7 @@ function tue-deb-generate
         mkdir -p "${pkg_rel_dir}"/opt/ros/"${TUE_ROS_DISTRO}"
         cp -r "${TUE_SYSTEM_DIR}"/install/"${package}"/* "${pkg_rel_dir}"/opt/ros/"${TUE_ROS_DISTRO}"/
 
-        dpkg-deb --build --root-owner-group "${pkg_rel_dir}"
+        dpkg-deb --build --root-owner-group "${pkg_rel_dir}" || return 1
         rm -rf "${pkg_rel_dir}"
     done
 
