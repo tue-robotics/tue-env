@@ -1,10 +1,12 @@
 #! /usr/bin/env bash
 
-# shellcheck disable=SC2153
-TUE_DEV_DIR=$TUE_ENV_DIR/dev
-TUE_SYSTEM_DIR=$TUE_ENV_DIR/system
-export TUE_DEV_DIR
+TUE_SYSTEM_DIR="${TUE_ENV_DIR}"/system  # This variable is deprecated and will be removed in a future version of the tool
+TUE_WS_DIR="${TUE_SYSTEM_DIR}"
 export TUE_SYSTEM_DIR
+export TUE_WS_DIR
+
+TUE_REPOS_DIR="${TUE_ENV_DIR}"/repos
+export TUE_REPOS_DIR
 
 # ----------------------------------------------------------------------------------------------------
 #                                        HELPER FUNCTIONS
@@ -334,7 +336,13 @@ export -f _git_https_or_ssh # otherwise not available in sourced files
 
 function tue-make
 {
-    if [ -n "$TUE_ROS_DISTRO" ] && [ -d "$TUE_SYSTEM_DIR" ]
+    [[ -z "${TUE_ROS_DISTRO}" ]] && { echo -e "\e[31;1mError! tue-env variable TUE_ROS_DISTRO not set.\e[0m"; return 1; }
+
+    [[ -z "${TUE_ROS_VERSION}" ]] && { echo -e "\e[31;1mError! TUE_ROS_VERSION is not set.\nSet TUE_ROS_VERSION before executing this function.\e[0m"; return 1; }
+
+    [[ ! -d "${TUE_SYSTEM_DIR}" ]] && { echo -e "\e[31;1mError! The workspace '${TUE_SYSTEM_DIR}' does not exist. Run 'tue-get install ros${TUE_ROS_VERSION}' first.\e[0m"; return 1; }
+
+    if [ "${TUE_ROS_VERSION}" == "1" ]
     then
         local build_tool=""
         if [ -f "$TUE_SYSTEM_DIR"/build/.built_by ]
@@ -344,6 +352,7 @@ function tue-make
         case $build_tool in
         'catkin build')
             catkin build --workspace "$TUE_SYSTEM_DIR" "$@"
+            return $?
             ;;
         '')
             catkin config --init --mkdirs --workspace "$TUE_SYSTEM_DIR" --extend /opt/ros/"$TUE_ROS_DISTRO" -DCMAKE_BUILD_TYPE=RelWithDebInfo -DCATKIN_ENABLE_TESTING=OFF
@@ -355,6 +364,22 @@ function tue-make
             return 1
             ;;
         esac
+    elif [ "${TUE_ROS_VERSION}" == "2" ]
+    then
+        mkdir -p "$TUE_SYSTEM_DIR"/src
+
+        # Disable symlink install for production
+        if [ "${CI_INSTALL}" == "true" ]
+        then
+            rm -rf "$TUE_SYSTEM_DIR"/install
+            colcon --log-base "$TUE_SYSTEM_DIR"/log build --base-paths "$TUE_SYSTEM_DIR"/src --build-base "$TUE_SYSTEM_DIR"/build --install-base "$TUE_SYSTEM_DIR"/install "$@"
+        else
+            colcon --log-base "$TUE_SYSTEM_DIR"/log build --merge-install --symlink-install --base-paths "$TUE_SYSTEM_DIR"/src --build-base "$TUE_SYSTEM_DIR"/build --install-base "$TUE_SYSTEM_DIR"/install --cmake-args -DCMAKE_EXPORT_COMPILE_COMMANDS=ON "$@"
+        fi
+        return $?
+    else
+        echo -e "\e[31;1mError! ROS_VERSION '${TUE_ROS_VERSION}' is not supported by tue-env.\e[0m"
+        return 1
     fi
 }
 export -f tue-make
@@ -367,97 +392,6 @@ function _tue-make
 }
 
 complete -F _tue-make tue-make
-
-function tue-make-dev
-{
-    if [ -n "$TUE_ROS_DISTRO" ] && [ -d "$TUE_DEV_DIR" ]
-    then
-        local build_tool=""
-        if [ -f "$TUE_DEV_DIR"/build/.built_by ]
-        then
-            build_tool=$(cat "$TUE_DEV_DIR"/build/.built_by)
-        fi
-        case $build_tool in
-        'catkin build')
-            catkin build --workspace "$TUE_DEV_DIR" "$@"
-            ;;
-        '')
-            catkin config --init --mkdirs --workspace "$TUE_DEV_DIR" --extend "$TUE_SYSTEM_DIR"/devel -DCMAKE_BUILD_TYPE=RelWithDebInfo -DCATKIN_ENABLE_TESTING=OFF
-            catkin build --workspace "$TUE_DEV_DIR" "$@"
-            touch "$TUE_DEV_DIR"/devel/.catkin # hack to allow overlaying to this ws while being empty
-            ;;
-        *)
-            echo -e "\e$build_tool is not supported (anymore), use catkin tools\e[0m"
-            return 1
-            ;;
-        esac
-    fi
-}
-export -f tue-make-dev
-
-function _tue-make-dev
-{
-    local cur=${COMP_WORDS[COMP_CWORD]}
-
-    mapfile -t COMPREPLY < <(compgen -W "$(_list_subdirs "$TUE_DEV_DIR"/src)" -- "$cur")
-}
-complete -F _tue-make-dev tue-make-dev
-
-# ----------------------------------------------------------------------------------------------------
-#                                              TUE-DEV
-# ----------------------------------------------------------------------------------------------------
-
-function tue-dev
-{
-    if [ -z "$1" ]
-    then
-        _list_subdirs "$TUE_DEV_DIR"/src
-        return 0
-    fi
-
-    for pkg in "$@"
-    do
-        if [ ! -d "$TUE_SYSTEM_DIR"/src/"$pkg" ]
-        then
-            echo "[tue-dev] '$pkg' does not exist in the system workspace."
-        elif [ -d "$TUE_DEV_DIR"/src/"$pkg" ]
-        then
-            echo "[tue-dev] '$pkg' is already in the dev workspace."
-        else
-            ln -s "$TUE_SYSTEM_DIR"/src/"$pkg" "$TUE_DEV_DIR"/src/"$pkg"
-        fi
-    done
-
-    # Call rospack such that the linked directories are indexed
-    rospack profile &> /dev/null
-}
-
-function tue-dev-clean
-{
-    for f in $(_list_subdirs "$TUE_DEV_DIR"/src)
-    do
-        # Test if f is a symbolic link
-        if [[ -L $TUE_DEV_DIR/src/$f ]]
-        then
-            echo "Cleaned '$f'"
-            rm "$TUE_DEV_DIR"/src/"$f"
-        fi
-    done
-
-    rm -rf "$TUE_DEV_DIR"/devel/share
-    rm -rf "$TUE_DEV_DIR"/devel/etc
-    rm -rf "$TUE_DEV_DIR"/devel/include
-    rm -rf "$TUE_DEV_DIR"/devel/lib
-    rm -rf "$TUE_DEV_DIR"/build
-}
-
-function _tue-dev
-{
-    local cur=${COMP_WORDS[COMP_CWORD]}
-
-    mapfile -t COMPREPLY < <(compgen -W "$(_list_subdirs "$TUE_SYSTEM_DIR"/src)" -- "$cur")
-}
-complete -F _tue-dev tue-dev
 
 # ----------------------------------------------------------------------------------------------------
 #                                             TUE-STATUS
