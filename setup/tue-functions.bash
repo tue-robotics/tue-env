@@ -8,6 +8,9 @@ export TUE_WS_DIR
 TUE_REPOS_DIR="${TUE_ENV_DIR}"/repos
 export TUE_REPOS_DIR
 
+TUE_RELEASE_DIR="${TUE_SYSTEM_DIR}"/release
+export TUE_RELEASE_DIR
+
 # ----------------------------------------------------------------------------------------------------
 #                                        HELPER FUNCTIONS
 # ----------------------------------------------------------------------------------------------------
@@ -1084,6 +1087,136 @@ function tue-checkout
         fi
     done
 }
+
+# ----------------------------------------------------------------------------------------------------
+#                                             TUE-DEB FUNCTIONS
+# ----------------------------------------------------------------------------------------------------
+
+function tue-deb-generate
+{
+    [[ -z "${TUE_ROS_DISTRO}" ]] && { echo -e "\e[31;1mError! tue-env variable TUE_ROS_DISTRO not set.\e[0m"; return 1; }
+
+    [[ -z "${TUE_ROS_VERSION}" ]] && { echo -e "\e[31;1mError! TUE_ROS_VERSION is not set.\nSet TUE_ROS_VERSION before executing this function.\e[0m"; return 1; }
+
+    [[ ! -d "${TUE_SYSTEM_DIR}" ]] && { echo -e "\e[31;1mError! The workspace '${TUE_SYSTEM_DIR}' does not exist. Run 'tue-get install ros${TUE_ROS_VERSION}' first.\e[0m"; return 1; }
+
+    [[ "${TUE_ROS_VERSION}" != "2" ]] && { echo -e "\e[31;1mError! This command is supported only with TUE_ROS_VERSION=2.\e[0m"; return 1; }
+
+    local packages_list=
+    if [[ -z "${1}" ]]
+    then
+        echo -e "\e[33;1mNo packages specified, so packaging the entire workspace. \e[0m"
+        for pkg_path in "${TUE_SYSTEM_DIR}"/src/*
+        do
+            pkg="$(basename "${pkg_path}")"
+            packages_list="${pkg} ${packages_list}"
+        done
+
+        if [[ -z "${packages_list}" ]]
+        then
+            echo -e "\e[31;1mError! No source packages found in workspace to package.\e[0m"
+            return 1
+        fi
+    else
+        packages_list="$*"
+    fi
+
+    # Check if packages are built
+    local PACKAGES_NOT_BUILT=
+    for package in $packages_list
+    do
+        if [[ ! -d "${TUE_SYSTEM_DIR}"/install/"${package}" ]]
+        then
+            PACKAGES_NOT_BUILT="${PACKAGES_NOT_BUILT} ${package}"
+        fi
+    done
+
+    if [[ -n "${PACKAGES_NOT_BUILT}" ]]
+    then
+        echo -e "\e[31;1mThe following packages are not built:\e[0m${PACKAGES_NOT_BUILT}\e[31;1m. Hence cannot be packaged.\e[0m"
+        return 1
+    fi
+
+    local cur_dir="${PWD}"
+
+    local timestamp
+    timestamp="$(date +%Y%m%d%H%M%S)"
+
+    mkdir -p "${TUE_RELEASE_DIR}"
+    cd "${TUE_RELEASE_DIR}" || return 1
+
+    for package in $packages_list
+    do
+        pkg_rel_dir="$("${TUE_DIR}"/installer/generate_deb_control.py "${TUE_RELEASE_DIR}" "${TUE_SYSTEM_DIR}"/src/"${package}"/package.xml "${timestamp}")"
+
+
+        if [[ ! -d "${pkg_rel_dir}" ]]
+        then
+            echo -e "\e[31;1mError! Expected release dir for package '${package}' not created.\e[0m"
+            cd "${cur_dir}" || return 1
+            return 1
+        fi
+
+        mkdir -p "${pkg_rel_dir}"/opt/ros/"${TUE_ROS_DISTRO}"
+        cp -r "${TUE_SYSTEM_DIR}"/install/"${package}"/* "${pkg_rel_dir}"/opt/ros/"${TUE_ROS_DISTRO}"/
+
+        dpkg-deb --build --root-owner-group "${pkg_rel_dir}"
+        rm -rf "${pkg_rel_dir}"
+    done
+
+    cd "${cur_dir}" || return
+}
+export -f tue-deb-generate
+
+function tue-deb-gitlab-release
+{
+    echo -e "\e[32;1mReleasing debian files to GitLab package registry\e[0m"
+
+    local REGISTRY_URL=
+    local TOKEN=
+
+    for i in "$@"
+    do
+        case $i in
+            --registry-url=* )
+                REGISTRY_URL="${i#*=}"
+                ;;
+
+            --token=* )
+                TOKEN="${i#*=}"
+                ;;
+
+            * )
+                echo -e "\e[31;1mError! Unknown argument ${i}."
+                return 1
+                ;;
+        esac
+    done
+
+    if [[ -z "${REGISTRY_URL}" ]] || [[ -z "${TOKEN}" ]]
+    then
+        echo -e "\e[31;1mError! Mandatory arguments --registry-url and --token not specified"
+        return 1
+    fi
+
+    local deb_pkg=
+    local pkg=
+    local version=
+
+    for deb in "${TUE_RELEASE_DIR}"/*
+    do
+        deb_pkg="$(basename "${deb}")"
+        pkgwithversion="${deb_pkg%%-build*}"
+        pkg="${pkgwithversion%%_*}"
+        version="${pkgwithversion##*_}"
+
+        PACKAGE_URL=${REGISTRY_URL}/${pkg}/${version}/${deb_pkg}
+        echo -e "\e[35;1mPACKAGE_URL=${PACKAGE_URL}\e[0m"
+
+        curl --header "JOB-TOKEN: ${TOKEN}" --upload-file "${deb}" "${PACKAGE_URL}"
+    done
+}
+export -f tue-deb-gitlab-release
 
 # ----------------------------------------------------------------------------------------------------
 #                                              TUE-DATA
