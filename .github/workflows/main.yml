@@ -28,6 +28,16 @@ jobs:
     name: Docker Generation tue-env
     runs-on: ubuntu-latest
     needs: linting
+    strategy:
+      matrix:
+        include:
+          - ros-distro: noetic
+            ros-version: 1
+          - ros-distro: galactic
+            ros-version: 2
+          - ros-distro: humble
+            ros-version: 2
+            base-image: "ubuntu:22.04"
     steps:
       - uses: actions/checkout@v3
       - name: Docker info
@@ -39,23 +49,18 @@ jobs:
           BRANCH=${GITHUB_BASE_REF:-${GITHUB_REF}}
           PULLREQUEST=${{ github.event.number }}
           PULLREQUEST=${PULLREQUEST:-false}
-          ci/build-docker-image.sh --image="tuerobotics/tue-env" --branch="${BRANCH}" --commit="$GITHUB_SHA" --pull_request="${PULLREQUEST}" --user="${{ secrets.DOCKER_HUB_USERNAME }}" --password="${{ secrets.DOCKER_HUB_PASSWORD }}"
-
-  docker_generation_tue_env_cuda:
-    name: Docker Generation tue-env-cuda
-    runs-on: ubuntu-latest
-    needs: linting
-    if: ${{ github.event_name != 'pull_request' && github.ref == 'refs/heads/master' }}
-    steps:
-      - uses: actions/checkout@v3
-      - name: Docker info
-        run: docker info
-      - name: Script
-        run: |
-          GITHUB_REF=${GITHUB_REF#refs/heads/}
-          GITHUB_REF=${GITHUB_REF#refs/tags/}
-          BRANCH=${GITHUB_BASE_REF:-${GITHUB_REF}}
-          PULLREQUEST=${{ github.event.number }}
-          PULLREQUEST=${PULLREQUEST:-false}
-          ci/build-docker-image.sh --image="tuerobotics/tue-env-cuda" --branch="${BRANCH}" --commit="$GITHUB_SHA" --pull_request="${PULLREQUEST}" --user="${{ secrets.DOCKER_HUB_USERNAME }}" --password="${{ secrets.DOCKER_HUB_PASSWORD }}"
-   
+          TARGET_IMAGE="tuerobotics/tue-env-ros-${{ matrix.ros-distro }}:${BRANCH}-amd64"
+          ci/build-docker-image.sh \
+            --image="${TARGET_IMAGE}" \
+            --branch="${BRANCH}" \
+            --commit="$GITHUB_SHA" \
+            --push_image="true" \
+            --pull_request="${PULLREQUEST}" \
+            --user="${{ secrets.DOCKER_HUB_USERNAME }}" \
+            --password="${{ secrets.DOCKER_HUB_PASSWORD }}" \
+            --docker_login="true" \
+            --ros_version="${{ matrix.ros-version }}" \
+            --ros_distro="${{ matrix.ros-distro }}" \
+            --base_image="${{ matrix.base-image }}" \
+            --docker_file="dockerfiles/tue-env.Dockerfile" \
+            --platforms="amd64"
