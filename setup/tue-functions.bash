@@ -32,8 +32,8 @@ function tue-apt-select-mirror
     # It uses apt-select to generate a new sources.list, based on the current one.
     # All Arguments to this functions are passed on to apt-select, so check the
     # apt-select documentation for all options.
-    hash pip2 2> /dev/null|| sudo apt-get install --assume-yes python-pip
-    hash apt-select 2> /dev/null|| sudo -H pip2 install apt-select
+    hash pip3 2> /dev/null|| sudo apt-get install --assume-yes python3-pip
+    hash apt-select 2> /dev/null|| sudo python3 -m pip install -U apt-select
 
     local mem_pwd=$PWD
     # shellcheck disable=SC2164
