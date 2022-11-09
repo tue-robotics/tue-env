@@ -248,6 +248,12 @@ function _git_split_url
 {
     local url=$1
 
+    # The regex can be further constrained using regex101.com
+    if ! grep -P -q "^(?:(?:git@[^:]+:)|(?:https://))[^:]+\.git$" <<< "${url}"
+    then
+        return 1
+    fi
+
     local web_address
     local domain_name
     local repo_address
@@ -274,6 +280,11 @@ function _git_https
     local output
     output=$(_git_split_url "$url")
 
+    if [[ -z "${output}" ]]
+    then
+        return 1
+    fi
+
     local array
     read -r -a array <<< "$output"
     local domain_name=${array[0]}
@@ -290,6 +301,11 @@ function _git_ssh
 
     local output
     output=$(_git_split_url "$url")
+
+    if [[ -z "${output}" ]]
+    then
+        return 1
+    fi
 
     local array
     read -r -a array <<< "$output"
@@ -322,9 +338,66 @@ function _git_https_or_ssh
         output_url=$(_git_https "$input_url")
     fi
 
+    if [[ -z "${output_url}" ]]
+    then
+        return 1
+    fi
+
     echo "$output_url"
 }
 export -f _git_https_or_ssh # otherwise not available in sourced files
+
+######################################################################################################################
+# Generate the path where a cloned git repository will be stored, based on its url
+# Globals:
+#   TUE_REPOS_DIR, used as the base directory of the generated path
+# Arguments:
+#   URL, A valid git repository url
+# Return:
+#   Path where the repository must be cloned
+######################################################################################################################
+function _git_url_to_repos_dir
+{
+    local url=$1
+    local output
+    output=$(_git_split_url "$url")
+
+    if [[ -z "${output}" ]]
+    then
+        return 1
+    fi
+
+    local array
+    read -r -a array <<< "$output"
+    local domain_name=${array[0]}
+    local repo_address=${array[1]}
+    local repos_dir=
+    repos_dir="$TUE_REPOS_DIR"/"$domain_name"/"$repo_address"
+
+    echo "${repos_dir}"
+}
+export -f _git_url_to_repos_dir # otherwise not available in sourced files
+
+######################################################################################################################
+# Perform a deep fetch on a git repository
+#
+# Arguments:
+#   repo_dir, Path to valid git directory
+#     If no directory path specified, current dir is assumed
+######################################################################################################################
+function tue-git-deep-fetch
+{
+    local repo_dir="${1}"
+
+    if [[ -z "${repo_dir}" ]]
+    then
+        repo_dir="."
+    fi
+
+    git -C "${repo_dir}" config remote.origin.fetch "+refs/heads/*:refs/remotes/origin/*"
+    git -C "${repo_dir}" remote update
+}
+export -f tue-git-deep-fetch
 
 # ----------------------------------------------------------------------------------------------------
 #                                            TUE-MAKE
