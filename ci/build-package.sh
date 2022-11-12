@@ -23,8 +23,11 @@ do
 
         * )
             # unknown option
-            echo -e "\e[35m\e[1mUnknown input argument '$i'. Check CI .yml file\e[0m"
-            exit 1 ;;
+            if [[ -n "$i" ]]  # Ignore empty arguments
+            then
+                echo -e "\e[35m\e[1mUnknown input argument '$i'. Check CI .yml file\e[0m"
+                exit 1
+            fi ;;
     esac
     shift
 done
