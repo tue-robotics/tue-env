@@ -1223,7 +1223,7 @@ function tue-install-ros
         repos_dir=$(_git_url_to_repos_dir "${src}")
         if [[ -z "${repos_dir}" ]]
         then
-            tue-install-error "Could not create repos_dir path url"
+            tue-install-error "Could not create repos_dir path from the git url: '${src}'"
         fi
     fi
 
