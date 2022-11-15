@@ -4,7 +4,7 @@ import sys
 from pip._internal.req.constructors import install_req_from_line
 
 
-def main():
+def main() -> int:
     if len(sys.argv) < 2:
         print("Usage: check-pip-pkg-installed-version.py requirement [requirements]")
         return 2
@@ -25,7 +25,7 @@ def main():
                 return_code = 1
 
     except Exception as e:
-        print("check-pip-pkg-installed-version.py:\n{}".format(e))
+        print(f"check-pip-pkg-installed-version.py:\n{e}")
         return 2
 
     print(" ".join(pkg_installed))

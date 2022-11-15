@@ -6,7 +6,7 @@ export LC_ALL="C.UTF-8"
 
 # ------------------------------------------
 # pip bash completion
-if hash pip 2> /dev/null || hash pip2 2> /dev/null || hash pip3 2> /dev/null
+if hash pip 2> /dev/null || hash pip3 2> /dev/null
 then
     _pip_completion()
     {
@@ -19,5 +19,4 @@ then
 fi
 
 hash pip 2> /dev/null && complete -o default -F _pip_completion pip
-hash pip2 2> /dev/null && complete -o default -F _pip_completion pip2
 hash pip3 2> /dev/null && complete -o default -F _pip_completion pip3

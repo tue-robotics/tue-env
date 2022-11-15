@@ -10,7 +10,7 @@ import hashlib
 import time
 
 
-def get_release(url, filename, output):
+def get_release(url, filename, output) -> int:
     """Function to get a release
 
     :param url: URL of the release tag
@@ -18,7 +18,7 @@ def get_release(url, filename, output):
     :param output: Path of the output location
     """
     parsed_json = json.loads(urllib.request.urlopen(url).read())
-    asset_re = re.compile(r"{}".format(filename))
+    asset_re = re.compile(rf"{filename}")
 
     assets = [asset for asset in parsed_json["assets"] if asset_re.match(asset["name"])]
 
@@ -33,7 +33,7 @@ def get_release(url, filename, output):
     return 0
 
 
-def download_url(url, root, filename=None, md5=None):
+def download_url(url, root, filename=None, md5=None) -> None:
     """Download a file from a url and place it in root.
 
     Args:
@@ -70,7 +70,7 @@ def download_url(url, root, filename=None, md5=None):
             raise RuntimeError("File not found or corrupted.")
 
 
-def reporthook(count, block_size, total_size):
+def reporthook(count, block_size, total_size) -> None:
     """Function to create a progress bar"""
     global START_TIME
     if count == 0:
@@ -86,7 +86,7 @@ def reporthook(count, block_size, total_size):
     sys.stdout.flush()
 
 
-def calculate_md5(fpath, chunk_size=1024 * 1024):
+def calculate_md5(fpath, chunk_size=1024 * 1024) -> str:
     """Function to calculate md5 checksum"""
     md5 = hashlib.md5()
     with open(fpath, "rb") as f:
@@ -95,12 +95,12 @@ def calculate_md5(fpath, chunk_size=1024 * 1024):
     return md5.hexdigest()
 
 
-def check_md5(fpath, md5, **kwargs):
+def check_md5(fpath, md5, **kwargs) -> bool:
     """Function to check md5 checksum of a file"""
     return md5 == calculate_md5(fpath, **kwargs)
 
 
-def check_integrity(fpath, md5=None):
+def check_integrity(fpath, md5=None) -> bool:
     """Function to check if the given filepath has a file with the right checksum"""
     if not os.path.isfile(fpath):
         return False
@@ -114,7 +114,7 @@ def create_release(url, tag, filename, data_dir):
     raise NotImplementedError("This functionality is not available yet.")
 
 
-def main():
+def main() -> int:
     """Function to parse arguments and select between creating or getting a release"""
     parser = argparse.ArgumentParser()
     release_group = parser.add_mutually_exclusive_group()
@@ -147,14 +147,14 @@ def main():
         print("Either --get or --create needs to be set")
         return 1
 
-    url = "https://api.github.com/repos/{}/releases".format(args.url)
+    url = f"https://api.github.com/repos/{args.url}/releases"
 
     # Get release
     if args.get:
         if args.latest:
             url += "/latest"
         elif args.tag:
-            url += "/tags/{}".format(args.tag)
+            url += f"/tags/{args.tag}"
         else:
             print("With --get option either specify --latest or a specific tag using --tag")
             return 1
@@ -163,7 +163,7 @@ def main():
 
     # Create release
     if args.tag:
-        url += "/tags/{}".format(args.tag)
+        url += f"/tags/{args.tag}"
     else:
         print("With --create option, --tag is a required argument")
         return 1

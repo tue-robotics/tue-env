@@ -13,13 +13,17 @@ ARG CI=false
 ARG BRANCH=
 ARG PULL_REQUEST=false
 ARG COMMIT=
+ARG REF_NAME=
+# Default is empty and gives ROS1, for ROS2 use --build-arg ROS_VERSION=2
+ARG ROS_VERSION=
+ARG ROS_DISTRO=
 
 # Inform scripts that no questions should be asked and set some environment
 # variables to prevent warnings and errors
 ENV DEBIAN_FRONTEND=noninteractive \
     LANG=C.UTF-8 \
     DOCKER=true \
-    USER=amigo \
+    USER=docker \
     TERM=xterm-256color
 
 # Set default shell to be bash
@@ -28,11 +32,15 @@ SHELL ["/bin/bash", "-c"]
 # Install commands used in our scripts and standard present on a clean ubuntu
 # installation and setup a user with sudo priviledges
 RUN apt-get update -qq && \
-    apt-get install -qq --assume-yes --no-install-recommends apt-transport-https apt-utils ca-certificates dbus dialog git keyboard-configuration lsb-release openssh-client sudo tzdata wget > /dev/null && \
-    # Add amigo user
+    echo "resolvconf resolvconf/linkify-resolvconf boolean false" | debconf-set-selections && \
+    apt-get install -qq --assume-yes --no-install-recommends apt-transport-https apt-utils bash-completion ca-certificates curl dbus debconf-utils dialog git keyboard-configuration lsb-release iproute2 iputils-ping net-tools openssh-client psmisc resolvconf sudo tzdata wget > /dev/null && \
+    # Add defined user
     adduser -u 1000 --disabled-password --gecos "" $USER && \
     usermod -aG sudo $USER && \
     usermod -aG adm $USER && \
+    usermod -aG dialout $USER && \
+    usermod -aG video $USER && \
+    usermod -aG audio $USER && \
     echo "%sudo ALL=(ALL) NOPASSWD:ALL" >> /etc/sudoers.d/"$USER"
 
 # Setup the current user and its home directory
@@ -55,14 +63,13 @@ RUN --mount=type=ssh,uid=1000 sed -e s/return//g -i ~/.bashrc && \
     export BRANCH=$BRANCH && \
     export PULL_REQUEST=$PULL_REQUEST && \
     export COMMIT=$COMMIT && \
+    export REF_NAME=$REF_NAME && \
     # Run the standard installation script
-    source bootstrap.bash && \
+    source bootstrap.bash --ros-version="$ROS_VERSION" --ros-distro="$ROS_DISTRO" && \
     # Make tue-env to be available to the environment
     source ~/.bashrc && \
-    # Set all git repositories to use HTTPS urls (Needed for local image builds)
-    tue-env config ros-"$TUE_ROS_DISTRO" git-use-https && \
     # Install target ros
-    tue-get install ros --test-depend && \
+    tue-get install ros${ROS_VERSION} --test-depend --branch="$BRANCH" && \
     # Install target ccache
     tue-get install ccache --test-depend && \
     # Remove temp tue files
@@ -72,4 +79,6 @@ RUN --mount=type=ssh,uid=1000 sed -e s/return//g -i ~/.bashrc && \
     # Check git remote origin
     git -C ~/.tue remote -v && \
     # Show the branches of tue-env
-    git -C ~/.tue branch
+    git -C ~/.tue branch && \
+    # Remove docker-clean. APT will be able to autocomplete packages now
+    sudo rm /etc/apt/apt.conf.d/docker-clean

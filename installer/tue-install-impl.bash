@@ -23,8 +23,6 @@ mkdir -p "$TUE_INSTALL_INSTALLED_DIR"
 
 TUE_INSTALL_TARGETS_DIR=$TUE_ENV_TARGETS_DIR
 
-TUE_REPOS_DIR=$TUE_ENV_DIR/repos
-
 TUE_APT_GET_UPDATED_FILE=/tmp/tue_get_apt_get_updated
 
 # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # #
@@ -215,7 +213,7 @@ function tue-install-target
                 [ "$now" == "true" ] && now_cmd="--now"
                 # Do not use 'local cmds=' because it does not preserve command output status ($?)
                 local cmds
-                if cmds=$("$TUE_INSTALL_SCRIPTS_DIR"/parse-install-yaml.py "$install_file".yaml $now_cmd)
+                if cmds=$("$TUE_INSTALL_SCRIPTS_DIR"/parse_install_yaml.py "$install_file".yaml $now_cmd)
                 then
                     for cmd in $cmds
                     do
@@ -327,16 +325,47 @@ function tue-install-git
 
     local repo=$1
     local repo_pre="$repo"
-    local targetdir=$2
-    local version=$3
 
     # Change url to https/ssh
     repo=$(_git_https_or_ssh "$repo")
-    if ! grep -q "^git@.*\.git$\|^https://.*\.git$" <<< "$repo"
+    if [[ -z "${repo}" ]]
     then
         # shellcheck disable=SC2140
         tue-install-error "repo: '$repo' is invalid. It is generated from: '$repo_pre'\n"\
 "The problem will probably be solved by resourcing the setup"
+    fi
+
+    local targetdir
+    targetdir=$(_git_url_to_repos_dir "${repo_pre}")
+
+    local version=
+
+    # The shift here is to ensure that all options are explicitly checked as they can be at most 2
+    # and are optional
+    shift
+    if [[ $# -gt 2 ]]
+    then
+        tue-install-error "Invalid number of arguments"
+    fi
+
+    if [[ -n $1 ]]
+    then
+        for i in "$@"
+        do
+            case $i in
+                --target-dir=* )
+                    targetdir="${i#*=}"  ;;
+                --version=* )
+                    version="${i#*=}" ;;
+                * )
+                    tue-install-error "Unknown input variable ${i}" ;;
+            esac
+        done
+    fi
+
+    if [[ -z "${targetdir}" ]]
+    then
+        tue-install-error "Target directory path cannot be empty"
     fi
 
     if [ ! -d "$targetdir" ]
@@ -1126,12 +1155,11 @@ function tue-install-ros
 
     local install_type=$1
     local src=$2
-    local sub_dir=$3
-    local version=$4
 
     tue-install-debug "Installing ros package: type: $install_type, source: $src"
 
     [ -n "$TUE_ROS_DISTRO" ] || tue-install-error "Environment variable 'TUE_ROS_DISTRO' is not set."
+    [ -n "$TUE_ROS_VERSION" ] || tue-install-error "Environment variable 'TUE_ROS_VERSION' is not set."
 
     local ros_pkg_name=${TUE_INSTALL_CURRENT_TARGET#ros-}
     if [[ $ros_pkg_name == *-* ]]
@@ -1141,7 +1169,7 @@ function tue-install-ros
     fi
 
     # First of all, make sure ROS itself is installed
-    tue-install-target ros || tue-install-error "Failed to install target 'ROS'"
+    tue-install-target ros"${TUE_ROS_VERSION}" || tue-install-error "Failed to install target 'ros${TUE_ROS_VERSION}'"
 
     if [ "$install_type" == "system" ]
     then
@@ -1150,9 +1178,37 @@ function tue-install-ros
         return 0
     fi
 
-    if [ -z "$ROS_PACKAGE_INSTALL_DIR" ]
+    if [ "$install_type" != "git" ]
     then
-        tue-install-error "Environment variable ROS_PACKAGE_INSTALL_DIR not set."
+        tue-install-error "Unknown ros install type: '${install_type}'"
+    fi
+
+    local repos_dir
+    local version
+    local sub_dir
+
+    if [[ -n $3 ]]
+    then
+        for i in "${@:3}"
+        do
+            case $i in
+                --target-dir=* )
+                    repos_dir="${i#*=}"
+                    ;;
+
+                --version=* )
+                    version="${i#*=}"
+                    ;;
+
+                --sub-dir=* )
+                    sub_dir="${i#*=}"
+                    ;;
+
+                * )
+                    tue-install-error "Unknown input variable ${i}"
+                    ;;
+            esac
+        done
     fi
 
     # Make sure the ROS package install dir exists
@@ -1160,33 +1216,20 @@ function tue-install-ros
     mkdir -p "$ROS_PACKAGE_INSTALL_DIR"
 
     local ros_pkg_dir="$ROS_PACKAGE_INSTALL_DIR"/"$ros_pkg_name"
-    local repos_dir
-    if [ "$install_type" == "git" ]
-    then
-        local output
-        output=$(_git_split_url "$src")
 
-        local array
-        read -r -a array <<< "$output"
-        local domain_name=${array[0]}
-        local repo_address=${array[1]}
-        repos_dir="$TUE_REPOS_DIR"/"$domain_name"/"$repo_address"
-    else
-        repos_dir="$TUE_REPOS_DIR"/"$src"
-        # replace spaces with underscores
-        repos_dir=${repos_dir// /_}
-        # now, clean out anything that's not alphanumeric or an underscore
-        repos_dir=${repos_dir//[^a-zA-Z0-9\/\.-]/_}
+    # If repos_dir is unset, try generating the default path from git url
+    if [[ -z "${repos_dir}" ]]
+    then
+        repos_dir=$(_git_url_to_repos_dir "${src}")
+        if [[ -z "${repos_dir}" ]]
+        then
+            tue-install-error "Could not create repos_dir path url"
+        fi
     fi
 
     tue-install-debug "repos_dir: $repos_dir"
 
-    if [ "$install_type" == "git" ]
-    then
-        tue-install-git "$src" "$repos_dir" "$version"
-    else
-        tue-install-error "Unknown ros install type: '${install_type}'"
-    fi
+    tue-install-git "$src" --target-dir="$repos_dir" --version="$version"
 
     if [ -d "$repos_dir" ]
     then
@@ -1224,7 +1267,7 @@ function tue-install-ros
                 # Catkin
                 tue-install-debug "Parsing $pkg_xml"
                 local deps
-                deps=$("$TUE_INSTALL_SCRIPTS_DIR"/parse-package-xml.py "$pkg_xml")
+                deps=$("$TUE_INSTALL_SCRIPTS_DIR"/parse_package_xml.py "$pkg_xml")
                 tue-install-debug "Parsed package.xml\n$deps"
 
                 for dep in $deps
