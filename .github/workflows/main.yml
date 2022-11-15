@@ -49,7 +49,14 @@ jobs:
           BRANCH=${GITHUB_BASE_REF:-${GITHUB_REF}}
           PULLREQUEST=${{ github.event.number }}
           PULLREQUEST=${PULLREQUEST:-false}
-          TARGET_IMAGE="tuerobotics/tue-env-ros-${{ matrix.ros-distro }}:${BRANCH}-amd64"
+          DEFAULT_BRANCH=${{ github.event.repository.default_branch }}
+          if [[ "$BRANCH" == "$DEFAULT_BRANCH" ]]
+          then
+              IMAGE_TAG="latest"
+          else
+              IMAGE_TAG="$(echo "${BRANCH}" | tr '[:upper:]' '[:lower:]' | sed -e 's:/:_:g')"
+          fi
+          TARGET_IMAGE="tuerobotics/tue-env-ros-${{ matrix.ros-distro }}:${IMAGE_TAG}-amd64"
           ci/build-docker-image.sh \
             --image="${TARGET_IMAGE}" \
             --branch="${BRANCH}" \
