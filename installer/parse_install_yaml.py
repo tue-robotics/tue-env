@@ -129,7 +129,7 @@ def installyaml_parser(path: str, now: bool = False) -> Mapping:
         command = command.replace(" ", "^")
         commands.append(command)
 
-    def get_distro_item(item: Mapping, key: str, release_version: str, release_type: str) -> Optional[Mapping]:
+    def get_distro_item(item: Mapping, key: str, release_version: str, release_type: str) -> Optional[str]:
         if key in item:
             value = item[key]
             if value is None:
