@@ -132,16 +132,16 @@ def installyaml_parser(path: str, now: bool = False) -> Mapping:
     def get_distro_item(item: Mapping, key: str, release_version: str, release_type: str) -> Optional[Mapping]:
         if key in item:
             value = item[key]
+            if value is None:
+                raise ValueError(f"'{key}' is defined, but has no value")
+        elif len(item) < 3 or "default" not in item:
+            raise ValueError(f"At least one distro and 'default' should be specified or none in install.yaml")
         else:
-            if release_version in item:
-                value = item[release_version][key]
-            elif "default" in item:
-                value = item["default"][key]
-            else:
-                raise ValueError(f"{release_type} distro {release_version} or 'default' not specified in install.yaml")
+            for version in [release_version, "default"]:
+                if version in item:
+                    value = item[version][key]
+                    break
 
-        if value is None:
-            raise ValueError(f"'{key}' is defined, but has no value")
         return value
 
     # Combine now calls
