@@ -20,5 +20,5 @@ runs:
         PULLREQUEST=${{ github.event.number }}
         PULLREQUEST=${PULLREQUEST:-false}
         source ${{ github.action_path }}/../packages.sh --pullrequest=${PULLREQUEST} --branch=${GITHUB_BASE_REF} --commit-range=${{ inputs.commit-range }} --all=${{ github.event_name == 'schedule' }} ${{ inputs.ignored-packages }}
-        echo "::set-output name=packages::${PACKAGES_LIST}"
+        echo "packages=${PACKAGES_LIST}" >> $GITHUB_OUTPUT
       shell: bash --noprofile --norc -o pipefail {0}
