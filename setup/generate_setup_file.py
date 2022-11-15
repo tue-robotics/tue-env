@@ -11,9 +11,14 @@ class SetupGenerator:
     def __init__(self, tue_env_dir=None):
         if tue_env_dir is None:
             tue_env_dir = os.environ["TUE_ENV_DIR"]
+        if not tue_env_dir:
+            raise ValueError("'tue_env_dir' can't be empty as it would resolve to '/'")
         self._tue_env_dir = tue_env_dir
         self._tue_dependencies_dir = os.path.join(self._tue_env_dir, ".env", "dependencies")
-        self._tue_env_targets_dir = os.environ["TUE_ENV_TARGETS_DIR"]
+        tue_env_targets_dir = os.environ["TUE_ENV_TARGETS_DIR"]
+        if not tue_env_targets_dir:
+            raise ValueError("'tue_env_targets_dir' can't be empty as it would resolve to '/'")
+        self._tue_env_targets_dir = tue_env_targets_dir
 
         self._visited_targets = set()
 
