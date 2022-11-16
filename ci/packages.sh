@@ -16,7 +16,7 @@ do
         -a=* | --all=* )
             ALL="${i#*=}"
         ;;
-        * ) exclude_dirs="${exclude_dirs} $1"
+        * ) exclude_dirs="${exclude_dirs:+${exclude_dirs} }$1"
         ;;
     esac
     shift
