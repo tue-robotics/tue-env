@@ -16,7 +16,7 @@ do
         -a=* | --all=* )
             ALL="${i#*=}"
         ;;
-        * ) exclude_dirs="${exclude_dirs} $1"
+        * ) exclude_dirs="${exclude_dirs:+${exclude_dirs} }$1"
         ;;
     esac
     shift
@@ -52,7 +52,7 @@ fi
 
 dir_mod=$(echo "${mod_files}" | xargs ls -dl 2>/dev/null |  grep "^d" | grep -v "\." | awk '{print $NF}')
 
-if [[ ${mod_files} == *".travis.yml"* ]] || [[ ${mod_files} == *"azure-pipelines.yml"* ]] || [[ ${mod_files} == *".github"* ]] || [ "$ALL" == "true" ]
+if [ "$ALL" == "true" ] || [[ ${mod_files} == *".travis.yml"* ]] || [[ ${mod_files} == *"azure-pipelines.yml"* ]] || [[ ${mod_files} == *".github"* ]]
 then
     # If CI config is modified, build all pkgs (=all sub directories)
     PACKAGES=$(printf "%s\n" ./*/ | cut -f2 -d '/')
