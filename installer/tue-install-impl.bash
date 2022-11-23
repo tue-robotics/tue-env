@@ -11,7 +11,7 @@ function _function_test
     [[ "$function_missing" == "true" ]] && exit 1
 }
 
-_function_test _git_https_or_ssh _git_url_to_repos_dir 
+_function_test _git_https_or_ssh _git_url_to_repos_dir
 
 TUE_INSTALL_DEPENDENCIES_DIR=$TUE_ENV_DIR/.env/dependencies
 TUE_INSTALL_DEPENDENCIES_ON_DIR=$TUE_ENV_DIR/.env/dependencies-on
