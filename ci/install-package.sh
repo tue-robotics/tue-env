@@ -181,7 +181,7 @@ mkdir -p "$HOME"/.ccache
 docker run --detach --interactive --tty -e CI="true" -e PACKAGE="$PACKAGE" -e BRANCH="$BRANCH" -e COMMIT="$COMMIT" -e PULL_REQUEST="$PULL_REQUEST" -e REF_NAME="$REF_NAME" --name tue-env --mount type=bind,source=$HOME/.ccache,target=$DOCKER_HOME/.ccache $DOCKER_MOUNT_KNOWN_HOSTS_ARGS "$IMAGE_NAME:$BRANCH_TAG"
 
 # Own the ~/.ccache folder for permissions
-docker exec -t tue-env bash -c "sudo chown 1000:1000 -R ~/.ccache"
+docker exec -t tue-env bash -c 'sudo chown "${USER}":"${USER}" -R ~/.ccache'
 
 if [ "$USE_SSH" == "true" ]
 then
