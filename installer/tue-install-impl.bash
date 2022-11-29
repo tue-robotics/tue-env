@@ -371,7 +371,7 @@ function tue-install-git
     if [ ! -d "$targetdir" ]
     then
         tue-install-debug "git clone --recursive $repo $targetdir"
-        res=$(git clone --recursive "$repo" "$targetdir" 2>&1)
+        res=$(git clone --recursive "$repo" $targetdir 2>&1)
         TUE_INSTALL_GIT_PULL_Q+=:$targetdir:
     else
         # Check if we have already pulled the repo
