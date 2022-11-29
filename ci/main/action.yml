@@ -42,7 +42,9 @@ runs:
         if [[ -n "${SSH_KEY}" ]]
         then
           SSH_ARG="--ssh"
-          SSH_KEY_ARG="--ssh-key=${SSH_KEY}"
+          mkdir -p "${HOME}"/.ssh
+          echo "${SSH_KEY}" > "${HOME}"/.ssh/ci_ssh_key
+          SSH_KEY_ARG="--ssh-key=${HOME}/.ssh/ci_ssh_key"
         fi
         if [[ -n "${SSH_KNOWN_HOSTS}" ]]
         then

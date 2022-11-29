@@ -108,7 +108,7 @@ then
 
         if [[ "$(ssh-add -l)" != *"${SSH_KEY_FINGERPRINT}"* ]]
         then
-            { [[ "$(ssh-add "${SSH_KEY}" &> /dev/null)" ]] && SSH_KEY_CHECK="true"; } || { echo "'${SSH_KEY}' is an invalid SSH key" && exit 1; }
+            { ssh-add "${SSH_KEY}" &> /dev/null && SSH_KEY_CHECK="true"; } || { echo "'${SSH_KEY}' is an invalid SSH key" && exit 1; }
 
         else
             SSH_KEY_CHECK="true"
@@ -181,10 +181,12 @@ mkdir -p "$HOME"/.ccache
 docker run --detach --interactive --tty -e CI="true" -e PACKAGE="$PACKAGE" -e BRANCH="$BRANCH" -e COMMIT="$COMMIT" -e PULL_REQUEST="$PULL_REQUEST" -e REF_NAME="$REF_NAME" --name tue-env --mount type=bind,source=$HOME/.ccache,target=$DOCKER_HOME/.ccache $DOCKER_MOUNT_KNOWN_HOSTS_ARGS "$IMAGE_NAME:$BRANCH_TAG"
 
 # Own the ~/.ccache folder for permissions
-docker exec -t tue-env bash -c "sudo chown 1000:1000 -R ~/.ccache"
+docker exec -t tue-env bash -c 'sudo chown "${USER}":"${USER}" -R ~/.ccache'
 
 if [ "$USE_SSH" == "true" ]
 then
+    docker exec -t tue-env bash -c 'sudo chown "${USER}":"${USER}" -R /tmp/.ssh'
+
     docker exec -t tue-env bash -c "[[ -f /tmp/.ssh/known_hosts ]] && mv ~/.ssh/known_hosts ~/.ssh/known_hosts_container"
     docker exec -t tue-env bash -c 'sudo cp -r /tmp/.ssh/* ~/.ssh/ && sudo chown -R "${USER}":"${USER}" ~/.ssh && ls -aln ~/.ssh'
 
