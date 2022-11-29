@@ -362,7 +362,9 @@ function tue-install-git
         do
             case $i in
                 --target-dir=* )
-                    targetdir="${i#*=}"  ;;
+                    targetdir="${i#*=}"
+                    targetdir="${targetdir/#\~/$HOME}"
+                    ;;
                 --version=* )
                     version="${i#*=}" ;;
                 * )
