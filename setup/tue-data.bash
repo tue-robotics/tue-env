@@ -34,7 +34,7 @@ function tue-data
         return 1
     fi
 
-    cmd=$1
+    local cmd=$1
     shift
 
     if [[ $cmd == "update-dirs" ]]
