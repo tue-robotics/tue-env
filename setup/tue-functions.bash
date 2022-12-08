@@ -157,7 +157,7 @@ function _tue-git-clean-local
             unmerged_stale_branches="${unmerged_stale_branches:+${unmerged_stale_branches} } $stale_branch"
         else
             ((stale_branch_count++))
-            if [ $stale_branch_count -eq 1 ]
+            if [ "${stale_branch_count}" -eq 1 ]
             then
                 echo -e "\e[36m"
                 echo -e "Removing stale branches:"
@@ -838,7 +838,7 @@ function tue-get
             if [ $error_code -eq 0 ]
             then
                 _generate_setup_file
-                # shellcheck disable=SC1090
+                # shellcheck disable=SC1091
                 source "$TUE_DIR"/setup.bash
             fi
         fi
@@ -966,7 +966,7 @@ function tue-get
                 then
                     echo ""
                 fi
-                _show_file "$target" "${file#*$TUE_ENV_TARGETS_DIR"/"$target/}"
+                _show_file "$target" "${file#*"${TUE_ENV_TARGETS_DIR}/${target}/"}"
                 firstfile=false
             done
             firsttarget=false
@@ -992,7 +992,7 @@ function _tue-get
         # shellcheck disable=SC2178
         mapfile -t COMPREPLY < <(compgen -W "$(echo -e "$options")" -- "$cur")
     else
-        cmd=${COMP_WORDS[1]}
+        local cmd=${COMP_WORDS[1]}
         if [[ $cmd == "install" ]]
         then
             local IFS=$'\n'
@@ -1066,7 +1066,7 @@ function tue-checkout
     fi
     for pkg_dir in $fs
     do
-        pkg=${pkg_dir#$TUE_SYSTEM_DIR/src/}
+        pkg=${pkg_dir#"${TUE_SYSTEM_DIR}/src/"}
         if [ -z "$NO_TUE_ENV" ]
         then
             if [[ $pkg =~ .tue ]]
@@ -1247,7 +1247,7 @@ export -f tue-deb-gitlab-release
 #                                              TUE-DATA
 # ----------------------------------------------------------------------------------------------------
 
-# shellcheck disable=SC1090
+# shellcheck disable=SC1091
 source "$TUE_DIR"/setup/tue-data.bash
 
 # ----------------------------------------------------------------------------------------------------
@@ -1263,14 +1263,15 @@ function _tue-repos-do
     # seperated by ';' or '&&' the input needs to be captured in a string.
 
     local mem_pwd=$PWD
+    local cmd=("$@")
 
     { [ -n "$TUE_DIR" ] && cd "$TUE_DIR"; } || { echo -e "TUE_DIR '$TUE_DIR' does not exist"; return 1; }
     echo -e "\e[1m[tue-env]\e[0m"
-    eval "$@"
+    eval "${cmd[*]}"
 
     { [ -n "$TUE_ENV_TARGETS_DIR" ] && cd "$TUE_ENV_TARGETS_DIR"; } || { echo -e "TUE_ENV_TARGETS_DIR '$TUE_ENV_TARGETS_DIR' does not exist"; return 1; }
     echo -e "\e[1m[tue-env-targets]\e[0m"
-    eval "$@"
+    eval "${cmd[*]}"
 
     local repos_dir=$TUE_ENV_DIR/repos/github.com/tue-robotics
 
@@ -1284,7 +1285,7 @@ function _tue-repos-do
         then
             cd "$repo_dir" || { echo -e "Directory '$TUE_ENV_TARGETS_DIR' does not exist"; return 1; }
             echo -e "\e[1m[${repo%.git}]\e[0m"
-            eval "$@"
+            eval "${cmd[*]}"
         fi
     done
 

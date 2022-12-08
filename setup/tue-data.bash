@@ -50,7 +50,7 @@ function tue-data
         fi
 
         # Determine current directory relative to local data dir root
-        local rel_dir=${PWD#$LOCAL_DATA_DIR}
+        local rel_dir=${PWD#"${LOCAL_DATA_DIR}"}
 
         # shellcheck disable=SC2029
         ssh $ROBOTICSSRV_LOGIN "ls $REMOTE_DATA_DIR/$rel_dir -alh"
@@ -64,7 +64,7 @@ function tue-data
         fi
 
         # Determine current directory relative to local data dir root
-        local rel_dir=${PWD#$LOCAL_DATA_DIR}
+        local rel_dir=${PWD#"${LOCAL_DATA_DIR}"}
 
         rsync "$ROBOTICSSRV_LOGIN":"$REMOTE_DATA_DIR"/"$rel_dir"/ . -av --progress --exclude=".git"
     elif [[ $cmd == "store" ]]
@@ -95,7 +95,7 @@ For example, to store everything in the current folder, use:
         fi
 
         # Determine current directory relative to local data dir root
-        local rel_dir=${target#$LOCAL_DATA_DIR}
+        local rel_dir=${target#"${LOCAL_DATA_DIR}"}
 
         rsync "$LOCAL_DATA_DIR"/./"$rel_dir" "$ROBOTICSSRV_LOGIN":"$REMOTE_DATA_DIR"/ -av --relative --progress --exclude=".git"
     fi

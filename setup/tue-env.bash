@@ -96,7 +96,7 @@ options:
                     *)
                         # Read only the first passed environment name and ignore
                         # the rest
-                        if [ -z $env ]
+                        if [ -z "$env" ]
                         then
                             env=$1
                         fi
@@ -147,7 +147,7 @@ Purged environment directory of '$env'"""
         TUE_ENV_DIR=$(cat "$TUE_DIR"/user/envs/"$1")
         export TUE_ENV_DIR
 
-        # shellcheck disable=SC1090
+        # shellcheck disable=SC1091
         source "$TUE_DIR"/setup.bash
 
     elif [[ $cmd == "set-default" ]]
@@ -223,7 +223,7 @@ Purged environment directory of '$env'"""
         then
             local tue_env_dir
             tue_env_dir=$(cat "$TUE_DIR"/user/envs/"$env")
-            # shellcheck disable=SC1090
+            # shellcheck disable=SC1091
             source "$tue_env_dir"/.env/setup/user_setup.bash
         fi
 
@@ -276,7 +276,7 @@ function _tue-env
     then
         mapfile -t COMPREPLY < <(compgen -W "init list switch list-current remove cd set-default config init-targets targets" -- "$cur")
     else
-        cmd=${COMP_WORDS[1]}
+        local cmd=${COMP_WORDS[1]}
         if [[ $cmd == "switch" ]] || [[ $cmd == "remove" ]] || [[ $cmd == "cd" ]] || [[ $cmd == "set-default" ]] || [[ $cmd == "init-targets" ]] || [[ $cmd == "targets" ]]
         then
             if [ "$COMP_CWORD" -eq 2 ]
