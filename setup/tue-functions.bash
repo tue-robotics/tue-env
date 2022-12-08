@@ -1296,16 +1296,16 @@ function _tue-repos-do
 
     local mem_pwd
     mem_pwd=${PWD}
-    local -a cmd
-    cmd=("$@")
+    local -a cmd_array
+    cmd_array=("$@")
 
     { [ -n "$TUE_DIR" ] && cd "$TUE_DIR"; } || { echo -e "TUE_DIR '$TUE_DIR' does not exist"; return 1; }
     echo -e "\e[1m[tue-env]\e[0m"
-    eval "${cmd[*]}"
+    eval "${cmd_array[*]}"
 
     { [ -n "$TUE_ENV_TARGETS_DIR" ] && cd "$TUE_ENV_TARGETS_DIR"; } || { echo -e "TUE_ENV_TARGETS_DIR '$TUE_ENV_TARGETS_DIR' does not exist"; return 1; }
     echo -e "\e[1m[tue-env-targets]\e[0m"
-    eval "${cmd[*]}"
+    eval "${cmd_array[*]}"
 
     local repos_dir
     repos_dir=$TUE_ENV_DIR/repos/github.com/tue-robotics
@@ -1321,7 +1321,7 @@ function _tue-repos-do
         then
             cd "$repo_dir" || { echo -e "Directory '$TUE_ENV_TARGETS_DIR' does not exist"; return 1; }
             echo -e "\e[1m[${repo%.git}]\e[0m"
-            eval "${cmd[*]}"
+            eval "${cmd_array[*]}"
         fi
     done
 
