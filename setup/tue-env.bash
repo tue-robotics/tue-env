@@ -29,7 +29,7 @@ function tue-env
         return 1
     fi
 
-    cmd=$1
+    local cmd=$1
     shift
 
     # Make sure the correct directories are there
@@ -82,8 +82,8 @@ options:
             return 1
         else
             # Set purge to be false by default
-            PURGE=false
-            env=""
+            local PURGE=false
+            local env=
             while test $# -gt 0
             do
                 case "$1" in
@@ -112,6 +112,7 @@ options:
             return 1
         fi
 
+        local dir
         dir=$(cat "$TUE_DIR"/user/envs/"$env")
         rm "$TUE_DIR"/user/envs/"$env"
 
