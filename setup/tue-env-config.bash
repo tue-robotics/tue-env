@@ -122,7 +122,7 @@ then
     echo -e "[tue-env](config) no environment set or provided"
     exit 1
 else
-    env=$1
+    local env=$1
     shift
 
     tue_env_dir="$(cat "$TUE_DIR"/user/envs/"$env")"
@@ -136,7 +136,7 @@ else
         # shellcheck disable=SC2086
         functions=$(echo $functions | tr ' ' '|')
 
-        cmd=$1
+        local cmd=$1
         shift
 
         eval "
