@@ -956,7 +956,8 @@ function tue-get
                 continue
             fi
 
-            local firstfile files
+            local firstfile
+            local -a files
             firstfile=true
             mapfile -t files < <(find "$TUE_ENV_TARGETS_DIR"/"$target" -type f)
 
@@ -1293,8 +1294,9 @@ function _tue-repos-do
     # The input can be multiple arguments, but if the input consists of multiple commands
     # seperated by ';' or '&&' the input needs to be captured in a string.
 
-    local mem_pwd cmd
+    local mem_pwd
     mem_pwd=${PWD}
+    local -a cmd
     cmd=("$@")
 
     { [ -n "$TUE_DIR" ] && cd "$TUE_DIR"; } || { echo -e "TUE_DIR '$TUE_DIR' does not exist"; return 1; }
