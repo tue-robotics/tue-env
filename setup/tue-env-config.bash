@@ -129,35 +129,44 @@ function tue-env-set
     echo -e "[tue-env](config) Environment '$env' has '$option' set to '$value'"
 }
 
-if [ -z "$1" ]
-then
-    echo -e "[tue-env](config) no environment set or provided"
-    exit 1
-else
-    local env=$1
-    shift
-
-    tue_env_dir="$(cat "$TUE_DIR"/user/envs/"$env")"
-
+function _main
+{
     if [ -z "$1" ]
     then
-        edit "${tue_env_dir}/.env/setup/user_setup.bash"
+        echo -e "[tue-env](config) no environment set or provided"
+        exit 1
     else
-        functions=$(compgen -A function | grep "tue-env-")
-        functions=${functions//tue-env-/}
-        # shellcheck disable=SC2086
-        functions=$(echo $functions | tr ' ' '|')
-
-        local cmd=$1
+        local env
+        env=$1
         shift
 
-        eval "
-            case $cmd in
-                $functions )
-                        tue-env-$cmd $*;;
-                * )
-                    echo -e '[tue-env](config) Unknown config command: $cmd'
-                    exit 1 ;;
-            esac"
+        local tue_env_dir
+        tue_env_dir="$(cat "$TUE_DIR"/user/envs/"$env")"
+
+        if [ -z "$1" ]
+        then
+            edit "${tue_env_dir}/.env/setup/user_setup.bash"
+        else
+            local functions
+            functions=$(compgen -A function | grep "tue-env-")
+            functions=${functions//tue-env-/}
+            # shellcheck disable=SC2086
+            functions=$(echo $functions | tr ' ' '|')
+
+            local cmd
+            cmd=$1
+            shift
+
+            eval "
+                case $cmd in
+                    $functions )
+                            tue-env-$cmd $*;;
+                    * )
+                        echo -e '[tue-env](config) Unknown config command: $cmd'
+                        exit 1 ;;
+                esac"
+        fi
     fi
-fi
+}
+
+_main "$@"
