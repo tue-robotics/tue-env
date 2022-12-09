@@ -218,7 +218,7 @@ then
     # After a tue-get run, we checkout forced, just to be sure.
 
     # Fetch the merged branch
-    echo -e "\e[35m\e[1mgit -C ~${TUE_SYSTEM_DIR#$DOCKER_HOME}/src/$PACKAGE fetch origin $REF_NAME/$PULL_REQUEST/merge:PULLREQUEST\e[0m"
+    echo -e "\e[35m\e[1mgit -C ~${TUE_SYSTEM_DIR#"${DOCKER_HOME}"}/src/$PACKAGE fetch origin $REF_NAME/$PULL_REQUEST/merge:PULLREQUEST\e[0m"
     docker exec -t tue-env bash -c 'source ~/.bashrc; git -C "$TUE_SYSTEM_DIR"/src/"$PACKAGE" fetch origin "$REF_NAME"/"$PULL_REQUEST"/merge:PULLREQUEST'
 
     # Install the package completely
@@ -226,7 +226,7 @@ then
     docker exec tue-env bash -c 'source ~/.bashrc; tue-get install ros-"$PACKAGE" --test-depend --branch=PULLREQUEST'
 
     # Checkout -f to be really sure
-    echo -e "\e[35m\e[1mgit -C ~${TUE_SYSTEM_DIR#$DOCKER_HOME}/src/$PACKAGE checkout -f PULLREQUEST --\e[0m"
+    echo -e "\e[35m\e[1mgit -C ~${TUE_SYSTEM_DIR#"${DOCKER_HOME}"}/src/$PACKAGE checkout -f PULLREQUEST --\e[0m"
     docker exec -t tue-env bash -c 'source ~/.bashrc; git -C "$TUE_SYSTEM_DIR"/src/"$PACKAGE" checkout -f PULLREQUEST --'
 else
     DEFAULT_BRANCH=$(docker exec -t tue-env bash -c 'source ~/.bashrc; _tue-git-get-default-branch "$TUE_SYSTEM_DIR"/src/"$PACKAGE"' | tr -d '\r')
@@ -243,6 +243,6 @@ else
 
     # Set the package to the right commit
     echo -e "\e[35m\e[1mReset package to this commit\e[0m"
-    echo -e "\e[35m\e[1mgit -C ~${TUE_SYSTEM_DIR#$DOCKER_HOME}/src/$PACKAGE reset --hard $COMMIT\e[0m"
+    echo -e "\e[35m\e[1mgit -C ~${TUE_SYSTEM_DIR#"${DOCKER_HOME}"}/src/$PACKAGE reset --hard $COMMIT\e[0m"
     docker exec -t tue-env bash -c 'source ~/.bashrc; git -C "$TUE_SYSTEM_DIR"/src/"$PACKAGE" reset --hard "$COMMIT"'
 fi

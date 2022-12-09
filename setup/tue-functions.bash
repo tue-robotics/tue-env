@@ -40,7 +40,8 @@ function tue-apt-select-mirror
     hash pip3 2> /dev/null|| sudo apt-get install --assume-yes python3-pip
     hash apt-select 2> /dev/null|| sudo python3 -m pip install -U apt-select
 
-    local mem_pwd=$PWD
+    local mem_pwd
+    mem_pwd=$PWD
     # shellcheck disable=SC2164
     cd /tmp
     local err_code
@@ -141,9 +142,9 @@ function _tue-git-clean-local
         fi
     fi
 
-    local stale_branch
-    local stale_branch_count=0
-    local unmerged_stale_branches=""
+    local stale_branch stale_branch_count unmerged_stale_branches
+    stale_branch_count=0
+    unmerged_stale_branches=""
     for stale_branch in $stale_branches
     do
         git branch -d "$stale_branch" > /dev/null 2>&1
@@ -157,7 +158,7 @@ function _tue-git-clean-local
             unmerged_stale_branches="${unmerged_stale_branches:+${unmerged_stale_branches} } $stale_branch"
         else
             ((stale_branch_count++))
-            if [ $stale_branch_count -eq 1 ]
+            if [ "${stale_branch_count}" -eq 1 ]
             then
                 echo -e "\e[36m"
                 echo -e "Removing stale branches:"
@@ -232,7 +233,8 @@ function tue-git-clean-local
 
 function __tue-git-clean-local
 {
-    local IFS=$'\n'
+    local IFS options
+    IFS=$'\n'
     options="'--force-remove'"
     # shellcheck disable=SC2178
     mapfile -t COMPREPLY < <(compgen -W "$(echo -e "$options")" -- "$cur")
@@ -246,7 +248,8 @@ complete -F __tue-git-clean-local _tue-git-clean-local
 
 function _git_split_url
 {
-    local url=$1
+    local url
+    url=$1
 
     # The regex can be further constrained using regex101.com
     if ! grep -P -q "^(?:(?:git@[^:]+:)|(?:https://))[^:]+\.git$" <<< "${url}"
@@ -254,9 +257,7 @@ function _git_split_url
         return 1
     fi
 
-    local web_address
-    local domain_name
-    local repo_address
+    local web_address domain_name repo_address
     if [[ "$url" == *"@"* ]] # SSH
     then
         web_address=${url#git@}
@@ -274,7 +275,8 @@ export -f _git_split_url # otherwise not available in sourced files
 
 function _git_https
 {
-    local url=$1
+    local url
+    url=$1
     [[ $url =~ ^https://.*\.git$ ]] && echo "$url" && return 0
 
     local output
@@ -285,10 +287,10 @@ function _git_https
         return 1
     fi
 
-    local array
+    local array domain_name repo_address
     read -r -a array <<< "$output"
-    local domain_name=${array[0]}
-    local repo_address=${array[1]}
+    domain_name=${array[0]}
+    repo_address=${array[1]}
 
     echo "https://$domain_name/$repo_address.git"
 }
@@ -296,7 +298,8 @@ export -f _git_https # otherwise not available in sourced files
 
 function _git_ssh
 {
-    local url=$1
+    local url
+    url=$1
     [[ $url =~ ^git@.*\.git$ ]] && echo "$url" && return 0
 
     local output
@@ -307,10 +310,10 @@ function _git_ssh
         return 1
     fi
 
-    local array
+    local array domain_name repo_address
     read -r -a array <<< "$output"
-    local domain_name=${array[0]}
-    local repo_address=${array[1]}
+    domain_name=${array[0]}
+    repo_address=${array[1]}
 
     echo "git@$domain_name:$repo_address.git"
 }
@@ -318,10 +321,8 @@ export -f _git_ssh # otherwise not available in sourced files
 
 function _git_https_or_ssh
 {
-    local input_url=$1
-    local output_url
-
-    local test_var
+    local input_url output_url test_var
+    input_url=$1
 
     # TODO: Remove the use of TUE_USE_SSH when migration to TUE_GIT_USE_SSH is complete
     [[ -v "TUE_USE_SSH" ]] && test_var="TUE_USE_SSH"
@@ -358,8 +359,8 @@ export -f _git_https_or_ssh # otherwise not available in sourced files
 ######################################################################################################################
 function _git_url_to_repos_dir
 {
-    local url=$1
-    local output
+    local url output
+    url=$1
     output=$(_git_split_url "$url")
 
     if [[ -z "${output}" ]]
@@ -367,11 +368,10 @@ function _git_url_to_repos_dir
         return 1
     fi
 
-    local array
+    local array domain_name repo_address repos_dir
     read -r -a array <<< "$output"
-    local domain_name=${array[0]}
-    local repo_address=${array[1]}
-    local repos_dir=
+    domain_name=${array[0]}
+    repo_address=${array[1]}
     repos_dir="$TUE_REPOS_DIR"/"$domain_name"/"$repo_address"
 
     echo "${repos_dir}"
@@ -387,7 +387,8 @@ export -f _git_url_to_repos_dir # otherwise not available in sourced files
 ######################################################################################################################
 function tue-git-deep-fetch
 {
-    local repo_dir="${1}"
+    local repo_dir
+    repo_dir="${1}"
 
     if [[ -z "${repo_dir}" ]]
     then
@@ -420,7 +421,8 @@ function tue-make
 
     if [ "${TUE_ROS_VERSION}" == "1" ]
     then
-        local build_tool=""
+        local build_tool
+        build_tool=""
         if [ -f "$TUE_SYSTEM_DIR"/build/.built_by ]
         then
             build_tool=$(cat "$TUE_SYSTEM_DIR"/build/.built_by)
@@ -462,7 +464,8 @@ export -f tue-make
 
 function _tue-make
 {
-    local cur=${COMP_WORDS[COMP_CWORD]}
+    local cur
+    cur=${COMP_WORDS[COMP_CWORD]}
 
     mapfile -t COMPREPLY < <(compgen -W "$(_list_subdirs "$TUE_SYSTEM_DIR"/src)" -- "$cur")
 }
@@ -475,8 +478,8 @@ complete -F _tue-make tue-make
 
 function _robocup_branch_allowed
 {
-    local branch=$1
-    local robocup_branch
+    local branch robocup_branch
+    branch=$1
     robocup_branch=$(_get_robocup_branch)
     [ -n "$robocup_branch" ] && [ "$branch" == "$robocup_branch" ] && return 0
     # else
@@ -490,16 +493,16 @@ function _get_robocup_branch
 
 function _tue-repo-status
 {
-    local name=$1
-    local pkg_dir=$2
+    local name pkg_dir
+    name=$1
+    pkg_dir=$2
 
     if [ ! -d "$pkg_dir" ]
     then
         return 1
     fi
 
-    local status=
-    local vctype=
+    local status vctype
 
     # Try git
     if git -C "$pkg_dir" rev-parse --git-dir > /dev/null 2>&1
@@ -519,7 +522,7 @@ function _tue-repo-status
             local current_branch
             current_branch=$(git -C "$pkg_dir" rev-parse --abbrev-ref HEAD)
 
-            local test_branches=""
+            local test_branches
 
             # Add branch specified by target
             local target_branch version_cache_file
@@ -537,7 +540,8 @@ function _tue-repo-status
             robocup_branch=$(_get_robocup_branch)
             [ -n "$robocup_branch" ] && test_branches="${test_branches:+${test_branches} }$robocup_branch"
 
-            local allowed="false"
+            local allowed
+            allowed="false"
             for test_branch in $test_branches
             do
                 if [ "$test_branch" == "$current_branch" ]
@@ -578,6 +582,7 @@ function _tue-dir-status
     fs=$(ls "$1")
     for f in $fs
     do
+        local pkg_dir
         pkg_dir=$1/$f
         _tue-repo-status "$f" "$pkg_dir"
     done
@@ -598,10 +603,13 @@ function tue-git-status
 {
     for pkg_dir in "$TUE_SYSTEM_DIR"/src/*/
     do
+        local pkg
         pkg=$(basename "$pkg_dir")
 
+        local branch
         if branch=$(git -C "$pkg_dir" rev-parse --abbrev-ref HEAD 2>&1)
         then
+            local hash
             hash=$(git -C "$pkg_dir" rev-parse --short HEAD)
             printf "\e[0;36m%-20s\e[0m %-15s %s\n" "$branch" "$hash" "$pkg"
         fi
@@ -614,23 +622,29 @@ function tue-git-status
 
 function tue-revert
 {
+    local human_time
     human_time="$*"
 
     for pkg_dir in "$TUE_SYSTEM_DIR"/src/*/
     do
+        local pkg
         pkg=$(basename "$pkg_dir")
 
+        local branch
         branch=$(git -C "$pkg_dir" rev-parse --abbrev-ref HEAD 2>&1)
         if branch=$(git -C "$pkg_dir" rev-parse --abbrev-ref HEAD 2>&1) && [ "$branch" != "HEAD" ]
         then
+            local new_hash current_hash
             new_hash=$(git -C "$pkg_dir"  rev-list -1 --before="$human_time" "$branch")
             current_hash=$(git -C "$pkg_dir"  rev-parse HEAD)
 
+            local newtime
             if git -C "$pkg_dir"  diff -s --exit-code "$new_hash" "$current_hash"
             then
                 newtime=$(git -C "$pkg_dir"  show -s --format=%ci)
                 printf "\e[0;36m%-20s\e[0m %-15s \e[1m%s\e[0m %s\n" "$branch is fine" "$new_hash" "$newtime" "$pkg"
             else
+                local newbranch
                 git -C "$pkg_dir"  checkout -q "$new_hash" --
                 newbranch=$(git -C "$pkg_dir"  rev-parse --abbrev-ref HEAD 2>&1)
                 newtime=$(git -C "$pkg_dir"  show -s --format=%ci)
@@ -651,6 +665,7 @@ function tue-revert-undo
 {
     for pkg_dir in "$TUE_SYSTEM_DIR"/src/*/
     do
+        local pkg
         pkg=$(basename "$pkg_dir")
 
         if [ -f "$pkg_dir/.do_not_commit_this" ]
@@ -700,10 +715,11 @@ function _remove_recursively
         return 1
     fi
 
-    local target=$1
-    local tue_dependencies_dir="$TUE_ENV_DIR"/.env/dependencies
-    local tue_dependencies_on_dir="$TUE_ENV_DIR"/.env/dependencies-on
-    local error_code=0
+    local target tue_dependencies_dir tue_dependencies_on_dir error_code
+    target=$1
+    tue_dependencies_dir="$TUE_ENV_DIR"/.env/dependencies
+    tue_dependencies_on_dir="$TUE_ENV_DIR"/.env/dependencies-on
+    error_code=0
 
     # If packages depend on the target to be removed, just remove the installed status.
     if [ -f "$tue_dependencies_on_dir"/"$target" ]
@@ -727,8 +743,9 @@ function _remove_recursively
         while read -r dep
         do
             # Target is removed, so remove yourself from depend-on files of deps
-            local dep_dep_on_file="$tue_dependencies_on_dir"/"$dep"
-            local tmp_file=/tmp/temp_depend_on
+            local dep_dep_on_file tmp_file
+            dep_dep_on_file="$tue_dependencies_on_dir"/"$dep"
+            tmp_file=/tmp/temp_depend_on
             if [ -f "$dep_dep_on_file" ]
             then
                 while read -r line
@@ -792,12 +809,15 @@ function tue-get
         return 1
     fi
 
-    local tue_dep_dir=$TUE_ENV_DIR/.env/dependencies
-    local tue_installed_dir=$TUE_ENV_DIR/.env/installed
+    local tue_dep_dir tue_installed_dir
+    tue_dep_dir=$TUE_ENV_DIR/.env/dependencies
+    tue_installed_dir=$TUE_ENV_DIR/.env/installed
 
-    local error_code=0
+    local error_code
+    error_code=0
 
-    local cmd=$1
+    local cmd
+    cmd=$1
     shift
 
     #Create btrfs snapshot if possible and usefull:
@@ -838,7 +858,7 @@ function tue-get
             if [ $error_code -eq 0 ]
             then
                 _generate_setup_file
-                # shellcheck disable=SC1090
+                # shellcheck disable=SC1091
                 source "$TUE_DIR"/setup.bash
             fi
         fi
@@ -846,7 +866,7 @@ function tue-get
         return $error_code
     elif [[ $cmd == "remove" ]]
     then
-        local targets_to_remove=""
+        local targets_to_remove
         for target in "$@"
         do
             local resolved_targets
@@ -877,7 +897,8 @@ function tue-get
         touch /tmp/tue_get_remove_lock
         for target in $targets_to_remove
         do
-            local target_error=0
+            local target_error
+            target_error=0
             _remove_recursively "$target"
             target_error=$?
             if [ $target_error -gt 0 ]
@@ -920,7 +941,8 @@ function tue-get
             echo "[tue-get](show) Provide at least one target name"
             return 1
         fi
-        local firsttarget=true
+        local firsttarget
+        firsttarget=true
         for target in "$@"
         do
             if [[ $firsttarget == false ]]
@@ -934,12 +956,14 @@ function tue-get
                 continue
             fi
 
-            local firstfile="true"
-            local files
+            local firstfile
+            local -a files
+            firstfile=true
             mapfile -t files < <(find "$TUE_ENV_TARGETS_DIR"/"$target" -type f)
 
             # First show the common target files
-            local main_target_files="install.yaml install.bash setup"
+            local main_target_files
+            main_target_files="install.yaml install.bash setup"
             for file in $main_target_files
             do
                 for key in "${!files[@]}"
@@ -966,7 +990,7 @@ function tue-get
                 then
                     echo ""
                 fi
-                _show_file "$target" "${file#*$TUE_ENV_TARGETS_DIR"/"$target/}"
+                _show_file "$target" "${file#*"${TUE_ENV_TARGETS_DIR}/${target}/"}"
                 firstfile=false
             done
             firsttarget=false
@@ -983,39 +1007,47 @@ function tue-get
 
 function _tue-get
 {
-    local cur=${COMP_WORDS[COMP_CWORD]}
+    local cur
+    cur=${COMP_WORDS[COMP_CWORD]}
 
     if [ "$COMP_CWORD" -eq 1 ]
     then
-        local IFS=$'\n'
+        local IFS options
+        IFS=$'\n'
         options="'dep '\n'install '\n'update '\n'remove '\n'list-installed '\n'show '"
         # shellcheck disable=SC2178
         mapfile -t COMPREPLY < <(compgen -W "$(echo -e "$options")" -- "$cur")
     else
+        local cmd
         cmd=${COMP_WORDS[1]}
         if [[ $cmd == "install" ]]
         then
-            local IFS=$'\n'
+            local IFS
+            IFS=$'\n'
             # shellcheck disable=SC2178
             mapfile -t COMPREPLY < <(compgen -W "$(echo -e "$(find "$TUE_ENV_TARGETS_DIR" -mindepth 1 -maxdepth 1 -type d -not -name ".*" -printf "%f\n" | sed "s/.*/'& '/g")\n'--debug '\n'--no-ros-deps '\n'--doc-depend '\n'--no-doc-depend '\n'--test-depend '\n'--no-test-depend '\n'--branch='")" -- "$cur")
         elif [[ $cmd == "dep" ]]
         then
-            local IFS=$'\n'
+            local IFS
+            IFS=$'\n'
             # shellcheck disable=SC2178
             mapfile -t COMPREPLY < <(compgen -W "$(echo -e "$(find "$TUE_ENV_DIR"/.env/dependencies -mindepth 1 -maxdepth 1 -type f -not -name ".*" -printf "%f\n" | sed "s/.*/'& '/g")\n'--plain '\n'--verbose '\n'--ros-only '\n'--all '\n'--level='")" -- "$cur")
         elif [[ $cmd == "update" ]]
         then
-            local IFS=$'\n'
+            local IFS
+            IFS=$'\n'
             # shellcheck disable=SC2178
             mapfile -t COMPREPLY < <(compgen -W "$(echo -e "$(find "$TUE_ENV_DIR"/.env/dependencies -mindepth 1 -maxdepth 1 -type f -not -name ".*" -printf "%f\n" | sed "s/.*/'& '/g")\n'--debug '\n'--no-ros-deps '\n'--doc-depend '\n'--no-doc-depend '\n'--test-depend '\n'--no-test-depend '\n'--branch='")" -- "$cur")
         elif [[ $cmd == "remove" ]]
         then
-            local IFS=$'\n'
+            local IFS
+            IFS=$'\n'
             # shellcheck disable=SC2178
             mapfile -t COMPREPLY < <(compgen -W "$(find "$TUE_ENV_DIR"/.env/installed -mindepth 1 -maxdepth 1 -type f -not -name ".*" -printf "%f\n" | sed "s/.*/'& '/g")" -- "$cur")
         elif [[ $cmd == "show" ]]
         then
-            local IFS=$'\n'
+            local IFS
+            IFS=$'\n'
             # shellcheck disable=SC2178
             mapfile -t COMPREPLY < <(compgen -W "$(find "$TUE_ENV_TARGETS_DIR" -mindepth 1 -maxdepth 1 -type d -not -name ".*" -printf "%f\n" | sed "s/.*/'& '/g")" -- "$cur")
         else
@@ -1046,14 +1078,15 @@ function tue-checkout
         return 1
     fi
 
+    local NO_TUE_ENV branch
     while test $# -gt 0
     do
         case "$1" in
-            --only-pkgs) local NO_TUE_ENV="true"
+            --only-pkgs) NO_TUE_ENV="true"
             ;;
             --*) echo "unknown option $1"; exit 1;
             ;;
-            *) local branch=$1
+            *) branch=$1
             ;;
         esac
         shift
@@ -1066,7 +1099,8 @@ function tue-checkout
     fi
     for pkg_dir in $fs
     do
-        pkg=${pkg_dir#$TUE_SYSTEM_DIR/src/}
+        local pkg
+        pkg=${pkg_dir#"${TUE_SYSTEM_DIR}/src/"}
         if [ -z "$NO_TUE_ENV" ]
         then
             if [[ $pkg =~ .tue ]]
@@ -1127,7 +1161,7 @@ function tue-deb-generate
 
     [[ "${TUE_ROS_VERSION}" != "2" ]] && { echo -e "\e[31;1mError! This command is supported only with TUE_ROS_VERSION=2.\e[0m"; return 1; }
 
-    local packages_list=
+    local packages_list
     if [[ -z "${1}" ]]
     then
         echo -e "\e[33;1mNo packages specified, so packaging the entire workspace. \e[0m"
@@ -1147,7 +1181,7 @@ function tue-deb-generate
     fi
 
     # Check if packages are built
-    local PACKAGES_NOT_BUILT=
+    local PACKAGES_NOT_BUILT
     for package in $packages_list
     do
         if [[ ! -d "${TUE_SYSTEM_DIR}"/install/"${package}" ]]
@@ -1162,7 +1196,8 @@ function tue-deb-generate
         return 1
     fi
 
-    local cur_dir="${PWD}"
+    local cur_dir
+    cur=${PWD}
 
     local timestamp
     timestamp="$(date +%Y%m%d%H%M%S)"
@@ -1172,6 +1207,7 @@ function tue-deb-generate
 
     for package in $packages_list
     do
+        local pkg_rel_dir
         pkg_rel_dir="$("${TUE_DIR}"/installer/generate_deb_control.py "${TUE_RELEASE_DIR}" "${TUE_SYSTEM_DIR}"/src/"${package}"/package.xml "${timestamp}")"
 
 
@@ -1197,8 +1233,7 @@ function tue-deb-gitlab-release
 {
     echo -e "\e[32;1mReleasing debian files to GitLab package registry\e[0m"
 
-    local REGISTRY_URL=
-    local TOKEN=
+    local REGISTRY_URL TOKEN
 
     for i in "$@"
     do
@@ -1224,12 +1259,9 @@ function tue-deb-gitlab-release
         return 1
     fi
 
-    local deb_pkg=
-    local pkg=
-    local version=
-
     for deb in "${TUE_RELEASE_DIR}"/*
     do
+        local deb_pkg pkgwithversion pkg version
         deb_pkg="$(basename "${deb}")"
         pkgwithversion="${deb_pkg%%-build*}"
         pkg="${pkgwithversion%%_*}"
@@ -1247,7 +1279,7 @@ export -f tue-deb-gitlab-release
 #                                              TUE-DATA
 # ----------------------------------------------------------------------------------------------------
 
-# shellcheck disable=SC1090
+# shellcheck disable=SC1091
 source "$TUE_DIR"/setup/tue-data.bash
 
 # ----------------------------------------------------------------------------------------------------
@@ -1262,29 +1294,34 @@ function _tue-repos-do
     # The input can be multiple arguments, but if the input consists of multiple commands
     # seperated by ';' or '&&' the input needs to be captured in a string.
 
-    local mem_pwd=$PWD
+    local mem_pwd
+    mem_pwd=${PWD}
+    local -a cmd_array
+    cmd_array=("$@")
 
     { [ -n "$TUE_DIR" ] && cd "$TUE_DIR"; } || { echo -e "TUE_DIR '$TUE_DIR' does not exist"; return 1; }
     echo -e "\e[1m[tue-env]\e[0m"
-    eval "$@"
+    eval "${cmd_array[*]}"
 
     { [ -n "$TUE_ENV_TARGETS_DIR" ] && cd "$TUE_ENV_TARGETS_DIR"; } || { echo -e "TUE_ENV_TARGETS_DIR '$TUE_ENV_TARGETS_DIR' does not exist"; return 1; }
     echo -e "\e[1m[tue-env-targets]\e[0m"
-    eval "$@"
+    eval "${cmd_array[*]}"
 
-    local repos_dir=$TUE_ENV_DIR/repos/github.com/tue-robotics
+    local repos_dir
+    repos_dir=$TUE_ENV_DIR/repos/github.com/tue-robotics
 
     local fs
     fs=$(ls "$repos_dir")
     for repo in $fs
     do
-        local repo_dir=$repos_dir/$repo
+        local repo_dir
+        repo_dir=$repos_dir/$repo
 
         if [ -d "$repo_dir" ]
         then
             cd "$repo_dir" || { echo -e "Directory '$TUE_ENV_TARGETS_DIR' does not exist"; return 1; }
             echo -e "\e[1m[${repo%.git}]\e[0m"
-            eval "$@"
+            eval "${cmd_array[*]}"
         fi
     done
 
@@ -1294,8 +1331,9 @@ function _tue-repos-do
 
 function _tue-add-git-remote
 {
-    local remote=$1
-    local server=$2
+    local remote server
+    remote=$1
+    server=$2
 
     if [ -z "$2" ]
     then
@@ -1316,10 +1354,10 @@ For example:
 
     local output
     output="$(_git_split_url "$(git config --get remote.origin.url)")"
-    local array
+    local array repo_address url_extension
     read -r -a array <<< "$output"
-    local repo_address=${array[1]}
-    local url_extension="$repo_address.git"
+    repo_address=${array[1]}
+    url_extension="$repo_address.git"
 
     if [[ "$(git remote)" == *"$remote"* ]]
     then
@@ -1355,8 +1393,9 @@ For example:
         return 1
     fi
 
-    local remote=$1
-    local server=$2
+    local remote server
+    remote=$1
+    server=$2
 
     if [ "$remote" == "origin" ]
     then
@@ -1369,7 +1408,8 @@ For example:
 
 function __tue-remove-git-remote
 {
-    local remote=$1
+    local remote
+    remote=$1
 
     if [ -z "$1" ]
     then
@@ -1411,7 +1451,8 @@ For example:
         return 1
     fi
 
-    local remote=$1
+    local remote
+    remote=$1
 
     if [ "$remote" == "origin" ]
     then
@@ -1435,9 +1476,9 @@ For example:
         return 1
     fi
 
-    local remote=$1
-    local branch=$2
-    local exists
+    local remote branch exists
+    remote=$1
+    branch=$2
     exists=$(git show-ref refs/heads/"$branch")
     if [ -n "$exists" ]
     then
@@ -1461,8 +1502,9 @@ For example:
         return 1
     fi
 
-    local remote=$1
-    local branch=$2
+    local remote branch
+    remote=$1
+    branch=$2
 
     _tue-repos-do "git fetch $remote; _git_remote_checkout $remote $branch"
 }
@@ -1480,8 +1522,9 @@ For example:
         return 1
     fi
 
-    local remote=$1
-    local branch=$2
+    local remote branch
+    remote=$1
+    branch=$2
 
     git fetch "$remote"
     local current_remote
@@ -1497,8 +1540,9 @@ function tue-robocup-remote-checkout
     # same functionality as tue-remote-checkout, but no arguments needed
     # doesn't perform a checkout, when current branch is already setup
     # to the roboticssrv
-    local remote="roboticssrv"
-    local branch=$TUE_ROBOCUP_BRANCH
+    local remote branch
+    remote="roboticssrv"
+    branch=$TUE_ROBOCUP_BRANCH
 
     _tue-repos-do "_tue-robocup-remote-checkout $remote $branch"
 }
@@ -1516,8 +1560,9 @@ For example:
         return 1
     fi
 
-    local branch=$1
-    local remote=$2
+    local branch remote
+    branch=$1
+    remote=$2
 
     if [ -n "$(git show-ref refs/heads/"$branch")" ]
     then
@@ -1558,8 +1603,9 @@ For example:
         return 1
     fi
 
-    local branch=$1
-    local remote=$2
+    local branch remote
+    branch=$1
+    remote=$2
 
     _tue-repos-do "_tue-robocup-change-remote $branch $remote"
 }
@@ -1623,14 +1669,17 @@ function _ping_bool
 
 function tue-robocup-install-package
 {
-    local repos_dir=$TUE_ENV_DIR/repos/github.com/tue-robotics
-    local repo_dir=$repos_dir/${1}.git
+    local repos_dir repo_dir
+    repos_dir=$TUE_ENV_DIR/repos/github.com/tue-robotics
+    repo_dir=$repos_dir/${1}.git
 
-    local mem_pwd=$PWD
+    local mem_pwd
+    mem_pwd=${PWD}
 
-    local remote="roboticssrv"
-    local server="amigo@roboticssrv.local:"
-    local branch=$TUE_ROBOCUP_BRANCH
+    local remote server branch
+    remote="roboticssrv"
+    server="amigo@roboticssrv.local:"
+    branch=$TUE_ROBOCUP_BRANCH
 
     # If directory already exists, return
     [ -d "$repo_dir" ] && return 0
@@ -1659,7 +1708,8 @@ function tue-robocup-install-package
         fs=$(find . -mindepth 1 -maxdepth 1 -type d -not -name ".*" -printf "%f\n")
         for pkg in $fs
         do
-            local pkg_dir=$repo_dir/$pkg
+            local pkg_dir
+            pkg_dir=$repo_dir/$pkg
             if [ -f "$pkg_dir/package.xml" ]
             then
                 if [ ! -h "$TUE_ENV_DIR"/system/src/"$pkg" ]
@@ -1681,6 +1731,7 @@ function tue-robocup-update
     # Copy rsettings file
     if [ "$ROBOT_REAL" != "true" ]
     then
+        local rsettings_file
         rsettings_file=$TUE_ENV_TARGETS_DIR/tue-common/rsettings_file
         if [ -f "$rsettings_file" ]
         then

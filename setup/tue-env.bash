@@ -29,6 +29,7 @@ function tue-env
         return 1
     fi
 
+    local cmd
     cmd=$1
     shift
 
@@ -43,7 +44,8 @@ function tue-env
             return 1
         fi
 
-        local dir=$PWD   # default directory is current directory
+        local dir
+        dir=$PWD   # default directory is current directory
         [ -z "$2" ] || dir=$2
         dir="$( realpath "$dir" )"
 
@@ -82,8 +84,9 @@ options:
             return 1
         else
             # Set purge to be false by default
+            local PURGE env
             PURGE=false
-            env=""
+            env=
             while test $# -gt 0
             do
                 case "$1" in
@@ -96,7 +99,7 @@ options:
                     *)
                         # Read only the first passed environment name and ignore
                         # the rest
-                        if [ -z $env ]
+                        if [ -z "$env" ]
                         then
                             env=$1
                         fi
@@ -112,6 +115,7 @@ options:
             return 1
         fi
 
+        local dir
         dir=$(cat "$TUE_DIR"/user/envs/"$env")
         rm "$TUE_DIR"/user/envs/"$env"
 
@@ -147,7 +151,7 @@ Purged environment directory of '$env'"""
         TUE_ENV_DIR=$(cat "$TUE_DIR"/user/envs/"$1")
         export TUE_ENV_DIR
 
-        # shellcheck disable=SC1090
+        # shellcheck disable=SC1091
         source "$TUE_DIR"/setup.bash
 
     elif [[ $cmd == "set-default" ]]
@@ -170,8 +174,9 @@ Purged environment directory of '$env'"""
             return 1
         fi
 
-        local env=$1
-        local url=$2
+        local env url
+        env=$1
+        url=$2
         if [ -z "$url" ]
         then
             env=$TUE_ENV
@@ -186,7 +191,8 @@ Purged environment directory of '$env'"""
 
         local tue_env_dir
         tue_env_dir=$(cat "$TUE_DIR"/user/envs/"$env")
-        local tue_env_targets_dir=$tue_env_dir/.env/targets
+        local tue_env_targets_dir
+        tue_env_targets_dir=$tue_env_dir/.env/targets
 
         if [ -d "$tue_env_targets_dir" ]
         then
@@ -201,7 +207,8 @@ Purged environment directory of '$env'"""
 
     elif [[ $cmd == "targets" ]]
     then
-        local env=$1
+        local env
+        env=$1
         [ -n "$env" ] || env=$TUE_ENV
 
         if [ -n "$env" ]
@@ -213,7 +220,8 @@ Purged environment directory of '$env'"""
 
     elif [[ $cmd == "config" ]]
     then
-        local env=$1
+        local env
+        env=$1
         shift
         [ -n "$env" ] || env=$TUE_ENV
 
@@ -223,13 +231,14 @@ Purged environment directory of '$env'"""
         then
             local tue_env_dir
             tue_env_dir=$(cat "$TUE_DIR"/user/envs/"$env")
-            # shellcheck disable=SC1090
+            # shellcheck disable=SC1091
             source "$tue_env_dir"/.env/setup/user_setup.bash
         fi
 
     elif [[ $cmd == "cd" ]]
     then
-        local env=$1
+        local env
+        env=$1
         [ -n "$env" ] || env=$TUE_ENV
 
         if [ -n "$env" ]
@@ -270,12 +279,14 @@ Purged environment directory of '$env'"""
 
 function _tue-env
 {
-    local cur=${COMP_WORDS[COMP_CWORD]}
+    local cur
+    cur=${COMP_WORDS[COMP_CWORD]}
 
     if [ "$COMP_CWORD" -eq 1 ]
     then
         mapfile -t COMPREPLY < <(compgen -W "init list switch list-current remove cd set-default config init-targets targets" -- "$cur")
     else
+        local cmd
         cmd=${COMP_WORDS[1]}
         if [[ $cmd == "switch" ]] || [[ $cmd == "remove" ]] || [[ $cmd == "cd" ]] || [[ $cmd == "set-default" ]] || [[ $cmd == "init-targets" ]] || [[ $cmd == "targets" ]]
         then
@@ -288,7 +299,8 @@ function _tue-env
 
             elif [[ $cmd == "remove" ]] && [ "$COMP_CWORD" -eq 3 ]
             then
-                local IFS=$'\n'
+                local IFS
+                IFS=$'\n'
                 mapfile -t COMPREPLY < <(compgen -W "'--purge'" -- "$cur")
             fi
         elif [[ $cmd == "config" ]]

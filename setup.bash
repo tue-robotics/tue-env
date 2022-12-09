@@ -3,7 +3,7 @@ TUE_DIR="$( cd "$( dirname "${BASH_SOURCE[0]}" )" && pwd )"
 export TUE_DIR
 
 # Load tue-env tool
-# shellcheck disable=SC1090
+# shellcheck disable=SC1091
 source "$TUE_DIR"/setup/tue-env.bash
 
 # ------------------------------------------
@@ -54,18 +54,18 @@ fi
 
 if [ -f "$TUE_ENV_DIR"/.env/setup/user_setup.bash ]
 then
-    # shellcheck disable=SC1090
+    # shellcheck disable=SC1091
     source "$TUE_ENV_DIR"/.env/setup/user_setup.bash
 fi
 
 # -----------------------------------------
 # Load all the bash functions
-# shellcheck disable=SC1090
+# shellcheck disable=SC1091
 source "$TUE_DIR"/setup/tue-functions.bash
 
 if [ -f "$TUE_DIR"/setup/tue-misc.bash ]
 then
-    # shellcheck disable=SC1090
+    # shellcheck disable=SC1091
     source "$TUE_DIR"/setup/tue-misc.bash
 fi
 
@@ -84,6 +84,6 @@ fi
 
 if [ -f "$TUE_ENV_DIR"/.env/setup/target_setup.bash ]
 then
-    # shellcheck disable=SC1090
+    # shellcheck disable=SC1091
     source "$TUE_ENV_DIR"/.env/setup/target_setup.bash
 fi
