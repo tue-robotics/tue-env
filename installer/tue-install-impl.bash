@@ -362,7 +362,9 @@ function tue-install-git
         do
             case $i in
                 --target-dir=* )
-                    targetdir="${i#*=}"  ;;
+                    targetdir="${i#*=}"
+                    targetdir="${targetdir/#\~/$HOME}"
+                    ;;
                 --version=* )
                     version="${i#*=}" ;;
                 * )
@@ -376,6 +378,7 @@ function tue-install-git
         tue-install-error "Target directory path cannot be empty"
     fi
 
+    local res
     if [ ! -d "$targetdir" ]
     then
         tue-install-debug "git clone --recursive $repo $targetdir"
@@ -401,7 +404,6 @@ function tue-install-git
                 tue-install-info "URL has switched to $repo"
             fi
 
-            local res
             tue-install-debug "git -C $targetdir pull --ff-only --prune"
             res=$(git -C "$targetdir" pull --ff-only --prune 2>&1)
             tue-install-debug "res: $res"
