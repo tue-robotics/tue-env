@@ -229,15 +229,13 @@ then
     echo -e "\e[35m\e[1mgit -C ~${TUE_SYSTEM_DIR#"${DOCKER_HOME}"}/src/$PACKAGE checkout -f PULLREQUEST --\e[0m"
     docker exec -t tue-env bash -c 'source ~/.bashrc; git -C "$TUE_SYSTEM_DIR"/src/"$PACKAGE" checkout -f PULLREQUEST --'
 else
-    DEFAULT_BRANCH=$(docker exec -t tue-env bash -c 'source ~/.bashrc; _tue-git-get-default-branch "$TUE_SYSTEM_DIR"/src/"$PACKAGE"' | tr -d '\r')
-
     # Install the package
-    if [ "$BRANCH" != "$DEFAULT_BRANCH" ]
+    if [[ -n "$BRANCH" ]] # BRANCH is empty on default branch
     then
         echo -e "\e[35m\e[1mtue-get install ros-$PACKAGE --test-depend --branch=$BRANCH\e[0m"
         docker exec tue-env bash -c 'source ~/.bashrc; tue-get install ros-"$PACKAGE" --test-depend --branch="$BRANCH"'
     else
-        echo -e "\e[35m\e[1mtue-get install ros-$PACKAGE --test-depend \e[0m"
+        echo -e "\e[35m\e[1mtue-get install ros-$PACKAGE --test-depend\e[0m"
         docker exec tue-env bash -c 'source ~/.bashrc; tue-get install ros-"$PACKAGE" --test-depend'
     fi
 
