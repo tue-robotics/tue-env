@@ -204,7 +204,7 @@ echo -e "\e[35m\e[1mROS_DISTRO = ${ROS_DISTRO}\e[0m"
 TUE_SYSTEM_DIR=$(docker exec -t tue-env bash -c 'source ~/.bashrc; echo "$TUE_SYSTEM_DIR"' | tr -d '\r')
 
 # First install only the git repo of the package so that appropriate branch can be checked out later
-echo -e "\e[35m\e[1m tue-get install ros-$PACKAGE --no-ros-deps\e[0m"
+echo -e "\e[35m\e[1mtue-get install ros-$PACKAGE --no-ros-deps\e[0m"
 docker exec tue-env bash -c 'echo "debconf debconf/frontend select Noninteractive" | sudo debconf-set-selections'
 docker exec tue-env bash -c 'source ~/.bashrc; tue-get install ros-"$PACKAGE" --no-ros-deps'
 
@@ -229,17 +229,10 @@ then
     echo -e "\e[35m\e[1mgit -C ~${TUE_SYSTEM_DIR#"${DOCKER_HOME}"}/src/$PACKAGE checkout -f PULLREQUEST --\e[0m"
     docker exec -t tue-env bash -c 'source ~/.bashrc; git -C "$TUE_SYSTEM_DIR"/src/"$PACKAGE" checkout -f PULLREQUEST --'
 else
-    DEFAULT_BRANCH=$(docker exec -t tue-env bash -c 'source ~/.bashrc; _tue-git-get-default-branch "$TUE_SYSTEM_DIR"/src/"$PACKAGE"' | tr -d '\r')
-
     # Install the package
-    if [ "$BRANCH" != "$DEFAULT_BRANCH" ]
-    then
-        echo -e "\e[35m\e[1mtue-get install ros-$PACKAGE --test-depend --branch=$BRANCH\e[0m"
-        docker exec tue-env bash -c 'source ~/.bashrc; tue-get install ros-"$PACKAGE" --test-depend --branch="$BRANCH"'
-    else
-        echo -e "\e[35m\e[1mtue-get install ros-$PACKAGE --test-depend \e[0m"
-        docker exec tue-env bash -c 'source ~/.bashrc; tue-get install ros-"$PACKAGE" --test-depend'
-    fi
+    branch_string="${BRANCH:+"--branch=${BRANCH}"}"
+    echo -e "\e[35m\e[1mtue-get install ros-${PACKAGE} --test-depend ${branch_string}\e[0m"
+    docker exec tue-env bash -c 'source ~/.bashrc; tue-get install ros-"${PACKAGE}" --test-depend --branch="${BRANCH}"'
 
     # Set the package to the right commit
     echo -e "\e[35m\e[1mReset package to this commit\e[0m"
