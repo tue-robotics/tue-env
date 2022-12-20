@@ -230,14 +230,9 @@ then
     docker exec -t tue-env bash -c 'source ~/.bashrc; git -C "$TUE_SYSTEM_DIR"/src/"$PACKAGE" checkout -f PULLREQUEST --'
 else
     # Install the package
-    if [[ -n "$BRANCH" ]] # BRANCH is empty on default branch
-    then
-        echo -e "\e[35m\e[1mtue-get install ros-$PACKAGE --test-depend --branch=$BRANCH\e[0m"
-        docker exec tue-env bash -c 'source ~/.bashrc; tue-get install ros-"$PACKAGE" --test-depend --branch="$BRANCH"'
-    else
-        echo -e "\e[35m\e[1mtue-get install ros-$PACKAGE --test-depend\e[0m"
-        docker exec tue-env bash -c 'source ~/.bashrc; tue-get install ros-"$PACKAGE" --test-depend'
-    fi
+    branch_string="${BRANCH:+"--branch=${BRANCH}"}"
+    echo -e "\e[35m\e[1mtue-get install ros-${PACKAGE} --test-depend ${branch_string}\e[0m"
+    docker exec tue-env bash -c 'source ~/.bashrc; tue-get install ros-"${PACKAGE}" --test-depend --branch="${BRANCH}"'
 
     # Set the package to the right commit
     echo -e "\e[35m\e[1mReset package to this commit\e[0m"
