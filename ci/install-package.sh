@@ -230,8 +230,8 @@ then
     docker exec -t tue-env bash -c 'source ~/.bashrc; git -C "$TUE_SYSTEM_DIR"/src/"$PACKAGE" checkout -f PULLREQUEST --'
 else
     # Install the package
-    branch_string="${BRANCH:+"--branch=${BRANCH}"}"
-    echo -e "\e[35m\e[1mtue-get install ros-${PACKAGE} --test-depend ${branch_string}\e[0m"
+    branch_string="${BRANCH:+" --branch=${BRANCH}"}"
+    echo -e "\e[35m\e[1mtue-get install ros-${PACKAGE} --test-depend${branch_string}\e[0m"
     docker exec tue-env bash -c 'source ~/.bashrc; tue-get install ros-"${PACKAGE}" --test-depend --branch="${BRANCH}"'
 
     # Set the package to the right commit
