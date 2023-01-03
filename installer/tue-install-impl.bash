@@ -1745,6 +1745,6 @@ fi
 
 TUE_INSTALL_CURRENT_TARGET="main-loop"
 
-tue-install-echo "Installer completed succesfully"
+tue-install-echo "Installer completed successfully"
 
 return 0
