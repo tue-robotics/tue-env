@@ -2,3 +2,6 @@ env
 .rsettings
 bin
 user/
+
+# Python install files
+*.egg-info
