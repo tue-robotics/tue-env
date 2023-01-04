@@ -24,24 +24,39 @@ def main() -> int:
 
     deps = recursive_get_deps(sys.argv[1])
     for dep in deps:
-        #print(f"Dependency on {dep[0]} with version {dep[1]}")
-        print("\n".join(dep))
+        print(f"Dependency on {dep[0]} with version {dep[1]}")
+        #print("\n".join(dep))
     return 0
 
 
 def recursive_get_deps(path: str) -> set:
-    dep_set = packagexml_parser(path)["deps"]
-    total_dep_set = copy.deepcopy(dep_set)
-    for dep in dep_set:
+    parsed_packages = list()
+    to_parse_packages = list()
+    deps = set()
+
+    direct_deps = packagexml_parser(path)["deps"]
+    to_parse_packages.extend([dep[0] for dep in direct_deps])
+    deps |= direct_deps
+
+    while len(to_parse_packages) > 0:
+        package = to_parse_packages.pop()
+        parsed_packages.append(package)
+
         # get dependencies of the dependency
         try:
-            dep_path = rospack.get_path(dep[0]) + "/package.xml"
+            dep_path = rospack.get_path(package) + "/package.xml"
         except rospkg.common.ResourceNotFound:
-            print(f"could not find {dep[0]}")
+            print(f"could not find {package}")
             continue
-        dep_dep_set = recursive_get_deps(dep_path)
-        total_dep_set |= dep_dep_set
-    return total_dep_set
+        dep_set = packagexml_parser(dep_path)["deps"]
+        for dep in dep_set:
+            if dep[0] in parsed_packages:
+                continue
+            if dep[0] not in to_parse_packages:
+                # TODO check if package dep version also matches the one in the set.
+                to_parse_packages.append(dep[0])
+                deps |= {dep}
+    return deps
 
 
 def packagexml_parser(path: str) -> Mapping:
