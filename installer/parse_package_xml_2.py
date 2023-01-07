@@ -9,8 +9,9 @@ from catkin_pkg.condition import evaluate_condition
 
 import rospkg
 rospack = rospkg.RosPack()
+from collections import namedtuple
 
-import copy
+Dependency = namedtuple('Dependency', ['name', 'req_version', 'actual_version', 'comparator'])
 
 
 def main() -> int:
@@ -22,21 +23,32 @@ def main() -> int:
         print("Usage: parse_package_xml_2 PACKAGE.XML")
         return 1
 
+    mismatch_found = False
     deps = recursive_get_deps(sys.argv[1])
-    for dep in deps:
-        print(f"Dependency on {dep[0]} with version {dep[1]}")
+    for key, value in deps.items():
+        if value.req_version != "None" and value.req_version != value.actual_version:
+            print(f"Package {value.name}, current version {value.actual_version}, required version {value.req_version}")
+            mismatch_found = True
         #print("\n".join(dep))
+
+    if mismatch_found:
+        print("Mismatch found in dependencies")
+    else:
+        print("Dependencies are consistent")
+
     return 0
 
 
-def recursive_get_deps(path: str) -> set:
+def recursive_get_deps(path: str) -> dict:
     parsed_packages = list()
     to_parse_packages = list()
-    deps = set()
+    deps = dict()
 
-    direct_deps = packagexml_parser(path)["deps"]
+    parsed_mapping = packagexml_parser(path)
+    direct_deps = parsed_mapping["deps"]
     to_parse_packages.extend([dep[0] for dep in direct_deps])
-    deps |= direct_deps
+    for dep in direct_deps:
+        deps[dep[0]] = Dependency(dep[0], dep[1], '0.0.0', 0)
 
     while len(to_parse_packages) > 0:
         package = to_parse_packages.pop()
@@ -46,16 +58,31 @@ def recursive_get_deps(path: str) -> set:
         try:
             dep_path = rospack.get_path(package) + "/package.xml"
         except rospkg.common.ResourceNotFound:
-            print(f"could not find {package}")
+            #print(f"could not find {package}, assuming not a ros package")
+            del deps[package]
             continue
-        dep_set = packagexml_parser(dep_path)["deps"]
+
+        parsed_mapping = packagexml_parser(dep_path)
+        # register current version
+        version_set = parsed_mapping["version"]
+        if len(version_set) != 1:
+            print(f"Package {package} should have 1 version, instead its version is {version_set}")
+            raise Exception #TODO better exception
+        # update actual version
+        deps[package] = Dependency(deps[package].name,
+                                   deps[package].req_version,
+                                   list(version_set)[0],
+                                   deps[package].comparator)
+
+        dep_set = parsed_mapping["deps"]
         for dep in dep_set:
             if dep[0] in parsed_packages:
+                if dep[0] in deps and deps[dep[0]].req_version != dep[1]:
+                    print(f"inconsistent dependency. According to package {package}, package {dep[0]} should have version {dep[1]}, but another package requires {deps[dep[0]].req_version}")
                 continue
             if dep[0] not in to_parse_packages:
-                # TODO check if package dep version also matches the one in the set.
                 to_parse_packages.append(dep[0])
-                deps |= {dep}
+                deps[dep[0]] = Dependency(dep[0], dep[1], 'Problems!', 0)
     return deps
 
 
@@ -124,7 +151,7 @@ def packagexml_parser(path: str) -> Mapping:
                     emails[value.text] = value.attrib.get("email")
                 parsed["emails"] = emails
 
-    return {"parser": parsed, "deps": dep_set}
+    return {"parser": parsed, "deps": dep_set, "version": parsed["version"]}
 
 
 if __name__ == "__main__":
