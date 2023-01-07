@@ -8,11 +8,10 @@ class BackgroundPopen(subprocess.Popen):
     Inspired by https://stackoverflow.com/a/42352331
     """
 
-    @staticmethod
-    def _proxy_lines(pipe: IO, handler: Callable):
+    def _proxy_lines(self, pipe: IO, handler: Callable):
         with pipe:
             for line in pipe:
-                handler(line)
+                handler(self, line)
 
     def __init__(self, out_handler: Optional[Callable] = None, err_handler: Optional[Callable] = None, *args, **kwargs):
         if out_handler is not None:
@@ -38,8 +37,8 @@ if __name__ == "__main__":
     done'
     """
 
-    def cyan_handler(line):
-        cprint(line, color="cyan", end="")
+    def cyan_handler(sub: BackgroundPopen, line: str):
+        cprint(line.strip(), color="cyan")
 
     bla = BackgroundPopen(out_handler=cyan_handler, args=shlex.split(cmd), text=True)
     bla.wait()

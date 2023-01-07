@@ -12,6 +12,8 @@ setup(
     name="tue_env",
     packages=find_packages(where="src"),
     package_dir={"": "src"},
+    package_data={"tue_get": ["src/tue_get/resources/*"]},
+    include_package_data=True,
     version=version,
     author="Matthijs van der Burgh",
     author_email="MatthijsBurgh@outlook.com",
