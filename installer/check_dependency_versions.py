@@ -30,7 +30,6 @@ def main() -> int:
         if value.req_version != "None" and value.req_version != value.actual_version:
             print(f"Package {value.name}, current version {value.actual_version}, required version {value.req_version}")
             mismatch_found = True
-        # print("\n".join(dep))
 
     if mismatch_found:
         print("Mismatch found in dependencies")
@@ -59,7 +58,6 @@ def recursive_get_deps(path: str) -> dict:
         try:
             dep_path = rospack.get_path(package) + "/package.xml"
         except rospkg.common.ResourceNotFound:
-            # print(f"could not find {package}, assuming not a ros package")
             del deps[package]
             continue
 
