@@ -8,10 +8,11 @@ import xml.etree.ElementTree as ET
 from catkin_pkg.condition import evaluate_condition
 
 import rospkg
+
 rospack = rospkg.RosPack()
 from collections import namedtuple
 
-Dependency = namedtuple('Dependency', ['name', 'req_version', 'actual_version', 'comparator'])
+Dependency = namedtuple("Dependency", ["name", "req_version", "actual_version", "comparator"])
 
 
 def main() -> int:
@@ -29,7 +30,7 @@ def main() -> int:
         if value.req_version != "None" and value.req_version != value.actual_version:
             print(f"Package {value.name}, current version {value.actual_version}, required version {value.req_version}")
             mismatch_found = True
-        #print("\n".join(dep))
+        # print("\n".join(dep))
 
     if mismatch_found:
         print("Mismatch found in dependencies")
@@ -48,7 +49,7 @@ def recursive_get_deps(path: str) -> dict:
     direct_deps = parsed_mapping["deps"]
     to_parse_packages.extend([dep[0] for dep in direct_deps])
     for dep in direct_deps:
-        deps[dep[0]] = Dependency(dep[0], dep[1], '0.0.0', 0)
+        deps[dep[0]] = Dependency(dep[0], dep[1], "0.0.0", 0)
 
     while len(to_parse_packages) > 0:
         package = to_parse_packages.pop()
@@ -58,7 +59,7 @@ def recursive_get_deps(path: str) -> dict:
         try:
             dep_path = rospack.get_path(package) + "/package.xml"
         except rospkg.common.ResourceNotFound:
-            #print(f"could not find {package}, assuming not a ros package")
+            # print(f"could not find {package}, assuming not a ros package")
             del deps[package]
             continue
 
@@ -67,22 +68,23 @@ def recursive_get_deps(path: str) -> dict:
         version_set = parsed_mapping["version"]
         if len(version_set) != 1:
             print(f"Package {package} should have 1 version, instead its version is {version_set}")
-            raise Exception #TODO better exception
+            raise Exception  # TODO better exception
         # update actual version
-        deps[package] = Dependency(deps[package].name,
-                                   deps[package].req_version,
-                                   list(version_set)[0],
-                                   deps[package].comparator)
+        deps[package] = Dependency(
+            deps[package].name, deps[package].req_version, list(version_set)[0], deps[package].comparator
+        )
 
         dep_set = parsed_mapping["deps"]
         for dep in dep_set:
             if dep[0] in parsed_packages:
                 if dep[0] in deps and deps[dep[0]].req_version != dep[1]:
-                    print(f"inconsistent dependency. According to package {package}, package {dep[0]} should have version {dep[1]}, but another package requires {deps[dep[0]].req_version}")
+                    print(
+                        f"inconsistent dependency. According to package {package}, package {dep[0]} should have version {dep[1]}, but another package requires {deps[dep[0]].req_version}"
+                    )
                 continue
             if dep[0] not in to_parse_packages:
                 to_parse_packages.append(dep[0])
-                deps[dep[0]] = Dependency(dep[0], dep[1], 'Problems!', 0)
+                deps[dep[0]] = Dependency(dep[0], dep[1], "Problems!", 0)
     return deps
 
 
