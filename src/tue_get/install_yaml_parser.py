@@ -211,6 +211,7 @@ def installyaml_parser(installer: Any, path: str, now: bool = False) -> Mapping:
 if __name__ == "__main__":
     import sys
     from tue_get.installer_impl import InstallerImpl
+
     if len(sys.argv) < 2:
         print("Provide yaml file to parse")
         exit(1)

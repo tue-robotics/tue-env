@@ -104,6 +104,7 @@ def test_empty_target():
     cmds = parse_target(target, True)
     assert not cmds
 
+
 def test_system_target():
     target = [{"type": "system", "name": "pkg_name"}]
     cmds = parse_target(target, False)
