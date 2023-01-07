@@ -228,7 +228,7 @@ class InstallerImpl:
         else:
             self.tue_install_tee(line)
 
-    def _out_handler_sudo_password(self, sub: BackgroundPopen, line: Union[bytes, str]) -> None:
+    def _err_handler_sudo_password(self, sub: BackgroundPopen, line: Union[bytes, str]) -> None:
         line = line.strip()
         if line.startswith("[sudo] password for"):
             if self._sudo_password is None:
@@ -236,7 +236,7 @@ class InstallerImpl:
             sub.stdin.write(f"{self._sudo_password}\n")
             sub.stdin.flush()
         else:
-            self.tue_install_tee(line)
+            self.tue_install_tee(line, color="red")
 
     def tue_install_error(self, msg: str) -> None:
         # Make sure the entire msg is indented, not just the first line
@@ -398,13 +398,13 @@ class InstallerImpl:
                         sub = BackgroundPopen(
                             args=cmds,
                             out_handler=self._out_handler,
-                            stderr=subprocess.PIPE,
+                            err_handler=self._err_handler_sudo_password,
                             stdin=subprocess.PIPE,
                             text=True,
                         )
                         sub.wait()
                         if sub.returncode != 0:
-                            stderr = sub.stderr.read()
+                            # stderr = sub.stderr.read()
                             self.tue_install_error(
                                 f"Error while running({sub.returncode}):\n    {' '.join(cmds)}" f"\n\n{stderr}"
                             )
@@ -498,27 +498,26 @@ class InstallerImpl:
             self.tue_install_debug(f"tue-install-cp: copying {file} to {cp_target}")
 
             if root_required:
-                sudo_cmd = "sudo -S "
+                sudo_cmd = "sudo "
                 self.tue_install_debug(f"Using elevated privileges (sudo) to copy ${file} to ${cp_target}")
             else:
                 sudo_cmd = ""
 
             cmd = f"{sudo_cmd}python -c 'import os; os.makedirs(\"{target}\", exist_ok=True)'"
             cmds = _which_split_cmd(cmd)
-            print(cmds)
             self.tue_install_echo(" ".join(cmds))
             sub = BackgroundPopen(
                 args=cmds,
-                out_handler=self._out_handler_sudo_password,
+                err_handler=self._err_handler_sudo_password,
                 stderr=subprocess.PIPE,
                 stdin=subprocess.PIPE,
                 text=True,
             )
             sub.wait()
             if sub.returncode != 0:
-                stderr = sub.stderr.read()
+                # stderr = sub.stderr.read()
                 self.tue_install_error(
-                    f"Error while creating the directory({sub.returncode}):\n{' '.join(cmds)}" f"\n\n{stderr}"
+                    f"Error while creating the directory({sub.returncode}):\n{' '.join(cmds)}" #  f"\n\n{stderr}"
                 )
                 # ToDo: This depends on behaviour of tue-install-error
                 return False
@@ -528,7 +527,7 @@ class InstallerImpl:
             self.tue_install_echo(" ".join(cmds))
             sub = BackgroundPopen(
                 args=cmds,
-                out_handler=self._out_handler_sudo_password,
+                err_handler=self._err_handler_sudo_password,
                 stderr=subprocess.PIPE,
                 stdin=subprocess.PIPE,
                 text=True,
