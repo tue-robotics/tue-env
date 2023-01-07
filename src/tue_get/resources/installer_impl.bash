@@ -13,7 +13,6 @@ function tue-install-warning
     echo -e "tue-install-warning: $*"
     local return_value
     read -r return_value
-    echo -e "return_value: ${return_value}"
     return $(("$return_value"))
 }
 
@@ -27,7 +26,7 @@ function tue-install-info
 
 function tue-install-debug
 {
-    echo -e "tue-install-info: $*"
+    echo -e "tue-install-debug: $*"
     local return_value
     read -r return_value
     return $(("$return_value"))
@@ -51,6 +50,7 @@ function tue-install-tee
 
 function tue-install-pipe
 {
+    local return_code
     local pipefail_old return_code
     pipefail_old=$(set -o | grep pipefail | awk '{printf $2}')
     [ "$pipefail_old" != "on" ] && set -o pipefail # set pipefail if not yet set
@@ -62,13 +62,19 @@ function tue-install-pipe
     } < <((printf '\0%s\0' "$("$@")" 1>&2) 2>&1)
     return_code=$?
     [ "$pipefail_old" != "on" ] && set +o pipefail # restore old pipefail setting
+    # shellcheck disable=SC2034
+    TUE_INSTALL_PIPE_STDOUT=$CAPTURED_STDOUT
+
+    CAPTURED_STDOUT=$(echo -e "$CAPTURED_STDOUT" | tr '\n' '^')
+    CAPTURED_STDERR=$(echo -e "$CAPTURED_STDERR" | tr '\n' '^')
     echo -e "tue-install-pipe: ${CAPTURED_STDOUT}^^^${CAPTURED_STDERR}"
     read -r return_value
     if [ "$return_value" != "0" ]
     then
+        tue-install-echo "return_value: $return_value"
         return $(("$return_value"))
     fi
-
+    tue-install-echo "return_code: $return_code"
     return $return_code
 }
 

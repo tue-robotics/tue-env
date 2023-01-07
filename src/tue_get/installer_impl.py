@@ -159,6 +159,7 @@ class InstallerImpl:
             _write_stdin(0)
         elif line.startswith("tue-install-pipe: "):
             output = line[18:].split("^^^")
+            output = map(lambda x: x.replace("^", "\n").strip(), output)
             self.tue_install_pipe(*output)
             _write_stdin(0)
         elif line.startswith("tue-install-target-now: "):
@@ -287,8 +288,10 @@ class InstallerImpl:
         :param stderr:
         :return:
         """
-        self.tue_install_tee(stdout)
-        self.tue_install_tee(stderr, color="red")
+        if stdout:
+            self.tue_install_tee(stdout)
+        if stderr:
+            self.tue_install_tee(stderr, color="red")
 
     def tue_install_target_now(self, target: str) -> bool:
         self.tue_install_debug(f"tue-install-target-now {target=}")
