@@ -1,4 +1,4 @@
-from typing import List, Optional, Union, Tuple
+from typing import List, Optional, Tuple
 
 from contextlib import contextmanager
 import datetime
@@ -7,6 +7,7 @@ import getpass
 import glob
 import os
 from pathlib import Path
+import re
 import shlex
 import shutil
 import subprocess as sp
@@ -15,6 +16,7 @@ from time import sleep
 
 from tue_get.install_yaml_parser import installyaml_parser
 from tue_get.util.BackgroundPopen import BackgroundPopen
+from tue_get.util.grep import grep_directory, grep_file
 
 CI = None
 
@@ -37,8 +39,22 @@ def _which_split_cmd(cmd: str) -> Tuple[str, List[str]]:
     return " ".join(cmds), cmds
 
 
+def _wait_for_dpkg_lock():
+    i = 0
+    rotate_list = ["-", "\\", "|", "/"]
+    cmd = "sudo fuser /var/lib/dpkg/lock"
+    cmd, cmds = _which_split_cmd(cmd)
+    while sp.run(cmds, stdout=sp.DEVNULL, stderr=sp.DEVNULL).returncode == 0:
+        print(f"[{rotate_list[i % len(rotate_list)]}] Waiting for dpkg lock", end="\r")
+        i += 1
+        sleep(0.4)
+    return
+
+
 class InstallerImpl:
     _apt_get_updated_file = os.path.join(os.sep, "tmp", "tue_get_apt_get_updated")
+    _sources_list = os.path.join(os.sep, "etc", "apt", "sources.list")
+    _sources_list_dir = os.path.join(os.sep, "etc", "apt", "sources.list.d")
 
     def __init__(self, debug: bool = False):
         self._debug = debug
@@ -105,7 +121,8 @@ class InstallerImpl:
         self._write_sorted_dep_file(os.path.join(self._dependencies_dir, self._current_target), child)
         self._write_sorted_dep_file(os.path.join(self._dependencies_on_dir, child), self._current_target)
 
-    def _write_sorted_dep_file(self, file: str, target: str) -> None:
+    @staticmethod
+    def _write_sorted_dep_file(file: str, target: str) -> None:
         if not os.path.isfile(file):
             Path(file).touch(exist_ok=False)
             targets = []
@@ -129,7 +146,7 @@ class InstallerImpl:
         self._current_target = parent_target
         self._current_target_dir = parent_target_dir
 
-    def _out_handler(self, sub: BackgroundPopen, line: Union[bytes, str]) -> None:
+    def _out_handler(self, sub: BackgroundPopen, line: str) -> None:
         def _write_stdin(msg) -> None:
             sub.stdin.write(f"{msg}\n")
             sub.stdin.flush()
@@ -198,10 +215,12 @@ class InstallerImpl:
             _write_stdin(0)
         elif line.startswith("tue-install-ppa: "):
             ppas = line[17:].split()
+            ppas = [ppa.replace("^", " ").strip() for ppa in ppas]
             success = self.tue_install_ppa(ppas)
             _write_stdin(not success)
         elif line.startswith("tue-install-ppa-now: "):
             ppas = line[21:].split()
+            ppas = [ppa.replace("^", " ").strip() for ppa in ppas]
             success = self.tue_install_ppa_now(ppas)
             _write_stdin(not success)
         elif line.startswith("tue-install-pip: "):
@@ -231,7 +250,7 @@ class InstallerImpl:
         else:
             self.tue_install_tee(line)
 
-    def _err_handler(self, sub: BackgroundPopen, line: Union[bytes, str]) -> None:
+    def _err_handler(self, sub: BackgroundPopen, line: str) -> None:
         line = line.strip()
         if line.startswith("[sudo] password for"):
             if self._sudo_password is None:
@@ -412,7 +431,7 @@ class InstallerImpl:
                     else:
                         self.tue_install_debug(f"Sourcing {install_bash_file}")
                         resource_file = os.path.join(os.path.dirname(__file__), "resources", "installer_impl.bash")
-                        cmd = f"bash -c \"source {resource_file} && source {install_bash_file}\""
+                        cmd = f'bash -c \"source {resource_file} && source {install_bash_file}\"'
                         sub = self._default_background_popen(cmd)
                         if sub.returncode != 0:
                             self.tue_install_error(f"Error while running({sub.returncode}):\n    {repr(cmd)}")
@@ -601,13 +620,13 @@ class InstallerImpl:
         with open(target_file_path, "r") as f:
             target_text = f.read().splitlines()
 
-        if not begin_tag in target_text:
+        if begin_tag not in target_text:
             self.tue_install_debug(
                 f"tue-install-add-text: {begin_tag=} not found in {target_file_path=}, "
                 "appending to {target_file_path}"
             )
             source_text = "\n".join(source_text)
-            cmd = f"bash -c \"echo - e '{source_text}' | {sudo_cmd}tee -a {target_file_path}\""
+            cmd = f"bash -c \"echo - e \'{source_text}\' | {sudo_cmd}tee -a {target_file_path}\""
         else:
             self.tue_install_debug(
                 f"tue-install-add-text: {begin_tag=} found in {target_file_path=}, "
@@ -705,17 +724,6 @@ class InstallerImpl:
         apt_get_cmd = f"sudo apt-get install --assume-yes -q {' '.join(pkgs_to_install)}"
         self.tue_install_echo(f"Going to run the following command:\n{apt_get_cmd}")
 
-        def _wait_for_dpkg_lock():
-            i = 0
-            rotate_list = ["-", "\\", "|", "/"]
-            cmd = "sudo fuser /var/lib/dpkg/lock"
-            cmd, cmds = _which_split_cmd(cmd)
-            while sp.run(cmds, stdout=sp.DEVNULL, stderr=sp.DEVNULL).returncode == 0:
-                print(f"[{rotate_list[i % len(rotate_list)]}] Waiting for dpkg lock", end="\r")
-                i += 1
-                sleep(0.4)
-            return
-
         _wait_for_dpkg_lock()
 
         if not os.path.isfile(self._apt_get_updated_file):
@@ -748,7 +756,7 @@ class InstallerImpl:
     def tue_install_ppa(self, ppas: List[str]) -> bool:
         self.tue_install_debug(f"tue-install-ppa {ppas=}")
         if not ppas:
-            self.tue_install_error("Invalid tue-install-ppa call: needs ppa as argument")
+            self.tue_install_error("Invalid tue-install-ppa call: needs ppas as argument")
             # ToDo: This depends on behaviour of tue-install-error
             return False
 
