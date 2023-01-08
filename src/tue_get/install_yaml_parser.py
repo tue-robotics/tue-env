@@ -133,10 +133,10 @@ def installyaml_parser(installer: Any, path: str, now: bool = False) -> Mapping:
 
                 source_type = source["type"]
                 if source_type == "git":
-                    command = partial(getattr(installer, "tue_install_ros"), source_type="git", **catkin_git(source))
+                    command = partial(getattr(installer, "tue_install_ros"), **catkin_git(source))
                 elif source_type == "system":
                     system_packages.append(f"ros-{ros_release}-{source['name']}")
-                    command = partial(getattr(installer, "tue_install_ros"), source_type="system", **catkin_git(source))
+                    command = partial(getattr(installer, "tue_install_ros"), source_type="system", name=source["name"])
                 else:
                     raise ValueError(f"Unknown ROS install type: '{source_type}'")
 
