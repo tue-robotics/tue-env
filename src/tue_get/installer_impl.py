@@ -431,7 +431,7 @@ class InstallerImpl:
                     else:
                         self.tue_install_debug(f"Sourcing {install_bash_file}")
                         resource_file = os.path.join(os.path.dirname(__file__), "resources", "installer_impl.bash")
-                        cmd = f'bash -c \"source {resource_file} && source {install_bash_file}\"'
+                        cmd = f'bash -c "source {resource_file} && source {install_bash_file}"'
                         sub = self._default_background_popen(cmd)
                         if sub.returncode != 0:
                             self.tue_install_error(f"Error while running({sub.returncode}):\n    {repr(cmd)}")
@@ -626,7 +626,7 @@ class InstallerImpl:
                 "appending to {target_file_path}"
             )
             source_text = "\n".join(source_text)
-            cmd = f"bash -c \"echo - e \'{source_text}\' | {sudo_cmd}tee -a {target_file_path}\""
+            cmd = f"bash -c \"echo - e '{source_text}' | {sudo_cmd}tee -a {target_file_path}\""
         else:
             self.tue_install_debug(
                 f"tue-install-add-text: {begin_tag=} found in {target_file_path=}, "
@@ -648,7 +648,7 @@ class InstallerImpl:
             print(target_text)
             target_text = "\n".join(target_text)
 
-            cmd = f"bash -c \"echo -e \'{target_text}\' | {sudo_cmd}tee {target_file_path}\""
+            cmd = f"bash -c \"echo -e '{target_text}' | {sudo_cmd}tee {target_file_path}\""
 
         cmd, cmds = _which_split_cmd(cmd)
         self.tue_install_echo(repr(cmd))
@@ -763,7 +763,54 @@ class InstallerImpl:
         self._ppas.extend(ppas)
         return True
 
-    def tue_install_ppa_now(self, ppa: List[str]) -> bool:
+    def tue_install_ppa_now(self, ppas: List[str]) -> bool:
+        self.tue_install_debug(f"tue-install-ppa-now {ppas=}")
+
+        if not ppas:
+            self.tue_install_error("Invalid tue-install-ppa-now call: needs ppas as argument")
+            # ToDo: This depends on behaviour of tue-install-error
+            return False
+
+        ppa_added = False
+        for ppa in ppas:
+            if not ppa.startswith("ppa:") and not ppa.startswith("deb "):
+                self.tue_install_error(f"Invalid ppa: needs to start with 'ppa:' or 'deb ' ({ppa=})")
+                # ToDo: This depends on behaviour of tue-install-error
+                return False
+
+            if ppa.startswith("ppa:"):
+                ppa_pattern = f"^deb.*{ppa[4:]}".replace("[", "\[").replace("]", "\]").replace("/", "\/")
+                ppa_pattern = re.compile(ppa_pattern)
+                if grep_directory(self._sources_list_dir, ppa_pattern):
+                    self.tue_install_debug(f"PPA '{ppa}' is already added previously")
+                    continue
+
+            elif ppa.startswith("deb "):
+                ppa_pattern = f"^{ppa}$".replace("[", "\[").replace("]", "\]").replace("/", "\/")
+                ppa_pattern = re.compile(ppa_pattern)
+                if grep_file(self._sources_list, ppa_pattern):
+                    self.tue_install_debug(f"PPA '{ppa}' is already added previously")
+                    continue
+
+            self.tue_install_system_now(["software-properties-common"])
+
+            self.tue_install_info(f"Adding ppa: {ppa}")
+
+            # Wait for apt-lock first (https://askubuntu.com/a/375031)
+            _wait_for_dpkg_lock()
+
+            cmd = f"sudo add-apt-repository --no-update --yes '{ppa}'"
+            sub = self._default_background_popen(cmd)
+            if sub.returncode != 0:
+                self.tue_install_error(f"An error occurred while adding ppa: {ppa}")
+                # ToDo: This depends on behaviour of tue-install-error
+                return False
+
+            ppa_added = True
+
+        if ppa_added:
+            self.tue_install_apt_get_update()
+
         return True
 
     def tue_install_pip(self, pkgs: List[str]) -> bool:
