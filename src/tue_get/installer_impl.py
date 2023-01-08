@@ -7,6 +7,8 @@ import getpass
 import glob
 import os
 from pathlib import Path
+from pip import main as pip_main
+from pip._internal.req.constructors import install_req_from_line as pip_install_req_from_line
 import re
 import shlex
 import shutil
@@ -824,6 +826,43 @@ class InstallerImpl:
         return True
 
     def tue_install_pip_now(self, pkgs: List[str]) -> bool:
+        self.tue_install_debug(f"tue-install-pip-now {pkgs=}")
+
+        if not pkgs:
+            self.tue_install_error("Invalid tue-install-pip-now call: needs packages as argument")
+            # ToDo: This depends on behaviour of tue-install-error
+            return False
+
+        pips_to_install = []
+        git_pips_to_install = []
+        for pkg in pkgs:
+            if pkg.startswith("git+"):
+                git_pips_to_install.append(pkg)
+                continue
+
+            req = pip_install_req_from_line(pkg)
+            req.check_if_exists(use_user_site=True)
+
+            if req.satisfied_by:
+                self.tue_install_debug(f"{pkg} is already installed, {req.satisfied_by}")
+            else:
+                pips_to_install.append(pkg)
+
+        if pips_to_install:
+            returncode = pip_main(["install", "--user", *pips_to_install])
+            if returncode != 0:
+                self.tue_install_error(f"An error occurred while installing pip packages: {pips_to_install}")
+                # ToDo: This depends on behaviour of tue-install-error
+                return False
+
+        if git_pips_to_install:
+            for pkg in git_pips_to_install:
+                returncode = pip_main(["install", "--user", pkg])
+                if returncode != 0:
+                    self.tue_install_error(f"An error occurred while installing pip packages: {pkg}")
+                    # ToDo: This depends on behaviour of tue-install-error
+                    return False
+
         return True
 
     def tue_install_snap(self, pkgs: List[str]) -> bool:
