@@ -37,7 +37,7 @@ setup(
     # },
     python_version=">=3.8",
     install_requires=[
-        "termcolor",
         "pyyaml",
+        "termcolor",
     ],
 )
