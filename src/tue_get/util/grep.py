@@ -2,6 +2,10 @@ from typing import List
 import os
 import re
 
+"""
+Text functions inspired by https://eli.thegreenplace.net/2011/10/19/perls-guess-if-file-is-text-or-binary-implemented-in-python
+"""
+
 text_characters = b"".join(map(lambda x: bytes((x,)), range(32, 127))) + b"\n\r\t\f\b"
 _null_trans = bytes.maketrans(b"", b"")
 
