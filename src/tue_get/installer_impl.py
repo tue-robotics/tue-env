@@ -837,6 +837,48 @@ class InstallerImpl:
         return True
 
     def tue_install_snap_now(self, pkgs: List[str]) -> bool:
+        self.tue_install_debug(f"tue-install-snap-now {pkgs=}")
+
+        if not pkgs:
+            self.tue_install_error("Invalid tue-install-snap-now call: needs packages as argument")
+            # ToDo: This depends on behaviour of tue-install-error
+            return False
+
+        self.tue_install_system_now(["snapd"])
+
+        cmd = "snap list"
+        cmd, cmds = _which_split_cmd(cmd)
+        self.tue_install_echo(repr(cmd))
+        sub = BackgroundPopen(args=cmds, err_handler=self._err_handler, stdout=sp.PIPE, text=True)
+        sub.wait()
+        if sub.returncode != 0:
+            self.tue_install_error(f"Error while getting snap list({sub.returncode}):\n    {repr(cmd)}")
+            # ToDo: This depends on behaviour of tue-install-error
+            return False
+
+        snaps_installed = sub.stdout.read().splitlines()[1:]
+        snaps_installed = [snap.split()[0] for snap in snaps_installed]
+        snaps_to_install = []
+        for pkg in pkgs:
+            if pkg not in snaps_installed:
+                snaps_to_install.append(pkg)
+                self.tue_install_debug(f"Snap '{pkg}' is not installed yet")
+            else:
+                self.tue_install_debug(f"Snap '{pkg}' is already installed")
+
+        if not snaps_to_install:
+            self.tue_install_debug("No snaps to install")
+            return True
+
+        for pkg in snaps_to_install:
+            cmd = f"sudo snap install --classic {pkg}"
+            sub = self._default_background_popen(cmd)
+            breakpoint()
+            if sub.returncode != 0:
+                self.tue_install_error(f"An error occurred while installing snap: {pkg}")
+                # ToDo: This depends on behaviour of tue-install-error
+                return False
+
         return True
 
     def tue_install_gem(self, pkgs: List[str]) -> bool:
