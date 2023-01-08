@@ -1,19 +1,20 @@
-import glob
-import subprocess
-from typing import List, Optional, Union
+from typing import List, Optional, Union, Tuple
 
 from contextlib import contextmanager
 import datetime
 import filecmp
 import getpass
+import glob
 import os
 from pathlib import Path
 import shlex
 import shutil
+import subprocess as sp
 from termcolor import colored
+from time import sleep
 
 from tue_get.install_yaml_parser import installyaml_parser
-from tue_get.util import BackgroundPopen
+from tue_get.util.BackgroundPopen import BackgroundPopen
 
 CI = None
 
@@ -30,14 +31,14 @@ def date_stamp() -> str:
     return datetime.datetime.now().strftime("%Y_%m_%d_%H_%M_%S")
 
 
-def _which_split_cmd(cmd: str) -> List[str]:
+def _which_split_cmd(cmd: str) -> Tuple[str, List[str]]:
     cmds = shlex.split(cmd)
     cmds[0] = shutil.which(cmds[0])
-    return cmds
+    return " ".join(cmds), cmds
 
 
 class InstallerImpl:
-    _apt_get_update_file = os.path.join(os.pathsep, "tmp", "tue_get_apt_get_updated")
+    _apt_get_updated_file = os.path.join(os.sep, "tmp", "tue_get_apt_get_updated")
 
     def __init__(self, debug: bool = False):
         self._debug = debug
@@ -142,6 +143,7 @@ class InstallerImpl:
         elif line.startswith("tue-install-error: "):
             self.tue_install_error(line[19:])
             _write_stdin(1)
+            # ToDo: or should we call sub.kill() here?
         elif line.startswith("tue-install-warning: "):
             self.tue_install_warning(line[21:])
             _write_stdin(0)
@@ -239,6 +241,15 @@ class InstallerImpl:
         else:
             self.tue_install_tee(line, color="red")
 
+    def _default_background_popen(self, cmd: str) -> BackgroundPopen:
+        cmd, cmds = _which_split_cmd(cmd)
+        self.tue_install_echo(repr(cmd))
+        sub = BackgroundPopen(
+            args=cmds, out_handler=self._out_handler, err_handler=self._err_handler, stdin=sp.PIPE, text=True
+        )
+        sub.wait()
+        return sub
+
     def tue_install_error(self, msg: str) -> None:
         # Make sure the entire msg is indented, not just the first line
         lines = msg.splitlines()
@@ -323,18 +334,22 @@ class InstallerImpl:
 
             if is_CI() and not os.path.isfile(os.path.join(self._current_target_dir, ".ci_ignore")):
                 self.tue_install_debug(
-                    f"Running installer in CI mode and file {self._current_target_dir}/.ci_ignore exists. No execution is needed."
+                    f"Running installer in CI mode and file {self._current_target_dir}/.ci_ignore exists. "
+                    "No execution is needed."
                 )
                 execution_needed = False
             elif os.path.isfile(state_file_now):
                 self.tue_install_debug(
-                    f"File {state_file_now} does exist, so installation has already been executed with 'now' option. No execution is needed."
+                    f"File {state_file_now} does exist, so installation has already been executed with 'now' option. "
+                    "No execution is needed."
                 )
                 execution_needed = False
             elif os.path.isfile(state_file):
                 if now:
                     self.tue_install_debug(
-                        f"File {state_file_now} doesn't exist, but file {state_file} does. So installation has been executed yet, but not with the 'now' option. Going to execute it with 'now' option."
+                        f"File {state_file_now} doesn't exist, but file {state_file} does. "
+                        "So installation has been executed yet, but not with the 'now' option. "
+                        "Going to execute it with 'now' option."
                     )
                 else:
                     self.tue_install_debug(
@@ -377,6 +392,8 @@ class InstallerImpl:
                         cmds = installyaml_parser(self, install_yaml_file, now)["commands"]
                         if not cmds:
                             self.tue_install_error(f"Invalid install.yaml: {cmds}")
+                            # ToDo: This depends on behaviour of tue-install-error
+                            return False
 
                         for cmd in cmds:
                             self.tue_install_debug(str(cmd))
@@ -395,20 +412,10 @@ class InstallerImpl:
                     else:
                         self.tue_install_debug(f"Sourcing {install_bash_file}")
                         resource_file = os.path.join(os.path.dirname(__file__), "resources", "installer_impl.bash")
-                        cmd = f"bash -c 'source {resource_file} && source {install_bash_file}'"
-                        cmds = _which_split_cmd(cmd)
-                        self.tue_install_echo(" ".join(cmds))
-                        sub = BackgroundPopen(
-                            args=cmds,
-                            out_handler=self._out_handler,
-                            err_handler=self._err_handler,
-                            stdin=subprocess.PIPE,
-                            text=True,
-                        )
-                        sub.wait()
+                        cmd = f"bash -c \"source {resource_file} && source {install_bash_file}\""
+                        sub = self._default_background_popen(cmd)
                         if sub.returncode != 0:
-                            # stderr = sub.stderr.read()
-                            self.tue_install_error(f"Error while running({sub.returncode}):\n    {' '.join(cmds)}")
+                            self.tue_install_error(f"Error while running({sub.returncode}):\n    {repr(cmd)}")
                             # ToDo: This depends on behaviour of tue-install-error
                             return False
 
@@ -434,26 +441,31 @@ class InstallerImpl:
 
         if not patch_file:
             self.tue_install_error("Invalid tue-install-apply-patch call: needs patch file as argument")
+            # ToDo: This depends on behaviour of tue-install-error
+            return False
 
         patch_file_path = os.path.join(self._current_target_dir, patch_file)
         if not os.path.isfile(patch_file_path):
             self.tue_install_error(f"Invalid tue-install-apply-patch call: patch file {patch_file_path} does not exist")
+            # ToDo: This depends on behaviour of tue-install-error
+            return False
 
         if not target_dir:
             self.tue_install_error("Invalid tue-install-apply-patch call: needs target directory as argument")
+            # ToDo: This depends on behaviour of tue-install-error
+            return False
 
         if not os.path.isdir(target_dir):
             self.tue_install_error(
                 f"Invalid tue-install-apply-patch call: target directory {target_dir} does not exist"
             )
+            # ToDo: This depends on behaviour of tue-install-error
+            return False
 
         cmd = f"patch -s -N -r - -p0 -d {target_dir} < {patch_file_path}"
-        cmds = _which_split_cmd(cmd)
-        self.tue_install_echo(" ".join(cmds))
-        sub = BackgroundPopen(args=cmds, out_handler=self._out_handler, err_handler=self._err_handler, text=True)
-        sub.wait()
+        sub = self._default_background_popen(cmd)
         if sub.returncode != 0:
-            self.tue_install_error(f"Error while running({sub.returncode}):\n{' '.join(cmds)}")
+            self.tue_install_error(f"Error while running({sub.returncode}):\n    {repr(cmd)}")
             # ToDo: This depends on behaviour of tue-install-error
             return False
 
@@ -464,9 +476,13 @@ class InstallerImpl:
 
         if not source:
             self.tue_install_error("Invalid tue-install-cp call: needs source directory as argument")
+            # ToDo: This depends on behaviour of tue-install-error
+            return False
 
         if not target:
             self.tue_install_error("Invalid tue-install-cp call: needs target dir as argument")
+            # ToDo: This depends on behaviour of tue-install-error
+            return False
 
         if os.path.isdir(target):
             self.tue_install_debug(f"tue-install-cp: target {target} is a directory")
@@ -475,6 +491,8 @@ class InstallerImpl:
             target = os.path.dirname(target)
         else:
             self.tue_install_error(f"tue-install-cp: target {target} does not exist")
+            # ToDo: This depends on behaviour of tue-install-error
+            return False
 
         # Check if user is allowed to write on target destination
         root_required = True
@@ -488,6 +506,8 @@ class InstallerImpl:
         for file in source_files:
             if not os.path.isfile(file):
                 self.tue_install_error(f"tue-install-cp: source {file} is not a file")
+                # ToDo: This depends on behaviour of tue-install-error
+                return False
 
             cp_target = os.path.join(target, os.path.basename(file))
 
@@ -504,34 +524,16 @@ class InstallerImpl:
                 sudo_cmd = ""
 
             cmd = f"{sudo_cmd}python -c 'import os; os.makedirs(\"{target}\", exist_ok=True)'"
-            cmds = _which_split_cmd(cmd)
-            self.tue_install_echo(" ".join(cmds))
-            sub = BackgroundPopen(
-                args=cmds,
-                out_handler=self._out_handler,
-                err_handler=self._err_handler,
-                stdin=subprocess.PIPE,
-                text=True,
-            )
-            sub.wait()
+            sub = self._default_background_popen(cmd)
             if sub.returncode != 0:
-                self.tue_install_error(f"Error while creating the directory({sub.returncode}):\n{' '.join(cmds)}")
+                self.tue_install_error(f"Error while creating the directory({sub.returncode}):\n    {repr(cmd)}")
                 # ToDo: This depends on behaviour of tue-install-error
                 return False
 
             cmd = f'{sudo_cmd}python -c \'import shutil; shutil.copy2("{file}", "{cp_target}")\''
-            cmds = _which_split_cmd(cmd)
-            self.tue_install_echo(" ".join(cmds))
-            sub = BackgroundPopen(
-                args=cmds,
-                out_handler=self._out_handler,
-                err_handler=self._err_handler,
-                stdin=subprocess.PIPE,
-                text=True,
-            )
-            sub.wait()
+            sub = self._default_background_popen(cmd)
             if sub.returncode != 0:
-                self.tue_install_error(f"Error while copying({sub.returncode}):\n{' '.join(cmds)}")
+                self.tue_install_error(f"Error while copying({sub.returncode}):\n    {repr(cmd)}")
                 # ToDo: This depends on behaviour of tue-install-error
                 return False
 
@@ -593,7 +595,6 @@ class InstallerImpl:
         begin_tag = source_text[0]
         end_tag = source_text[-1]
         source_body = source_text[1:-1]
-        source_text = "\n".join(source_text)
 
         self.tue_install_debug(f"tue-install-add-text: {begin_tag=}, {end_tag=}\n{source_body=}")
 
@@ -605,49 +606,137 @@ class InstallerImpl:
                 f"tue-install-add-text: {begin_tag=} not found in {target_file_path=}, "
                 "appending to {target_file_path}"
             )
-            cmd = f"bash -c \"echo - e '{source_text}' | {sudo_cmd}tee -a {target_file_path} 1>/dev/null\""
+            source_text = "\n".join(source_text)
+            cmd = f"bash -c \"echo - e '{source_text}' | {sudo_cmd}tee -a {target_file_path}\""
         else:
             self.tue_install_debug(
                 f"tue-install-add-text: {begin_tag=} found in {target_file_path=}, "
                 "so comparing the files for changed lines"
             )
 
-            if filecmp.cmp(source_file_path, target_file_path):
-                self.tue_install_debug(
-                    f"tue-install-add-text: {source_file_path=} and {target_file_path=} are " "identical, skipping"
-                )
-                return True
-
             begin_index = target_text.index(begin_tag)
             end_index = target_text.index(end_tag)
-            target_text = target_text[:begin_index] + source_text.splitlines() + target_text[end_index + 1 :]
+            target_body = target_text[begin_index + 1 : end_index]
+            self.tue_install_debug(f"tue-install-add-text:\n{target_body=}")
+
+            if source_body == target_body:
+                self.tue_install_debug("tue-install-add-text: Lines have not changed, so not copying")
+                return True
+
+            self.tue_install_debug("tue-install-add-text: Lines have changed, so copying")
+
+            target_text = target_text[: begin_index + 1] + source_body + target_text[end_index:]
+            print(target_text)
             target_text = "\n".join(target_text)
 
-            cmd = f"bash -c \"echo -e '{target_text}' | {sudo_cmd}tee {target_file_path} 1>/dev/null\""
+            cmd = f"bash -c \"echo -e \'{target_text}\' | {sudo_cmd}tee {target_file_path}\""
 
-        cmds = _which_split_cmd(cmd)
-        self.tue_install_echo(" ".join(cmds))
+        cmd, cmds = _which_split_cmd(cmd)
+        self.tue_install_echo(repr(cmd))
         sub = BackgroundPopen(
             args=cmds,
-            out_handler=self._out_handler,
             err_handler=self._err_handler,
-            stdin=subprocess.PIPE,
+            stdout=sp.DEVNULL,
+            stdin=sp.PIPE,
             text=True,
         )
         sub.wait()
         if sub.returncode != 0:
-            self.tue_install_error(f"Error while adding text({sub.returncode}):\n{' '.join(cmds)}")
+            self.tue_install_error(f"Error while adding text({sub.returncode}):\n    {repr(cmd)}")
             # ToDo: This depends on behaviour of tue-install-error
             return False
 
     def tue_install_get_releases(self, url: str, filename: str, output_dir: str, tag: Optional[str] = None) -> bool:
-        pass
+        return True
 
     def tue_install_system(self, pkgs: List[str]) -> bool:
+        self.tue_install_debug(f"tue-install-system {pkgs=}")
+        if not pkgs:
+            self.tue_install_error("Invalid tue-install-system call: needs packages as argument")
+            # ToDo: This depends on behaviour of tue-install-error
+            return False
+
         self._systems.extend(pkgs)
         return True
 
     def tue_install_system_now(self, pkgs: List[str]) -> bool:
+        self.tue_install_debug(f"tue-install-system-now {pkgs=}")
+        if not pkgs:
+            self.tue_install_error("Invalid tue-install-system-now call: needs packages as argument")
+            # ToDo: This depends on behaviour of tue-install-error
+            return False
+
+        installed_pkgs = []
+
+        def _out_handler_installed_pkgs(sub: BackgroundPopen, line: str) -> None:
+            installed_pkgs.append(line.strip())
+
+        # Check if pkg is not already installed dpkg -S does not cover previously removed packages
+        # Based on https://stackoverflow.com/questions/1298066
+        cmd = "dpkg-query -W -f '${package} ${status}\n'"
+        cmd, cmds = _which_split_cmd(cmd)
+        self.tue_install_echo(repr(cmd))
+        sub = BackgroundPopen(
+            args=cmds,
+            out_handler=_out_handler_installed_pkgs,  # Needed to prevent buffer to get full
+            err_handler=self._err_handler,
+            stdin=sp.PIPE,
+            text=True,
+        )
+        sub.wait()
+        if sub.returncode != 0:
+            self.tue_install_error(f"Error while getting installed packages({sub.returncode}):\n    {repr(cmd)}")
+            # ToDo: This depends on behaviour of tue-install-error
+            return False
+
+        installed_pkgs = [pkg[:-21] for pkg in installed_pkgs if pkg[-20:] == "install ok installed"]
+        pkgs_to_install = []
+        for pkg in pkgs:
+            if pkg not in installed_pkgs:
+                self.tue_install_debug(f"Package {pkg} is not installed")
+                pkgs_to_install.append(pkg)
+            else:
+                self.tue_install_debug(f"Package {pkg} is already installed")
+
+        if not pkgs_to_install:
+            return True
+
+        # Install packages
+        apt_get_cmd = f"sudo apt-get install --assume-yes -q {' '.join(pkgs_to_install)}"
+        self.tue_install_echo(f"Going to run the following command:\n{apt_get_cmd}")
+
+        def _wait_for_dpkg_lock():
+            i = 0
+            rotate_list = ["-", "\\", "|", "/"]
+            cmd = "sudo fuser /var/lib/dpkg/lock"
+            cmd, cmds = _which_split_cmd(cmd)
+            while sp.run(cmds, stdout=sp.DEVNULL, stderr=sp.DEVNULL).returncode == 0:
+                print(f"[{rotate_list[i % len(rotate_list)]}] Waiting for dpkg lock", end="\r")
+                i += 1
+                sleep(0.4)
+            return
+
+        _wait_for_dpkg_lock()
+
+        if not os.path.isfile(self._apt_get_updated_file):
+            cmd = "sudo apt-get update"
+            sub = self._default_background_popen(cmd)
+            if sub.returncode != 0:
+                self.tue_install_error(f"Error while updating apt-get({sub.returncode}):\n    {repr(cmd)}")
+                # ToDo: This depends on behaviour of tue-install-error
+                return False
+            Path(self._apt_get_updated_file).touch()
+
+        sub = self._default_background_popen(apt_get_cmd)
+        if sub.returncode != 0:
+            self.tue_install_error(
+                f"Error while installing system packages({sub.returncode}):" f"\n    {repr(apt_get_cmd)}"
+            )
+            # ToDo: This depends on behaviour of tue-install-error
+            return False
+
+        self.tue_install_debug(f"Installed {pkgs} ({sub.returncode})")
+
         return True
 
     def tue_install_apt_get_update(self):
@@ -657,6 +746,12 @@ class InstallerImpl:
             os.remove(self._apt_get_updated_file)
 
     def tue_install_ppa(self, ppas: List[str]) -> bool:
+        self.tue_install_debug(f"tue-install-ppa {ppas=}")
+        if not ppas:
+            self.tue_install_error("Invalid tue-install-ppa call: needs ppa as argument")
+            # ToDo: This depends on behaviour of tue-install-error
+            return False
+
         self._ppas.extend(ppas)
         return True
 
@@ -664,6 +759,12 @@ class InstallerImpl:
         return True
 
     def tue_install_pip(self, pkgs: List[str]) -> bool:
+        self.tue_install_debug(f"tue-install-pip {pkgs=}")
+        if not pkgs:
+            self.tue_install_error("Invalid tue-install-pip call: needs packages as argument")
+            # ToDo: This depends on behaviour of tue-install-error
+            return False
+
         self._pips.extend(pkgs)
         return True
 
@@ -671,6 +772,12 @@ class InstallerImpl:
         return True
 
     def tue_install_snap(self, pkgs: List[str]) -> bool:
+        self.tue_install_debug(f"tue-install-snap {pkgs=}")
+        if not pkgs:
+            self.tue_install_error("Invalid tue-install-snap call: needs packages as argument")
+            # ToDo: This depends on behaviour of tue-install-error
+            return False
+
         self._snaps.extend(pkgs)
         return True
 
@@ -678,6 +785,12 @@ class InstallerImpl:
         return True
 
     def tue_install_gem(self, pkgs: List[str]) -> bool:
+        self.tue_install_debug(f"tue-install-gem {pkgs=}")
+        if not pkgs:
+            self.tue_install_error("Invalid tue-install-gem call: needs packages as argument")
+            # ToDo: This depends on behaviour of tue-install-error
+            return False
+
         self._gems.extend(pkgs)
         return True
 
@@ -686,18 +799,18 @@ class InstallerImpl:
 
         if not pkgs:
             self.tue_install_error("Invalid tue-install-gem-now call: got an empty list of packages as argument.")
+            # ToDo: This depends on behaviour of tue-install-error
+            return False
 
         self.tue_install_system_now(["ruby", "ruby-dev", "rubygems-integration"])
 
         cmd = "gem list"
-        cmds = _which_split_cmd(cmd)
-        self.tue_install_echo(" ".join(cmds))
-        sub = BackgroundPopen(args=cmds, err_handler=self._err_handler, stdout=subprocess.PIPE, text=True)
+        cmd, cmds = _which_split_cmd(cmd)
+        self.tue_install_echo(repr(cmd))
+        sub = BackgroundPopen(args=cmds, err_handler=self._err_handler, stdout=sp.PIPE, text=True)
         sub.wait()
         if sub.returncode != 0:
-            self.tue_install_error(
-                f"Error while getting installed gem packages({sub.returncode}):\n    {' '.join(cmds)}"
-            )
+            self.tue_install_error(f"Error while getting installed gem packages({sub.returncode}):\n    {repr(cmd)}")
             # ToDo: This depends on behaviour of tue-install-error
             return False
 
@@ -713,12 +826,10 @@ class InstallerImpl:
 
         if gems_to_install:
             cmd = f"gem install {' '.join(gems_to_install)}"
-            cmds = _which_split_cmd(cmd)
-            sub = BackgroundPopen(args=cmds, out_handler=self._out_handler, err_handler=self._err_handler, text=True)
-            sub.wait()
+            sub = self._default_background_popen(cmd)
             if sub.returncode != 0:
                 self.tue_install_error(
-                    f"An error occurred while installing gem packages({sub.returncode}):\n    {' '.join(cmds)}"
+                    f"An error occurred while installing gem packages({sub.returncode}):\n    {repr(cmd)}"
                 )
                 # ToDo: This depends on behaviour of tue-install-error
                 return False
