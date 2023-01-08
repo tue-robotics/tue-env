@@ -1172,4 +1172,4 @@ TUE_INSTALL_PKG_DIR=$ros_pkg_dir
 
 if __name__ == "__main__":
     bla = InstallerImpl(debug=True)
-    bla.tue_install_target("networking")
+    bla.tue_install_target("test", True)
