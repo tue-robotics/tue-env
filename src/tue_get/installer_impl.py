@@ -1000,8 +1000,7 @@ class InstallerImpl:
         cmd = f"sudo apt-get install -f"
         sub = self._default_background_popen(cmd)
         if sub.returncode != 0:
-            self.tue_install_error(f"An error occurred while fixing dpkg isntall({sub.returncode}):"
-                                   f"\n    {repr(cmd)}")
+            self.tue_install_error(f"An error occurred while fixing dpkg isntall({sub.returncode}):\n    {repr(cmd)}")
             # ToDo: This depends on behaviour of tue-install-error
             return False
 
