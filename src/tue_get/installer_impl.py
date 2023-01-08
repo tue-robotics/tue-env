@@ -933,11 +933,42 @@ class InstallerImpl:
 
         return True
 
-    def tue_install_dpkg(self, pkg_file: str) -> bool:
+    def tue_install_dpkg_now(self, pkg_file: str) -> bool:
+        self.tue_install_debug(f"tue-install-dpkg-now {pkg_file=}")
+
+        if not pkg_file:
+            self.tue_install_error("Invalid tue-install-dpkg-now call: got an empty package file as argument.")
+            # ToDo: This depends on behaviour of tue-install-error
+            return False
+
+        if not os.path.isabs(pkg_file):
+            pkg_file = os.path.join(self._current_target_dir, pkg_file)
+
+        if not os.path.isfile(pkg_file):
+            self.tue_install_error(f"Invalid tue-install-dpkg-now call: {pkg_file} is not a file.")
+            # ToDo: This depends on behaviour of tue-install-error
+            return False
+
+        cmd = f"sudo dpkg -i {pkg_file}"
+        sub = self._default_background_popen(cmd)
+        # ToDo: Should we check the return code?
+        # if sub.returncode != 0:
+        #     self.tue_install_error(f"An error occurred while installing dpkg package({sub.returncode}):"
+        #                            f"\n    {repr(cmd)}")
+        #     # ToDo: This depends on behaviour of tue-install-error
+        #     return False
+
+        cmd = f"sudo apt-get install -f"
+        sub = self._default_background_popen(cmd)
+        if sub.returncode != 0:
+            self.tue_install_error(f"An error occurred while fixing dpkg isntall({sub.returncode}):"
+                                   f"\n    {repr(cmd)}")
+            # ToDo: This depends on behaviour of tue-install-error
+            return False
+
         return True
 
-    def tue_install_dpkg_now(self, pkg_file: str) -> bool:
-        return True
+    tue_install_dpkg = tue_install_dpkg_now
 
     def tue_install_ros(self, source_type: str, **kwargs) -> bool:
         return True
