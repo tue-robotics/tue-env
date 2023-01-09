@@ -71,10 +71,8 @@ function tue-install-pipe
     read -r return_value
     if [ "$return_value" != "0" ]
     then
-        tue-install-echo "return_value: $return_value"
         return $(("$return_value"))
     fi
-    tue-install-echo "return_code: $return_code"
     return $return_code
 }
 

@@ -1021,14 +1021,14 @@ class InstallerImpl:
             # ToDo: This depends on behaviour of tue-install-error
             return False
 
-        tue_ros_distro = os.getenv("tue_ros_distro", None)
+        tue_ros_distro = os.getenv("TUE_ROS_DISTRO", None)
         if not tue_ros_distro:
-            self.tue_install_error("tue_ros_distro is not set")
+            self.tue_install_error("TUE_ROS_DISTRO is not set")
             # ToDo: This depends on behaviour of tue-install-error
             return False
-        tue_ros_version = os.getenv("tue_ros_version", None)
+        tue_ros_version = os.getenv("TUE_ROS_VERSION", None)
         if not tue_ros_version:
-            self.tue_install_error("tue_ros_version is not set")
+            self.tue_install_error("TUE_ROS_VERSION is not set")
             # ToDo: This depends on behaviour of tue-install-error
             return False
 
@@ -1084,10 +1084,12 @@ class InstallerImpl:
             self.tue_install_error("Invalid tue-install-ros call(git): needs url as argument")
 
         sub_dir = kwargs["sub_dir"]
+        if sub_dir is None:
+            sub_dir = ""
         version = kwargs["version"]
         target_dir = kwargs["target_dir"]
 
-        tue_system_dir = os.getenv("tue_system_dir", None)
+        tue_system_dir = os.getenv("TUE_SYSTEM_DIR", None)
         if not tue_system_dir:
             self.tue_install_error("ros_package_install_dir is not set")
             # ToDo: This depends on behaviour of tue-install-error
@@ -1105,7 +1107,9 @@ class InstallerImpl:
         # If repos_dir is not set, try generating the default path from git url
         if target_dir is None:
             # ToDo: convert _git_url_to_repos_dir to python
-            target_dir = sp.check_output(f"bash -c '_git_url_to_repos_dir {url}'", text=True).strip()
+            cmd = f"bash -c '_git_url_to_repos_dir {url}'"
+            cmd, cmds = _which_split_cmd(cmd)
+            target_dir = sp.check_output(cmds, text=True).strip()
             if not target_dir:
                 self.tue_install_error(f"Could not create target_dir path from the git url: '{url}'")
                 # ToDo: This depends on behaviour of tue-install-error
@@ -1135,15 +1139,15 @@ class InstallerImpl:
                 self.tue_install_info(f"url has changed to {url}/{sub_dir}")
                 os.remove(ros_pkg_dir)
                 os.symlink(os.path.join(target_dir, sub_dir), ros_pkg_dir)
-            elif os.path.isdir(ros_pkg_dir):
-                self.tue_install_error(f"Can not create a symlink at '{ros_pkg_dir}' as it is a directory")
-                # ToDo: This depends on behaviour of tue-install-error
-                return False
-            elif not os.path.exists(ros_pkg_dir):
-                os.symlink(os.path.join(target_dir, sub_dir), ros_pkg_dir)
-            else:
-                self.tue_install_error(f"'{ros_pkg_dir}' should not exist or be a symlink. "
-                                       "Any other option is incorrect")
+        elif os.path.isdir(ros_pkg_dir):
+            self.tue_install_error(f"Can not create a symlink at '{ros_pkg_dir}' as it is a directory")
+            # ToDo: This depends on behaviour of tue-install-error
+            return False
+        elif not os.path.exists(ros_pkg_dir):
+            os.symlink(os.path.join(target_dir, sub_dir), ros_pkg_dir)
+        else:
+            self.tue_install_error(f"'{ros_pkg_dir}' should not exist or be a symlink. "
+                                   "Any other option is incorrect")
 
         if self._skip_ros_deps and not self._ros_test_deps and not self._ros_doc_deps:
             self.tue_install_debug("Skipping resolving of ROS dependencies")
