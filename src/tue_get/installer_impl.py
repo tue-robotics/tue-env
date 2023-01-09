@@ -61,8 +61,9 @@ class InstallerImpl:
     _sources_list_dir = os.path.join(os.sep, "etc", "apt", "sources.list.d")
 
     def __init__(
-        self, ros_test_deps: bool = False, ros_doc_deps: bool = False, skip_ros_deps: bool = False, debug: bool = False
+        self, branch: Optional[str] = None, ros_test_deps: bool = False, ros_doc_deps: bool = False, skip_ros_deps: bool = False, debug: bool = False
     ):
+        self._branch = branch
         self._ros_test_deps = ros_test_deps
         self._ros_doc_deps = ros_doc_deps
         self._skip_ros_deps = skip_ros_deps
@@ -82,6 +83,7 @@ class InstallerImpl:
         self._dependencies_dir = os.path.join(self._tue_env_dir, ".env", "dependencies")
         self._dependencies_on_dir = os.path.join(self._tue_env_dir, ".env", "dependencies-on")
         self._installed_dir = os.path.join(self._tue_env_dir, ".env", "installed")
+        self._version_cache_dir = os.path.join(self._tue_env_dir, ".env", "version_cache")
 
         os.makedirs(self._dependencies_dir, exist_ok=True)
         os.makedirs(self._dependencies_on_dir, exist_ok=True)
@@ -116,6 +118,8 @@ class InstallerImpl:
         self._pips = []
         self._snaps = []
         self._gems = []
+
+        self._git_pull_queue = set()
 
         self._sudo_password = None
 
@@ -469,8 +473,165 @@ class InstallerImpl:
         self.tue_install_debug(f"Finished installing {target}")
         return True
 
+    def _show_update_msg(self, repo, msg: str = None):
+        # shellcheck disable=SC2086,SC2116
+        if msg:
+            print_msg = "\n"
+            print_msg += f"    {colored(repo, attrs=['bold'])}"
+            print_msg += f"\n--------------------------------------------------"
+            print_msg += f"\n{msg}"
+            print_msg += f"\n--------------------------------------------------"
+            print_msg += f"\n"
+            self.tue_install_tee(print_msg)
+        else:
+            self.tue_install_tee(f"{colored(repo, attrs=['bold'])}: up-tp-date")
+
+    def _try_branch_git(self, target_dir, version):
+        self.tue_install_debug(f"_try_branch_git {target_dir=} {version=}")
+
+        cmd = f"git -C {target_dir} checkout {version} --"
+        self.tue_install_debug(f"{cmd}")
+        cmd, cmds = _which_split_cmd(cmd)
+        try_branch_res = sp.check_output(cmds, stderr=sp.STDOUT, text=True).strip()
+        self.tue_install_debug(f"{try_branch_res=}")
+
+        cmd = f"git -C {target_dir} submodule sync --recursive"
+        self.tue_install_debug(f"{cmd}")
+        cmd, cmds = _which_split_cmd(cmd)
+        submodule_sync_results = sp.run(cmds, stdout=sp.PIPE, stderr=sp.STDOUT, text=True)
+        submodule_sync_res = submodule_sync_results.stdout.strip()
+        self.tue_install_debug(f"{submodule_sync_res=}")
+
+        cmd = f"git -C {target_dir} submodule update --init --recursive"
+        self.tue_install_debug(f"{cmd}")
+        cmd, cmds = _which_split_cmd(cmd)
+        submodule_res = sp.check_output(cmds, stderr=sp.STDOUT, text=True).strip()
+        self.tue_install_debug(f"{submodule_res=}")
+
+        if "Already on " in try_branch_res or "fatal: invalid reference:" in try_branch_res:
+            try_branch_res = ""
+
+        if submodule_sync_results.returncode != 0 and submodule_sync_res:
+            try_branch_res += f"\n{submodule_sync_res}"
+        if submodule_res:
+            try_branch_res += f"\n{submodule_res}"
+
+        return try_branch_res
+
     def tue_install_git(self, url: str, target_dir: Optional[str] = None, version: Optional[str] = None) -> bool:
         self.tue_install_debug(f"tue-install-git {url=} {target_dir=} {version=}")
+
+        # ToDo: convert _git_https_or_ssh to python
+        cmd = f"bash -c '_git_https_or_ssh {url}'"
+        cmd, cmds = _which_split_cmd(cmd)
+        url_old = url
+        url = sp.check_output(cmds, text=True).strip()
+        if not url:
+            self.tue_install_error(f"repo: '{url}' is invalid. It is generated from: '{url_old}'\n"
+                                   f"The problem will probably be solved by resourcing the setup")
+            # ToDo: This depends on behaviour of tue-install-error
+            return False
+
+        if target_dir is None:
+            # ToDo: convert _git_url_to_repos_dir to python
+            cmd = f"bash -c '_git_url_to_repos_dir {url}'"
+            cmd, cmds = _which_split_cmd(cmd)
+            target_dir = sp.check_output(cmds, text=True).strip()
+            if not target_dir:
+                self.tue_install_error(f"Could not create target_dir path from the git url: '{url}'")
+                # ToDo: This depends on behaviour of tue-install-error
+                return False
+
+        if not target_dir:
+            self.tue_install_error(f"target_dir is specified, but empty")
+            # ToDo: This depends on behaviour of tue-install-error
+            return False
+
+        if not os.path.isdir(target_dir):
+            cmd = f"git clone --recursive {url} {target_dir}"
+            self.tue_install_debug(f"{cmd}")
+            cmd, cmds = _which_split_cmd(cmd)
+            clone_results = sp.run(cmds, stdout=sp.PIPE, stderr=sp.STDOUT, text=True)
+            res = clone_results.stdout.strip()
+            if clone_results.returncode != 0:
+                self.tue_install_error(f"Failed to clone {url} to {target_dir}\n{res}")
+                # ToDo: This depends on behaviour of tue-install-error
+                return False
+
+            self._git_pull_queue.add(target_dir)
+        else:
+            if target_dir in self._git_pull_queue:
+                self.tue_install_debug("Repo previously pulled, skipping")
+                res = ""
+            else:
+                cmd = f"git -C {target_dir} config --get remote.origin.url"
+                cmd, cmds = _which_split_cmd(cmd)
+                self.tue_install_debug(f"{cmd}")
+                cmd, cmds = _which_split_cmd(cmd)
+                current_url = sp.check_output(cmds, text=True).strip()
+                # If different, switch url
+                if current_url != url:
+                    cmd = f"git -C {target_dir} remote set-url origin {url}"
+                    sub = self._default_background_popen(cmd)
+                    if sub.returncode != 0:
+                        self.tue_install_error(f"Could not change git url of '{target_dir}' to '{url}'"
+                                               f"({sub.returncode}):\n    {repr(cmd)}")
+                        # ToDo: This depends on behaviour of tue-install-error
+                        return False
+
+                    self.tue_install_info(f"url has switched to '{url}'")
+
+            cmd = f"git -C {target_dir} pull --ff-only --prune"
+            self.tue_install_debug(f"{cmd}")
+            cmd, cmds = _which_split_cmd(cmd)
+            res = sp.check_output(cmds, stderr=sp.STDOUT, text=True).strip()
+            self.tue_install_debug(f"{res=}")
+
+            self._git_pull_queue.add(target_dir)
+
+            cmd = f"git -C {target_dir} submodule sync --recursive"
+            self.tue_install_debug(f"{cmd}")
+            cmd, cmds = _which_split_cmd(cmd)
+            sp_results = sp.run(cmds, text=True, stdout=sp.PIPE)
+            submodule_sync_res = sp_results.stdout.strip()
+            self.tue_install_debug(f"{submodule_sync_res=}")
+            if sp_results.returncode != 0 and submodule_sync_res:
+                res += f"\n{submodule_sync_res}"
+
+
+            cmd = f"git -C {target_dir} submodule update --init --recursive"
+            self.tue_install_debug(f"{cmd}")
+            cmd, cmds = _which_split_cmd(cmd)
+            submodule_res = sp.check_output(cmds, stderr=sp.STDOUT, text=True).strip()
+            self.tue_install_debug(f"{submodule_res=}")
+            if submodule_res:
+                res += f"\n{submodule_res}"
+
+            if "Already up to date." in res:
+                res = ""
+
+        self.tue_install_debug(f"Desired version: {version}")
+        version_cache_file = os.path.join(self._version_cache_dir, target_dir.lstrip(os.sep))
+        if version:
+            os.makedirs(os.path.dirname(version_cache_file), exist_ok=True)
+            with open(version_cache_file, "w") as f:
+                f.write(version)
+
+            try_branch_res = self._try_branch_git(target_dir, version)
+            if try_branch_res:
+                res += f"\n{try_branch_res}"
+        else:
+            if os.path.isfile(version_cache_file):
+                os.remove(version_cache_file)
+
+        if self._branch:
+            self.tue_install_debug(f"Desired branch: {self._branch}")
+            try_branch_res = self._try_branch_git(target_dir, self._branch)
+            if try_branch_res:
+                res += f"\n{try_branch_res}"
+
+
+        self._show_update_msg(self._current_target, res)
         return True
 
     def tue_install_apply_patch(self, patch_file: str, target_dir: str) -> bool:
