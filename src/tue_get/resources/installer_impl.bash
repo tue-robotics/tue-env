@@ -94,7 +94,22 @@ function tue-install-target
 
 function tue-install-git
 {
-    echo -e "tue-install-git: $*"
+    local url targetdir version
+    url=$1
+    shift
+    for i in "$@"
+        do
+            case $i in
+                --target-dir=* )
+                    targetdir="${i#*=}"
+                    ;;
+                --version=* )
+                    version="${i#*=}" ;;
+                * )
+                    tue-install-error "Unknown input variable ${i}" ;;
+            esac
+        done
+    echo -e "tue-install-git: ${url} ${targetdir} ${version}"
     local return_value
     read -r return_value
     return $(("$return_value"))
