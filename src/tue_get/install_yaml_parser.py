@@ -187,7 +187,10 @@ def installyaml_parser(installer: Any, path: str, now: bool = False) -> Mapping:
                 if install_type in now_cache:
                     now_cache[install_type].append(pkg_name)
                     continue
-                command = partial(getattr(installer, f"tue_install_{install_type}"), pkg_name)
+                command = partial(
+                    getattr(installer, f"tue_install_{install_type}"),
+                    pkg_name if "target" in install_type else [pkg_name],
+                )
 
             else:
                 raise ValueError(f"Unknown install type: '{install_type}'")
