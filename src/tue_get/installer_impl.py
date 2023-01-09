@@ -158,6 +158,9 @@ class InstallerImpl:
             sub.stdin.write(f"{msg}\n")
             sub.stdin.flush()
 
+        def _clean_output(msg: str) -> str:
+            return msg.replace("^", "\n").strip()
+
         line = line.strip()
         # ToDo: use regex to get attributes of installer
         if line.startswith("[sudo] password for"):
@@ -165,27 +168,27 @@ class InstallerImpl:
                 self._sudo_password = getpass.getpass(line)
             _write_stdin(self._sudo_password)
         elif line.startswith("tue-install-error: "):
-            self.tue_install_error(line[19:])
+            self.tue_install_error(_clean_output(line[19:]))
             _write_stdin(1)
             # ToDo: or should we call sub.kill() here?
         elif line.startswith("tue-install-warning: "):
-            self.tue_install_warning(line[21:])
+            self.tue_install_warning(_clean_output(line[21:]))
             _write_stdin(0)
         elif line.startswith("tue-install-info: "):
-            self.tue_install_info(line[18:])
+            self.tue_install_info(_clean_output(line[18:]))
             _write_stdin(0)
         elif line.startswith("tue-install-debug: "):
-            self.tue_install_debug(line[19:])
+            self.tue_install_debug(_clean_output(line[19:]))
             _write_stdin(0)
         elif line.startswith("tue-install-echo: "):
-            self.tue_install_echo(line[18:])
+            self.tue_install_echo(_clean_output(line[18:]))
             _write_stdin(0)
         elif line.startswith("tue-install-tee: "):
-            self.tue_install_tee(line[17:])
+            self.tue_install_tee(_clean_output(line[17:]))
             _write_stdin(0)
         elif line.startswith("tue-install-pipe: "):
             output = line[18:].split("^^^")
-            output = map(lambda x: x.replace("^", "\n").strip(), output)
+            output = map(_clean_output, output)
             self.tue_install_pipe(*output)
             _write_stdin(0)
         elif line.startswith("tue-install-target-now: "):
