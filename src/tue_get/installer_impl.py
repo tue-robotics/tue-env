@@ -61,7 +61,12 @@ class InstallerImpl:
     _sources_list_dir = os.path.join(os.sep, "etc", "apt", "sources.list.d")
 
     def __init__(
-        self, branch: Optional[str] = None, ros_test_deps: bool = False, ros_doc_deps: bool = False, skip_ros_deps: bool = False, debug: bool = False
+        self,
+        branch: Optional[str] = None,
+        ros_test_deps: bool = False,
+        ros_doc_deps: bool = False,
+        skip_ros_deps: bool = False,
+        debug: bool = False,
     ):
         self._branch = branch
         self._ros_test_deps = ros_test_deps
@@ -527,8 +532,10 @@ class InstallerImpl:
         url_old = url
         url = sp.check_output(cmds, text=True).strip()
         if not url:
-            self.tue_install_error(f"repo: '{url}' is invalid. It is generated from: '{url_old}'\n"
-                                   f"The problem will probably be solved by resourcing the setup")
+            self.tue_install_error(
+                f"repo: '{url}' is invalid. It is generated from: '{url_old}'\n"
+                f"The problem will probably be solved by resourcing the setup"
+            )
             # ToDo: This depends on behaviour of tue-install-error
             return False
 
@@ -574,8 +581,10 @@ class InstallerImpl:
                     cmd = f"git -C {target_dir} remote set-url origin {url}"
                     sub = self._default_background_popen(cmd)
                     if sub.returncode != 0:
-                        self.tue_install_error(f"Could not change git url of '{target_dir}' to '{url}'"
-                                               f"({sub.returncode}):\n    {repr(cmd)}")
+                        self.tue_install_error(
+                            f"Could not change git url of '{target_dir}' to '{url}'"
+                            f"({sub.returncode}):\n    {repr(cmd)}"
+                        )
                         # ToDo: This depends on behaviour of tue-install-error
                         return False
 
@@ -597,7 +606,6 @@ class InstallerImpl:
             self.tue_install_debug(f"{submodule_sync_res=}")
             if sp_results.returncode != 0 and submodule_sync_res:
                 res += f"\n{submodule_sync_res}"
-
 
             cmd = f"git -C {target_dir} submodule update --init --recursive"
             self.tue_install_debug(f"{cmd}")
@@ -629,7 +637,6 @@ class InstallerImpl:
             try_branch_res = self._try_branch_git(target_dir, self._branch)
             if try_branch_res:
                 res += f"\n{try_branch_res}"
-
 
         self._show_update_msg(self._current_target, res)
         return True
