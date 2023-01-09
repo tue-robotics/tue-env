@@ -517,9 +517,10 @@ class InstallerImpl:
 
         if os.path.isdir(target):
             self.tue_install_debug(f"tue-install-cp: target {target} is a directory")
+            target_dir = target
         elif os.path.isfile(target):
             self.tue_install_debug(f"tue-install-cp: target {target} is a file")
-            target = os.path.dirname(target)
+            target_dir = os.path.dirname(target)
         else:
             self.tue_install_error(f"tue-install-cp: target {target} does not exist")
             # ToDo: This depends on behaviour of tue-install-error
@@ -540,7 +541,10 @@ class InstallerImpl:
                 # ToDo: This depends on behaviour of tue-install-error
                 return False
 
-            cp_target = os.path.join(target, os.path.basename(file))
+            if os.path.isdir(target):
+                cp_target = os.path.join(target_dir, os.path.basename(file))
+            else:
+                cp_target = target
 
             if os.path.isfile(cp_target) and filecmp.cmp(file, cp_target):
                 self.tue_install_debug(f"tue-install-cp: {file} and {cp_target} are identical, skipping")
