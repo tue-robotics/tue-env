@@ -1,5 +1,6 @@
 from typing import List, Optional, Tuple
 
+from catkin_pkg.package import PACKAGE_MANIFEST_FILENAME, InvalidPackage
 from contextlib import contextmanager
 import datetime
 import filecmp
@@ -16,6 +17,7 @@ import subprocess as sp
 from termcolor import colored
 from time import sleep
 
+from tue_get.catkin_package_parser import catkin_package_parser
 from tue_get.install_yaml_parser import installyaml_parser
 from tue_get.util.BackgroundPopen import BackgroundPopen
 from tue_get.util.grep import grep_directory, grep_file
@@ -58,7 +60,10 @@ class InstallerImpl:
     _sources_list = os.path.join(os.sep, "etc", "apt", "sources.list")
     _sources_list_dir = os.path.join(os.sep, "etc", "apt", "sources.list.d")
 
-    def __init__(self, debug: bool = False):
+    def __init__(self, ros_test_deps: bool = False, ros_doc_deps: bool = False, skip_ros_deps: bool = False, debug: bool = False):
+        self._ros_test_deps = ros_test_deps
+        self._ros_doc_deps = ros_doc_deps
+        self._skip_ros_deps = skip_ros_deps
         self._debug = debug
         self._current_target = "main-loop"
         self._current_target_dir = ""
@@ -1016,14 +1021,14 @@ class InstallerImpl:
             # ToDo: This depends on behaviour of tue-install-error
             return False
 
-        TUE_ROS_DISTRO = os.getenv("TUE_ROS_DISTRO", None)
-        if not TUE_ROS_DISTRO:
-            self.tue_install_error("TUE_ROS_DISTRO is not set")
+        tue_ros_distro = os.getenv("tue_ros_distro", None)
+        if not tue_ros_distro:
+            self.tue_install_error("tue_ros_distro is not set")
             # ToDo: This depends on behaviour of tue-install-error
             return False
-        TUE_ROS_VERSION = os.getenv("TUE_ROS_VERSION", None)
-        if not TUE_ROS_VERSION:
-            self.tue_install_error("TUE_ROS_VERSION is not set")
+        tue_ros_version = os.getenv("tue_ros_version", None)
+        if not tue_ros_version:
+            self.tue_install_error("tue_ros_version is not set")
             # ToDo: This depends on behaviour of tue-install-error
             return False
 
@@ -1037,8 +1042,8 @@ class InstallerImpl:
             return False
 
         # First of all, make sure ROS itself is installed
-        if not self.tue_install_target(f"ros{TUE_ROS_VERSION}"):
-            self.tue_install_error(f"Failed to install ros{TUE_ROS_VERSION}")
+        if not self.tue_install_target(f"ros{tue_ros_version}"):
+            self.tue_install_error(f"Failed to install ros{tue_ros_version}")
 
         if source_type == "system":
             """
@@ -1048,10 +1053,13 @@ class InstallerImpl:
             """
             name = kwargs["name"]
             if name is None:
-                self.tue_install_error("Invalid tue-install-ros call(system): needs src as argument")
-            self.tue_install_debug(f"tue-install-system ros-{TUE_ROS_DISTRO}-{src}")
-            if not self.tue_install_system(["ros-{TUE_ROS_DISTRO}-{src}"]):
-                self.tue_install_error(f"Failed to append ros-{TUE_ROS_DISTRO}-{src}")
+                self.tue_install_error("Invalid tue-install-ros call(system): needs 'name' as argument")
+                # ToDo: This depends on behaviour of tue-install-error
+                return False
+
+            self.tue_install_debug(f"tue-install-system ros-{tue_ros_distro}-{name}")
+            if not self.tue_install_system(["ros-{tue_ros_distro}-{src}"]):
+                self.tue_install_error(f"Failed to append ros-{tue_ros_distro}-{name}")
                 # ToDo: This depends on behaviour of tue-install-error
                 return False
 
@@ -1079,16 +1087,16 @@ class InstallerImpl:
         version = kwargs["version"]
         target_dir = kwargs["target_dir"]
 
-        TUE_SYSTEM_DIR = os.getenv("TUE_SYSTEM_DIR", None)
-        if not TUE_SYSTEM_DIR:
-            self.tue_install_error("ROS_PACKAGE_INSTALL_DIR is not set")
+        tue_system_dir = os.getenv("tue_system_dir", None)
+        if not tue_system_dir:
+            self.tue_install_error("ros_package_install_dir is not set")
             # ToDo: This depends on behaviour of tue-install-error
             return False
 
         # Make sure the ROS package install dir exists
-        ROS_PACKAGE_INSTALL_DIR = os.path.join(TUE_SYSTEM_DIR, "src")
-        if not os.path.isdir(ROS_PACKAGE_INSTALL_DIR):
-            self.tue_install_error(f"ROS_PACKAGE_INSTALL_DIR is not a directory: {ROS_PACKAGE_INSTALL_DIR}")
+        ros_package_install_dir = os.path.join(tue_system_dir, "src")
+        if not os.path.isdir(ros_package_install_dir):
+            self.tue_install_error(f"ros_package_install_dir is not a directory: {ros_package_install_dir}")
             # ToDo: This depends on behaviour of tue-install-error
             return False
 
@@ -1105,69 +1113,77 @@ class InstallerImpl:
 
         self.tue_install_debug(f"{target_dir=}")
 
-        ros_pkg_dir = os.path.join(ROS_PACKAGE_INSTALL_DIR, ros_pkg_name)
+        ros_pkg_dir = os.path.join(ros_package_install_dir, ros_pkg_name)
 
         if not self.tue_install_git(url, target_dir, version):
             self.tue_install_error(f"Failed to clone ros package '{ros_pkg_name}' from '{url}'")
 
         if not os.path.isdir(target_dir):
-            if not os.path.isdir(os.path.join(target_dir, sub_dir)):
-                self.tue_install_error(f"Subdirectory '{sub_dir}' does not exist for url '{url}'")
+            self.tue_install_error(f"ROS package '{ros_pkg_name}' from '{url}' was not cloned to '{target_dir}'")
+            # ToDo: This depends on behaviour of tue-install-error
+            return False
+
+        if not os.path.isdir(os.path.join(target_dir, sub_dir)):
+            self.tue_install_error(f"Subdirectory '{sub_dir}' does not exist for url '{url}'")
+            # ToDo: This depends on behaviour of tue-install-error
+            return False
+
+        # Test if the current symbolic link points to the same repository dir. If not, give a warning
+        # because it means the source URL has changed
+        if os.path.islink(ros_pkg_dir):
+            if os.path.realpath(ros_pkg_dir) != os.path.realpath(os.path.join(target_dir, sub_dir)):
+                self.tue_install_info(f"url has changed to {url}/{sub_dir}")
+                os.remove(ros_pkg_dir)
+                os.symlink(os.path.join(target_dir, sub_dir), ros_pkg_dir)
+            elif os.path.isdir(ros_pkg_dir):
+                self.tue_install_error(f"Can not create a symlink at '{ros_pkg_dir}' as it is a directory")
+                # ToDo: This depends on behaviour of tue-install-error
+                return False
+            elif not os.path.exists(ros_pkg_dir):
+                os.symlink(os.path.join(target_dir, sub_dir), ros_pkg_dir)
+            else:
+                self.tue_install_error(f"'{ros_pkg_dir}' should not exist or be a symlink. "
+                                       "Any other option is incorrect")
+
+        if self._skip_ros_deps and not self._ros_test_deps and not self._ros_doc_deps:
+            self.tue_install_debug("Skipping resolving of ROS dependencies")
+            return True
+
+        # Resolve ROS dependencies
+        pkg_xml = os.path.join(ros_pkg_dir, PACKAGE_MANIFEST_FILENAME)
+        if os.path.isfile(pkg_xml):
+            self.tue_install_warning(f"Does not contain a valid ROS {PACKAGE_MANIFEST_FILENAME}")
+            return True
+
+        self.tue_install_debug(f"Parsing {pkg_xml}")
+        try:
+            _, deps = catkin_package_parser(pkg_xml, self._skip_ros_deps, self._ros_test_deps, self._ros_doc_deps)
+        except IOError as e:
+            self.tue_install_error(f"Could not parse {pkg_xml}: {e}")
+            # ToDo: This depends on behaviour of tue-install-error
+            return False
+        except InvalidPackage as e:
+            self.tue_install_error(f"Invalid {PACKAGE_MANIFEST_FILENAME}:\n{e}")
+            # ToDo: This depends on behaviour of tue-install-error
+            return False
+        except ValueError as e:
+            self.tue_install_error(f"Could not evaluate conditions in {pkg_xml}: {e}")
+            # ToDo: This depends on behaviour of tue-install-error
+            return False
+        except RuntimeError as e:
+            self.tue_install_error(f"Unevaluated condition found in {pkg_xml}: {e}")
+            # ToDo: This depends on behaviour of tue-install-error
+            return False
+
+        for dep in deps:
+            success = self.tue_install_target(f"ros-{dep.name}") or self.tue_install_target(dep.name)
+            if not success:
+                self.tue_install_error(f"Targets 'ros-{dep.name}' and '{dep}' don't exist")
                 # ToDo: This depends on behaviour of tue-install-error
                 return False
 
-            # Test if the current symbolic link points to the same repository dir. If not, give a warning
-            # because it means the source URL has changed
-            if os.path.islink(ros_pkg_dir):
-                if os.path.realpath(ros_pkg_dir) != os.path.realpath(os.path.join(target_dir, sub_dir)):
-                    self.tue_install_info(f"url has changed to {url}/{sub_dir}")
-                    os.remove(ros_pkg_dir)
-                    os.symlink(os.path.join(target_dir, sub_dir), ros_pkg_dir)
-                elif os.path.isdir(ros_pkg_dir):
-                    self.tue_install_error(f"Can not create a symlink at '{ros_pkg_dir}' as it is a directory")
-                    # ToDo: This depends on behaviour of tue-install-error
-                    return False
-                elif not os.path.exists(ros_pkg_dir):
-                    os.symlink(os.path.join(target_dir, sub_dir), ros_pkg_dir)
-                else:
-                    self.tue_install_error(f"'{ros_pkg_dir}' should not exist or be a symlink. "
-                                           "Aany other option is incorrect")
-
-
-if [["$TUE_INSTALL_SKIP_ROS_DEPS" != "all"]]
-then
-local
-pkg_xml = "$ros_pkg_dir" / package.xml
-if [-f "$pkg_xml"]
-then
-# Catkin
-tue - install - debug
-"Parsing $pkg_xml"
-local
-deps
-deps =$("$TUE_INSTALL_SCRIPTS_DIR" / parse_package_xml.py "$pkg_xml")
-tue - install - debug
-"Parsed package.xml\n$deps"
-
-for dep in $deps
-do
-# Preference given to target name starting with ros-
-tue-install-target ros-"$dep" | | tue-install-target "$dep" | | \
-    tue-install-error "Targets 'ros-$dep' and '$dep' don't exist"
-done
-
-else
-tue-install-warning "Does not contain a valid ROS package.xml"
-fi
-else
-tue-install-debug "No need to parse package.xml for dependencies"
-fi
-
-else
-tue-install-error "Checking out $src was not successful."
-fi
-
-TUE_INSTALL_PKG_DIR=$ros_pkg_dir
+        # ToDO: TUE_INSTALL_PKG_DIR was set ros_pkg_dir which was then use in tue-install-apply-patch; we are not doing that not (yet) in python
+        return True
 
 
 if __name__ == "__main__":
