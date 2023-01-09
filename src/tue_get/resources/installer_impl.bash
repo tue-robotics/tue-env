@@ -2,7 +2,7 @@
 
 function tue-install-error
 {
-    echo -e "tue-install-error: $*"
+    echo -e "tue-install-error: $(echo -e "$*" | tr '\n' '^')"
     local return_value
     read -r return_value
     return $(("$return_value"))
@@ -10,7 +10,7 @@ function tue-install-error
 
 function tue-install-warning
 {
-    echo -e "tue-install-warning: $*"
+    echo -e "tue-install-warning: $(echo -e "$*" | tr '\n' '^')"
     local return_value
     read -r return_value
     return $(("$return_value"))
@@ -18,7 +18,7 @@ function tue-install-warning
 
 function tue-install-info
 {
-    echo -e "tue-install-info: $*"
+    echo -e "tue-install-info: $(echo -e "$*" | tr '\n' '^')"
     local return_value
     read -r return_value
     return $(("$return_value"))
@@ -26,7 +26,7 @@ function tue-install-info
 
 function tue-install-debug
 {
-    echo -e "tue-install-debug: $*"
+    echo -e "tue-install-debug: $(echo -e "$*" | tr '\n' '^')"
     local return_value
     read -r return_value
     return $(("$return_value"))
@@ -34,7 +34,7 @@ function tue-install-debug
 
 function tue-install-echo
 {
-    echo -e "tue-install-echo: $*"
+    echo -e "tue-install-echo: $(echo -e "$*" | tr '\n' '^')"
     local return_value
     read -r return_value
     return $(("$return_value"))
@@ -42,7 +42,7 @@ function tue-install-echo
 
 function tue-install-tee
 {
-    echo -e "tue-install-tee: $*"
+    echo -e "tue-install-tee: $(echo -e "$*" | tr '\n' '^')}"
     local return_value
     read -r return_value
     return $(("$return_value"))
