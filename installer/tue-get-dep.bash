@@ -8,7 +8,7 @@ hash xmlstarlet 2> /dev/null || sudo apt-get install --assume-yes -qq xmlstarlet
 
 function _show_dep
 {
-    [[ "$1" == "ros" ]] && return 0
+    [[ "$1" == "ros" ]] || [[ "$1" == "ros1" ]] || [[ "$1" == "ros2" ]] && return 0
 
     [[ "$ROS_ONLY" = "true" && "$1" != ros-* ]] && return 0
 
