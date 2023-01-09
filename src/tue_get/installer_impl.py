@@ -1171,7 +1171,7 @@ class InstallerImpl:
 
         # Resolve ROS dependencies
         pkg_xml = os.path.join(ros_pkg_dir, PACKAGE_MANIFEST_FILENAME)
-        if os.path.isfile(pkg_xml):
+        if not os.path.isfile(pkg_xml):
             self.tue_install_warning(f"Does not contain a valid ROS {PACKAGE_MANIFEST_FILENAME}")
             return True
 
