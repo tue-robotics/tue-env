@@ -282,7 +282,7 @@ class InstallerImpl:
 
     def _default_background_popen(self, cmd: str) -> BackgroundPopen:
         cmd, cmds = _which_split_cmd(cmd)
-        self.tue_install_echo(repr(cmd))
+        self.tue_install_debug(repr(cmd))
         sub = BackgroundPopen(
             args=cmds, out_handler=self._out_handler, err_handler=self._err_handler, stdin=sp.PIPE, text=True
         )
@@ -836,7 +836,7 @@ class InstallerImpl:
             cmd = f"bash -c \"echo -e '{target_text}' | {sudo_cmd}tee {target_file_path}\""
 
         cmd, cmds = _which_split_cmd(cmd)
-        self.tue_install_echo(repr(cmd))
+        self.tue_install_debug(repr(cmd))
         sub = BackgroundPopen(
             args=cmds,
             err_handler=self._err_handler,
@@ -880,7 +880,7 @@ class InstallerImpl:
         # Based on https://stackoverflow.com/questions/1298066
         cmd = "dpkg-query -W -f '${package} ${status}\n'"
         cmd, cmds = _which_split_cmd(cmd)
-        self.tue_install_echo(repr(cmd))
+        self.tue_install_debug(repr(cmd))
         sub = BackgroundPopen(
             args=cmds,
             out_handler=_out_handler_installed_pkgs,  # Needed to prevent buffer to get full
@@ -1071,7 +1071,7 @@ class InstallerImpl:
 
         cmd = "snap list"
         cmd, cmds = _which_split_cmd(cmd)
-        self.tue_install_echo(repr(cmd))
+        self.tue_install_debug(repr(cmd))
         sub = BackgroundPopen(args=cmds, err_handler=self._err_handler, stdout=sp.PIPE, text=True)
         sub.wait()
         if sub.returncode != 0:
@@ -1126,7 +1126,7 @@ class InstallerImpl:
 
         cmd = "gem list"
         cmd, cmds = _which_split_cmd(cmd)
-        self.tue_install_echo(repr(cmd))
+        self.tue_install_debug(repr(cmd))
         sub = BackgroundPopen(args=cmds, err_handler=self._err_handler, stdout=sp.PIPE, text=True)
         sub.wait()
         if sub.returncode != 0:
