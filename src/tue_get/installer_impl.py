@@ -159,7 +159,7 @@ class InstallerImpl:
         self._current_target_dir = parent_target_dir
 
     def _out_handler(self, sub: BackgroundPopen, line: str) -> None:
-        def _write_stdin(msg: str) -> None:
+        def _write_stdin(msg) -> None:
             if sub.returncode is not None:
                 self.tue_install_error(
                     f"Cannot write to stdin of process {sub.pid} as it has already terminated {line=}"
