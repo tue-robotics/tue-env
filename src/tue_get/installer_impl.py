@@ -1078,7 +1078,7 @@ class InstallerImpl:
                 return False
 
             self.tue_install_debug(f"tue-install-system ros-{tue_ros_distro}-{name}")
-            if not self.tue_install_system(["ros-{tue_ros_distro}-{src}"]):
+            if not self.tue_install_system([f"ros-{tue_ros_distro}-{name}"]):
                 self.tue_install_error(f"Failed to append ros-{tue_ros_distro}-{name}")
                 # ToDo: This depends on behaviour of tue-install-error
                 return False
