@@ -132,16 +132,15 @@ class InstallerImpl:
     def _write_sorted_dep_file(file: str, target: str) -> None:
         if not os.path.isfile(file):
             Path(file).touch(exist_ok=False)
-            targets = []
+            targets = set()
         else:
-            with open(file, "r+") as f:
-                targets = f.readlines()
+            with open(file, "r") as f:
+                targets = set(f.read().splitlines())
 
-        print(f"{targets=}")
-        targets.append(target + "\n")
-        targets.sort()
+        targets.add(target)
         with open(file, "w") as f:
-            f.writelines(targets)
+            for target in sorted(targets):
+                f.write(f"{target}\n")
 
     @contextmanager
     def _set_target(self, target: str):
@@ -354,8 +353,7 @@ class InstallerImpl:
             self._write_sorted_deps(target)
 
         with self._set_target(target):
-
-            state_file = os.path.join(self._state_dir, "target")
+            state_file = os.path.join(self._state_dir, target)
             state_file_now = f"{state_file}-now"
 
             # Determine if this target needs to be executed
@@ -461,6 +459,7 @@ class InstallerImpl:
                 Path(state_file_to_touch).touch()
 
         self.tue_install_debug(f"Finished installing {target}")
+        return True
 
     def tue_install_git(self, url: str, target_dir: Optional[str] = None, version: Optional[str] = None) -> bool:
         pass
@@ -565,6 +564,8 @@ class InstallerImpl:
                 self.tue_install_error(f"Error while copying({sub.returncode}):\n    {repr(cmd)}")
                 # ToDo: This depends on behaviour of tue-install-error
                 return False
+
+        return True
 
     def tue_install_add_text(self, source_file: str, target_file: str) -> bool:
         self.tue_install_debug(f"tue-install-add-text {source_file=} {target_file=}")
@@ -697,7 +698,7 @@ class InstallerImpl:
 
         installed_pkgs = []
 
-        def _out_handler_installed_pkgs(sub: BackgroundPopen, line: str) -> None:
+        def _out_handler_installed_pkgs(_: BackgroundPopen, line: str) -> None:
             installed_pkgs.append(line.strip())
 
         # Check if pkg is not already installed dpkg -S does not cover previously removed packages
@@ -997,7 +998,7 @@ class InstallerImpl:
             return False
 
         cmd = f"sudo dpkg -i {pkg_file}"
-        sub = self._default_background_popen(cmd)
+        _ = self._default_background_popen(cmd)
         # ToDo: Should we check the return code?
         # if sub.returncode != 0:
         #     self.tue_install_error(f"An error occurred while installing dpkg package({sub.returncode}):"
@@ -1008,7 +1009,7 @@ class InstallerImpl:
         cmd = f"sudo apt-get install -f"
         sub = self._default_background_popen(cmd)
         if sub.returncode != 0:
-            self.tue_install_error(f"An error occurred while fixing dpkg isntall({sub.returncode}):\n    {repr(cmd)}")
+            self.tue_install_error(f"An error occurred while fixing dpkg install({sub.returncode}):\n    {repr(cmd)}")
             # ToDo: This depends on behaviour of tue-install-error
             return False
 
