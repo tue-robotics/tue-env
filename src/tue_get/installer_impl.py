@@ -462,7 +462,8 @@ class InstallerImpl:
         return True
 
     def tue_install_git(self, url: str, target_dir: Optional[str] = None, version: Optional[str] = None) -> bool:
-        pass
+        self.tue_install_debug(f"tue-install-git {url=} {target_dir=} {version=}")
+        return True
 
     def tue_install_apply_patch(self, patch_file: str, target_dir: str) -> bool:
         self.tue_install_debug(f"tue-install-apply-patch {patch_file=} {target_dir=}")
@@ -677,6 +678,7 @@ class InstallerImpl:
             return False
 
     def tue_install_get_releases(self, url: str, filename: str, output_dir: str, tag: Optional[str] = None) -> bool:
+        self.tue_install_debug(f"tue-install-get-releases {url=} {filename=} {output_dir=} {tag=}")
         return True
 
     def tue_install_system(self, pkgs: List[str]) -> bool:
