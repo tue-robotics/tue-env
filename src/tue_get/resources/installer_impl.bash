@@ -180,12 +180,26 @@ function tue-install-pip
     return $(("$return_value"))
 }
 
+# TEMP for backward compatibility
+function tue-install-pip3
+{
+    tue-install-pip "$*"
+    return $?
+}
+
 function tue-install-pip-now
 {
     echo -e "tue-install-pip-now: $*"
     local return_value
     read -r return_value
     return $(("$return_value"))
+}
+
+# TEMP for backward compatibility
+function tue-install-pip3-now
+{
+    tue-install-pip-now "$*"
+    return $?
 }
 
 function tue-install-snap
