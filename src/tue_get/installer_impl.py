@@ -60,7 +60,9 @@ class InstallerImpl:
     _sources_list = os.path.join(os.sep, "etc", "apt", "sources.list")
     _sources_list_dir = os.path.join(os.sep, "etc", "apt", "sources.list.d")
 
-    def __init__(self, ros_test_deps: bool = False, ros_doc_deps: bool = False, skip_ros_deps: bool = False, debug: bool = False):
+    def __init__(
+        self, ros_test_deps: bool = False, ros_doc_deps: bool = False, skip_ros_deps: bool = False, debug: bool = False
+    ):
         self._ros_test_deps = ros_test_deps
         self._ros_doc_deps = ros_doc_deps
         self._skip_ros_deps = skip_ros_deps
@@ -1041,9 +1043,11 @@ class InstallerImpl:
         ros_pkg_name = self._current_target.lstrip("ros-")
         if "-" in ros_pkg_name:
             correct_ros_pkg_name = ros_pkg_name.replace("-", "_")
-            self.tue_install_error(f"A ROS package cannot contain dashes ({ros_pkg_name}), "
-                                   f"make sure the package is named '{correct_ros_pkg_name}' and rename the "
-                                   f"target to 'ros-{correct_ros_pkg_name}'")
+            self.tue_install_error(
+                f"A ROS package cannot contain dashes ({ros_pkg_name}), "
+                f"make sure the package is named '{correct_ros_pkg_name}' and rename the "
+                f"target to 'ros-{correct_ros_pkg_name}'"
+            )
             # ToDo: This depends on behaviour of tue-install-error
             return False
 
@@ -1108,8 +1112,6 @@ class InstallerImpl:
             # ToDo: This depends on behaviour of tue-install-error
             return False
 
-
-
         # If repos_dir is not set, try generating the default path from git url
         if target_dir is None:
             # ToDo: convert _git_url_to_repos_dir to python
@@ -1152,8 +1154,7 @@ class InstallerImpl:
         elif not os.path.exists(ros_pkg_dir):
             os.symlink(os.path.join(target_dir, sub_dir), ros_pkg_dir)
         else:
-            self.tue_install_error(f"'{ros_pkg_dir}' should not exist or be a symlink. "
-                                   "Any other option is incorrect")
+            self.tue_install_error(f"'{ros_pkg_dir}' should not exist or be a symlink. Any other option is incorrect")
 
         if self._skip_ros_deps and not self._ros_test_deps and not self._ros_doc_deps:
             self.tue_install_debug("Skipping resolving of ROS dependencies")
