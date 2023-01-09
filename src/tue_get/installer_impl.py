@@ -299,6 +299,7 @@ class InstallerImpl:
         log_msg = f"[{self._current_target}] WARNING: {msg}"
         colored_log = colored(log_msg, color="yellow", attrs=["bold"])
         self._warn_logs.append(colored_log)
+        print(colored_log)
         self._log_to_file(log_msg)
 
     def tue_install_info(self, msg: str) -> None:
