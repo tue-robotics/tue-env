@@ -158,7 +158,12 @@ function tue-install-apt-get-update
 
 function tue-install-ppa
 {
-    echo -e "tue-install-ppa: $*"
+    local ppa_list
+    for ppa in "$@"
+    do
+        ppa_list="${ppa_list:+${ppa_list} }${ppa// /^}"
+    done
+    echo -e "tue-install-ppa: ${ppa_list}"
     local return_value
     read -r return_value
     return $(("$return_value"))
@@ -166,7 +171,12 @@ function tue-install-ppa
 
 function tue-install-ppa-now
 {
-    echo -e "tue-install-ppa-now: $*"
+    local ppa_list
+    for ppa in "$@"
+    do
+        ppa_list="${ppa_list:+${ppa_list} }${ppa// /^}"
+    done
+    echo -e "tue-install-ppa-now: $ppa_list"
     local return_value
     read -r return_value
     return $(("$return_value"))
