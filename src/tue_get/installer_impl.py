@@ -1217,7 +1217,8 @@ class InstallerImpl:
             # ToDo: This depends on behaviour of tue-install-error
             return False
 
-        ros_pkg_name = self._current_target.lstrip("ros-")
+        # Remove 'ros-' prefix
+        ros_pkg_name = self._current_target[4:]
         if "-" in ros_pkg_name:
             correct_ros_pkg_name = ros_pkg_name.replace("-", "_")
             self.tue_install_error(
@@ -1301,6 +1302,7 @@ class InstallerImpl:
                 return False
 
         self.tue_install_debug(f"{target_dir=}")
+        target_sub_dir = os.path.join(target_dir, sub_dir)
 
         ros_pkg_dir = os.path.join(ros_package_install_dir, ros_pkg_name)
 
@@ -1312,7 +1314,7 @@ class InstallerImpl:
             # ToDo: This depends on behaviour of tue-install-error
             return False
 
-        if not os.path.isdir(os.path.join(target_dir, sub_dir)):
+        if not os.path.isdir(target_sub_dir):
             self.tue_install_error(f"Subdirectory '{sub_dir}' does not exist for url '{url}'")
             # ToDo: This depends on behaviour of tue-install-error
             return False
@@ -1320,16 +1322,17 @@ class InstallerImpl:
         # Test if the current symbolic link points to the same repository dir. If not, give a warning
         # because it means the source URL has changed
         if os.path.islink(ros_pkg_dir):
-            if os.path.realpath(ros_pkg_dir) != os.path.realpath(os.path.join(target_dir, sub_dir)):
+            if os.path.realpath(ros_pkg_dir) != os.path.realpath(target_sub_dir):
                 self.tue_install_info(f"url has changed to {url}/{sub_dir}")
                 os.remove(ros_pkg_dir)
-                os.symlink(os.path.join(target_dir, sub_dir), ros_pkg_dir)
+                os.symlink(target_sub_dir, ros_pkg_dir)
         elif os.path.isdir(ros_pkg_dir):
             self.tue_install_error(f"Can not create a symlink at '{ros_pkg_dir}' as it is a directory")
             # ToDo: This depends on behaviour of tue-install-error
             return False
         elif not os.path.exists(ros_pkg_dir):
-            os.symlink(os.path.join(target_dir, sub_dir), ros_pkg_dir)
+            self.tue_install_debug(f"Creating symlink from {target_sub_dir} to {ros_pkg_dir}")
+            os.symlink(target_sub_dir, ros_pkg_dir)
         else:
             self.tue_install_error(f"'{ros_pkg_dir}' should not exist or be a symlink. Any other option is incorrect")
 
