@@ -479,7 +479,6 @@ class InstallerImpl:
         return True
 
     def _show_update_msg(self, repo, msg: str = None):
-        # shellcheck disable=SC2086,SC2116
         if msg:
             print_msg = "\n"
             print_msg += f"    {colored(repo, attrs=['bold'])}"
