@@ -19,7 +19,7 @@ from time import sleep
 
 from tue_get.catkin_package_parser import catkin_package_parser
 from tue_get.install_yaml_parser import installyaml_parser
-from tue_get.util.BackgroundPopen import BackgroundPopen
+from tue_get.util.background_popen import BackgroundPopen
 from tue_get.util.grep import grep_directory, grep_file
 
 CI = None

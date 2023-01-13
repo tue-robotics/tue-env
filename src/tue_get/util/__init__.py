@@ -1,2 +1,2 @@
-from . import BackgroundPopen
+from . import background_popen
 from . import grep
