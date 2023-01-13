@@ -131,6 +131,14 @@ class InstallerImpl:
     def __del__(self):
         shutil.rmtree(self._state_dir)
 
+    def _get_installed_targets(self) -> List[str]:
+        return [
+            pkg for pkg in os.listdir(self._installed_dir) if os.path.isfile(os.path.join(self._installed_dir, pkg))
+        ]
+
+    def _target_exist(self, target: str) -> bool:
+        return os.path.isdir(os.path.join(self._targets_dir, target))
+
     def _log_to_file(self, msg: str, end="\n") -> None:
         with open(self._log_file, "a") as f:
             f.write(msg + end)
@@ -361,7 +369,7 @@ class InstallerImpl:
         self.tue_install_debug(f"Installing target: {target}")
 
         # Check if valid target received as input
-        if not os.path.isdir(os.path.join(self._targets_dir, target)):
+        if not self._target_exist(target):
             self.tue_install_debug(f"Target '{target}' does not exist.")
             return False
 
@@ -1376,7 +1384,195 @@ class InstallerImpl:
         # ToDO: TUE_INSTALL_PKG_DIR was set ros_pkg_dir which was then use in tue-install-apply-patch; we are not doing that not (yet) in python
         return True
 
+    def install(self, targets: List[str]) -> bool:
+        if not targets:
+            self.tue_install_error("No targets to install")
+            # ToDo: This depends on behaviour of tue-install-error
+            return False
+
+        missing_targets = []
+        for target in targets:
+            if not self._target_exist(target):
+                missing_targets.append(target)
+
+        if missing_targets:
+            self.tue_install_error(f"The following installed targets don't exist (anymore):\n{sorted(missing_targets)}")
+            # ToDo: This depends on behaviour of tue-install-error
+            return False
+
+        for target in targets:
+            self.tue_install_debug(f"Installing target '{target}'")
+            if not self.tue_install_target(target):
+                self.tue_install_error(f"Failed to install target '{target}'")
+                return False
+
+            # Mark as installed
+            self.tue_install_debug(f"Marking '{target}' as installed after successful installation")
+            Path(os.path.join(self._installed_dir, target)).touch(exist_ok=True)
+
+        return True
+
+    def update(self, targets: List[str]) -> bool:
+        if not targets:
+            targets = self._get_installed_targets()
+        else:
+            installed_targets = self._get_installed_targets()
+            for target in targets:
+                if target not in installed_targets:
+                    self.tue_install_error(f"Target '{target}' is not installed")
+                    # ToDo: This depends on behaviour of tue-install-error
+                    return False
+
+        missing_targets = []
+        for target in targets:
+            if not self._target_exist(target):
+                missing_targets.append(target)
+
+        if missing_targets:
+            self.tue_install_error(f"The following installed targets don't exist (anymore):\n{sorted(missing_targets)}")
+            # ToDo: This depends on behaviour of tue-install-error
+            return False
+
+        for target in targets:
+            self.tue_install_debug(f"Updating target '{target}'")
+            if not self.tue_install_target(target):
+                self.tue_install_error(f"Failed to update target '{target}'")
+                return False
+            self.tue_install_debug(f"{target} succesfully updated")
+
+        return True
+
+    def print_queued_logs(self) -> bool:
+        if self._info_logs:
+            logs = "\n    ".join(self._info_logs)
+            print(f"Some information you may have missed:\n\n    {logs}\n")
+
+        if self._warn_logs:
+            logs = "\n    ".join(self._warn_logs)
+            print(f"Overview of warnings:\n\n    {logs}\n")
+
+        return True
+
+    def install_queued_pkgs(self) -> bool:
+        if self._ppas:
+            with self._set_target("PPA-ADD"):
+                self.tue_install_debug(f"calling tue-install-ppa-now {self._ppas}")
+                if not self.tue_install_ppa_now(self._ppas):
+                    self.tue_install_error(f"Failed to add PPA's: {self._ppas}")
+                    # ToDo: This depends on behaviour of tue-install-error
+                    return False
+
+        if self._systems:
+            with self._set_target("APT-GET"):
+                self.tue_install_debug(f"calling tue-install-system-now {self._systems}")
+                if not self.tue_install_system_now(self._systems):
+                    self.tue_install_error(f"Failed to install system packages: {self._systems}")
+                    # ToDo: This depends on behaviour of tue-install-error
+                    return False
+
+        if self._pips:
+            with self._set_target("PIP"):
+                self.tue_install_debug(f"calling tue-install-pip-now {self._pips}")
+                if not self.tue_install_pip_now(self._pips):
+                    self.tue_install_error(f"Failed to install pip packages: {self._pips}")
+                    # ToDo: This depends on behaviour of tue-install-error
+                    return False
+
+        if self._snaps:
+            with self._set_target("SNAP"):
+                self.tue_install_debug(f"calling tue-install-snap-now {self._snaps}")
+                if not self.tue_install_snap_now(self._snaps):
+                    self.tue_install_error(f"Failed to install snap packages: {self._snaps}")
+                    # ToDo: This depends on behaviour of tue-install-error
+                    return False
+
+        if self._gems:
+            with self._set_target("GEM"):
+                self.tue_install_debug(f"calling tue-install-gem-now {self._gems}")
+                if not self.tue_install_gem_now(self._gems):
+                    self.tue_install_error(f"Failed to install gem packages: {self._gems}")
+                    # ToDo: This depends on behaviour of tue-install-error
+                    return False
+
+        return True
+
 
 if __name__ == "__main__":
-    bla = InstallerImpl(debug=True)
-    bla.tue_install_target("test", True)
+    import argparse
+    import sys
+
+    ros_test_depends = os.environ.get("TUE_INSTALL_TEST_DEPENDS", False)
+    ros_doc_depends = os.environ.get("TUE_INSTALL_DOC_DEPENDS", False)
+
+    parser = argparse.ArgumentParser(prog="tue-get", description="Installs all your (ROS) dependencies")
+    parser.add_argument("--branch", "-b", help="Branch to checkout", default=None)
+    parser.add_argument("--debug", "-d", action="store_true", help="Enable debug output", default=False)
+    parser.add_argument("--no-ros-deps", action="store_true", help="Skip resolving of ROS dependencies", default=False)
+    parser.add_argument(
+        "mode",
+        choices=["install", "update"],
+        type=str,
+        help="Install OR update the targets",
+    )
+    m = parser.add_mutually_exclusive_group(required=False)
+    m.add_argument(
+        "--test-depends",
+        dest="test_depends",
+        action="store_true",
+        help="Also resolve ROS test dependencies",
+        default=ros_test_depends,
+    )
+    m.add_argument(
+        "--no-test-depends",
+        dest="test_depends",
+        action="store_false",
+        help="Do not resolve ROS test dependencies",
+        default=ros_test_depends,
+    )
+    m = parser.add_mutually_exclusive_group(required=False)
+    m.add_argument(
+        "--doc-depends",
+        dest="doc_depends",
+        action="store_true",
+        help="Also resolve ROS doc dependencies",
+        default=ros_doc_depends,
+    )
+    m.add_argument(
+        "--no-doc-depends",
+        dest="doc_depends",
+        action="store_false",
+        help="Do not resolve ROS doc dependencies",
+        default=ros_doc_depends,
+    )
+    parser.add_argument("targets", help="Targets to install", nargs=argparse.REMAINDER)
+
+    args = parser.parse_args()
+    if args.mode == "install" and not args.targets:
+        parser.error("Minimal one target should be specified, when installing")
+
+    installer = InstallerImpl(
+        branch=args.branch,
+        debug=args.debug,
+        skip_ros_deps=args.no_ros_deps,
+        ros_test_deps=args.test_depends,
+        ros_doc_deps=args.doc_depends,
+    )
+
+    targets = sorted(args.targets)
+    if args.mode == "install":
+        if not installer.install(targets):
+            installer.tue_install_error(f"Failed to install targets: {targets}")
+            sys.exit(1)
+    elif args.mode == "update":
+        if not installer.update(targets):
+            installer.tue_install_error(f"Failed to update targets: {targets}")
+            sys.exit(1)
+
+    if not installer.print_queued_logs():
+        pass
+
+    if not installer.install_queued_pkgs():
+        sys.exit(1)
+
+    installer.tue_install_echo("Installer completed successfully")
+    sys.exit(0)
