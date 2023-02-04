@@ -18,7 +18,6 @@ class AuthenticationError(Exception):
 
 class DockerHubAuth(requests.auth.AuthBase):
     def __init__(self, session, username=None, password=None, token=None):
-
         self._session = session
         if token is not None:
             self._token = token
@@ -59,7 +58,6 @@ class DockerHubAuth(requests.auth.AuthBase):
 
 class DockerHub(object):
     def __init__(self, username, password):
-
         self._session = requests.Session()
         self._auth = DockerHubAuth(self._session, username, password)
 
