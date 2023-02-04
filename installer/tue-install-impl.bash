@@ -444,13 +444,14 @@ function tue-install-git
         rm "$version_cache_file" 2>/dev/null
     fi
 
-    tue-install-debug "Desired branch: $BRANCH"
-    if [ -n "$BRANCH" ] # Cannot be combined with version-if because this one might not exist
-    then
+    tue-install-debug "Desired branch(es): ${BRANCH}"
+    for branch in ${BRANCH}
+    do
+        tue-install-debug "Parsed branch '${branch}'"
         _try_branch_res=""
-        _try_branch_git "$targetdir" "$BRANCH"
-        [ -n "$_try_branch_res" ] && res="${res:+${res}\n}$_try_branch_res"
-    fi
+        _try_branch_git "${targetdir}" "${branch}"
+        [ -n "${_try_branch_res}" ] && res="${res:+${res}\n}${_try_branch_res}"
+    done
 
     _show_update_message "$TUE_INSTALL_CURRENT_TARGET" "$res"
 }
