@@ -1378,7 +1378,7 @@ do
             echo "unknown option $1"
             ;;
         *)
-            targets="$targets $1"
+            targets="${targets:+${targets} }$1"
             ;;
     esac
     shift
