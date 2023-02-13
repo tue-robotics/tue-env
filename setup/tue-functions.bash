@@ -79,12 +79,16 @@ function _tue-git-get-default-branch
     echo "$default_branch"
 }
 
+export -f _tue-git-get-default-branch
+
 function __tue-git-checkout-default-branch
 {
     local default_branch
-    default_branch=$(_tue-git-get-default-branch)
-    _git_remote_checkout origin "$default_branch"
+    default_branch=$(_tue-git-get-default-branch "$1")
+    _git_remote_checkout "$1" origin "$default_branch"
 }
+
+export -f __tue-git-checkout-default-branch
 
 function _tue-git-checkout-default-branch
 {
@@ -130,6 +134,7 @@ function _tue-git-clean-local
     # branch before cleanup
     if [[ "$stale_branches" == *$(git rev-parse --abbrev-ref HEAD)* ]]
     then
+        # shellcheck disable=SC2119
         __tue-git-checkout-default-branch
 
         git pull --ff-only --prune > /dev/null 2>&1
@@ -1470,7 +1475,7 @@ function _git_remote_checkout
 {
     if [ -z "$2" ]
     then
-        echo "Usage: _git_remote_checkout REMOTE BRANCH
+        echo "Usage: _git_remote_checkout [REPO_PATH] REMOTE BRANCH
 
 For example:
 
@@ -1479,18 +1484,25 @@ For example:
         return 1
     fi
 
-    local remote branch exists
+    local repo_path remote branch exists
+    if [ -n "$3" ]
+    then
+        repo_path=$1
+        shift
+    fi
     remote=$1
     branch=$2
-    exists=$(git show-ref refs/heads/"$branch")
+    exists=$(git -C "${repo_path}" show-ref refs/heads/"${branch}" 2>/dev/null)
     if [ -n "$exists" ]
     then
-        git checkout "$branch" --
-        git branch -u "$remote"/"$branch" "$branch"
+        git -C "${repo_path}" checkout "${branch}" --
+        git -C "${repo_path}" branch -u "${remote}"/"${branch}" "${branch}"
     else
-        git checkout --track -b "$branch" "$remote"/"$branch" --
+        git -c "${repo_path}" checkout --track -b "${branch}" "${remote}"/"${branch}" --
     fi
 }
+
+export -f _git_remote_checkout
 
 function tue-remote-checkout
 {
