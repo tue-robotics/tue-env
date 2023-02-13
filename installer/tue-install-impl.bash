@@ -300,30 +300,35 @@ function _try_branch_git
         tue-install-error "Invalid _try_branch_git: needs two arguments (repo and branch)."
     fi
 
-    local repo branch
+    local repo branch _checkout_error_code
     repo="$1"
     branch="$2"
     tue-install-debug "git -C $repo checkout $branch --"
     _try_branch_res=$(git -C "$repo" checkout "$branch" -- 2>&1)  # _try_branch_res is a "global" variable from tue-install-git
-    tue-install-debug "_try_branch_res: $_try_branch_res"
+    _checkout_error_code=$?
+    tue-install-debug "_try_branch_res(${_checkout_error_code}): ${_try_branch_res}"
+
+    if [[ ${_try_branch_res} == "Already on "* || ${_try_branch_res} == "fatal: invalid reference:"* ]]
+    then
+        _try_branch_res=
+    fi
+    [ "${_checkout_error_code}" -gt 0 ] && return ${_checkout_error_code}
 
     local _submodule_sync_res _submodule_sync_error_code
     tue-install-debug "git -C $repo submodule sync --recursive"
     _submodule_sync_res=$(git -C "$repo" submodule sync --recursive 2>&1)
     _submodule_sync_error_code=$?
-    tue-install-debug "_submodule_sync_res: $_submodule_sync_res"
+    tue-install-debug "_submodule_sync_res(${_submodule_sync_error_code}): ${_submodule_sync_res}"
 
     local _submodule_res
     tue-install-debug "git -C $repo submodule update --init --recursive"
     _submodule_res=$(git -C "$repo" submodule update --init --recursive 2>&1)
     tue-install-debug "_submodule_res: $_submodule_res"
 
-    if [[ $_try_branch_res == "Already on "* || $_try_branch_res == "fatal: invalid reference:"* ]]
-    then
-        _try_branch_res=
-    fi
     [ "$_submodule_sync_error_code" -gt 0 ] && [ -n "$_submodule_sync_res" ] && _try_branch_res="${res:+${res}\n}$_submodule_sync_res"
     [ -n "$_submodule_res" ] && _try_branch_res="${_try_branch_res:+${_try_branch_res}\n}$_submodule_res"
+
+    return ${_checkout_error_code}
 }
 
 # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # #
@@ -414,8 +419,8 @@ function tue-install-git
             tue-install-debug "git -C $targetdir submodule sync --recursive"
             submodule_sync_res=$(git -C "$targetdir" submodule sync --recursive)
             submodule_sync_error_code=$?
-            tue-install-debug "submodule_sync_res: $submodule_sync_res"
-            [ "$submodule_sync_error_code" -gt 0 ] && [ -n "$submodule_sync_res" ] && res="${res:+${res}\n}$submodule_sync_res"
+            tue-install-debug "submodule_sync_res(${submodule_sync_error_code}): ${submodule_sync_res}"
+            [ "${submodule_sync_error_code}" -gt 0 ] && [ -n "${submodule_sync_res}" ] && res="${res:+${res}\n}${submodule_sync_res}"
 
             local submodule_res
             tue-install-debug "git -C $targetdir submodule update --init --recursive"
@@ -444,13 +449,17 @@ function tue-install-git
         rm "$version_cache_file" 2>/dev/null
     fi
 
-    tue-install-debug "Desired branch: $BRANCH"
-    if [ -n "$BRANCH" ] # Cannot be combined with version-if because this one might not exist
-    then
+    local _try_branch_error_code
+    tue-install-debug "Desired branch(es): ${BRANCH}"
+    for branch in ${BRANCH}
+    do
+        tue-install-debug "Parsed branch '${branch}'"
         _try_branch_res=""
-        _try_branch_git "$targetdir" "$BRANCH"
-        [ -n "$_try_branch_res" ] && res="${res:+${res}\n}$_try_branch_res"
-    fi
+        _try_branch_git "${targetdir}" "${branch}"
+        _try_branch_error_code=$?
+        [ -n "${_try_branch_res}" ] && res="${res:+${res}\n}${_try_branch_res}"
+        [ "${_try_branch_error_code}" -eq 0 ] && break
+    done
 
     _show_update_message "$TUE_INSTALL_CURRENT_TARGET" "$res"
 }
@@ -1367,14 +1376,17 @@ do
             export TUE_INSTALL_TEST_DEPEND="false"
             ;;
         --branch*)
+            echo "Usage of --branch is deprecated, switch to --try-branch"
+            ;;&
+        --try-branch* | --branch*)
             # shellcheck disable=SC2001
-            BRANCH=$(echo "$1" | sed -e 's/^[^=]*=//g')
+            BRANCH="$(echo "$1" | sed -e 's/^[^=]*=//g')${BRANCH:+ ${BRANCH}}"  # Reverse order, so we try last one first
             ;;
         --*)
             echo "unknown option $1"
             ;;
         *)
-            targets="$targets $1"
+            targets="${targets:+${targets} }$1"
             ;;
     esac
     shift
