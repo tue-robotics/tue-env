@@ -803,7 +803,10 @@ function tue-get
         --no-doc-depend   - Do not install doc dependencies, overules config
         --test-depend     - Do install test dependencies, overules config and --no-ros-deps
         --no-test-depend  - Do not install test dependencies, overules config
-        --try-branch=name - Try to checkout this branch (or tag), can be specified multiple times and will be tried in-order
+        --try-branch=name - Try to checkout the branch (or tag) 'name'. This argument can be specified multiple times
+                            and all the --try-branch arguments are processed in the reverse order of their declaration,
+                            with the last one being the first. 'name' must only be an one word value, not a list or any
+                            other type of string.
 
 """
         return 1
