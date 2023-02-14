@@ -12,7 +12,6 @@ def catkin_package_parser(
     warnings: Optional[List[str]] = None,
     context: Optional[Mapping] = None,
 ) -> Tuple[Package, List[Dependency]]:
-
     if context is None:
         context = os.environ
     dep_types = []
