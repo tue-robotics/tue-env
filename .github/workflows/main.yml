@@ -3,8 +3,8 @@ name: CI
 on: [push, pull_request, workflow_dispatch]
 
 jobs:
-  linting:
-    name: Linting
+  linting_python_black:
+    name: Black Linting
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v3
@@ -14,20 +14,25 @@ jobs:
           python-version: '3.x'
       - name: Install Black
         run: pip install black
+      - name: Python Black
+        run: |
+          black --version
+          black -l 120 --check --diff --color .
+  linting_shellcheck:
+    name: ShellCheck
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v3
       - name: Shellcheck
         run: |
           shopt -s globstar
           shellcheck --version
           shellcheck **/*.bash **/*.sh
-      - name: Python Black
-        run: |
-          black --version
-          black -l 120 --check --diff --color .
 
   docker_generation_tue_env:
     name: Docker Generation tue-env
     runs-on: ubuntu-latest
-    needs: linting
+    needs: [linting_python_black, linting_shellcheck]
     strategy:
       matrix:
         include:
