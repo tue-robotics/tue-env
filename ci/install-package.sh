@@ -211,7 +211,7 @@ docker exec tue-env bash -c 'source ~/.bashrc; tue-get install ros-"$PACKAGE" --
 if [[ $PULL_REQUEST != "false" ]]
 then
     # Fetch the merged state ref of the pull request before running tue-get install
-    # with the --branch=PULLREQUEST option. Only the tested repo is checked
+    # with the --try-branch=PULLREQUEST option. Only the tested repo is checked
     # out to the merged pull request while all other packages are checked out
     # to their default branch.
     # This is needed before tue-get, so also new deps are installed.
@@ -222,17 +222,18 @@ then
     docker exec -t tue-env bash -c 'source ~/.bashrc; git -C "$TUE_SYSTEM_DIR"/src/"$PACKAGE" fetch origin "$REF_NAME"/"$PULL_REQUEST"/merge:PULLREQUEST'
 
     # Install the package completely
-    echo -e "\e[35m\e[1mtue-get install ros-$PACKAGE --test-depend --branch=PULLREQUEST\e[0m"
-    docker exec tue-env bash -c 'source ~/.bashrc; tue-get install ros-"$PACKAGE" --test-depend --branch=PULLREQUEST'
+    branch_string=${BRANCH:+" --try-branch=${BRANCH}"}
+    echo -e "\e[35m\e[1mtue-get install ros-$PACKAGE --test-depend${branch_string} --try-branch=PULLREQUEST\e[0m"
+    docker exec tue-env bash -c 'source ~/.bashrc; tue-get install ros-"${PACKAGE}" --test-depend --try-branch="${BRANCH}" --try-branch=PULLREQUEST'
 
     # Checkout -f to be really sure
     echo -e "\e[35m\e[1mgit -C ~${TUE_SYSTEM_DIR#"${DOCKER_HOME}"}/src/$PACKAGE checkout -f PULLREQUEST --\e[0m"
     docker exec -t tue-env bash -c 'source ~/.bashrc; git -C "$TUE_SYSTEM_DIR"/src/"$PACKAGE" checkout -f PULLREQUEST --'
 else
     # Install the package
-    branch_string="${BRANCH:+" --branch=${BRANCH}"}"
+    branch_string=${BRANCH:+" --try-branch=${BRANCH}"}
     echo -e "\e[35m\e[1mtue-get install ros-${PACKAGE} --test-depend${branch_string}\e[0m"
-    docker exec tue-env bash -c 'source ~/.bashrc; tue-get install ros-"${PACKAGE}" --test-depend --branch="${BRANCH}"'
+    docker exec tue-env bash -c 'source ~/.bashrc; tue-get install ros-"${PACKAGE}" --test-depend --try-branch="${BRANCH}"'
 
     # Set the package to the right commit
     echo -e "\e[35m\e[1mReset package to this commit\e[0m"
