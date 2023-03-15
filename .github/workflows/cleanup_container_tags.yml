@@ -1,0 +1,20 @@
+name: Cleanup container tags
+
+on: delete
+
+jobs:
+  delete_container_tag:
+    name: Delete container tag
+    runs-on: ubuntu-latest
+    strategy:
+      fail-fast: false
+      matrix:
+        package_name: ["tue-env-ros-noetic", "tue-env-ros-galactic", "tue-env-ros-humble"]
+    steps:
+      - name: Delete tag
+        uses: bots-house/ghcr-delete-image-action@v1.1.0
+        with:
+          owner: tue-robotics
+          name: ${{ matrix.package_name }}
+          token: ${{ secrets.GITHUB_TOKEN }}
+          tag: "${{ github.event.ref }}-amd64"
