@@ -121,7 +121,7 @@ CI_DOCKER_BUILD_ARGS+=("--build-arg=BRANCH=$CI_BRANCH" "--build-arg=PULL_REQUEST
     "--build-arg=REF_NAME=$CI_REF_NAME" "--build-arg=BASE_IMAGE=$CI_DOCKER_BASE_IMAGE" "--build-arg=ROS_VERSION=$CI_ROS_VERSION" "--build-arg=ROS_DISTRO=$CI_ROS_DISTRO")
 
 # Check the constructed Docker image name against the input
-image_name_expected="${image_dirname}/${image_name}:${CI_DOCKER_IMAGE_TAG}-${CI_DOCKER_PLATFORMS}"
+image_name_expected="${CI_DOCKER_REGISTRY:+${CI_DOCKER_REGISTRY}/}${image_dirname}/${image_name}:${CI_DOCKER_IMAGE_TAG}-${CI_DOCKER_PLATFORMS}"
 
 if [[ -n "${image_name_tag}" ]] && [[ "${image_name_tag}" != "${CI_DOCKER_IMAGE_TAG}-${CI_DOCKER_PLATFORMS}" ]]
 then
