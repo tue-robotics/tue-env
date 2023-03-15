@@ -95,6 +95,8 @@ echo -e "\e[35;1mCI_DOCKER_LOGIN       = ${CI_DOCKER_LOGIN}\e[0m"
 [[ -z "$CI_DOCKER_BASE_IMAGE" ]] && CI_DOCKER_BASE_IMAGE="ubuntu:20.04"
 echo -e "\e[35;1mCI_DOCKER_BASE_IMAGE  = ${CI_DOCKER_BASE_IMAGE}\e[0m"
 
+echo -e "\e[35;1mCI_DOCKER_REGISTRY    = ${CI_DOCKER_REGISTRY}\e[0m"
+
 # Declare arrays for storing the constructed docker build arguments
 CI_DOCKER_BUILD_ARGS=()
 CI_DOCKER_BUILDX_ARGS=()
