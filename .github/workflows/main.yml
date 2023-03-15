@@ -68,8 +68,9 @@ jobs:
             --commit="$GITHUB_SHA" \
             --push_image="true" \
             --pull_request="${PULLREQUEST}" \
-            --user="${{ secrets.DOCKER_HUB_USERNAME }}" \
-            --password="${{ secrets.DOCKER_HUB_PASSWORD }}" \
+            --registry="ghcr.io" \
+            --user="${{ github.actor }}" \
+            --password="${{ secrets.GITHUB_TOKEN }}" \
             --docker_login="true" \
             --ros_version="${{ matrix.ros-version }}" \
             --ros_distro="${{ matrix.ros-distro }}" \
