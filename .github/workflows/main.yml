@@ -43,6 +43,8 @@ jobs:
           - ros-distro: humble
             ros-version: 2
             base-image: "ubuntu:22.04"
+    env:
+      REGISTRY: ghcr.io
     steps:
       - uses: actions/checkout@v3
       - name: Docker info
@@ -61,14 +63,14 @@ jobs:
           else
               IMAGE_TAG="$(echo "${BRANCH}" | tr '[:upper:]' '[:lower:]' | sed -e 's:/:_:g')"
           fi
-          TARGET_IMAGE="tuerobotics/tue-env-ros-${{ matrix.ros-distro }}:${IMAGE_TAG}-amd64"
+          TARGET_IMAGE="${{ env.REGISTRY}}/tuerobotics/tue-env-ros-${{ matrix.ros-distro }}:${IMAGE_TAG}-amd64"
           ci/build-docker-image.sh \
             --image="${TARGET_IMAGE}" \
             --branch="${BRANCH}" \
             --commit="$GITHUB_SHA" \
             --push_image="true" \
             --pull_request="${PULLREQUEST}" \
-            --registry="ghcr.io" \
+            --registry="${{ env.REGISTRY }}" \
             --user="${{ github.actor }}" \
             --password="${{ secrets.GITHUB_TOKEN }}" \
             --docker_login="true" \
