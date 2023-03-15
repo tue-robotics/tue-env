@@ -63,7 +63,7 @@ jobs:
           else
               IMAGE_TAG="$(echo "${BRANCH}" | tr '[:upper:]' '[:lower:]' | sed -e 's:/:_:g')"
           fi
-          TARGET_IMAGE="${{ env.REGISTRY}}/tuerobotics/tue-env-ros-${{ matrix.ros-distro }}:${IMAGE_TAG}-amd64"
+          TARGET_IMAGE="${{ env.REGISTRY }}/tue-robotics/tue-env-ros-${{ matrix.ros-distro }}:${IMAGE_TAG}-amd64"
           ci/build-docker-image.sh \
             --image="${TARGET_IMAGE}" \
             --branch="${BRANCH}" \
