@@ -34,6 +34,7 @@ jobs:
     runs-on: ubuntu-latest
     needs: [linting_python_black, linting_shellcheck]
     strategy:
+      fail-fast: false
       matrix:
         include:
           - ros-distro: noetic
