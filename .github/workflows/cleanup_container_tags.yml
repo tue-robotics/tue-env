@@ -11,12 +11,16 @@ jobs:
       matrix:
         package_name: ["tue-env-ros-noetic", "tue-env-ros-galactic", "tue-env-ros-humble"]
     steps:
+      - name: Generate tag
+        id: generate-tag
+        run |
+          TAG=$(echo "${{ github.event.ref }}" | tr '[:upper:]' '[:lower:]' | sed -e 's:/:_:g')
+          echo "tag=${TAG}" >> ${GITHUB_OUTPUT}
       - name: Delete tag
         uses: bots-house/ghcr-delete-image-action@v1.1.0
-        env:
-          REF: ${{ github.event.ref }}
+        needs: generate-tag
         with:
           owner: tue-robotics
           name: ${{ matrix.package_name }}
           token: ${{ secrets.GITHUB_TOKEN }}
-          tag: "${REF////_}-amd64"
+          tag: "${{ steps.generate_tag.outputs.tag }}"
