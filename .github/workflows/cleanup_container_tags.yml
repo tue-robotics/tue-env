@@ -13,8 +13,10 @@ jobs:
     steps:
       - name: Delete tag
         uses: bots-house/ghcr-delete-image-action@v1.1.0
+        env:
+          REF: ${{ github.event.ref }}
         with:
           owner: tue-robotics
           name: ${{ matrix.package_name }}
           token: ${{ secrets.GITHUB_TOKEN }}
-          tag: "${{ github.event.ref }}-amd64"
+          tag: "${REF////_}-amd64"
