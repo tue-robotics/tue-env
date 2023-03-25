@@ -15,7 +15,7 @@ jobs:
         id: generate-tag
         run: |
           TAG=$(echo "${{ github.event.ref }}" | tr '[:upper:]' '[:lower:]' | sed -e 's:/:_:g')
-          echo "tag=${TAG}" >> ${GITHUB_OUTPUT}
+          echo "tag=${TAG}-amd64" >> ${GITHUB_OUTPUT}
       - name: Delete tag
         uses: bots-house/ghcr-delete-image-action@v1.1.0
         with:
