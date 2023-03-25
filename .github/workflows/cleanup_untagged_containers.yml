@@ -1,0 +1,23 @@
+name: Cleanup untagged containers
+
+on:
+  schedule:
+    - cron: '0 2 * * *'
+  workflow_dispatch:
+
+jobs:
+  delete_untagged_containers:
+    name: Delete untagged containers
+    runs-on: ubuntu-latest
+    strategy:
+      fail-fast: false
+      matrix:
+        package_name: ["tue-env-ros-noetic", "tue-env-ros-galactic", "tue-env-ros-humble"]
+    steps:
+      - name: Delete containers
+        uses: bots-house/ghcr-delete-image-action@v1.1.0
+        with:
+          owner: tue-robotics
+          name: ${{ matrix.package_name }}
+          token: ${{ secrets.GITHUB_TOKEN }}
+          untagged-keep-latest: 0

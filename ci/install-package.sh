@@ -64,7 +64,7 @@ echo -e "\e[35m\e[1mCOMMIT       = ${COMMIT}\e[0m"
 echo -e "\e[35m\e[1mPULL_REQUEST = ${PULL_REQUEST}\e[0m"
 
 # Set default value for IMAGE_NAME
-[ -z "$IMAGE_NAME" ] && IMAGE_NAME='tuerobotics/tue-env-ros-noetic'
+[ -z "$IMAGE_NAME" ] && IMAGE_NAME='ghcr.io/tue-robotics/tue-env-ros-noetic'
 echo -e "\e[35m\e[1mIMAGE_NAME   = ${IMAGE_NAME}\e[0m"
 
 # Set default value for directory to place mountable container assests
