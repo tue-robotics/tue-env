@@ -13,7 +13,7 @@ jobs:
     steps:
       - name: Generate tag
         id: generate-tag
-        run |
+        run: |
           TAG=$(echo "${{ github.event.ref }}" | tr '[:upper:]' '[:lower:]' | sed -e 's:/:_:g')
           echo "tag=${TAG}" >> ${GITHUB_OUTPUT}
       - name: Delete tag
