@@ -17,6 +17,8 @@ ARG REF_NAME=
 # Default is empty and gives ROS1, for ROS2 use --build-arg ROS_VERSION=2
 ARG ROS_VERSION=
 ARG ROS_DISTRO=
+# Default is empty and will result in the default targets repo
+ARG TARGETS_REPO=
 
 # Inform scripts that no questions should be asked and set some environment
 # variables to prevent warnings and errors

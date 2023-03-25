@@ -68,7 +68,11 @@ case $DISTRIB_RELEASE in
                     fi
                     ;;
                 --targets-repo=* )
-                    env_targets_url="${i#*=}"
+                    targets_repo="${i#*=}"
+                    if [[ -n "${targets_repo}" ]]
+                    then
+                        env_targets_url="${targets_repo}"
+                    fi
                     ;;
                 * )
                     echo "[tue-env](bootstrap) Error! Unknown argument '${i}' provided to bootstrap script."
@@ -93,6 +97,7 @@ case $DISTRIB_RELEASE in
                     exit 1
                     ;;
             esac
+        done
         ;;
     *)
         echo "[tue-env](bootstrap) Ubuntu $DISTRIB_RELEASE is unsupported. Please use one of Ubuntu 20.04 or 22.04."
