@@ -18,9 +18,8 @@ jobs:
           echo "tag=${TAG}" >> ${GITHUB_OUTPUT}
       - name: Delete tag
         uses: bots-house/ghcr-delete-image-action@v1.1.0
-        needs: generate-tag
         with:
           owner: tue-robotics
           name: ${{ matrix.package_name }}
           token: ${{ secrets.GITHUB_TOKEN }}
-          tag: "${{ steps.generate_tag.outputs.tag }}"
+          tag: "${{ steps.generate-tag.outputs.tag }}"
