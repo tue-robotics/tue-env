@@ -37,7 +37,8 @@ case $DISTRIB_RELEASE in
                     then
                         TUE_ROS_DISTRO=noetic
                         TUE_ROS_VERSION=1
-                    else
+                    elif [[ -n "${ros_version}" ]]
+                    then
                         echo "[tue-env](bootstrap) Error! ROS ${ros_version} is unsupported with tue-env."
                         exit 1
                     fi
@@ -59,7 +60,8 @@ case $DISTRIB_RELEASE in
                         elif [[ "${ros_distro}" == "galactic" ]]
                         then
                             TUE_ROS_DISTRO=galactic
-                        else
+                        elif [[ -n "${ros_distro}" ]]
+                        then
                             echo "[tue-env](bootstrap) Error! ROS ${ros_distro} is unsupported with tue-env."
                             exit 1
                         fi
