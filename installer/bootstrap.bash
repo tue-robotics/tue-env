@@ -91,6 +91,12 @@ case $DISTRIB_RELEASE in
         for i in "$@"
         do
             case $i in
+                --ros-version=* )
+                    # Ignore this for 22.04
+                    ;;
+                --ros-distro=* )
+                    # Ignore this for 22.04
+                    ;;
                 --targets-repo=* )
                     env_targets_url="${i#*=}"
                     ;;
