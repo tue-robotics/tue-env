@@ -15,9 +15,13 @@ jobs:
         id: generate-tag
         run: |
           TAG=$(echo "${{ github.event.ref }}" | tr '[:upper:]' '[:lower:]' | sed -e 's:/:_:g')
-          echo "tag=${TAG}-amd64" >> ${GITHUB_OUTPUT}
+          echo "tag=${TAG}-.*" >> ${GITHUB_OUTPUT}
+      - uses: castlabs/get-package-version-id-action@v2.1
+        id: versions
+        with:
+          versions: ${{ steps.generate-tag.outputs.tag }}
       - uses: actions/delete-package-versions@v4
         with:
           package-name: ${{ matrix.package_name }}
           package-type: container
-          package-version-ids: ${{ steps.generate-tag.outputs.tag }}
+          package-version-ids: ${{ steps.versions.outputs.ids }}
