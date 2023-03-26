@@ -1,6 +1,6 @@
 name: Cleanup container tags
 
-on: delete
+on: [delete, push, workflow_dispatch]
 
 jobs:
   delete_container_tag:
@@ -15,7 +15,8 @@ jobs:
         id: generate-tag
         run: |
           TAG=$(echo "${{ github.event.ref }}" | tr '[:upper:]' '[:lower:]' | sed -e 's:/:_:g')
-          echo "tag=${TAG}-amd64" >> ${GITHUB_OUTPUT}
+          TAG="fix\_cleanup"
+          echo "tag=${TAG}\-.*" >> ${GITHUB_OUTPUT}
       - uses: castlabs/get-package-version-id-action@v2.1
         id: version-ids
         with:
