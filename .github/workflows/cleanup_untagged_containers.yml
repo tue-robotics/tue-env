@@ -14,10 +14,37 @@ jobs:
       matrix:
         package_name: ["tue-env-ros-noetic", "tue-env-ros-galactic", "tue-env-ros-humble"]
     steps:
-      - name: Delete containers
-        uses: bots-house/ghcr-delete-image-action@v1.1.0
+      - name: Determine multi-architecture versions
+        id: multi-arch-versions
+        run: |
+          echo "::group::skopeo list-tags"
+          echo -e "skopeo list-tags docker://ghcr.io/tue-robotics/${{ matrix.package_name }}"
+          skopeo list-tags docker://ghcr.io/tue-robotics/${{ matrix.package_name }}
+          echo "::endgroup::"
+          TAGS="$(skopeo list-tags docker://ghcr.io/tue-robotics/${{ matrix.package_name }} | jq -r ".Tags | .[]")"
+          echo -e "\e[35m\e[1mCurrent tagged versions:\n${TAGS}\e[0m"
+          multi_arch_versions="^"
+          for tag in ${TAGS}
+          do
+              echo "::group::skopeo inspect --raw ${tag}"
+              echo -e "skopeo inspect --raw docker://ghcr.io/tue-robotics/${{ matrix.package_name }}:${tag}"
+              skopeo inspect --raw docker://ghcr.io/tue-robotics/${{ matrix.package_name }}:${tag} | jq
+              echo "::endgroup::"
+              pkg_multi_arch_versions=$(skopeo inspect --raw docker://ghcr.io/tue-robotics/${{ matrix.package_name }}:${tag} | jq -r ".manifests[].digest")
+              echo -e "\e[35m\e[1mCurrent multi-arch versions of tag '${tag}':\n${pkg_multi_arch_versions}\e[0m"
+              for pkg_multi_arch_version in ${pkg_multi_arch_versions}
+              do
+                  [[ "${multi_arch_versions}" != "^" ]] && multi_arch_versions+="|"
+                  multi_arch_versions+="${pkg_multi_arch_version}"
+              done
+          done
+          multi_arch_versions+="$"
+          echo -e "\e[35m\e[1mIgnoring versions: '${multi_arch_versions}'\e[0m"
+          echo "ignore-versions=${multi_arch_versions}" >> ${GITHUB_OUTPUT}
+      - uses: actions/delete-package-versions@v4
         with:
-          owner: tue-robotics
-          name: ${{ matrix.package_name }}
-          token: ${{ secrets.GITHUB_TOKEN }}
-          untagged-keep-latest: 1
+          package-name: ${{ matrix.package_name }}
+          package-type: container
+          delete-only-untagged-versions: true
+          min-versions-to-keep: 0
+          ignore-versions: ${{ steps.multi-arch-versions.outputs.ignore-versions }}
