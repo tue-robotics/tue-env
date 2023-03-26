@@ -16,10 +16,8 @@ jobs:
         run: |
           TAG=$(echo "${{ github.event.ref }}" | tr '[:upper:]' '[:lower:]' | sed -e 's:/:_:g')
           echo "tag=${TAG}-amd64" >> ${GITHUB_OUTPUT}
-      - name: Delete tag
-        uses: bots-house/ghcr-delete-image-action@v1.1.0
+      - uses: actions/delete-package-versions@v4
         with:
-          owner: tue-robotics
-          name: ${{ matrix.package_name }}
-          token: ${{ secrets.GITHUB_TOKEN }}
-          tag: "${{ steps.generate-tag.outputs.tag }}"
+          package-name: ${{ matrix.package_name }}
+          package-type: container
+          package-version-ids: ${{ steps.generate-tag.outputs.tag
