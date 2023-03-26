@@ -20,4 +20,4 @@ jobs:
         with:
           package-name: ${{ matrix.package_name }}
           package-type: container
-          package-version-ids: ${{ steps.generate-tag.outputs.tag
+          package-version-ids: ${{ steps.generate-tag.outputs.tag }}
