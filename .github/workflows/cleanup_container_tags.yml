@@ -17,11 +17,12 @@ jobs:
           TAG=$(echo "${{ github.event.ref }}" | tr '[:upper:]' '[:lower:]' | sed -e 's:/:_:g')
           echo "tag=${TAG}-.*" >> ${GITHUB_OUTPUT}
       - uses: castlabs/get-package-version-id-action@v2.1
-        id: versions
+        id: version-ids
         with:
-          versions: ${{ steps.generate-tag.outputs.tag }}
+          version: ${{ steps.generate-tag.outputs.tag }}
       - uses: actions/delete-package-versions@v4
+        if: ${{ steps.version-ids.outputs.ids != '' }}
         with:
           package-name: ${{ matrix.package_name }}
           package-type: container
-          package-version-ids: ${{ steps.versions.outputs.ids }}
+          package-version-ids: ${{ steps.version-ids.outputs.ids }}
