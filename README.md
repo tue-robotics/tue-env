@@ -13,16 +13,21 @@ Standard tue-env installation with targets from [tue-env-targets](https://github
 #### Installing the tue-env
 
 1. Bootstrap the package manager
+
    ```bash
    source <(wget -O - https://raw.githubusercontent.com/tue-robotics/tue-env/master/installer/bootstrap.bash)  # for default ROS1
    # Or
    source <(wget -O - https://raw.githubusercontent.com/tue-robotics/tue-env/master/installer/bootstrap.bash) --ros-version=2  # for ROS2
    ```
+
 2. Install target(s)
+
    ```bash
    tue-get install [package_name]
    ```
+
 3. Build sources
+
    ```bash
    tue-make
    source ~/.bashrc  # Or open a new terminal
@@ -53,9 +58,11 @@ When a targets repository is already initialized. It can be switched by running 
 This will rename the old targets folder with a timestamp and clone the new targets repo in place.
 
 #### Add SSH key to GitHub to gain access to this repository
+
 Add the public part of your ssh-key (`cat ~/.ssh/<KEY_NAME>.pub`, where `<KEY_NAME>` is the name of your ssh-key) to GitHub > Settings > SSH and GPG keys and `New SSH key`
 
 To generate a new ssh keypair:
+
 ```bash
 sudo apt-get install ssh
 ssh-keygen -o -a 100 -t ed25519
@@ -201,6 +208,7 @@ Both ROS distro specific as default can be 'null'. Prevered usage is default for
     sub-dir: <Sub directory of the repository> (Optional field)
     version: <Version to be installed> (Optional field)
 ```
+
 This target type is similar to a ROS source target with only difference being a catkin package is independent of any ROS
 dependencies and solely depends on catkin.
 
