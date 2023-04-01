@@ -33,11 +33,24 @@ Standard tue-env installation with targets from [tue-env-targets](https://github
 A customized targets repository can be setup with this package manager (currently only one git repository is supported). If `tue-env` is already installed, to setup the targets repository run:
 
 ```bash
-tue-env init-targets [ENVIRONMENT] <targets_repo_git_url>
+tue-env init ENVIRONMENT DIRECTORY <targets_repo_git_url>
+```
+
+This will do the same as running the commands seperately:
+
+```bash
+tue-env init ENVIRONMENT [DIRECTORY] # Will not result in an environment being loaded. Unless one was already loaded before
+tue-env init-targets [ENVIRONMENT] <targets_repo_git_url> # The environment arg is required, when no environment is loaded
 ```
 
 else first setup `tue-env` by manually following the procedure in the bootstrap
 script.
+
+You can also set the targets repository in the initial setup by providing it as an argument of the bootstrap script.
+Add `--targets-repo=<targets_repo_git_url>` as argument, this can be any type of url supported by git.
+
+When a targets repository is already initialized. It can be switched by running the same `init-targets` command.
+This will rename the old targets folder with a timestamp and clone the new targets repo in place.
 
 #### Add SSH key to GitHub to gain access to this repository
 Add the public part of your ssh-key (`cat ~/.ssh/<KEY_NAME>.pub`, where `<KEY_NAME>` is the name of your ssh-key) to GitHub > Settings > SSH and GPG keys and `New SSH key`
