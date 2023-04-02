@@ -23,6 +23,16 @@ runs:
           ${{ runner.os }}-ccache-${{ github.event.repository.name }}-${{ inputs.package }}-
           ${{ runner.os }}-ccache-${{ github.event.repository.name }}-
           ${{ runner.os }}-ccache-
+    - name: Cache pip
+      uses: actions/cache@v3
+      with:
+        path: |
+          ~/.cache/pip
+        key: ${{ runner.os }}-pip-${{ github.event.repository.name }}-${{ inputs.package }}-${{ github.sha }}
+        restore-keys: |
+          ${{ runner.os }}-pip-${{ github.event.repository.name }}-${{ inputs.package }}-
+          ${{ runner.os }}-pip-${{ github.event.repository.name }}-
+          ${{ runner.os }}-pip-
     - name: Install
       id: install
       run: |
