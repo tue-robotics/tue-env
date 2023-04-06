@@ -176,12 +176,18 @@ DOCKER_HOME=$(docker run --name tue-env --rm "$IMAGE_NAME:$BRANCH_TAG" bash -c '
 # Make sure the ~/.ccache folder exists
 mkdir -p "$HOME"/.ccache
 
+# Make sure the ~/.cache/pip folder exists
+mkdir -p "$HOME"/.cache/pip
+
 # Run the docker image along with setting new environment variables
 # shellcheck disable=SC2086
-docker run --detach --interactive --tty -e CI="true" -e PACKAGE="$PACKAGE" -e BRANCH="$BRANCH" -e COMMIT="$COMMIT" -e PULL_REQUEST="$PULL_REQUEST" -e REF_NAME="$REF_NAME" --name tue-env --mount type=bind,source=$HOME/.ccache,target=$DOCKER_HOME/.ccache $DOCKER_MOUNT_KNOWN_HOSTS_ARGS "$IMAGE_NAME:$BRANCH_TAG"
+docker run --detach --interactive --tty -e CI="true" -e PACKAGE="$PACKAGE" -e BRANCH="$BRANCH" -e COMMIT="$COMMIT" -e PULL_REQUEST="$PULL_REQUEST" -e REF_NAME="$REF_NAME" --name tue-env --mount type=bind,source=$HOME/.ccache,target=$DOCKER_HOME/.ccache --mount type=bind,source=$HOME/.cache/pip,target=$DOCKER_HOME/.cache/pip $DOCKER_MOUNT_KNOWN_HOSTS_ARGS "$IMAGE_NAME:$BRANCH_TAG"
 
 # Own the ~/.ccache folder for permissions
 docker exec -t tue-env bash -c 'sudo chown "${USER}":"${USER}" -R ~/.ccache'
+
+# Own the ~/.cache/pip folder for permissions
+docker exec -t tue-env bash -c 'sudo chown "${USER}":"${USER}" -R ~/.cache/pip'
 
 if [ "$USE_SSH" == "true" ]
 then
@@ -240,3 +246,6 @@ else
     echo -e "\e[35m\e[1mgit -C ~${TUE_SYSTEM_DIR#"${DOCKER_HOME}"}/src/$PACKAGE reset --hard $COMMIT\e[0m"
     docker exec -t tue-env bash -c 'source ~/.bashrc; git -C "$TUE_SYSTEM_DIR"/src/"$PACKAGE" reset --hard "$COMMIT"'
 fi
+
+# Allow everyone to read ~/.cache/pip folder for caching inside CI pipelines
+docker exec -t tue-env bash -c 'sudo chmod -R a+r ~/.cache/pip'
