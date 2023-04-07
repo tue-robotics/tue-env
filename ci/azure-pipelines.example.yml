@@ -15,6 +15,7 @@ pool:
   vmImage: ubuntu-latest
 
 steps:
+- checkout: none
 - task: Cache@2
   displayName: Cache ccache
   inputs:
