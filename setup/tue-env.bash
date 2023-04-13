@@ -275,6 +275,8 @@ Purged environment directory of '$env'"""
     fi
 }
 
+export -f tue-env
+
 # ----------------------------------------------------------------------------------------------------
 
 function _tue-env
