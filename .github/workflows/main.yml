@@ -8,16 +8,9 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v3
-      - name: Setup Python 3
-        uses: actions/setup-python@v4
+      - uses: psf/black@stable
         with:
-          python-version: '3.x'
-      - name: Install Black
-        run: pip install black
-      - name: Python Black
-        run: |
-          black --version
-          black -l 120 --check --diff --color .
+          options: --check --diff --color -l 120
   linting_shellcheck:
     name: ShellCheck
     runs-on: ubuntu-latest
