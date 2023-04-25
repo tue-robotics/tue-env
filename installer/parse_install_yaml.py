@@ -7,7 +7,6 @@ import yaml
 
 from lsb_release import get_distro_information
 
-ros_release = environ["TUE_ROS_DISTRO"]
 ubuntu_release = get_distro_information()["CODENAME"]
 
 
@@ -164,6 +163,7 @@ def installyaml_parser(path: str, now: bool = False) -> Mapping:
                 return {"system_packages": system_packages, "commands": commands}
 
             elif install_type == "ros":
+                ros_release = environ["TUE_ROS_DISTRO"]
                 try:
                     source = get_distro_item(install_item, "source", ros_release, "ROS")
                 except ValueError as e:
