@@ -1498,7 +1498,7 @@ For example:
         git -C "${repo_path}" checkout "${branch}" --
         git -C "${repo_path}" branch -u "${remote}"/"${branch}" "${branch}"
     else
-        git -c "${repo_path}" checkout --track -b "${branch}" "${remote}"/"${branch}" --
+        git -C "${repo_path}" checkout --track -b "${branch}" "${remote}"/"${branch}" --
     fi
 }
 
