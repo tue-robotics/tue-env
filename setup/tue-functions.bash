@@ -1664,7 +1664,7 @@ function tue-robocup-set-roboticssrv
 
 function tue-robocup-set-timezone-robocup
 {
-    sudo timedatectl set-timezone Europe/Lisbon
+    sudo timedatectl set-timezone Europe/Amsterdam
 }
 
 function tue-robocup-set-timezone-home
