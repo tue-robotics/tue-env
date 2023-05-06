@@ -19,6 +19,9 @@ fi
 TUE_ROS_DISTRO=
 TUE_ROS_VERSION=
 
+env_targets_url="https://github.com/tue-robotics/tue-env-targets.git"
+
+
 case $DISTRIB_RELEASE in
     "20.04")
         for i in "$@"
@@ -34,7 +37,8 @@ case $DISTRIB_RELEASE in
                     then
                         TUE_ROS_DISTRO=noetic
                         TUE_ROS_VERSION=1
-                    else
+                    elif [[ -n "${ros_version}" ]]
+                    then
                         echo "[tue-env](bootstrap) Error! ROS ${ros_version} is unsupported with tue-env."
                         exit 1
                     fi
@@ -56,12 +60,20 @@ case $DISTRIB_RELEASE in
                         elif [[ "${ros_distro}" == "galactic" ]]
                         then
                             TUE_ROS_DISTRO=galactic
-                        else
+                        elif [[ -n "${ros_distro}" ]]
+                        then
                             echo "[tue-env](bootstrap) Error! ROS ${ros_distro} is unsupported with tue-env."
                             exit 1
                         fi
                     else
                         echo "[tue-env](bootstrap) Using default ROS_DISTRO '${TUE_ROS_DISTRO}' with ROS_VERSION '${TUE_ROS_VERSION}'"
+                    fi
+                    ;;
+                --targets-repo=* )
+                    targets_repo="${i#*=}"
+                    if [[ -n "${targets_repo}" ]]
+                    then
+                        env_targets_url="${targets_repo}"
                     fi
                     ;;
                 * )
@@ -76,6 +88,24 @@ case $DISTRIB_RELEASE in
     "22.04")
         TUE_ROS_DISTRO=humble
         TUE_ROS_VERSION=2
+        for i in "$@"
+        do
+            case $i in
+                --ros-version=* )
+                    # Ignore this for 22.04
+                    ;;
+                --ros-distro=* )
+                    # Ignore this for 22.04
+                    ;;
+                --targets-repo=* )
+                    env_targets_url="${i#*=}"
+                    ;;
+                * )
+                    echo "[tue-env](bootstrap) Error! Unknown argument '${i}' provided to bootstrap script."
+                    exit 1
+                    ;;
+            esac
+        done
         ;;
     *)
         echo "[tue-env](bootstrap) Ubuntu $DISTRIB_RELEASE is unsupported. Please use one of Ubuntu 20.04 or 22.04."
@@ -85,7 +115,6 @@ esac
 
 # Script variables
 env_url="https://github.com/tue-robotics/tue-env.git"
-env_targets_url="https://github.com/tue-robotics/tue-env-targets.git"
 env_dir="$HOME/.tue"
 workspace="ros-$TUE_ROS_DISTRO"
 workspace_dir="$HOME/ros/$TUE_ROS_DISTRO"
