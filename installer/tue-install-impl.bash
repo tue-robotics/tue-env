@@ -553,6 +553,91 @@ Command: tue-install-cp $*"
 
 # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # #
 
+function tue-install-ln
+{
+    tue-install-debug "tue-install-ln $*"
+
+    if [ -z "$2" ]
+    then
+        tue-install-error "Invalid tue-install-ln call: needs two arguments (target and link). The target must be an absolute path or relative to the installer target directory
+Command: tue-install-ln $*"
+    fi
+
+    local target="$1"
+    target="${target/#\~/${HOME}}"
+    local link="$2"
+    link="${link/#\~/${HOME}}"
+
+    if [[ "${target}" != "/"* ]]
+    then
+        tue-install-debug "Target '${target}' is not an absolute path. Making it relative to the current target directory"
+        target="${TUE_INSTALL_CURRENT_TARGET_DIR}"/"${target}"
+    fi
+
+    if [[ ! -e "${target}" ]]
+    then
+        tue-install-error "Target '${target}' does not exist. Therefore a link can not be created"
+    fi
+
+    # Check if user is allowed to write on target destination
+    local root_required=true
+    if namei -l "${link}" | grep -q "$(whoami)"
+    then
+        root_required=false
+    fi
+
+    local remove_existing_link=false
+    local create_link=false
+
+    if [[ -L "${link}" ]]
+    then
+        tue-install-debug "Link '${link}' is a link"
+        if [[ "$(realpath "${link}" 2>/dev/null)" != "$(realpath "${target}")" ]]
+        then
+            tue-install-debug "Link '${link}' links to '$(realpath "${link}")' instead of target '${target}'"
+            remove_existing_link=true
+            create_link=true
+        else
+            tue-install-debug "Link '${link}' already links to target '${target}'"
+        fi
+    else
+        create_link=true
+        if [[ -e "${link}" ]]
+        then
+            tue-install-debug "Link '${link}' is a file. Which will be removed"
+            remove_existing_link=true
+        else
+            tue-install-debug "Link '${link}' to target '${target}' does not exist"
+        fi
+    fi
+
+    if [[ "${remove_existing_link}" == "true" ]]
+    then
+        if "$root_required"
+        then
+            tue-install-debug "Using elevated privileges (sudo) to delete link '${link}'"
+            tue-install-pipe sudo rm "${link}"
+        else
+            tue-install-debug "Deleting link '${link}'"
+            tue-install-pipe rm "${link}"
+        fi
+    fi
+
+    if [[ "${create_link}" == "true" ]]
+    then
+        if "$root_required"
+        then
+            tue-install-debug "Using elevated privileges (sudo) to create link '${link}' to target '${target}'"
+            tue-install-pipe sudo ln -s "${target}" "${link}"
+        else
+            tue-install-debug "Creating link '${link}' to target '${target}'"
+            tue-install-pipe ln -s "${target}" "${link}"
+        fi
+    fi
+}
+
+# # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # #
+
 # Reads SOURCE_FILE and looks in TARGET_FILE for the first and last line of SOURCE_FILE. If these
 # are not found, SOURCE_FILE is appended to TARGET_FILE. Otherwise, the appearance of the first and
 # last line of SOURCE_FILE in TARGET_FILE, and everything in between, is replaced by the contents
