@@ -1294,7 +1294,7 @@ source "$TUE_DIR"/setup/tue-data.bash
 #                                             TUE-ROBOCUP
 # ----------------------------------------------------------------------------------------------------
 
-export TUE_ROBOCUP_BRANCH="rwc2022"
+export TUE_ROBOCUP_BRANCH="rwc2023"
 
 function _tue-repos-do
 {
@@ -1498,7 +1498,7 @@ For example:
         git -C "${repo_path}" checkout "${branch}" --
         git -C "${repo_path}" branch -u "${remote}"/"${branch}" "${branch}"
     else
-        git -c "${repo_path}" checkout --track -b "${branch}" "${remote}"/"${branch}" --
+        git -C "${repo_path}" checkout --track -b "${branch}" "${remote}"/"${branch}" --
     fi
 }
 
@@ -1664,7 +1664,7 @@ function tue-robocup-set-roboticssrv
 
 function tue-robocup-set-timezone-robocup
 {
-    sudo timedatectl set-timezone Europe/Lisbon
+    sudo timedatectl set-timezone Europe/Amsterdam
 }
 
 function tue-robocup-set-timezone-home
