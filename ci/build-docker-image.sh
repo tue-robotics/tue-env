@@ -42,6 +42,12 @@ do
         --ssh )
             CI_DOCKER_SSH=true ;;
 
+        --ssh-key=* )
+            CI_DOCKER_SSH_KEY_PATH="${i#*=}" ;;
+
+        --oauth2_token=* )
+            CI_OAUTH2_TOKEN="${i#*=}" ;;
+
         --ref-name=* )
         # Variable to set the ref name of a git PR/MR: The value is pull for GitHub, BitBucket and merge for GitLab
             CI_REF_NAME="${i#*=}" ;;
@@ -125,10 +131,10 @@ fi
 
 CI_DOCKER_BUILD_ARGS+=("--build-arg=BRANCH=$CI_BRANCH" "--build-arg=PULL_REQUEST=$CI_PULL_REQUEST" "--build-arg=COMMIT=$CI_COMMIT" "--build-arg=CI=$CI" \
     "--build-arg=REF_NAME=$CI_REF_NAME" "--build-arg=BASE_IMAGE=$CI_DOCKER_BASE_IMAGE" "--build-arg=ROS_VERSION=$CI_ROS_VERSION" \
-    "--build-arg=ROS_DISTRO=$CI_ROS_DISTRO" "--build-arg=TARGETS_REPO=${CI_TARGETS_REPO}")
+    "--build-arg=ROS_DISTRO=$CI_ROS_DISTRO" "--build-arg=TARGETS_REPO=${CI_TARGETS_REPO}" "--provenance=false")
 
 # Check the constructed Docker image name against the input
-image_name_expected="${CI_DOCKER_REGISTRY:+${CI_DOCKER_REGISTRY}/}${image_dirname}/${image_name}:${CI_DOCKER_IMAGE_TAG}-${CI_DOCKER_PLATFORMS}"
+image_name_expected="${image_dirname}/${image_name}:${CI_DOCKER_IMAGE_TAG}-${CI_DOCKER_PLATFORMS}"
 
 if [[ -n "${image_name_tag}" ]] && [[ "${image_name_tag}" != "${CI_DOCKER_IMAGE_TAG}-${CI_DOCKER_PLATFORMS}" ]]
 then
@@ -145,7 +151,7 @@ then
 fi
 
 CI_DOCKER_IMAGE_NAME="${image_name_expected}"
-CI_DOCKER_BUILD_ARGS+=("--tag=$CI_DOCKER_IMAGE_NAME")
+CI_DOCKER_BUILD_ARGS+=("--tag=${CI_DOCKER_IMAGE_NAME}")
 
 # Make sure a known hosts file exists on the host in the workingdir
 if [[ -f ~/.ssh/known_hosts ]]
@@ -158,7 +164,12 @@ fi
 # Forward ssh-agent of the host
 if [[ "$CI_DOCKER_SSH" == "true" ]]
 then
-    CI_DOCKER_BUILD_ARGS+=("--ssh=default")
+    CI_DOCKER_BUILD_ARGS+=("--ssh=default=${CI_DOCKER_SSH_KEY_PATH}")
+fi
+
+if [[ -n "${CI_OAUTH2_TOKEN}" ]]
+then
+    CI_DOCKER_BUILD_ARGS+=("--build-arg=OAUTH2_TOKEN=${CI_OAUTH2_TOKEN}")
 fi
 
 # Check if the specified or default Dockerfile exists
