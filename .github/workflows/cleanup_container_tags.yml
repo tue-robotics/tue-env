@@ -15,11 +15,15 @@ jobs:
         id: generate-tag
         run: |
           TAG=$(echo "${{ github.event.ref }}" | tr '[:upper:]' '[:lower:]' | sed -e 's:/:_:g')
-          echo "tag=${TAG}-amd64" >> ${GITHUB_OUTPUT}
-      - name: Delete tag
-        uses: bots-house/ghcr-delete-image-action@v1.1.0
+          echo -e "\e[35m\e[tag=${TAG} >> \$GITHUB_OUTPUT\e[0m"
+          echo "tag=${TAG}" >> ${GITHUB_OUTPUT}
+      - name: Delete tags
+        uses: vlaurin/action-ghcr-prune@v0.5.0
         with:
-          owner: tue-robotics
-          name: ${{ matrix.package_name }}
           token: ${{ secrets.GITHUB_TOKEN }}
-          tag: "${{ steps.generate-tag.outputs.tag }}"
+          organization: tue-robotics
+          container: ${{ matrix.package_name }}
+          prune-tags-regexes: |
+            ^${{ steps.generate-tag.outputs.tag }}$
+            ^${{ steps.generate-tag.outputs.tag }}-amd64$
+            ^${{ steps.generate-tag.outputs.tag }}-arm64$
