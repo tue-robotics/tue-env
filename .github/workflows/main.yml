@@ -55,10 +55,11 @@ jobs:
           registry: ${{ env.REGISTRY }}
           username: ${{ github.actor }}
           password: ${{ secrets.GITHUB_TOKEN }}
-      - name: Install QEMU
-        run: |
-          sudo apt update -qq
-          sudo apt install -qq -y qemu qemu-user-static
+      # Comment out when generating arm64
+      #- name: Install QEMU
+      #  run: |
+      #    sudo apt update -qq
+      #    sudo apt install -qq -y qemu qemu-user-static
       - name: Docker info
         run: docker info
       - name: Script
