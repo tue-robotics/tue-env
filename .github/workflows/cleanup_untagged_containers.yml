@@ -30,7 +30,7 @@ jobs:
               echo -e "skopeo inspect --raw docker://ghcr.io/tue-robotics/${{ matrix.package_name }}:${tag}"
               skopeo inspect --raw docker://ghcr.io/tue-robotics/${{ matrix.package_name }}:${tag} | jq
               echo "::endgroup::"
-              pkg_multi_arch_versions=$(skopeo inspect --raw docker://ghcr.io/tue-robotics/${{ matrix.package_name }}:${tag} | jq -r ".manifests[].digest")
+              pkg_multi_arch_versions=$(skopeo inspect --raw docker://ghcr.io/tue-robotics/${{ matrix.package_name }}:${tag} | jq -r ". | select(.manifests != null) | .manifests[].digest")
               echo -e "\e[35m\e[1mCurrent multi-arch versions of tag '${tag}':\n${pkg_multi_arch_versions}\e[0m"
               for pkg_multi_arch_version in ${pkg_multi_arch_versions}
               do
