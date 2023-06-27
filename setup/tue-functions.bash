@@ -5,8 +5,11 @@ TUE_WS_DIR="${TUE_SYSTEM_DIR}"
 export TUE_SYSTEM_DIR
 export TUE_WS_DIR
 
-TUE_REPOS_DIR="${TUE_ENV_DIR}"/repos
-export TUE_REPOS_DIR
+if [[ -z "${TUE_REPOS_DIR}" ]]  # Only set this variable if there exists no default in user_setup.bash
+then
+    TUE_REPOS_DIR="${TUE_ENV_DIR}"/repos
+    export TUE_REPOS_DIR
+fi
 
 TUE_RELEASE_DIR="${TUE_SYSTEM_DIR}"/release
 export TUE_RELEASE_DIR
@@ -1316,7 +1319,7 @@ function _tue-repos-do
     eval "${cmd_array[*]}"
 
     local repos_dir
-    repos_dir=$TUE_ENV_DIR/repos/github.com/tue-robotics
+    repos_dir=$TUE_REPOS_DIR/github.com/tue-robotics
 
     local fs
     fs=$(ls "$repos_dir")
@@ -1685,7 +1688,7 @@ function _ping_bool
 function tue-robocup-install-package
 {
     local repos_dir repo_dir
-    repos_dir=$TUE_ENV_DIR/repos/github.com/tue-robotics
+    repos_dir=$TUE_REPOS_DIR/github.com/tue-robotics
     repo_dir=$repos_dir/${1}.git
 
     local mem_pwd

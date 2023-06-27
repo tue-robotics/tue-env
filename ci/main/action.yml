@@ -23,6 +23,7 @@ runs:
           ${{ runner.os }}-ccache-${{ github.event.repository.name }}-${{ inputs.package }}-
           ${{ runner.os }}-ccache-${{ github.event.repository.name }}-
           ${{ runner.os }}-ccache-
+
     - name: Cache pip
       uses: actions/cache@v3
       with:
@@ -33,6 +34,7 @@ runs:
           ${{ runner.os }}-pip-${{ github.event.repository.name }}-${{ inputs.package }}-
           ${{ runner.os }}-pip-${{ github.event.repository.name }}-
           ${{ runner.os }}-pip-
+
     - name: Install
       id: install
       run: |
@@ -66,20 +68,30 @@ runs:
             ssh-keyscan -t rsa -H "${host}" 2>&1 | tee -a "${HOME}"/.ssh/known_hosts
           done
         fi
-        ${{ github.action_path }}/../install-package.sh --package=${{ inputs.package }} --branch="${BRANCH}" --commit="${GITHUB_SHA}" --pullrequest="${PULLREQUEST}" "${SSH_ARG}" "${SSH_KEY_ARG}"
+        ${{ github.action_path }}/../install-package.sh \
+          --package=${{ inputs.package }} \
+          --branch="${BRANCH}" \
+          --commit="${GITHUB_SHA}" \
+          --pullrequest="${PULLREQUEST}" \
+          "${SSH_ARG}" \
+          "${SSH_KEY_ARG}"
         echo "::endgroup::"
       shell: bash
+
     - name: Build
       id: build
       run: |
         echo "::group::build-package.sh"
-        ${{ github.action_path }}/../build-package.sh --package=${{ inputs.package }}
+        ${{ github.action_path }}/../build-package.sh \
+          --package=${{ inputs.package }}
         echo "::endgroup::"
       shell: bash
+
     - name: Test
       id: test
       run: |
         echo "::group::test-package.sh"
-        ${{ github.action_path }}/../test-package.sh --package=${{ inputs.package }}
+        ${{ github.action_path }}/../test-package.sh \
+          --package=${{ inputs.package }}
         echo "::endgroup::"
       shell: bash
