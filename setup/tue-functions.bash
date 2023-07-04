@@ -1751,7 +1751,7 @@ function tue-robocup-install-package
 
 function tue-robocup-update
 {
-    _tue-repos-do "git pull --ff-only"
+    _tue-repos-do "git pull --rebase --autostash"
 
     # Copy rsettings file
     if [ "$ROBOT_REAL" != "true" ]
