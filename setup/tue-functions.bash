@@ -1320,6 +1320,13 @@ function _tue-repos-do
 
     local repos_dir
     repos_dir=$TUE_REPOS_DIR/github.com/tue-robotics
+    if [ ! -d "$repos_dir" ]
+    then
+      echo -e "No other repos found"
+      # shellcheck disable=SC2164
+      cd "${mem_pwd}"
+      return 0
+    fi
 
     local fs
     fs=$(ls "$repos_dir")
