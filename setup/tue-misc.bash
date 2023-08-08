@@ -16,4 +16,8 @@ then
                        PIP_AUTO_COMPLETE=1 $1 2>/dev/null ) )
     }
     complete -o default -F _pip_completion pip3
+    if [ "$(pip -V)" == "$(pip3 -V)" ]
+    then
+        complete -o default -F _pip_completion pip
+    fi
 fi
