@@ -878,7 +878,7 @@ function tue-install-ppa-now
         tue-install-error "Invalid tue-install-ppa-now call: needs ppa or deb as argument."
     fi
 
-    local PPA_ADDED needs_to_be_added
+    local PPA_ADDED args needs_to_be_added sources_list_entry
     # shellcheck disable=SC2048
     for ppa in $*
     do
@@ -888,6 +888,7 @@ function tue-install-ppa-now
             tue-install-error "Invalid tue-install-ppa-now call: needs to start with 'ppa:' or 'deb ' ($ppa)"
         fi
         needs_to_be_added="false"
+        sources_list_entry="false"
         if [[ "$ppa" == "ppa:"* ]]
         then
             if ! grep -q "^deb.*${ppa#ppa:}" /etc/apt/sources.list.d/* 2>&1
@@ -896,6 +897,7 @@ function tue-install-ppa-now
             fi
         elif [[ "$ppa" == "deb "* ]]
         then
+            sources_list_entry="true"
             if ! grep -qF "$ppa" /etc/apt/sources.list 2>&1
             then
                 needs_to_be_added="true"
@@ -926,7 +928,14 @@ function tue-install-ppa-now
                 ((i=i+1))
             done
 
-            tue-install-pipe sudo add-apt-repository --yes "$ppa" || tue-install-error "An error occurred while adding ppa: $ppa"
+            args="--yes --no-update"
+
+            if [[ "${sources_list_entry}" == "true" ]]
+            then
+                args="${args:+${args} }-S"
+            fi
+            # shellcheck disable=SC2086
+            tue-install-pipe sudo add-apt-repository ${args} "$ppa" || tue-install-error "An error occurred while adding ppa: $ppa"
             PPA_ADDED=true
         else
             tue-install-debug "$ppa is already added previously"
