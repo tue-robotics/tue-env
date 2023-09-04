@@ -1,6 +1,11 @@
 name: 'TUe CI'
 description: 'Install, build and test package in tue-env environment'
 inputs:
+  image:
+    default: 'ghcr.io/tue-robotics/tue-env-ros-noetic'
+    description: 'Container Image to be used'
+    required: false
+    type: string
   package:
     description: 'Package name'
     required: true
@@ -69,6 +74,7 @@ runs:
           done
         fi
         ${{ github.action_path }}/../install-package.sh \
+          --image=${{ inputs.image }} \
           --package=${{ inputs.package }} \
           --branch="${BRANCH}" \
           --commit="${GITHUB_SHA}" \
