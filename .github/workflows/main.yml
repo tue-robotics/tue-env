@@ -10,7 +10,7 @@ jobs:
     name: Black Linting
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@v3
+      - uses: actions/checkout@v4
       - uses: psf/black@stable
         with:
           options: --check --diff --color -l 120
@@ -19,7 +19,7 @@ jobs:
     name: ShellCheck
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@v3
+      - uses: actions/checkout@v4
       - name: Shellcheck
         run: |
           shopt -s globstar
@@ -48,7 +48,7 @@ jobs:
       key: ${{ steps.artifacts.outputs.key }}
       tag: ${{ steps.script.outputs.tag }}
     steps:
-      - uses: actions/checkout@v3
+      - uses: actions/checkout@v4
       - name: Login to Docker registry
         uses: docker/login-action@v2
         with:
@@ -142,7 +142,7 @@ jobs:
     needs: [docker_generation_tue_env]
     if: github.event_name != 'pull_request'
     steps:
-      - uses: actions/checkout@v3
+      - uses: actions/checkout@v4
       - name: Login to Docker registry
         uses: docker/login-action@v2
         with:
