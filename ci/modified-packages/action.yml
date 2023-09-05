@@ -4,9 +4,11 @@ inputs:
   commit-range:
     description: 'Range of commits to determine modified files'
     required: true
+    type: string
   ignored-packages:
     description: 'Packages to be ignored at all times'
     required: false
+    type: string
 outputs:
   packages:
     description: 'Modified packages'
