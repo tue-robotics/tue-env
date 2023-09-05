@@ -9,12 +9,15 @@ inputs:
   package:
     description: 'Package name'
     required: true
+    type: string
   ssh-key:
     description: 'SSH key used during install process'
     required: false
+    type: string
   ssh-known-hosts:
     description: 'Hosts to be added known_hosts'
     required: false
+    type: string
 runs:
   using: "composite"
   steps:
