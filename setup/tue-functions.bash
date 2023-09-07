@@ -529,6 +529,59 @@ function tue-make-test
 }
 export -f tue-make-test
 
+function tue-make-test-result
+{
+    [[ -z "${TUE_ROS_DISTRO}" ]] && { echo -e "\e[31;1mError! tue-env variable TUE_ROS_DISTRO not set.\e[0m"; return 1; }
+
+    [[ -z "${TUE_ROS_VERSION}" ]] && { echo -e "\e[31;1mError! TUE_ROS_VERSION is not set.\nSet TUE_ROS_VERSION before executing this function.\e[0m"; return 1; }
+
+    [[ ! -d "${TUE_SYSTEM_DIR}" ]] && { echo -e "\e[31;1mError! The workspace '${TUE_SYSTEM_DIR}' does not exist. Run 'tue-get install ros${TUE_ROS_VERSION}' first.\e[0m"; return 1; }
+
+    if [ "${TUE_ROS_VERSION}" == "1" ]
+    then
+        local build_tool
+        build_tool=""
+        if [ -f "$TUE_SYSTEM_DIR"/build/.built_by ]
+        then
+            build_tool=$(cat "$TUE_SYSTEM_DIR"/build/.built_by)
+        fi
+        case $build_tool in
+        'catkin build')
+            catkin test_results "${TUE_SYSTEM_DIR}"/build "$@"
+            return $?
+            ;;
+        '')
+            echo -e "\e[31;1mError! First initialize the workspace and build it, i.e. using tue-make, before running tests and checking the test results\e[0m"
+            return 1
+            ;;
+        *)
+            echo -e "\e[31;1mError! ${build_tool} is not supported (anymore), use catkin tools\e[0m"
+            return 1
+            ;;
+        esac
+    elif [ "${TUE_ROS_VERSION}" == "2" ]
+    then
+        if [[ ! -d "${TUE_SYSTEM_DIR}"/src ]]
+        then
+            echo -e "\e[31;1mError! No 'src' directory exists in the workspace '${TUE_SYSTEM_DIR}'\e[0m"
+            return 1
+        fi
+
+        if [[ ! -d "${TUE_SYSTEM_DIR}"/build ]]
+        then
+            echo -e "\e[31;1mError! No 'build' directory exists in the workspace '${TUE_SYSTEM_DIR}'. Build the workspace, run tests before checking test results\e[0m"
+            return 1
+        fi
+
+        colcon --log-base "${TUE_SYSTEM_DIR}"/log test-result --test-result-base "${TUE_SYSTEM_DIR}"/build "$@"
+        return $?
+    else
+        echo -e "\e[31;1mError! ROS_VERSION '${TUE_ROS_VERSION}' is not supported by tue-env.\e[0m"
+        return 1
+    fi
+}
+export -f tue-make-test-result
+
 function _tue-make
 {
     local cur
