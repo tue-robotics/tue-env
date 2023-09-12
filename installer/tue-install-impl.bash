@@ -303,8 +303,8 @@ function _try_branch_git
     local repo branch _checkout_error_code
     repo="$1"
     branch="$2"
-    tue-install-debug "git -C $repo checkout $branch --"
-    _try_branch_res=$(git -C "$repo" checkout "$branch" -- 2>&1)  # _try_branch_res is a "global" variable from tue-install-git
+    tue-install-debug "git -C ${repo} checkout ${branch} --recurse-submodules --"
+    _try_branch_res=$(git -C "${repo}" checkout "${branch}" --recurse-submodules -- 2>&1)  # _try_branch_res is a "global" variable from tue-install-git
     _checkout_error_code=$?
     tue-install-debug "_try_branch_res(${_checkout_error_code}): ${_try_branch_res}"
 

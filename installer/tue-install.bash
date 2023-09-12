@@ -140,7 +140,7 @@ then
             then
                 echo -en "Already on branch ${branch}"
             else
-                git -C "${TUE_ENV_TARGETS_DIR}" checkout "${branch}" -- 2>&1
+                git -C "${TUE_ENV_TARGETS_DIR}" checkout "${branch}" --recurse-submodules -- 2>&1
                 git -C "${TUE_ENV_TARGETS_DIR}" submodule sync --recursive 2>&1
                 git -C "${TUE_ENV_TARGETS_DIR}" submodule update --init --recursive 2>&1
                 echo -e "Switched to branch ${branch}"

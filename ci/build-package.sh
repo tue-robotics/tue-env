@@ -33,6 +33,8 @@ do
 done
 
 echo -e "\e[35m\e[1mPACKAGE     = ${PACKAGE}\e[0m"
+ROS_VERSION=$(docker exec -t tue-env bash -c 'source ~/.bashrc; echo "${ROS_VERSION}"' | tr -d '\r')
+echo -e "\e[35m\e[1mROS_VERSION = ${ROS_VERSION}\e[0m"
 
 # If packages is non-zero, this is a multi-package repo. In multi-package repo, check if this package needs CI.
 # If a single-package repo, CI is always needed.
@@ -45,5 +47,27 @@ fi
 
 # Use docker environment variables in all exec commands instead of script variables
 # Compile the package
-echo -e "\e[35m\e[1mCompile the package (catkin build -DCMAKE_BUILD_TYPE=RelWithDebInfo -DCATKIN_ENABLE_TESTING=OFF)\e[0m"
-docker exec -t tue-env bash -c 'source ~/.bashrc; cd "$TUE_SYSTEM_DIR"/src/"$PACKAGE" && catkin build --this --no-status -DCMAKE_BUILD_TYPE=RelWithDebInfo -DCATKIN_ENABLE_TESTING=OFF'
+if [[ "${ROS_VERSION}" == 1 ]]
+then
+    echo -e "\e[35m\e[1mCompile the package (catkin build -DCMAKE_BUILD_TYPE=RelWithDebInfo -DCATKIN_ENABLE_TESTING=OFF)\e[0m"
+    docker exec -t tue-env bash -c 'source ~/.bashrc; cd "${TUE_SYSTEM_DIR}"/src/"${PACKAGE}" && catkin build --this --no-status -DCMAKE_BUILD_TYPE=RelWithDebInfo -DCATKIN_ENABLE_TESTING=OFF'
+else
+    echo -e "\e[35m\e[1mCheck for default mixin repo (colcon mixin list)\e[0m"
+    MIXIN_REPOS=$(docker exec -t tue-env bash -c 'source ~/.bashrc; cd "${TUE_SYSTEM_DIR}" && colcon mixin list | grep -v "^- "' | tr -d '\r' | awk -F ": " '{print $1}')
+    if ! echo -e "${MIXIN_REPOS}" | grep "^default$" -q
+    then
+        echo -e "\e[35m\e[1mAdd the default mixin repo (colcon mixin add default https://raw.githubusercontent.com/colcon/colcon-mixin-repository/master/index.yaml)\e[0m"
+        docker exec -t tue-env bash -c 'source ~/.bashrc; cd "${TUE_SYSTEM_DIR}" && colcon mixin add default https://raw.githubusercontent.com/colcon/colcon-mixin-repository/master/index.yaml'
+    else
+        echo -e "\e[35m\e[1mDefault mixin repo already exists\e[0m"
+    fi
+
+    echo -e "\e[35m\e[1mUpdate colcon mixins (colcon mixin update)\e[0m"
+    docker exec -t tue-env bash -c 'source ~/.bashrc; cd "${TUE_SYSTEM_DIR}" && colcon mixin update'
+
+    echo -e "\e[35m\e[1mDeleting the merged install directory\e[0m"
+    docker exec -t tue-env bash -c 'source ~/.bashrc; cd "${TUE_SYSTEM_DIR}" && rm -rf install'
+
+    echo -e "\e[35m\e[1mCompile the package (colcon build --mixin rel-with-deb-info build-testing-off)\e[0m"
+    docker exec -t tue-env bash -c 'source ~/.bashrc; cd "${TUE_SYSTEM_DIR}" && colcon build --packages-up-to "${PACKAGE}" --mixin rel-with-deb-info build-testing-off --event-handlers desktop_notification- status- terminal_title-'
+fi
