@@ -113,6 +113,86 @@ function tue-install-pipe
 
 # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # #
 
+function _remove_old_target_dep_recursively
+{
+    tue-install-debug "[remove_old_dep] _remove_old_target_dep_recursively $*"
+    local parent_target old_dep_target error_code
+    parent_target=$1
+    old_dep_target=$2
+    error_code=0
+
+    # Remove the parent from the dependants of the old dep
+    local old_dep_dep_on_file
+    old_dep_dep_on_file="${TUE_INSTALL_DEPENDENCIES_ON_DIR}"/"${old_dep_target}"
+    if [[ -f "${old_dep_dep_on_file}" ]]
+    then
+        # Target is removed, so remove yourself from depend-on files of deps
+        local tmp_dep_on_file found_target
+        tmp_dep_on_file=/tmp/temp_depend_on
+        found_target=false
+        while read -r line
+        do
+            if [[ ${line} != "${parent_target}" ]]
+            then
+                echo "${line}"
+            else
+                found_target=true
+            fi
+        done <"${old_dep_dep_on_file}" >"${tmp_dep_on_file}"
+
+        if ${found_target}
+        then
+            mv "${tmp_dep_on_file}" "${old_dep_dep_on_file}"
+            tue-install-debug "[remove_old_dep] Removed '${parent_target}' from depend-on file of '${old_dep_target}'"
+        else
+            tue-install-warning "[remove_old_dep] '${parent_target}' depended on '${old_dep_target}', so ${old_dep_dep_on_file} should existed with '${parent_target}' in it"
+        fi
+    else
+        tue-install-warning "[remove_old_dep] No dependencies-on file exist for old dependency '${old_dep_target}' of ${parent_target}'"
+    fi
+
+    # When the old dep has no other dependants anymore, remove it, including it deps
+    if [[ -f "${old_dep_dep_on_file}" ]] && [[ -n $(cat "${old_dep_dep_on_file}") ]]
+    then
+        # depend-on is not empty, so not doing anything
+        tue-install-debug "[remove_old_dep] Other targets still depend on ${old_dep_target}, so ignoring it"
+        return 0
+    else
+        # depend-on is empty, so remove it and continue to actual removing of the target
+        tue-install-debug "[remove_old_dep] Deleting empty depend-on file of: ${old_dep_target}"
+        rm -f "${old_dep_dep_on_file}"
+    fi
+
+    # Remove the deps of the old dep recursively, of course only, when it does not have any other dependants
+    local old_dep_dep_file
+    old_dep_dep_file="${TUE_INSTALL_DEPENDENCIES_DIR}"/"${old_dep_target}"
+    if [[ -f "${old_dep_dep_file}" ]]
+    then
+        # Iterate over all depencies of old_dep_target, which is removed.
+        while read -r dep_of_old_dep
+        do
+            # Actually remove the deps
+            local dep_error
+            _remove_old_target_dep_recursively "${old_dep_target}" "${dep_of_old_dep}"
+            dep_error=$?
+            if [ ${dep_error} -gt 0 ]
+            then
+                error_code=1
+            fi
+
+        done < "${old_dep_dep_file}"
+        rm -f "${old_dep_dep_file}"
+    else
+        tue-install-debug "[remove_old_dep] No depencies file exist for target: ${old_dep_target}"
+    fi
+
+    tue-install-debug "[remove_old_dep] Uninstalled '${old_dep_target}' as a dependency of '${parent_target}'"
+    tue-install-info "[remove_old_dep] '${old_dep_target}' has been uninstalled, you can remove it from the workspace or deinstall it in another way"
+    return ${error_code}
+}
+
+# # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # #
+
 function tue-install-target-now
 {
     tue-install-debug "tue-install-target-now $*"
@@ -203,6 +283,14 @@ function tue-install-target
         install_file=$TUE_INSTALL_CURRENT_TARGET_DIR/install
 
         # Empty the target's dependency file
+        local old_deps
+        if [[ -f "${TUE_INSTALL_DEPENDENCIES_DIR}"/"${target}" ]]
+        then
+            old_deps=$(cat "${TUE_INSTALL_DEPENDENCIES_DIR}"/"${target}")
+            tue-install-debug "Old dependencies:\n${old_deps}"
+        else
+            tue-install-debug "No old dependencies"
+        fi
         tue-install-debug "Emptying $TUE_INSTALL_DEPENDENCIES_DIR/$target"
         truncate -s 0 "$TUE_INSTALL_DEPENDENCIES_DIR"/"$target"
         local target_processed
@@ -256,6 +344,27 @@ function tue-install-target
         then
             tue-install-warning "Target $target does not contain a valid install.yaml/bash file"
         fi
+
+        local new_deps old_deps_removed
+        new_deps=$(cat "${TUE_INSTALL_DEPENDENCIES_DIR}"/"${target}")
+        tue-install-debug "Old dependencies:\n${old_deps}"
+        tue-install-debug "Current dependencies:\n${new_deps}"
+        old_deps_removed=$(comm -23 <(echo "${old_deps}") <(echo "${new_deps}"))
+        if [[ -n ${old_deps_removed} ]]
+        then
+            tue-install-debug "Following dropped depedencies need to be removed:\n${old_deps_removed}"
+        else
+            tue-install-debug "No dropped denpendencies to be removed"
+        fi
+
+        for dep in ${old_deps_removed}
+        do
+            # Remove this target from dep-on file of dep
+            # When the dep-on file is now empty, remove it
+            # Recurisvely -> Remove it from the dep-on files of its deps
+            tue-install-debug "Going to remove '${dep}' as a dependency"
+            _remove_old_target_dep_recursively "${target}" "${dep}" || tue-install-error "Something went wrong while removing '${dep}' as a dependency"
+        done
 
         if [ "$now" == "true" ]
         then
