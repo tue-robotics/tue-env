@@ -215,7 +215,7 @@ Purged environment directory of '$env'"""
         then
             local tue_env_dir
             tue_env_dir=$(cat "$TUE_DIR"/user/envs/"$env")
-            cd "$tue_env_dir"/.env/targets || { echo -e "Targets directory '$tue_env_dir/.env/targets' (environment '$TUE_ENV') does not exist"; return 1; }
+            cd "${tue_env_dir}"/.env/targets || { echo -e "Targets directory '${tue_env_dir}/.env/targets' (environment '${env}') does not exist"; return 1; }
         fi
 
     elif [[ $cmd == "config" ]]
@@ -245,7 +245,7 @@ Purged environment directory of '$env'"""
         then
             local tue_env_dir
             tue_env_dir=$(cat "$TUE_DIR"/user/envs/"$env")
-            cd "$tue_env_dir" || { echo -e "Environment directory '$tue_env_dir' (environment '$TUE_ENV') does not exist"; return 1; }
+            cd "${tue_env_dir}" || { echo -e "Environment directory '${tue_env_dir}' (environment '${env}') does not exist"; return 1; }
         else
             echo "[tue-env](cd) no enviroment set or provided"
             return 1
