@@ -121,6 +121,16 @@ Or use `tue-env set-default` if you want this to be de default.
 
 ## Guidelines on creating a new target
 
+The targets directory is located at `.env/targets` relative to the root of the environment directory. The target directory of each environment can be accessed by:
+
+```bash
+tue-env targets # Will change the directory to the targets directory of the current environment
+# or
+tue-env targets <environment> # Will change the directory to the targets directory of the specified environment
+```
+
+The targets directory contains a list of targets. Each target is a directory with the name of the target.
+
 A target can consist of the following files:
 
 1. `install.yaml`
