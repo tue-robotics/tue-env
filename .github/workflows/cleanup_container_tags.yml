@@ -14,6 +14,7 @@ jobs:
         uses: tue-robotics/tue-env/ci/organization-packages@master
         with:
           package-type: container
+          token: ${{ secrets.READ_PACKAGES_TOKEN }}
 
   delete_container_tag:
     name: Delete container tag
