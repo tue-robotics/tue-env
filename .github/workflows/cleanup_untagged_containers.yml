@@ -6,13 +6,26 @@ on:
   workflow_dispatch:
 
 jobs:
+  organization_containers:
+    name: Get all containers in the organization
+    runs-on: ubuntu-latest
+    outputs:
+      packages: ${{ steps.organization-containers.outputs.packages }}
+    steps:
+      - name: Organization containers
+        id: organization_containers
+        uses: tue-robotics/tue-env/ci/organization-packages@MatthijsBurgh-patch-1
+        with:
+          package-type: container
+
   delete_untagged_containers:
     name: Delete untagged containers
     runs-on: ubuntu-latest
+    needs: organization_containers
     strategy:
       fail-fast: false
       matrix:
-        package_name: ["tue-env-ros-noetic", "tue-env-ros-galactic", "tue-env-ros-humble"]
+        package_name: ${{ fromJson(needs.organization_containers.outputs.packages) }}
     steps:
       - uses: actions/delete-package-versions@v4
         with:
