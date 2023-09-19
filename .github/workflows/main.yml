@@ -44,6 +44,15 @@ jobs:
             ros-version: 2
             platform: "amd64"
             base-image: "ubuntu:22.04"
+          - ros-distro: rolling
+            ros-version: 2
+            platform: "amd64"
+            flavor: u20
+          - ros-distro: rolling
+            ros-version: 2
+            platform: "amd64"
+            base-image: "ubuntu:22.04"
+            flavor: u22
     outputs:
       key: ${{ steps.artifacts.outputs.key }}
       tag: ${{ steps.script.outputs.tag }}
