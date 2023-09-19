@@ -17,6 +17,7 @@ jobs:
         uses: tue-robotics/tue-env/ci/organization-packages@MatthijsBurgh-patch-1
         with:
           package-type: container
+          token: ${{ secrets.MATTHIJS_TOKEN }}
 
   delete_untagged_containers:
     name: Delete untagged containers
