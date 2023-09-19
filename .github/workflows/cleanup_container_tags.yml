@@ -7,7 +7,7 @@ jobs:
     name: Get all containers in the organization
     runs-on: ubuntu-latest
     outputs:
-      packages: ${{ steps.organization-containers.outputs.packages }}
+      packages: ${{ steps.organization_containers.outputs.packages }}
     steps:
       - name: Organization containers
         id: organization_containers
