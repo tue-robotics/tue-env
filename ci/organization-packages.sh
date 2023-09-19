@@ -31,7 +31,7 @@ echo -e "\e[35m\e[1mTOKEN length = ${#TOKEN}\e[0m"
 echo "::group::curl -L -H \"Accept: application/vnd.github+json\" -H \"Authorization: Bearer \${TOKEN}\" -H \"X-GitHub-Api-Version: 2022-11-28\" \"https://api.github.com/orgs/${ORGANIZATION}/packages?package_type=${PACKAGE_TYPE}&per_page=100&page=1\""
 echo -e "\e[1mcurl -L -H \"Accept: application/vnd.github+json\" -H \"Authorization: Bearer \${TOKEN}\" -H \"X-GitHub-Api-Version: 2022-11-28\" \"https://api.github.com/orgs/${ORGANIZATION}/packages?package_type=${PACKAGE_TYPE}&per_page=100&page=1\""
 output=$(curl -L -H "Accept: application/vnd.github+json" -H "Authorization: Bearer ${TOKEN}" -H "X-GitHub-Api-Version: 2022-11-28" "https://api.github.com/orgs/${ORGANIZATION}/packages?package_type=${PACKAGE_TYPE}&per_page=100&page=1")
-echo -e "${output}" | jq
+echo -e "${output}" | jq -C
 echo "::endgroup::"
 
 echo -e "\e[1mjq -r '.[].name'\e[0m"
