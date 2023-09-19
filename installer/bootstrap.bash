@@ -49,6 +49,9 @@ case $DISTRIB_RELEASE in
             elif [[ "${ros_distro}" == "galactic" ]]
             then
                 TUE_ROS_DISTRO=galactic
+            elif [[ "${ros_distro}" == "rolling" ]]
+            then
+                TUE_ROS_DISTRO=rolling
             elif [[ -n "${ros_distro}" ]]
             then
                 echo "[tue-env](bootstrap) Error! ROS ${ros_distro} is unsupported with tue-env."
@@ -72,8 +75,27 @@ case $DISTRIB_RELEASE in
         fi
         ;;
     "22.04")
-        TUE_ROS_DISTRO=humble
+        if [[ -n "${ros_version}" ]] && [[ "${ros_version}" -ne 2 ]]
+        then
+             echo "[tue-env](bootstrap) Error! Only ROS version 2 is supported with ubuntu 22.04 and newer"
+             exit 1
+        fi
         TUE_ROS_VERSION=2
+
+        if [[ "${ros_distro}" == "humble" ]]
+        then
+            TUE_ROS_DISTRO=humble
+        elif [[ "${ros_distro}" == "rolling" ]]
+        then
+            TUE_ROS_DISTRO=rolling
+        elif [[ -n "${ros_distro}" ]]
+        then
+            echo "[tue-env](bootstrap) Error! ROS ${ros_distro} is unsupported with tue-env."
+            exit 1
+        else
+            TUE_ROS_DISTRO=humble
+            echo "[tue-env](bootstrap) Using default ROS_DISTRO '${TUE_ROS_DISTRO}' with ROS_VERSION '${TUE_ROS_VERSION}'"
+        fi
         ;;
     *)
         echo "[tue-env](bootstrap) Ubuntu $DISTRIB_RELEASE is unsupported. Please use one of Ubuntu 20.04 or 22.04."
