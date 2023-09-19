@@ -37,13 +37,15 @@ jobs:
           - ros-distro: noetic
             ros-version: 1
             platform: "amd64"
-          - ros-distro: galactic
-            ros-version: 2
-            platform: "amd64"
+            base-image: "ubuntu:20.04"
           - ros-distro: humble
             ros-version: 2
             platform: "amd64"
+          - ros-distro: rolling
+            ros-version: 2
+            platform: "amd64"
             base-image: "ubuntu:22.04"
+            flavor: u22
     outputs:
       key: ${{ steps.artifacts.outputs.key }}
       tag: ${{ steps.script.outputs.tag }}

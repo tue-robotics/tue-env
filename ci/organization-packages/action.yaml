@@ -1,0 +1,32 @@
+name: 'Organization packages'
+description: 'Get the names of the packages in an organization'
+inputs:
+  package-type:
+    description: 'Type of the packages'
+    required: true
+    type: string
+    default: 'container'
+  organization:
+    description: 'Name of the organization'
+    required: true
+    type: string
+    default: ${{ github.repository_owner }}
+  token:
+    description: 'GitHub token'
+    required: true
+    type: string
+    default: ${{ github.token }}
+outputs:
+  packages:
+    description: 'Package names'
+    value: ${{ steps.packages.outputs.packages }}
+runs:
+  using: "composite"
+  steps:
+    - name: Organization packages
+      id: packages
+      run: |
+        source ${{ github.action_path }}/../organization-packages.sh --organization=${{ inputs.organization }} --type=${{ inputs.package-type }} --token=${{ inputs.token }}
+        echo -e "\e[35m\e[1mpackages=${packages_list} >> \${GITHUB_OUTPUT}\e[0m"
+        echo "packages=${packages_list}" >> ${GITHUB_OUTPUT}
+      shell: bash --noprofile --norc -o pipefail {0}
