@@ -1,6 +1,6 @@
 #! /usr/bin/env python3
 
-from typing import IO, List
+from typing import List
 
 import os
 import sys
@@ -59,7 +59,8 @@ class SetupGenerator:
 
         target_setup_file = os.path.join(self._tue_env_targets_dir, target, "setup")
         if os.path.isfile(target_setup_file):
-            lines.append(f"source {target_setup_file}\n")
+            rel_target_setup_file = os.path.relpath(target_setup_file, self._tue_env_dir)
+            lines.append(f"source ${{TUE_ENV_DIR}}/{rel_target_setup_file}\n")
 
         return lines
 
