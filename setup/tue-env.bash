@@ -23,7 +23,7 @@ function tue-env
         init-targets   - (Re-)Initialize the target list
         targets        - Changes directory to targets directory
         list           - List all possible environments
-        list-current   - Shows current environment
+        current        - Shows current environment
         cd             - Changes directory to environment directory
 """
         return 1
@@ -267,7 +267,7 @@ Environment directory '${dir}' didn't exist (anymore)"""
             basename "$env"
         done
 
-    elif [[ $cmd == "list-current" ]]
+    elif [[ $cmd == "current" ]]
     then
         if [[ -n $TUE_ENV ]]
         then
@@ -293,7 +293,7 @@ function _tue-env
 
     if [ "$COMP_CWORD" -eq 1 ]
     then
-        mapfile -t COMPREPLY < <(compgen -W "init list switch list-current remove cd set-default config init-targets targets" -- "$cur")
+        mapfile -t COMPREPLY < <(compgen -W "init list switch current remove cd set-default config init-targets targets" -- "$cur")
     else
         local cmd
         cmd=${COMP_WORDS[1]}
