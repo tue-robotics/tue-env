@@ -88,25 +88,24 @@ options:
             local PURGE env
             PURGE=false
             env=
-            while test $# -gt 0
+            for i in "$@"
             do
-                case "$1" in
+                case $i in
                     --purge)
                         PURGE=true
                         ;;
                     --*)
-                        echo "[tue-env] Unknown option $1"
+                        echo "[tue-env] Unknown option $i"
                         ;;
                     *)
                         # Read only the first passed environment name and ignore
                         # the rest
-                        if [ -z "$env" ]
+                        if [ -z "${env}" ]
                         then
-                            env=$1
+                            env=$i
                         fi
                         ;;
                 esac
-                shift
             done
         fi
 
