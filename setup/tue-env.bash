@@ -20,6 +20,7 @@ function tue-env
         switch         - Switch to a different environment
         config         - Configures current environment
         set-default    - Set default environment
+        unset-default  - Unset default environment
         init-targets   - (Re-)Initialize the target list
         targets        - Changes directory to targets directory
         list           - List all possible environments
@@ -172,6 +173,25 @@ Environment directory '${dir}' didn't exist (anymore)"""
         mkdir -p "$TUE_DIR"/user/config
         echo "$1" > "$TUE_DIR"/user/config/default_env
         echo "[tue-env] Default environment set to $1"
+
+    elif [[ $cmd == "unset-default" ]]
+    then
+        if [ -n "$1" ]
+        then
+            echo "Usage: tue-env unset-default"
+            echo "No arguments allowed"
+        fi
+
+        if [[ ! -f "${TUE_DIR}"/user/config/default_env ]]
+        then
+            echo "[tue-env] No default environment set, nothing to unset"
+            return 1
+        fi
+        local default_env
+        default_env=$(cat "${TUE_DIR}"/user/config/default_env)
+        rm -f "${TUE_DIR}"/user/config/default_env
+        echo "[tue-env] Default environment '${default_env}' unset"
+        return 0
 
     elif [[ $cmd == "init-targets" ]]
     then
