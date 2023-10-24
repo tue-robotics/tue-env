@@ -185,6 +185,5 @@ fi
 tue-env set-default "$workspace"
 
 # Activate the default environment
-# No need to follow to file which is already checked by CI
 # shellcheck disable=SC1090
 source "$env_dir"/setup.bash
