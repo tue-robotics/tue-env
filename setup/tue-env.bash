@@ -16,7 +16,7 @@ function tue-env
     Possible commands:
 
         init           - Initializes new environment
-        remove         - Removes an existing enviroment
+        remove         - Removes an existing environment
         switch         - Switch to a different environment
         config         - Configures current environment
         set-default    - Set default environment
@@ -210,7 +210,7 @@ Environment directory '${dir}' didn't exist (anymore)"""
             if [ -z "$env" ]
             then
                 # This shouldn't be possible logical, should have exited after printing usage
-                echo "[tue-env](init-targets) no enviroment set or provided"
+                echo "[tue-env](init-targets) no environment set or provided"
                 return 1
             fi
             url=$1
@@ -274,7 +274,7 @@ Environment directory '${dir}' didn't exist (anymore)"""
             tue_env_dir=$(cat "$TUE_DIR"/user/envs/"$env")
             cd "${tue_env_dir}" || { echo -e "Environment directory '${tue_env_dir}' (environment '${env}') does not exist"; return 1; }
         else
-            echo "[tue-env](cd) no enviroment set or provided"
+            echo "[tue-env](cd) no environment set or provided"
             return 1
         fi
 
@@ -293,7 +293,7 @@ Environment directory '${dir}' didn't exist (anymore)"""
         then
             echo "$TUE_ENV"
         else
-            echo "[tue-env] no enviroment set"
+            echo "[tue-env] no environment set"
         fi
 
     else
