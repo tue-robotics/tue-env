@@ -82,6 +82,13 @@ then
     export PATH=$TUE_BIN${PATH:+:${PATH}}
 fi
 
+# Source the python virtual environment if it exists
+if [[ -d "${TUE_ENV_DIR}"/.venv/"${TUE_ENV}" ]]
+then
+    # shellcheck disable=SC1090
+    source "${TUE_ENV_DIR}"/.venv/"${TUE_ENV}"/bin/activate
+fi
+
 if [ -f "$TUE_ENV_DIR"/.env/setup/target_setup.bash ]
 then
     # shellcheck disable=SC1091
