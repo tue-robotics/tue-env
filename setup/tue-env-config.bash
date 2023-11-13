@@ -145,7 +145,7 @@ function _main
 
         if [ -z "$1" ]
         then
-            edit "${tue_env_dir}/.env/setup/user_setup.bash"
+            edit "$(file --mime-type "${tue_env_dir}/.env/setup/user_setup.bash" | awk '{print $2}')":"${tue_env_dir}/.env/setup/user_setup.bash"
         else
             local functions
             functions=$(compgen -A function | grep "tue-env-")

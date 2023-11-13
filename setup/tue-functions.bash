@@ -1423,6 +1423,15 @@ function _tue-repos-do
     local -a cmd_array
     cmd_array=("$@")
 
+    local repos_dirs
+    if [[ -n ${TUE_REPOS_DO_DIRS} ]]
+    then
+        repos_dirs=${TUE_REPOS_DO_DIRS}
+    else
+        repos_dirs=${TUE_REPOS_DIR}/github.com/tue-robotics
+        echo -e "No 'TUE_REPOS_DO_DIRS' set, using: \e[1m${repos_dirs}\e[0m"
+    fi
+
     { [ -n "$TUE_DIR" ] && cd "$TUE_DIR"; } || { echo -e "TUE_DIR '$TUE_DIR' does not exist"; return 1; }
     echo -e "\e[1m[tue-env]\e[0m"
     eval "${cmd_array[*]}"
@@ -1431,33 +1440,24 @@ function _tue-repos-do
     echo -e "\e[1m[tue-env-targets]\e[0m"
     eval "${cmd_array[*]}"
 
-    local repos_dir
-    repos_dir=$TUE_REPOS_DIR/github.com/tue-robotics
-    if [ ! -d "$repos_dir" ]
-    then
-      echo -e "No other repos found"
-      # shellcheck disable=SC2164
-      cd "${mem_pwd}"
-      return 0
-    fi
-
-    local fs
-    fs=$(ls "$repos_dir")
-    for repo in $fs
+    for repos_dir in $(echo "${repos_dirs}" | tr ':' '\n')
     do
-        local repo_dir
-        repo_dir=$repos_dir/$repo
-
-        if [ -d "$repo_dir" ]
-        then
-            cd "$repo_dir" || { echo -e "Directory '$TUE_ENV_TARGETS_DIR' does not exist"; return 1; }
+        for repo_dir in $(find "$(realpath --no-symlinks "${repos_dir}")" -name '.git' -type d -prune -print0 | xargs -0 dirname)
+        do
+            local repo
+            repo=$(realpath --relative-to="${repos_dir}" "${repo_dir}")
+            if [[ ${repo} == "." ]]
+            then
+                repo=$(basename "${repo_dir}")
+            fi
+            cd "${repo_dir}" || { echo -e "Directory '${repo_dir}' does not exist"; return 1; }
             echo -e "\e[1m[${repo%.git}]\e[0m"
             eval "${cmd_array[*]}"
-        fi
+        done
     done
 
     # shellcheck disable=SC2164
-    cd "$mem_pwd"
+    cd "${mem_pwd}"
 }
 
 function _tue-add-git-remote

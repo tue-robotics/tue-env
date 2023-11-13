@@ -119,18 +119,25 @@ options:
         dir=$(cat "$TUE_DIR"/user/envs/"$env")
         rm "$TUE_DIR"/user/envs/"$env"
 
-        if [ $PURGE == "false" ]
+        if [[ -d ${dir} ]]
         then
-            dir_moved=$dir.$(date +%F_%R)
-            mv "$dir" "$dir_moved"
-            # shellcheck disable=SC1078,SC1079
-            echo """[tue-env] Removed environment '$env'
-Moved environment directory of '$env' to '$dir_moved'"""
+            if [ $PURGE == "false" ]
+            then
+                dir_moved=$dir.$(date +%F_%R)
+                mv "${dir}" "${dir_moved}"
+                # shellcheck disable=SC1078,SC1079
+                echo """[tue-env] Removed environment '${env}'
+Moved environment directory from '${dir}' to '${dir_moved}'"""
+            else
+                rm -rf "${dir}"
+                # shellcheck disable=SC1078,SC1079
+                echo """[tue-env] Removed environment '$env'
+Purged environment directory '${dir}'"""
+            fi
         else
-            rm -rf "$dir"
             # shellcheck disable=SC1078,SC1079
-            echo """[tue-env] Removed environment '$env'
-Purged environment directory of '$env'"""
+            echo """[tue-env] Removed environment '${env}'
+Environment directory '${dir}' didn't exist (anymore)"""
         fi
 
     elif [[ $cmd == "switch" ]]
@@ -215,7 +222,7 @@ Purged environment directory of '$env'"""
         then
             local tue_env_dir
             tue_env_dir=$(cat "$TUE_DIR"/user/envs/"$env")
-            cd "$tue_env_dir"/.env/targets || { echo -e "Targets directory '$tue_env_dir/.env/targets' (environment '$TUE_ENV') does not exist"; return 1; }
+            cd "${tue_env_dir}"/.env/targets || { echo -e "Targets directory '${tue_env_dir}/.env/targets' (environment '${env}') does not exist"; return 1; }
         fi
 
     elif [[ $cmd == "config" ]]
@@ -245,7 +252,7 @@ Purged environment directory of '$env'"""
         then
             local tue_env_dir
             tue_env_dir=$(cat "$TUE_DIR"/user/envs/"$env")
-            cd "$tue_env_dir" || { echo -e "Environment directory '$tue_env_dir' (environment '$TUE_ENV') does not exist"; return 1; }
+            cd "${tue_env_dir}" || { echo -e "Environment directory '${tue_env_dir}' (environment '${env}') does not exist"; return 1; }
         else
             echo "[tue-env](cd) no enviroment set or provided"
             return 1
