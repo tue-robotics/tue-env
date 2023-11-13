@@ -1104,6 +1104,9 @@ function _tue-install-pip-now
         tue-install-error "Invalid tue-install-pip${pv}-now call: needs package as argument."
     fi
 
+    local user_arg
+    [[ -z "${VIRTUAL_ENV}" ]] && user_arg="--user"
+
     # Make sure pip is up-to-date before checking version and installing
     local pip_version desired_pip_version
     pip_version=$(python"${pv}" -m pip --version | awk '{print $2}')
@@ -1111,7 +1114,7 @@ function _tue-install-pip-now
     if version_gt "$desired_pip_version" "$pip_version"
     then
         tue-install-debug "pip${pv} not yet version >=$desired_pip_version, but $pip_version"
-        tue-install-pipe python"${pv}" -m pip install --user --upgrade pip
+        tue-install-pipe python"${pv}" -m pip install ${user_arg} --upgrade pip
         hash -r
     else
         tue-install-debug "Already pip${pv}>=$desired_pip_version"
@@ -1177,7 +1180,7 @@ function _tue-install-pip-now
     if [ -n "$pips_to_install" ]
     then
         # shellcheck disable=SC2048,SC2086
-        tue-install-pipe python"${pv}" -m pip install --user $pips_to_install <<< yes || tue-install-error "An error occurred while installing pip${pv} packages."
+        tue-install-pipe python"${pv}" -m pip install ${user_arg} $pips_to_install <<< yes || tue-install-error "An error occurred while installing pip${pv} packages."
     fi
 
     if [ -n "$pips_to_install_w_options" ]
@@ -1185,7 +1188,7 @@ function _tue-install-pip-now
         for pkg in $pips_to_install_w_options
         do
             # shellcheck disable=SC2048,SC2086
-            tue-install-pipe python"${pv}" -m pip install --user ${pkg//^/ } <<< yes || tue-install-error "An error occurred while installing pip${pv} packages with options."
+            tue-install-pipe python"${pv}" -m pip install ${user_arg} ${pkg//^/ } <<< yes || tue-install-error "An error occurred while installing pip${pv} packages with options."
         done
     fi
 
@@ -1194,7 +1197,7 @@ function _tue-install-pip-now
         for pkg in $git_pips_to_install
         do
             # shellcheck disable=SC2048,SC2086
-            tue-install-pipe python"${pv}" -m pip install --user $pkg <<< yes || tue-install-error "An error occurred while installing pip${pv} git packages."
+            tue-install-pipe python"${pv}" -m pip install ${user_arg} ${pkg} <<< yes || tue-install-error "An error occurred while installing pip${pv} git packages."
         done
     fi
 }

@@ -4,6 +4,8 @@
 hash git 2> /dev/null || sudo apt-get install --assume-yes -qq git
 # Make sure lsb-release is installed
 hash lsb_release 2> /dev/null || sudo apt-get install --assume-yes -qq lsb-release
+# Make sure python3-virtualenv is installed
+hash virtualenv 2> /dev/null || sudo apt-get install --assume-yes -qq python3-virtualenv
 
 # Check if OS is Ubuntu
 DISTRIB_ID="$(lsb_release -si)"
@@ -30,6 +32,9 @@ do
             ;;
         --targets-repo=* )
             targets_repo="${i#*=}"
+            ;;
+        --create-virtualenv=* )
+            create_virtualenv="${i#*=}"
             ;;
         * )
             echo "[tue-env](bootstrap) Error! Unknown argument '${i}' provided to bootstrap script."
@@ -106,6 +111,7 @@ esac
 # Script variables
 env_url="https://github.com/tue-robotics/tue-env.git"
 { [[ -n "${targets_repo}" ]] && env_targets_url="${targets_repo}"; } || env_targets_url="https://github.com/tue-robotics/tue-env-targets.git"
+[[ -n "${create_virtualenv}" ]] || create_virtualenv="true"
 env_dir="$HOME/.tue"
 workspace="ros-$TUE_ROS_DISTRO"
 workspace_dir="$HOME/ros/$TUE_ROS_DISTRO"
@@ -166,7 +172,7 @@ source "$env_dir"/setup.bash
 mkdir -p "$workspace_dir"
 
 # Initialize ros environment directory incl. targets
-tue-env init "$workspace" "$workspace_dir" "$env_targets_url"
+tue-env init "${workspace}" "${workspace_dir}" "--create-virtualenv=${create_virtualenv}" "--targets-url=${env_targets_url}"
 
 # Configure environment
 tue-env config "$workspace" set "TUE_ROS_DISTRO" "$TUE_ROS_DISTRO"
@@ -185,6 +191,5 @@ fi
 tue-env set-default "$workspace"
 
 # Activate the default environment
-# No need to follow to file which is already checked by CI
 # shellcheck disable=SC1090
 source "$env_dir"/setup.bash
