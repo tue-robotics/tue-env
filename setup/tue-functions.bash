@@ -587,7 +587,9 @@ function _tue-make
     local cur
     cur=${COMP_WORDS[COMP_CWORD]}
 
-    mapfile -t COMPREPLY < <(compgen -W "$(_list_subdirs "$TUE_SYSTEM_DIR"/src)" -- "$cur")
+    local options
+    [[ "${TUE_ROS_VERSION}" == 2 ]] && options="${options} --packages-select"
+    mapfile -t COMPREPLY < <(compgen -W "$(_list_subdirs "${TUE_SYSTEM_DIR}"/src) ${options}" -- "${cur}")
 }
 
 complete -F _tue-make tue-make
