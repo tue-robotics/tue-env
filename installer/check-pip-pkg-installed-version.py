@@ -2,6 +2,7 @@
 
 import sys
 from pip._internal.req.constructors import install_req_from_line
+from pip._internal.utils.virtualenv import running_under_virtualenv
 
 
 def main() -> int:
@@ -16,7 +17,7 @@ def main() -> int:
         for arg in sys.argv[1:]:
             req = install_req_from_line(arg)
 
-            req.check_if_exists(True)
+            req.check_if_exists(not running_under_virtualenv())
 
             if req.satisfied_by:
                 pkg_installed.append(str(req.satisfied_by).replace(" ", "^"))
