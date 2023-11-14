@@ -427,7 +427,7 @@ function tue-make
 
     [[ ! -d "${TUE_SYSTEM_DIR}" ]] && { echo -e "\e[31;1mError! The workspace '${TUE_SYSTEM_DIR}' does not exist. Run 'tue-get install ros${TUE_ROS_VERSION}' first.\e[0m"; return 1; }
 
-    if [ "${TUE_ROS_VERSION}" == "1" ]
+    if [[ "${TUE_ROS_VERSION}" -eq 1 ]]
     then
         local build_tool
         build_tool=""
@@ -450,7 +450,7 @@ function tue-make
             return 1
             ;;
         esac
-    elif [ "${TUE_ROS_VERSION}" == "2" ]
+    elif [[ "${TUE_ROS_VERSION}" -eq 2 ]]
     then
         mkdir -p "$TUE_SYSTEM_DIR"/src
 
@@ -478,7 +478,7 @@ function tue-make-test
 
     [[ ! -d "${TUE_SYSTEM_DIR}" ]] && { echo -e "\e[31;1mError! The workspace '${TUE_SYSTEM_DIR}' does not exist. Run 'tue-get install ros${TUE_ROS_VERSION}' first.\e[0m"; return 1; }
 
-    if [ "${TUE_ROS_VERSION}" == "1" ]
+    if [[ "${TUE_ROS_VERSION}" -eq 1 ]]
     then
         local build_tool
         build_tool=""
@@ -500,7 +500,7 @@ function tue-make-test
             return 1
             ;;
         esac
-    elif [ "${TUE_ROS_VERSION}" == "2" ]
+    elif [[ "${TUE_ROS_VERSION}" -eq 2 ]]
     then
         if [[ ! -d "${TUE_SYSTEM_DIR}"/src ]]
         then
@@ -537,7 +537,7 @@ function tue-make-test-result
 
     [[ ! -d "${TUE_SYSTEM_DIR}" ]] && { echo -e "\e[31;1mError! The workspace '${TUE_SYSTEM_DIR}' does not exist. Run 'tue-get install ros${TUE_ROS_VERSION}' first.\e[0m"; return 1; }
 
-    if [ "${TUE_ROS_VERSION}" == "1" ]
+    if [[ "${TUE_ROS_VERSION}" -eq 1 ]]
     then
         local build_tool
         build_tool=""
@@ -559,7 +559,7 @@ function tue-make-test-result
             return 1
             ;;
         esac
-    elif [ "${TUE_ROS_VERSION}" == "2" ]
+    elif [[ "${TUE_ROS_VERSION}" -eq 2 ]]
     then
         if [[ ! -d "${TUE_SYSTEM_DIR}"/src ]]
         then
@@ -588,7 +588,7 @@ function _tue-make
     cur=${COMP_WORDS[COMP_CWORD]}
 
     local options
-    [[ "${TUE_ROS_VERSION}" == 2 ]] && options="${options} --packages-select"
+    [[ "${TUE_ROS_VERSION}" -eq 2 ]] && options="${options} --packages-select"
     mapfile -t COMPREPLY < <(compgen -W "$(_list_subdirs "${TUE_SYSTEM_DIR}"/src) ${options}" -- "${cur}")
 }
 
@@ -1285,7 +1285,7 @@ function tue-deb-generate
 
     [[ ! -d "${TUE_SYSTEM_DIR}" ]] && { echo -e "\e[31;1mError! The workspace '${TUE_SYSTEM_DIR}' does not exist. Run 'tue-get install ros${TUE_ROS_VERSION}' first.\e[0m"; return 1; }
 
-    [[ "${TUE_ROS_VERSION}" != "2" ]] && { echo -e "\e[31;1mError! This command is supported only with TUE_ROS_VERSION=2.\e[0m"; return 1; }
+    [[ "${TUE_ROS_VERSION}" -ne 2 ]] && { echo -e "\e[31;1mError! This command is supported only with TUE_ROS_VERSION=2.\e[0m"; return 1; }
 
     local packages_list
     if [[ -z "${1}" ]]
