@@ -292,6 +292,9 @@ Environment directory '${dir}' didn't exist (anymore)"""
             return 1
         fi
 
+        python3 -c "import virtualenv" 2>/dev/null ||
+        { echo -e "[tue-env](init-venv) 'virtualenv' module is not found. Make sure you install it 'sudo apt-get install python3-virtualenv'"; return 1; }
+
         local tue_env_dir
         tue_env_dir=$(cat "${TUE_DIR}"/user/envs/"${env}")
         local venv_dir
@@ -319,7 +322,7 @@ Environment directory '${dir}' didn't exist (anymore)"""
             echo "Don't use it anymore as its old path is hardcoded in the virtualenv"
         fi
 
-        python3 -m virtualenv "${venv_dir}" -q --system-site-packages --symlinks
+        python3 -m virtualenv "${venv_dir}" -q --system-site-packages --symlinks 2>/dev/null
         echo "[tue-env] Initialized virtualenv of environment '${env}'"
 
         if [ "${env}" == "${TUE_ENV}" ]
