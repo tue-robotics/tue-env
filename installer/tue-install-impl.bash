@@ -354,7 +354,7 @@ function tue-install-target
         then
             tue-install-debug "Following dropped depedencies need to be removed:\n${old_deps_removed}"
         else
-            tue-install-debug "No dropped denpendencies to be removed"
+            tue-install-debug "No dropped dependencies to be removed"
         fi
 
         for dep in ${old_deps_removed}
