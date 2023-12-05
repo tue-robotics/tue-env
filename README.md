@@ -266,6 +266,19 @@ It is preferred to include these `-now` dependencies in `install.yaml`. Only use
 
 ### Writing `install.bash`
 
+The use of the following variables is prohibited in `install.bash`:
+
+- `TUE_APT_GET_UPDATED_FILE`
+- `TUE_INSTALL_*`
+- `install_file`
+- `now`
+- `old_deps`
+- `parent_target`
+- `state_file`
+- `state_file_now`
+- `target`
+- `target_processed`
+
 #### Generic `tue-install` functions
 
 The following functions provided with `tue-env` must be preferred over any
