@@ -136,9 +136,9 @@ echo -e "\e[35;1m
 This build can be reproduced locally using the following commands:
 
 tue-get install docker
-~/.tue/ci/install-package.sh --package=${PACKAGE} --branch=${BRANCH} --commit=${COMMIT} --pullrequest=${PULL_REQUEST} --image=${IMAGE_NAME} --ref-name=${REF_NAME} ${ADDITIONAL_ARGS_LOCAL_BUILD}
-~/.tue/ci/build-package.sh --package=${PACKAGE}
-~/.tue/ci/test-package.sh --package=${PACKAGE}
+"'${TUE_DIR}'"/ci/install-package.sh --package=${PACKAGE} --branch=${BRANCH} --commit=${COMMIT} --pullrequest=${PULL_REQUEST} --image=${IMAGE_NAME} --ref-name=${REF_NAME} ${ADDITIONAL_ARGS_LOCAL_BUILD}
+"'${TUE_DIR}'"/ci/build-package.sh --package=${PACKAGE}
+"'${TUE_DIR}'"/ci/test-package.sh --package=${PACKAGE}
 
 Optionally fix your compilation errors and re-run only the last command
 \e[0m"
