@@ -8,7 +8,7 @@ set -o errexit
 # Execute script only in a CI environment
 if [ "$CI" != "true" ]
 then
-    echo -e "\e[35m\e[1m Error!\e[0mTrying to execute a CI script in a non-CI environment. Exiting script."
+    echo -e "\e[35;1m Error!\e[0mTrying to execute a CI script in a non-CI environment. Exiting script."
     exit 1
 fi
 
@@ -39,29 +39,29 @@ do
             # unknown option
             if [[ -n "$i" ]]  # Ignore empty arguments
             then
-                echo -e "\e[35m\e[1mUnknown input argument '$i'. Check CI .yml file\e[0m"
+                echo -e "\e[35;1mUnknown input argument '$i'. Check CI .yml file\e[0m"
                 exit 1
             fi ;;
     esac
     shift
 done
 
-echo -e "\e[35m\e[1mUPSTREAM_REMOTE_URL    = ${UPSTREAM_REMOTE_URL} \e[0m"
+echo -e "\e[35;1mUPSTREAM_REMOTE_URL    = ${UPSTREAM_REMOTE_URL} \e[0m"
 git remote add fork "$UPSTREAM_REMOTE_URL" || { echo "Could not add remote: $UPSTREAM_REMOTE"; exit 1; }
 git fetch fork || { echo "Could not fetch remote refs for $UPSTREAM_REMOTE"; exit 1; }
 
 default_upstream_remote_branch=$(git remote show fork | grep HEAD | awk '{print $3;}')
 [ -z "$UPSTREAM_REMOTE_BRANCH" ] && UPSTREAM_REMOTE_BRANCH="$default_upstream_remote_branch"
 
-echo -e "\e[35m\e[1mUPSTREAM_REMOTE_BRANCH = ${UPSTREAM_REMOTE_BRANCH} \e[0m"
-echo -e "\e[35m\e[1mLOCAL_REMOTE_URL       = ${LOCAL_REMOTE_URL} \e[0m"
-echo -e "\e[35m\e[1mLOCAL_REMOTE_BRANCH    = ${LOCAL_REMOTE_BRANCH} \e[0m"
+echo -e "\e[35;1mUPSTREAM_REMOTE_BRANCH = ${UPSTREAM_REMOTE_BRANCH} \e[0m"
+echo -e "\e[35;1mLOCAL_REMOTE_URL       = ${LOCAL_REMOTE_URL} \e[0m"
+echo -e "\e[35;1mLOCAL_REMOTE_BRANCH    = ${LOCAL_REMOTE_BRANCH} \e[0m"
 
 [ -z "$GIT_USERNAME" ] && { echo "Need User Name for git config."; exit 1; }
-echo -e "\e[35m\e[1mGIT_USERNAME           = ${GIT_USERNAME} \e[0m"
+echo -e "\e[35;1mGIT_USERNAME           = ${GIT_USERNAME} \e[0m"
 
 [ -z "$GIT_USEREMAIL" ] && { echo "Need User Email for git config."; exit 1; }
-echo -e "\e[35m\e[1mGIT_USEREMAIL          = ${GIT_USEREMAIL} \e[0m"
+echo -e "\e[35;1mGIT_USEREMAIL          = ${GIT_USEREMAIL} \e[0m"
 
 git config user.email "$GIT_USEREMAIL"
 git config user.name "$GIT_USERNAME"
@@ -76,4 +76,4 @@ git remote set-url --push origin "$LOCAL_REMOTE_URL"
 git push origin "$LOCAL_REMOTE_BRANCH"
 
 echo
-echo -e "\e[35m\e[1mSynced local branch '$LOCAL_REMOTE_BRANCH' with upstream remote branch '$UPSTREAM_REMOTE_BRANCH'"
+echo -e "\e[35;1mSynced local branch '$LOCAL_REMOTE_BRANCH' with upstream remote branch '$UPSTREAM_REMOTE_BRANCH'"

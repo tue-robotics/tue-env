@@ -15,9 +15,9 @@ function cleanup {
 trap cleanup EXIT
 
 # Execute script only in a CI environment
-if [[ "$CI" != "true" ]]
+if [[ "${CI}" != "true" ]]
 then
-    echo -e "\e[35;1mError! Trying to execute a CI script in a non-CI environment. Exiting script.\e[0m"
+    echo -e "\e[35;1mError!\e[0mTrying to execute a CI script in a non-CI environment. Exiting script."
     exit 1
 fi
 
@@ -139,7 +139,7 @@ fi
 
 # Command to reproduce locally
 # shellcheck disable=SC2016
-echo -e "\e[35m\e[1m
+echo -e "\e[35;1m
 This build can be reproduced locally using the following commands:
 
 \`\`\`
