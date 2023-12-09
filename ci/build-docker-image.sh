@@ -7,6 +7,13 @@
 # Stop on errors
 set -o errexit
 
+function cleanup {
+  echo -e "\e[35;1mRemoving ./known_hosts\e[0m"
+  rm -f ./known_hosts
+}
+
+trap cleanup EXIT
+
 # Execute script only in a CI environment
 if [[ "$CI" != "true" ]]
 then
