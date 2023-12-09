@@ -17,7 +17,7 @@ trap cleanup EXIT
 # Execute script only in a CI environment
 if [[ "${CI}" != "true" ]]
 then
-    echo -e "\e[35;1mError!\e[0mTrying to execute a CI script in a non-CI environment. Exiting script."
+    echo -e "\e[35;1mError! Trying to execute a CI script in a non-CI environment. Exiting script.\e[0m"
     exit 1
 fi
 
