@@ -163,7 +163,7 @@ then
     ADDITIONAL_ARGS_LOCAL_BUILD="${ADDITIONAL_ARGS_LOCAL_BUILD} --ssh --ssh-key=YOUR_KEY_FILE"
 fi
 
-if [[ "${CI_DOCKER_SSH}" == "true" ]]
+if [[ -n "${CI_OAUTH2_TOKEN}" ]]
 then
     ADDITIONAL_ARGS_LOCAL_BUILD="${ADDITIONAL_ARGS_LOCAL_BUILD} --oauth2_token=YOUR_OAUTH2_KEY"
 fi
