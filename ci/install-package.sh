@@ -171,7 +171,11 @@ then
     BRANCH_TAG=$MASTER_TAG
 fi
 
-DOCKER_HOME=$(docker run --name tue-env --rm "$IMAGE_NAME:$BRANCH_TAG" bash -c 'echo "$HOME"' | tr -d '\r')
+# Docker container can show a header on start-up. We don't want to capture it
+docker run --detach --tty --name tue-env "${IMAGE_NAME}:${BRANCH_TAG}"
+DOCKER_HOME=$(docker exec -t tue-env bash -c 'echo "${HOME}"' | tr -d '\r')
+docker stop tue-env  &> /dev/null || true
+docker rm tue-env &> /dev/null || true
 
 # Make sure the ~/.ccache folder exists
 mkdir -p "$HOME"/.ccache
