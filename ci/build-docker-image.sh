@@ -149,7 +149,7 @@ fi
 
 # Command to reproduce locally
 # shellcheck disable=SC2016
-echo -e "\e[35m\e[1m
+echo -e "\e[35;1m
 This build can be reproduced locally using the following commands:
 
 \`\`\`
