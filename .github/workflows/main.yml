@@ -130,11 +130,11 @@ jobs:
           fi
           if [[ -n "${SSH_KNOWN_HOSTS}" ]]
           then
-              echo -e "\e[35m\e[1mmkdir -p ${HOME}/.ssh\e[0m"
+              echo -e "\e[35;1mmkdir -p ${HOME}/.ssh\e[0m"
               mkdir -p "${HOME}"/.ssh
               for host in ${SSH_KNOWN_HOSTS}
               do
-                  echo -e "\e[35m\e[1mssh-keyscan -t rsa -H \"${host}\" 2>&1 | tee -a ${HOME}/.ssh/known_hosts\e[0m"
+                  echo -e "\e[35;1mssh-keyscan -t rsa -H \"${host}\" 2>&1 | tee -a ${HOME}/.ssh/known_hosts\e[0m"
                   ssh-keyscan -t rsa -H "${host}" 2>&1 | tee -a "${HOME}"/.ssh/known_hosts
               done
           fi
@@ -169,9 +169,9 @@ jobs:
               --docker_user="${DOCKER_USER}" \
               --docker_user_id="${DOCKER_USER_ID}" \
               "${SSH_ARG[@]}"
-          echo -e "\e[35m\e[1mimage=${TARGET_IMAGE} >> \${GITHUB_OUTPUT}\e[0m"
+          echo -e "\e[35;1mimage=${TARGET_IMAGE} >> \${GITHUB_OUTPUT}\e[0m"
           echo "image=${TARGET_IMAGE}" >> "${GITHUB_OUTPUT}"
-          echo -e "\e[35m\e[1mtag=${IMAGE_TAG} >> \${GITHUB_OUTPUT}\e[0m"
+          echo -e "\e[35;1mtag=${IMAGE_TAG} >> \${GITHUB_OUTPUT}\e[0m"
           echo "tag=${IMAGE_TAG}" >> "${GITHUB_OUTPUT}"
       - name: Generate artifacts
         id: artifacts
@@ -180,7 +180,7 @@ jobs:
           MATRIX_OUTPUT_KEY=image
           echo "${{ steps.script.outputs.image }}" > "${MATRIX_OUTPUT_KEY}"
           sha256sum "${MATRIX_OUTPUT_KEY}" | cut -d " " -f 1 | xargs -I{} echo "artifact={}" >> $GITHUB_OUTPUT
-          echo -e "\e[35m\e[1mkey=${MATRIX_OUTPUT_KEY} >> \$GITHUB_OUTPUT\e[0m"
+          echo -e "\e[35;1mkey=${MATRIX_OUTPUT_KEY} >> \${GITHUB_OUTPUT}\e[0m"
           echo "key=${MATRIX_OUTPUT_KEY}" >> $GITHUB_OUTPUT
       - name: Write image name
         if: github.event_name != 'pull_request'
@@ -208,7 +208,7 @@ jobs:
         id: read
         run: |
           result="$(find . -name ${{ needs.docker_generation_tue_env.outputs.key }} -exec cat {} \; | jq --slurp --raw-input 'split("\n")[:-1] | .[] | split(":") | {(.[0]) : [(.[1])]}' | jq -cs '[.[] | to_entries] | flatten | reduce .[] as $dot ({}; .[$dot.key] += $dot.value) | { ${{ needs.docker_generation_tue_env.outputs.key }} : . }' )"
-          echo -e "\e[35m\e[1mresult=${result} >> \$GITHUB_OUTPUT\e[0m"
+          echo -e "\e[35;1mresult=${result} >> \${GITHUB_OUTPUT}\e[0m"
           echo "result=${result}" >> $GITHUB_OUTPUT
       - name: Generate new manifest files
         run: |
