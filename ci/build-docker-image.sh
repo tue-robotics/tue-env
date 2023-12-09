@@ -182,6 +182,7 @@ git checkout ${CI_COMMIT}
 \`\`\`
 
 This command never pushes the docker image to the registry. You will need to alter the '--push_image' argument for that. This also requires you are logged in to the correct docker registry or provide the related arguments(--docker_login, --user and --password), so this script will login.
+To access a private repository you need to provide a SSH key ('--ssh --ssh-key=YOUR_SSH_KEY_FILE') or an OAUTH2 token ('--oauth2_token=YOUR_OAUTH2_TOKEN').
 
 \e[0m"
 
