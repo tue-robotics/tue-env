@@ -82,7 +82,6 @@ jobs:
           IMAGE_FLAVOR=${{ matrix.flavor }}
           IMAGE_FLAVOR=${IMAGE_FLAVOR:+"-${IMAGE_FLAVOR}"}
           TARGET_IMAGE="${{ env.REGISTRY }}/tue-robotics/tue-env-ros-${{ matrix.ros-distro }}${IMAGE_FLAVOR}:${IMAGE_TAG}-${{ matrix.platform }}"
-          SSH_KEY="${{ secrets.SSH_DEPLOY_KEY }}"
           SSH_KNOWN_HOSTS="github.com"
           SSH_ARG=()
           if [[ -n "${SSH_KEY}" ]]
