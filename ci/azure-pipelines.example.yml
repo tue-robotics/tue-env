@@ -73,7 +73,7 @@ steps:
       then
         for host in ${SSH_KNOWN_HOSTS}
         do
-          echo -e "\e[35m\e[1mssh-keyscan -t rsa -H \"${host}\" 2>&1 | tee -a ${HOME}/.ssh/known_hosts\e[0m"
+          echo -e "\e[35;1mssh-keyscan -t rsa -H \"${host}\" 2>&1 | tee -a ${HOME}/.ssh/known_hosts\e[0m"
           ssh-keyscan -t rsa -H "${host}" 2>&1 | tee -a "${HOME}"/.ssh/known_hosts
         done
       fi

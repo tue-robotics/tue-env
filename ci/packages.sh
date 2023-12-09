@@ -22,11 +22,11 @@ do
     shift
 done
 
-echo -e "\e[35m\e[1mCOMMIT_RANGE = ${COMMIT_RANGE}\e[0m"
-echo -e "\e[35m\e[1mPULL_REQUEST = ${PULL_REQUEST}\e[0m"
-echo -e "\e[35m\e[1mBRANCH       = ${BRANCH}\e[0m"
-echo -e "\e[35m\e[1mALL          = ${ALL}\e[0m"
-echo -e "\e[35m\e[1mexclude_dirs = ${exclude_dirs}\e[0m"
+echo -e "\e[35;1mCOMMIT_RANGE = ${COMMIT_RANGE}\e[0m"
+echo -e "\e[35;1mPULL_REQUEST = ${PULL_REQUEST}\e[0m"
+echo -e "\e[35;1mBRANCH       = ${BRANCH}\e[0m"
+echo -e "\e[35;1mALL          = ${ALL}\e[0m"
+echo -e "\e[35;1mexclude_dirs = ${exclude_dirs}\e[0m"
 
 exclude_dirs=$(echo "${exclude_dirs}" | xargs ls -dl 2>/dev/null |  grep "^d" | grep -v "\." | awk '{print $NF}')
 
@@ -34,8 +34,8 @@ if [ -n "$COMMIT_RANGE" ]
 then
     oldest_commit=${COMMIT_RANGE%...*}
     newest_commit=${COMMIT_RANGE#*...}
-    echo -e "\e[35m\e[1mOldest commit: ${oldest_commit}\e[0m"
-    echo -e "\e[35m\e[1mNewest commit: ${newest_commit}\e[0m"
+    echo -e "\e[35;1mOldest commit: ${oldest_commit}\e[0m"
+    echo -e "\e[35;1mNewest commit: ${newest_commit}\e[0m"
 
     mod_files=$(git diff-tree --name-only "${oldest_commit}" "${newest_commit}")
 else
@@ -81,8 +81,8 @@ export PACKAGES_DICT
 # shellcheck disable=SC2090
 export PACKAGES_LIST
 
-echo -e "\e[35m\e[1mPACKAGES:\e[0m"
+echo -e "\e[35;1mPACKAGES:\e[0m"
 for PKG in $PACKAGES
 do
-    echo -e "\e[35m\e[1m  ${PKG}\e[0m"
+    echo -e "\e[35;1m  ${PKG}\e[0m"
 done
