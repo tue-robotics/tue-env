@@ -178,7 +178,7 @@ tue-get install docker
 cd "'${TUE_DIR}'"
 git checkout ${CI_COMMIT}
 
-"'${TUE_DIR}'"/ci/build-docker-image.sh --image=${CI_DOCKER_IMAGE_NAME} --branch=${CI_BRANCH} --pull_request=${CI_PULL_REQUEST} --commit=${CI_COMMIT} --push_image=false --registry=${CI_DOCKER_REGISTRY} --ref-name=${CI_REF_NAME} --platforms=${CI_DOCKER_PLATFORMS} --push_image=${CI_DOCKER_PUSH_IMAGE} --ros_version=${CI_ROS_VERSION} --ros_distro=${CI_ROS_DISTRO} --targets_repo=${CI_TARGETS_REPO} --base_image=${CI_DOCKER_BASE_IMAGE} --docker_file=${CI_DOCKER_FILE}${ADDITIONAL_ARGS_LOCAL_BUILD}
+"'${TUE_DIR}'"/ci/build-docker-image.sh --image=${CI_DOCKER_IMAGE_NAME} --branch=${CI_BRANCH} --pull_request=${CI_PULL_REQUEST} --commit=${CI_COMMIT} --registry=${CI_DOCKER_REGISTRY} --ref-name=${CI_REF_NAME} --platforms=${CI_DOCKER_PLATFORMS} --push_image=false --ros_version=${CI_ROS_VERSION} --ros_distro=${CI_ROS_DISTRO} --targets_repo=${CI_TARGETS_REPO} --base_image=${CI_DOCKER_BASE_IMAGE} --docker_file=${CI_DOCKER_FILE}${ADDITIONAL_ARGS_LOCAL_BUILD}
 \`\`\`
 
 This command never pushes the docker image to the registry. You will need to alter the '--push_image' argument for that. This also requires you are logged in to the correct docker registry or provide the related arguments(--docker_login, --user and --password), so this script will login.
