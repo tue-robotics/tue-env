@@ -97,11 +97,14 @@ RUN --mount=type=ssh,uid=$USER_ID --mount=type=bind,source=installer/bootstrap.b
     tue-get install ccache --test-depend && \
     # Remove temp tue files
     (rm -rf /tmp/tue_* > /dev/null || true) && \
-    # Show ownership of .tue
+    # Show ownership of ~/.tue
+    echo -e "\e[35mOwner of ~/.tue\e[0m" && \
     namei -l ~/.tue && \
     # Check git remote origin
+    echo -e "\e[35mgit -C ~/.tue remote -v\e[0m" && \
     git -C ~/.tue remote -v && \
     # Show the branches of tue-env
+    echo -e "\e[35mgit -C ~/.tue branch\e[0m" && \
     git -C ~/.tue branch && \
     # Remove docker-clean. APT will be able to autocomplete packages now
     sudo rm /etc/apt/apt.conf.d/docker-clean && \
