@@ -158,6 +158,30 @@ To access a private repository you need to provide a SSH key ('--ssh --ssh-key=Y
 
 \e[0m"
 
+if [[ "${CI_DOCKER_SSH}" == "true" ]]
+then
+    ADDITIONAL_ARGS_LOCAL_BUILD="${ADDITIONAL_ARGS_LOCAL_BUILD} --ssh --ssh-key=YOUR_KEY_FILE"
+fi
+
+if [[ "${CI_DOCKER_SSH}" == "true" ]]
+then
+    ADDITIONAL_ARGS_LOCAL_BUILD="${ADDITIONAL_ARGS_LOCAL_BUILD} --oauth2_token=YOUR_OAUTH2_KEY"
+fi
+
+# Command to reproduce locally
+# shellcheck disable=SC2016
+echo -e "\e[35m\e[1m
+This build can be reproduced locally using the following commands:
+
+tue-get install docker
+cd ${TUE_DIR}
+git checkout ${CI_COMMIT}
+
+"'${TUE_DIR}'"/ci/build-docker-package.sh --image=${CI_DOCKER_IMAGE_NAME} --branch=${CI_BRANCH} --pullrequest=${CI_PULL_REQUEST} --commit=${CI_COMMIT} --push_image=${CI_DOCKER_PUSH_IMAGE} --registry=${CI_DOCKER_REGISTRY} --ref-name=${CI_REF_NAME} --platforms=${CI_DOCKER_PLATFORMS} --push_image=${CI_DOCKER_PUSH_IMAGE} --ros_version=${CI_ROS_VERSION} --ros_distro=${CI_ROS_DISTRO} --targets_repo=${CI_TARGETS_REPO} --base_image=${CI_DOCKER_BASE_IMAGE} --docker_file=${CI_DOCKER_FILE}${ADDITIONAL_ARGS_LOCAL_BUILD}
+
+Optionally fix your compilation errors and re-run only the last command
+\e[0m"
+
 # Declare arrays for storing the constructed docker build arguments
 CI_DOCKER_BUILD_ARGS=()
 CI_DOCKER_BUILDX_ARGS=()
