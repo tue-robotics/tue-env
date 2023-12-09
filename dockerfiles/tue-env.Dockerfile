@@ -59,8 +59,6 @@ RUN apt-get update -qq && \
 USER "$USER"
 WORKDIR /home/"$USER"
 
-ADD installer/bootstrap.bash ./bootstrap.bash
-
 RUN mkdir -p -m 0700 ~/.ssh
 ADD ./known_hosts ./.ssh/known_hosts
 RUN sudo chown 1000:1000 ~/.ssh/known_hosts && sudo chmod 644 ~/.ssh/known_hosts
@@ -69,8 +67,9 @@ RUN sudo chown 1000:1000 ~/.ssh/known_hosts && sudo chmod 644 ~/.ssh/known_hosts
 RUN { [[ -n "$OAUTH2_TOKEN" ]] && git config --global credential.helper '!f() { printf "%s\n" "username=oauth2" "password=$OAUTH2_TOKEN"; };f'; } || exit 0
 
 # Setup tue-env and install target ros
+RUN --mount=type=ssh,uid=1000 --mount=type=bind,source=installer/bootstrap.bash,target=bootstrap.bash \
     # Remove interactive check from bashrc, otherwise bashrc refuses to execute
-RUN --mount=type=ssh,uid=1000 sed -e s/return//g -i ~/.bashrc && \
+    sed -e s/return//g -i ~/.bashrc && \
     # Set the CI args in the container as docker currently provides no method to
     # remove the environment variables
     # NOTE: The following exports will exist only in this container
