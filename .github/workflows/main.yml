@@ -125,6 +125,7 @@ jobs:
           VENV_INCLUDE_SYSTEM_SITE=${VENV_INCLUDE_SYSTEM_SITE:-true}
           # shellcheck disable=SC2296
           ci/build-docker-image.sh \
+              --registry="${{ env.REGISTRY }}" \
               --image="${TARGET_IMAGE}" \
               --branch="${BRANCH}" \
               --commit="${GITHUB_SHA}" \
