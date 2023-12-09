@@ -17,7 +17,7 @@ trap cleanup EXIT
 # Execute script only in a CI environment
 if [[ "$CI" != "true" ]]
 then
-    echo -e "\e[35;1mError!\e[0m Trying to execute a CI script in a non-CI environment. Exiting script."
+    echo -e "\e[35;1mError! Trying to execute a CI script in a non-CI environment. Exiting script.\e[0m"
     exit 1
 fi
 
@@ -213,7 +213,7 @@ then
     echo -e "\e[35;1mCreating a new docker context for multi-arch builds\e[0m"
     docker context create multiarch-environment
     echo -e "\e[35;1mCreating a new buildx builder for multi-arch builds\e[0m"
-    docker buildx create --name multiarchbuilder --driver docker-container --use multiarch-environment
+    docker buildx create --name multiarch-builder --driver docker-container --use multiarch-environment
     docker buildx ls
 fi
 
