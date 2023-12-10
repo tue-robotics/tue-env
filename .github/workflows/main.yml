@@ -62,6 +62,8 @@ jobs:
           registry: ${{ env.REGISTRY }}
           username: ${{ github.actor }}
           password: ${{ secrets.GITHUB_TOKEN }}
+      - name: Expose GitHub Runtime
+        uses: crazy-max/ghaction-github-runtime@v3
       # Comment out when generating arm64
       #- name: Install QEMU
       #  run: |
