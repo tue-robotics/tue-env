@@ -255,6 +255,13 @@ then
 fi
 
 # Construction of Docker buildx arguments begins here
+if [[ "${GITHUB_ACTIONS}" == "true" ]]
+then
+    echo -e "\e[35;1mRunning on GitHub Actions, using the specific GHA cache\e[0m"
+    CI_DOCKER_BUILDX_ARGS+=("--cache-from=type=gha")
+    CI_DOCKER_BUILDX_ARGS+=("--cache-to=type=gha,mode=max")
+fi
+
 if [[ -n "$CI_DOCKER_PLATFORMS" ]]
 then
     CI_DOCKER_BUILDX_ARGS+=("--platform=linux/${CI_DOCKER_PLATFORMS}")
