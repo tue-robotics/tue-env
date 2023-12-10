@@ -242,6 +242,7 @@ then
     docker context create multiarch-environment
     echo -e "\e[35;1mCreating a new buildx builder for multi-arch builds\e[0m"
     docker buildx create --name multiarch-builder --driver docker-container --use multiarch-environment
+    echo -e "\e[35;1mdocker buildx ls\e[0m"
     docker buildx ls
 fi
 
