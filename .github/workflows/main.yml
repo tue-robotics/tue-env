@@ -131,7 +131,7 @@ jobs:
           echo "key=${MATRIX_OUTPUT_KEY}" >> $GITHUB_OUTPUT
       - name: Write image name
         if: github.event_name != 'pull_request'
-        uses: actions/upload-artifact@v3
+        uses: actions/upload-artifact@v4
         with:
           name: ${{ steps.artifacts.outputs.artifact }}
           path: ${{ steps.artifacts.outputs.key }}
