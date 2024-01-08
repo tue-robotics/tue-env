@@ -59,20 +59,22 @@ runs:
         PULLREQUEST=${PULLREQUEST:-false}
         SSH_KEY="${{ inputs.ssh-key }}"
         SSH_KNOWN_HOSTS="${{ inputs.ssh-known-hosts }}"
+        SSH_ARG=()
         if [[ -n "${SSH_KEY}" ]]
         then
-          SSH_ARG="--ssh"
+          SSH_KEY_PATH="${HOME}"/.ssh/ci_ssh_key
+          echo -e "\e[35;1mmkdir -p ${HOME}/.ssh\e[0m"
           mkdir -p "${HOME}"/.ssh
-          echo "${SSH_KEY}" > "${HOME}"/.ssh/ci_ssh_key
-          SSH_KEY_ARG="--ssh-key=${HOME}/.ssh/ci_ssh_key"
+          echo "${SSH_KEY}" > "${SSH_KEY_PATH}"
+          SSH_ARG+=("--ssh" "--ssh-key=${SSH_KEY_PATH}")
         fi
         if [[ -n "${SSH_KNOWN_HOSTS}" ]]
         then
-          echo -e "\e[35;1mmkdir -p ${HOME}/.ssh \e[0m"
-          mkdir -p ${HOME}/.ssh
+          echo -e "\e[35;1mmkdir -p ${HOME}/.ssh\e[0m"
+          mkdir -p "${HOME}"/.ssh
           for host in ${SSH_KNOWN_HOSTS}
           do
-            echo -e "\e[35;1mssh-keyscan -t rsa -H \"${host}\" 2>&1 | tee -a ${HOME}/.ssh/known_hosts \e[0m"
+            echo -e "\e[35;1mssh-keyscan -t rsa -H \"${host}\" 2>&1 | tee -a ${HOME}/.ssh/known_hosts\e[0m"
             ssh-keyscan -t rsa -H "${host}" 2>&1 | tee -a "${HOME}"/.ssh/known_hosts
           done
         fi
@@ -82,8 +84,7 @@ runs:
           --branch="${BRANCH}" \
           --commit="${GITHUB_SHA}" \
           --pullrequest="${PULLREQUEST}" \
-          "${SSH_ARG}" \
-          "${SSH_KEY_ARG}"
+          "${SSH_ARG[@]}"
         echo "::endgroup::"
       shell: bash
 

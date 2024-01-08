@@ -102,7 +102,8 @@ jobs:
           SSH_ARG=()
           if [[ -n "${SSH_KEY}" ]]
           then
-              SSH_KEY_PATH="${HOME}/.ssh/ci_ssh_key"
+              SSH_KEY_PATH="${HOME}"/.ssh/ci_ssh_key
+              echo -e "\e[35;1mmkdir -p ${HOME}/.ssh\e[0m"
               mkdir -p "${HOME}"/.ssh
               echo "${SSH_KEY}" > "${SSH_KEY_PATH}"
               chmod 600 "${SSH_KEY_PATH}"
