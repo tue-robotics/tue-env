@@ -110,6 +110,7 @@ stages:
               targetType: inline
               script: |
                 # START SSH ONLY
+                echo -e "\e[35;1mmkdir -p ${HOME}/.ssh\e[0m"
                 mkdir -p "${HOME}"/.ssh
                 cp $(deployKey.secureFilePath) "${HOME}"/.ssh/ci_ssh_key
                 if [[ -n "${SSH_KNOWN_HOSTS}" ]]
