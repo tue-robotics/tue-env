@@ -118,15 +118,16 @@ jobs:
           # shellcheck disable=SC2296
           TARGET_IMAGE="${{ env.REGISTRY }}/tue-robotics/tue-env-ros-${{ matrix.ros-distro }}${IMAGE_FLAVOR}:${IMAGE_TAG}-${{ matrix.platform }}"
           SSH_KNOWN_HOSTS="github.com"
-          SSH_ARG=()
+          SSH_ARGS=()
           if [[ -n "${SSH_KEY}" ]]
           then
-              SSH_KEY_PATH="${HOME}/.ssh/ci_ssh_key"
+              SSH_KEY_PATH="${HOME}"/.ssh/ci_ssh_key
+              echo -e "\e[35;1mmkdir -p ${HOME}/.ssh\e[0m"
               mkdir -p "${HOME}"/.ssh
               echo "${SSH_KEY}" > "${SSH_KEY_PATH}"
               chmod 600 "${SSH_KEY_PATH}"
               eval "$(ssh-agent -s)"
-              SSH_ARG+=("--ssh" "--ssh-key=${SSH_KEY_PATH}")
+              SSH_ARGS+=("--ssh" "--ssh-key=${SSH_KEY_PATH}")
           fi
           if [[ -n "${SSH_KNOWN_HOSTS}" ]]
           then
@@ -168,7 +169,7 @@ jobs:
               --virtualenv-include-system-site-packages="${VENV_INCLUDE_SYSTEM_SITE}" \
               --docker_user="${DOCKER_USER}" \
               --docker_user_id="${DOCKER_USER_ID}" \
-              "${SSH_ARG[@]}"
+              "${SSH_ARGS[@]}"
           echo -e "\e[35;1mimage=${TARGET_IMAGE} >> \${GITHUB_OUTPUT}\e[0m"
           echo "image=${TARGET_IMAGE}" >> "${GITHUB_OUTPUT}"
           echo -e "\e[35;1mtag=${IMAGE_TAG} >> \${GITHUB_OUTPUT}\e[0m"
