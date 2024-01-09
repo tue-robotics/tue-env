@@ -1,19 +1,34 @@
 #! /usr/bin/env bash
 
+function conditional_apt_update
+{
+    TUE_APT_GET_UPDATED_FILE=/tmp/tue_get_apt_get_updated
+    if [[ ! -f ${TUE_APT_GET_UPDATED_FILE} ]]
+    then
+        echo -e "[tue-env](bootstrap) sudo apt-get update -qq"
+        sudo apt-get update -qq || return 1
+        touch ${TUE_APT_GET_UPDATED_FILE}
+    fi
+    return 0
+}
+
 function installed_or_install
 {
     # installed_or_install executable [package]
     # Provide package name if it differs from executable name
-    if [ -z "$1" ]
+    if [[ -z "$1" ]]
     then
         echo "[bootstrap] Error! No package name provided to check for installation."
-        exit 1
+        return 1
     fi
     local executable package
-    executable="$1"
-    package="$1"
-    [ -n "$2" ] && package="$2"
-    hash "${executable}" 2> /dev/null || sudo apt-get install --assume-yes -qq "${package}"
+    executable=$1
+    package=$1
+    [[ -n "$2" ]] && package=$2
+    hash "${executable}" 2> /dev/null && return 0
+    conditional_apt_update || { echo "[bootstrap] Error! Could not update apt-get."; return 1; }
+    sudo apt-get install --assume-yes -qq "${package}" || { echo "[bootstrap] Error! Could not install ${package}."; return 1; }
+    return 0
 }
 
 # Make sure curl is installed
@@ -34,7 +49,7 @@ DISTRIB_RELEASE="$(lsb_release -sr)"
 if [ "${DISTRIB_ID}" != "Ubuntu" ]
 then
     echo "[bootstrap] Unsupported OS ${DISTRIB_ID}. Use Ubuntu."
-    exit 1
+    return 1
 fi
 
 # Set ROS version
@@ -58,7 +73,7 @@ do
             ;;
         * )
             echo "[tue-env](bootstrap) Error! Unknown argument '${i}' provided to bootstrap script."
-            exit 1
+            return 1
             ;;
     esac
 done
@@ -80,7 +95,7 @@ case ${DISTRIB_RELEASE} in
             elif [[ -n "${ros_distro}" ]]
             then
                 echo "[tue-env](bootstrap) Error! ROS ${ros_distro} is unsupported with tue-env."
-                exit 1
+                return 1
             else
                 TUE_ROS_DISTRO="galactic"
                 echo "[tue-env](bootstrap) Using default ROS_DISTRO '${TUE_ROS_DISTRO}' with ROS_VERSION '${TUE_ROS_VERSION}'"
@@ -92,7 +107,7 @@ case ${DISTRIB_RELEASE} in
         elif [[ -n "${ros_version}" ]]
         then
             echo "[tue-env](bootstrap) Error! ROS ${ros_version} is unsupported with tue-env."
-            exit 1
+            return 1
         else
             TUE_ROS_DISTRO="noetic"
             TUE_ROS_VERSION=1
@@ -103,7 +118,7 @@ case ${DISTRIB_RELEASE} in
         if [[ -n "${ros_version}" ]] && [[ "${ros_version}" -ne 2 ]]
         then
              echo "[tue-env](bootstrap) Error! Only ROS version 2 is supported with ubuntu 22.04 and newer"
-             exit 1
+             return 1
         fi
         TUE_ROS_VERSION=2
 
@@ -116,7 +131,7 @@ case ${DISTRIB_RELEASE} in
         elif [[ -n "${ros_distro}" ]]
         then
             echo "[tue-env](bootstrap) Error! ROS ${ros_distro} is unsupported with tue-env."
-            exit 1
+            return 1
         else
             TUE_ROS_DISTRO="humble"
             echo "[tue-env](bootstrap) Using default ROS_DISTRO '${TUE_ROS_DISTRO}' with ROS_VERSION '${TUE_ROS_VERSION}'"
@@ -124,7 +139,7 @@ case ${DISTRIB_RELEASE} in
         ;;
     *)
         echo "[tue-env](bootstrap) Ubuntu ${DISTRIB_RELEASE} is unsupported. Please use one of Ubuntu 20.04 or 22.04."
-        exit 1
+        return 1
         ;;
 esac
 
@@ -171,10 +186,10 @@ then
         fi
     else
         echo -e "[tue-env](bootstrap) Testing Pull Request"
-        [ -z "${REF_NAME}" ] && { echo "Error! Environment variable REF_NAME is not set."; exit 1; }
+        [ -z "${REF_NAME}" ] && { echo "Error! Environment variable REF_NAME is not set."; return 1; }
 
         git clone -q --depth=10 "${env_url}" "${env_dir}"
-        git -C "${env_dir}" fetch origin "${REF_NAME}"/"${PULL_REQUEST}"/merge:PULLREQUEST || { echo "Error! Could not fetch refs"; exit 1; }
+        git -C "${env_dir}" fetch origin "${REF_NAME}"/"${PULL_REQUEST}"/merge:PULLREQUEST || { echo "Error! Could not fetch refs"; return 1; }
         git -C "${env_dir}" checkout PULLREQUEST
     fi
 else
