@@ -201,7 +201,14 @@ then
     docker exec -t tue-env bash -c 'sudo cp -r /tmp/.ssh/* ~/.ssh/ && sudo chown -R "${USER}":"${USER}" ~/.ssh && ls -aln ~/.ssh'
 
     docker exec -t tue-env bash -c "[[ -f ~/.ssh/known_hosts && -f ~/.ssh/known_hosts_container ]] && ~/.tue/ci/ssh-merge-known_hosts.py ~/.ssh/known_hosts_container ~/.ssh/known_hosts --output ~/.ssh/known_hosts"
-    docker exec -e DOCKER_SSH_AUTH_SOCK="$DOCKER_SSH_AUTH_SOCK" -t tue-env bash -c 'eval "$(ssh-agent -s)" && ln -sf "$SSH_AUTH_SOCK" "$DOCKER_SSH_AUTH_SOCK" && grep -slR "PRIVATE" ~/.ssh/ | xargs ssh-add'
+    ACTIVE_KEYS=$(docker exec -e DOCKER_SSH_AUTH_SOCK="$DOCKER_SSH_AUTH_SOCK" -t tue-env bash -c 'eval "$(ssh-agent -s)" && ln -sf "$SSH_AUTH_SOCK" "$DOCKER_SSH_AUTH_SOCK" && grep -slR "PRIVATE" ~/.ssh/ | xargs ssh-add' | tr -d '\r')
+
+    echo -e "\e[35;1mACTIVE_KEYS\e[0m"
+    for KEY in $ACTIVE_KEYS
+    do
+        echo "${KEY}" > /tmp/ssh_key_file
+        echo -e "\e[35;1mSSH_KEY      = $(ssh-keygen -lf /tmp/ssh_key_file | awk '{print $2}')\e[0m"
+    done
 
     SSH_KEY_FINGERPRINT_INSIDE=$(docker exec -t tue-env bash -c "ssh-keygen -lf ~/.ssh/ci_ssh_key 2> /dev/null" | tr -d '\r' | awk '{print $2}')
     echo -e "\e[35;1mSSH_KEY_INSIDE = ${SSH_KEY_FINGERPRINT_INSIDE}\e[0m"
