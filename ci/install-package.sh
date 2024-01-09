@@ -202,6 +202,9 @@ then
 
     docker exec -t tue-env bash -c "[[ -f ~/.ssh/known_hosts && -f ~/.ssh/known_hosts_container ]] && ~/.tue/ci/ssh-merge-known_hosts.py ~/.ssh/known_hosts_container ~/.ssh/known_hosts --output ~/.ssh/known_hosts"
     docker exec -e DOCKER_SSH_AUTH_SOCK="$DOCKER_SSH_AUTH_SOCK" -t tue-env bash -c 'eval "$(ssh-agent -s)" && ln -sf "$SSH_AUTH_SOCK" "$DOCKER_SSH_AUTH_SOCK" && grep -slR "PRIVATE" ~/.ssh/ | xargs ssh-add'
+
+    SSH_KEY_FINGERPRINT_INSIDE=$(docker exec -t tue-env bash -c "ssh-keygen -lf ~/.ssh/ci_ssh_key 2> /dev/null" | tr -d '\r' | awk '{print $2}')
+    echo -e "\e[35;1mSSH_KEY_INSIDE = ${SSH_KEY_FINGERPRINT_INSIDE}\e[0m"
 fi
 
 # Use docker environment variables in all exec commands instead of script variables
