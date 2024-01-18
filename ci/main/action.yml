@@ -22,7 +22,7 @@ runs:
   using: "composite"
   steps:
     - name: Cache ccache
-      uses: actions/cache@v3
+      uses: actions/cache@v4
       with:
         path: |
           ~/.ccache
@@ -33,7 +33,7 @@ runs:
           ${{ runner.os }}-ccache-
 
     - name: Cache pip
-      uses: actions/cache@v3
+      uses: actions/cache@v4
       with:
         path: |
           ~/.cache/pip
