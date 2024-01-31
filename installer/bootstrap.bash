@@ -1,11 +1,31 @@
 #! /usr/bin/env bash
 
+function installed_or_install
+{
+    # installed_or_install executable [package]
+    # Provide package name if it differs from executable name
+    if [ -z "$1" ]
+    then
+        echo "[bootstrap] Error! No package name provided to check for installation."
+        exit 1
+    fi
+    local executable package
+    executable="$1"
+    package="$1"
+    [ -n "$2" ] && package="$2"
+    hash "${executable}" 2> /dev/null || sudo apt-get install --assume-yes -qq "${package}"
+}
+
+# Make sure curl is installed
+installed_or_install curl
 # Make sure git is installed
-hash git 2> /dev/null || sudo apt-get install --assume-yes -qq git
+installed_or_install git
 # Make sure lsb-release is installed
-hash lsb_release 2> /dev/null || sudo apt-get install --assume-yes -qq lsb-release
+installed_or_install lsb_release lsb-release
+# Make sure python3 is installed
+installed_or_install python3
 # Make sure python3-virtualenv is installed
-hash virtualenv 2> /dev/null || sudo apt-get install --assume-yes -qq python3-virtualenv
+installed_or_install virtualenv python3-virtualenv
 
 # Check if OS is Ubuntu
 DISTRIB_ID="$(lsb_release -si)"
