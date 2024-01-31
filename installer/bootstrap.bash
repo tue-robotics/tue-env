@@ -217,7 +217,7 @@ function main
 
     # Add loading of TU/e tools (tue-env, tue-get, etc) to bashrc
     # shellcheck disable=SC2088
-    if ! grep -q "${env_dir}/setup.bash" ~/.bashrc;
+    if ! grep -q "${env_dir}/setup.bash" ~/.bashrc
     then
         echo "
 # Load TU/e tools
