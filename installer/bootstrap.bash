@@ -70,31 +70,31 @@ case $DISTRIB_RELEASE in
             TUE_ROS_VERSION=2
             if [[ "${ros_distro}" == "foxy" ]]
             then
-                TUE_ROS_DISTRO=foxy
+                TUE_ROS_DISTRO="foxy"
             elif [[ "${ros_distro}" == "galactic" ]]
             then
-                TUE_ROS_DISTRO=galactic
+                TUE_ROS_DISTRO="galactic"
             elif [[ "${ros_distro}" == "rolling" ]]
             then
-                TUE_ROS_DISTRO=rolling
+                TUE_ROS_DISTRO="rolling"
             elif [[ -n "${ros_distro}" ]]
             then
                 echo "[tue-env](bootstrap) Error! ROS ${ros_distro} is unsupported with tue-env."
                 exit 1
             else
-                TUE_ROS_DISTRO=galactic
+                TUE_ROS_DISTRO="galactic"
                 echo "[tue-env](bootstrap) Using default ROS_DISTRO '${TUE_ROS_DISTRO}' with ROS_VERSION '${TUE_ROS_VERSION}'"
             fi
         elif [[ "${ros_version}" -eq 1 ]]
         then
-            TUE_ROS_DISTRO=noetic
+            TUE_ROS_DISTRO="noetic"
             TUE_ROS_VERSION=1
         elif [[ -n "${ros_version}" ]]
         then
             echo "[tue-env](bootstrap) Error! ROS ${ros_version} is unsupported with tue-env."
             exit 1
         else
-            TUE_ROS_DISTRO=noetic
+            TUE_ROS_DISTRO="noetic"
             TUE_ROS_VERSION=1
             echo "[tue-env](bootstrap) Using default ROS_DISTRO '${TUE_ROS_DISTRO}' with ROS_VERSION '${TUE_ROS_VERSION}'"
         fi
@@ -109,16 +109,16 @@ case $DISTRIB_RELEASE in
 
         if [[ "${ros_distro}" == "humble" ]]
         then
-            TUE_ROS_DISTRO=humble
+            TUE_ROS_DISTRO="humble"
         elif [[ "${ros_distro}" == "rolling" ]]
         then
-            TUE_ROS_DISTRO=rolling
+            TUE_ROS_DISTRO="rolling"
         elif [[ -n "${ros_distro}" ]]
         then
             echo "[tue-env](bootstrap) Error! ROS ${ros_distro} is unsupported with tue-env."
             exit 1
         else
-            TUE_ROS_DISTRO=humble
+            TUE_ROS_DISTRO="humble"
             echo "[tue-env](bootstrap) Using default ROS_DISTRO '${TUE_ROS_DISTRO}' with ROS_VERSION '${TUE_ROS_VERSION}'"
         fi
         ;;
