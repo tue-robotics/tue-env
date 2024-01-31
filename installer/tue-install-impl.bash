@@ -497,15 +497,16 @@ function tue-install-git
     then
         tue-install-debug "git clone --recursive $repo $targetdir"
         res=$(git clone --recursive "$repo" "$targetdir" 2>&1)
-        TUE_INSTALL_GIT_PULL_Q+=:$targetdir:
+        TUE_INSTALL_GIT_PULL_Q+=("${targetdir}")
     else
         # Check if we have already pulled the repo
-        if [[ $TUE_INSTALL_GIT_PULL_Q == *:$targetdir:* ]]
+        if [[ ${TUE_INSTALL_GIT_PULL_Q[*]} == "${targetdir}" ]]
         then
             tue-install-debug "Repo previously pulled, skipping"
             # We have already pulled this repo, skip it
             res=
         else
+            tue-install-debug "Repo not yet pulled, pulling"
             # Switch url of origin to use https/ssh if different
             # Get current remote url
             local current_url
@@ -522,7 +523,7 @@ function tue-install-git
             res=$(git -C "$targetdir" pull --ff-only --prune 2>&1)
             tue-install-debug "res: $res"
 
-            TUE_INSTALL_GIT_PULL_Q+=:$targetdir:
+            TUE_INSTALL_GIT_PULL_Q+=("${targetdir}")
 
             local submodule_sync_res submodule_sync_error_code
             tue-install-debug "git -C $targetdir submodule sync --recursive"
