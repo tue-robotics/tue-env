@@ -175,19 +175,19 @@ function main
             then
                 if [[ -n "${BRANCH}" ]]
                 then
-                    echo -e "[tue-env](bootstrap) Cloning tue-env repository with branch: ${BRANCH} at commit: ${COMMIT}"
+                    echo "[tue-env](bootstrap) Cloning tue-env repository with branch: ${BRANCH} at commit: ${COMMIT}"
                     git clone -q --single-branch --branch "${BRANCH}" "${env_url}" "${env_dir}"
                 else
-                    echo -e "[tue-env](bootstrap) Cloning tue-env repository with default branch at commit: ${COMMIT}"
+                    echo "[tue-env](bootstrap) Cloning tue-env repository with default branch at commit: ${COMMIT}"
                     git clone -q --single-branch "${env_url}" "${env_dir}"
                 fi
                 git -C "${env_dir}" reset --hard "${COMMIT}"
             else
-                echo -e "[tue-env](bootstrap) Error! CI branch or commit is unset"
+                echo "[tue-env](bootstrap) Error! CI branch or commit is unset"
                 return 1
             fi
         else
-            echo -e "[tue-env](bootstrap) Testing Pull Request"
+            echo "[tue-env](bootstrap) Testing Pull Request"
             [[ -z "${REF_NAME}" ]] && { echo "[tue-env](bootstrap) Error! Environment variable REF_NAME is not set."; return 1; }
 
             git clone -q --depth=10 "${env_url}" "${env_dir}"
@@ -196,7 +196,7 @@ function main
         fi
     else
         # Update installer
-        echo -e "[tue-env](bootstrap) Cloning tue-env repository"
+        echo "[tue-env](bootstrap) Cloning tue-env repository"
         git clone "${env_url}" "${env_dir}"
     fi
 
