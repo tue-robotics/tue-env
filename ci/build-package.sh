@@ -50,7 +50,7 @@ fi
 if [[ "${ROS_VERSION}" == 1 ]]
 then
     echo -e "\e[35m\e[1mCompile the package (catkin build -DCMAKE_BUILD_TYPE=RelWithDebInfo -DCATKIN_ENABLE_TESTING=OFF)\e[0m"
-    docker exec -t tue-env bash -c 'source ~/.bashrc; cd "${TUE_SYSTEM_DIR}"/src/"${PACKAGE}" && catkin build --this --no-status -DCMAKE_BUILD_TYPE=RelWithDebInfo -DCATKIN_ENABLE_TESTING=OFF'
+    docker exec -t tue-env bash -c 'source ~/.bashrc; cd "${TUE_SYSTEM_DIR}"/src/"${PACKAGE}" && /usr/bin/python3 "$(command -v catkin)" build --this --no-status -DCMAKE_BUILD_TYPE=RelWithDebInfo -DCATKIN_ENABLE_TESTING=OFF'
 else
     echo -e "\e[35m\e[1mCheck for default mixin repo (colcon mixin list)\e[0m"
     MIXIN_REPOS=$(docker exec -t tue-env bash -c 'source ~/.bashrc; cd "${TUE_SYSTEM_DIR}" && colcon mixin list | grep -v "^- "' | tr -d '\r' | awk -F ": " '{print $1}')
