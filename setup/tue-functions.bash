@@ -437,12 +437,12 @@ function tue-make
         fi
         case $build_tool in
         'catkin build')
-            catkin build --workspace "$TUE_SYSTEM_DIR" "$@"
+            /usr/bin/python3 "$(command -v catkin)" build --workspace "$TUE_SYSTEM_DIR" "$@"
             return $?
             ;;
         '')
-            catkin config --init --mkdirs --workspace "$TUE_SYSTEM_DIR" --extend /opt/ros/"$TUE_ROS_DISTRO" -DCMAKE_BUILD_TYPE=RelWithDebInfo -DCATKIN_ENABLE_TESTING=OFF
-            catkin build --workspace "$TUE_SYSTEM_DIR" "$@"
+            /usr/bin/python3 "$(command -v catkin)" config --init --mkdirs --workspace "$TUE_SYSTEM_DIR" --extend /opt/ros/"$TUE_ROS_DISTRO" -DCMAKE_BUILD_TYPE=RelWithDebInfo -DCATKIN_ENABLE_TESTING=OFF
+            /usr/bin/python3 "$(command -v catkin)" build --workspace "$TUE_SYSTEM_DIR" "$@"
             touch "$TUE_SYSTEM_DIR"/devel/.catkin # hack to allow overlaying to this ws while being empty
             ;;
         *)
@@ -488,7 +488,7 @@ function tue-make-test
         fi
         case ${build_tool} in
         'catkin build')
-            catkin test --workspace "${TUE_SYSTEM_DIR}" "$@"
+            /usr/bin/python3 "$(command -v catkin)" test --workspace "${TUE_SYSTEM_DIR}" "$@"
             return $?
             ;;
         '')
@@ -547,7 +547,7 @@ function tue-make-test-result
         fi
         case $build_tool in
         'catkin build')
-            catkin test_results "${TUE_SYSTEM_DIR}"/build "$@"
+            python3 "$(command -v catkin)" test_results "${TUE_SYSTEM_DIR}"/build "$@"
             return $?
             ;;
         '')
