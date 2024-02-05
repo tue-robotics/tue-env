@@ -1454,7 +1454,7 @@ function tue-install-dpkg
         tue-install-error "Invalid tue-install-dpkg call: needs package as argument."
     fi
     tue-install-pipe sudo dpkg --install "$1"
-    tue-install-pipe sudo apt-get --fix-broken --assume-yes -q install || tue-install-error "An error occured while fixing dpkg install"
+    tue-install-pipe sudo apt-get --fix-broken --assume-yes -q install || tue-install-error "An error occurred while fixing dpkg install"
 }
 
 # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # #
