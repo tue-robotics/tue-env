@@ -1,13 +1,17 @@
 #! /usr/bin/env bash
 
+# local variables need to be declared before they are used and need to be lowercase
+# global variables which needs to be defined outside this script are in uppercase
+
 function conditional_apt_update
 {
-    TUE_APT_GET_UPDATED_FILE=/tmp/tue_get_apt_get_updated
-    if [[ ! -f ${TUE_APT_GET_UPDATED_FILE} ]]
+    local tue_get_apt_get_updated_file
+    tue_get_apt_get_updated_file=/tmp/tue_get_apt_get_updated
+    if [[ ! -f ${tue_get_apt_get_updated_file} ]]
     then
         echo "[tue-env](bootstrap) sudo apt-get update -qq"
         sudo apt-get update -qq || return 1
-        touch ${TUE_APT_GET_UPDATED_FILE}
+        touch ${tue_get_apt_get_updated_file}
     fi
     return 0
 }
@@ -45,18 +49,21 @@ function main
     installed_or_install virtualenv python3-virtualenv
 
     # Check if OS is Ubuntu
-    DISTRIB_ID="$(lsb_release -si)"
-    DISTRIB_RELEASE="$(lsb_release -sr)"
+    local distrib_id distrib_release
+    distrib_id="$(lsb_release -si)"
+    distrib_release="$(lsb_release -sr)"
 
-    if [[ "${DISTRIB_ID}" != "Ubuntu" ]]
+    if [[ "${distrib_id}" != "Ubuntu" ]]
     then
-        echo "[tue-env](bootstrap) Unsupported OS ${DISTRIB_ID}. Use Ubuntu."
+        echo "[tue-env](bootstrap) Unsupported OS ${distrib_id}. Use Ubuntu."
         return 1
     fi
 
-    # Set ROS version
-    TUE_ROS_DISTRO=
-    TUE_ROS_VERSION=
+    # Initialize variables
+    local create_virtualenv targets_repo tue_ros_distro tue_ros_version
+
+    # Default values
+    create_virtualenv="true"
 
     for i in "$@"
     do
@@ -80,40 +87,40 @@ function main
         esac
     done
 
-    case ${DISTRIB_RELEASE} in
+    case ${distrib_release} in
         "20.04")
             if [[ "${ros_version}" -eq 2 ]]
             then
-                TUE_ROS_VERSION=2
+                tue_ros_version=2
                 if [[ "${ros_distro}" == "foxy" ]]
                 then
-                    TUE_ROS_DISTRO="foxy"
+                    tue_ros_distro="foxy"
                 elif [[ "${ros_distro}" == "galactic" ]]
                 then
-                    TUE_ROS_DISTRO="galactic"
+                    tue_ros_distro="galactic"
                 elif [[ "${ros_distro}" == "rolling" ]]
                 then
-                    TUE_ROS_DISTRO="rolling"
+                    tue_ros_distro="rolling"
                 elif [[ -n "${ros_distro}" ]]
                 then
                     echo "[tue-env](bootstrap) Error! ROS ${ros_distro} is unsupported with tue-env."
                     return 1
                 else
-                    TUE_ROS_DISTRO="galactic"
-                    echo "[tue-env](bootstrap) Using default ROS_DISTRO '${TUE_ROS_DISTRO}' with ROS_VERSION '${TUE_ROS_VERSION}'"
+                    tue_ros_distro="galactic"
+                    echo "[tue-env](bootstrap) Using default ROS_DISTRO '${tue_ros_distro}' with ROS_VERSION '${tue_ros_version}'"
                 fi
             elif [[ "${ros_version}" -eq 1 ]]
             then
-                TUE_ROS_DISTRO="noetic"
-                TUE_ROS_VERSION=1
+                tue_ros_distro="noetic"
+                tue_ros_version=1
             elif [[ -n "${ros_version}" ]]
             then
                 echo "[tue-env](bootstrap) Error! ROS ${ros_version} is unsupported with tue-env."
                 return 1
             else
-                TUE_ROS_DISTRO="noetic"
-                TUE_ROS_VERSION=1
-                echo "[tue-env](bootstrap) Using default ROS_DISTRO '${TUE_ROS_DISTRO}' with ROS_VERSION '${TUE_ROS_VERSION}'"
+                tue_ros_distro="noetic"
+                tue_ros_version=1
+                echo "[tue-env](bootstrap) Using default ROS_DISTRO '${tue_ros_distro}' with ROS_VERSION '${tue_ros_version}'"
             fi
             ;;
         "22.04")
@@ -122,43 +129,45 @@ function main
                  echo "[tue-env](bootstrap) Error! Only ROS version 2 is supported with ubuntu 22.04 and newer"
                  return 1
             fi
-            TUE_ROS_VERSION=2
+            tue_ros_version=2
 
             if [[ "${ros_distro}" == "humble" ]]
             then
-                TUE_ROS_DISTRO="humble"
+                tue_ros_distro="humble"
             elif [[ "${ros_distro}" == "rolling" ]]
             then
-                TUE_ROS_DISTRO="rolling"
+                tue_ros_distro="rolling"
             elif [[ -n "${ros_distro}" ]]
             then
                 echo "[tue-env](bootstrap) Error! ROS ${ros_distro} is unsupported with tue-env."
                 return 1
             else
-                TUE_ROS_DISTRO="humble"
-                echo "[tue-env](bootstrap) Using default ROS_DISTRO '${TUE_ROS_DISTRO}' with ROS_VERSION '${TUE_ROS_VERSION}'"
+                tue_ros_distro="humble"
+                echo "[tue-env](bootstrap) Using default ROS_DISTRO '${tue_ros_distro}' with ROS_VERSION '${tue_ros_version}'"
             fi
             ;;
         *)
-            echo "[tue-env](bootstrap) Ubuntu ${DISTRIB_RELEASE} is unsupported. Please use one of Ubuntu 20.04 or 22.04."
+            echo "[tue-env](bootstrap) Ubuntu ${distrib_release} is unsupported. Please use one of Ubuntu 20.04 or 22.04."
             return 1
             ;;
     esac
 
     # Script variables
+    local env_url env_targets_url env_dir workspace workspace_dir
     env_url="https://github.com/tue-robotics/tue-env.git"
     { [[ -n "${targets_repo}" ]] && env_targets_url="${targets_repo}"; } || env_targets_url="https://github.com/tue-robotics/tue-env-targets.git"
     [[ -n "${create_virtualenv}" ]] || create_virtualenv="true"
     env_dir="${HOME}/.tue"
-    workspace="ros-${TUE_ROS_DISTRO}"
-    workspace_dir="${HOME}/ros/${TUE_ROS_DISTRO}"
+    workspace="ros-${tue_ros_distro}"
+    workspace_dir="${HOME}/ros/${tue_ros_distro}"
 
     # Move old environments and installer
     if [[ -d "${env_dir}" ]] && [[ -z "${CI}" ]]
     then
-        FILES=$(find "${env_dir}"/user/envs -maxdepth 1 -type f)
+        local files date_now
+        files=$(find "${env_dir}"/user/envs -maxdepth 1 -type f)
         date_now=$(date +%F_%R)
-        for env in ${FILES}
+        for env in ${files}
         do
             mv -f "$(cat "${env}")" "$(cat "${env}")"."${date_now}"
         done
@@ -212,8 +221,8 @@ function main
     tue-env init "${workspace}" "${workspace_dir}" "--create-virtualenv=${create_virtualenv}" "--targets-url=${env_targets_url}"
 
     # Configure environment
-    tue-env config "${workspace}" set "TUE_ROS_DISTRO" "${TUE_ROS_DISTRO}"
-    tue-env config "${workspace}" set "TUE_ROS_VERSION" "${TUE_ROS_VERSION}"
+    tue-env config "${workspace}" set "TUE_ROS_DISTRO" "${tue_ros_distro}"
+    tue-env config "${workspace}" set "TUE_ROS_VERSION" "${tue_ros_version}"
 
     # Add loading of TU/e tools (tue-env, tue-get, etc) to bashrc
     # shellcheck disable=SC2088

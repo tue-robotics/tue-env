@@ -25,6 +25,7 @@ ARG ROS_DISTRO=
 # Default is empty and will result in the default targets repo
 ARG TARGETS_REPO=
 ARG CREATE_VENV=false
+ARG VENV_INCLUDE_SYSTEM_SITE_PACKAGES=false
 ARG OAUTH2_TOKEN=
 
 # Inform scripts that no questions should be asked and set some environment
@@ -79,7 +80,12 @@ RUN --mount=type=ssh,uid=1000 sed -e s/return//g -i ~/.bashrc && \
     export COMMIT=$COMMIT && \
     export REF_NAME=$REF_NAME && \
     # Run the standard installation script
-    source bootstrap.bash --ros-version="${ROS_VERSION}" --ros-distro="${ROS_DISTRO}" --create-virtualenv="${CREATE_VENV}"--targets-repo="${TARGETS_REPO}" && \
+    source bootstrap.bash \
+    --ros-version="${ROS_VERSION}" \
+    --ros-distro="${ROS_DISTRO}" \
+    --create-virtualenv="${CREATE_VENV}" \
+    --virtualenv-include-system-site-packages="${VENV_INCLUDE_SYSTEM_SITE_PACKAGES}" \
+    --targets-repo="${TARGETS_REPO}" && \
     # Make tue-env to be available to the environment
     source ~/.bashrc && \
     # Install target ros
