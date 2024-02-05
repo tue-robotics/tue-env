@@ -38,9 +38,10 @@ function tue-env
     # Make sure the correct directories are there
     mkdir -p "$TUE_DIR"/user/envs
 
-    local create_venv dir env_name targets_url show_help
+    local create_venv dir env_name show_help targets_url venv_include_system_site_packages
     create_venv="false"
     show_help="false"
+    venv_include_system_site_packages="false"
 
     if [[ $cmd == "init" ]]
     then
@@ -55,6 +56,8 @@ function tue-env
                         targets_url="${i#*=}" ;;
                     --create-virtualenv=* )
                         create_venv="${i#*=}" ;;
+                    --virtualenv-include-system-site-packages=* )
+                        venv_include_system_site_packages="${i#*=}" ;;
                     --help )
                         show_help="true" ;;
                     * )
@@ -105,7 +108,7 @@ function tue-env
 
         if [[ "${create_venv}" == "true" ]]
         then
-            tue-env init-venv "${env_name}"
+            tue-env init-venv "${env_name}" "${venv_include_system_site_packages}"
         fi
 
     elif [[ $cmd == "remove" ]]
@@ -281,32 +284,34 @@ Environment directory '${dir}' didn't exist (anymore)"""
 
     elif [[ $cmd == "init-venv" ]]
     then
-        local env
-        env=$1
-        [ -n "${env}" ] || env=${TUE_ENV}
-
-        if [[ -z "${env}" ]]
+        if [ -z "$1" ] || { [ -z "${TUE_ENV}" ] && [ -z "$2" ]; }
         then
-            echo "[tue-env](init-venv) no environment set or provided"
-            echo "Usage: tue-env init-venv [ NAME ]"
+            echo "Usage: tue-env init-venv [ENVIRONMENT] INCLUDE_SYSTEM_SITE_PACKAGES"
             return 1
         fi
 
-        python3 -c "import virtualenv" 2>/dev/null ||
-        { echo -e "[tue-env](init-venv) 'virtualenv' module is not found. Make sure you install it 'sudo apt-get install python3-virtualenv'"; return 1; }
+        local env venv_include_system_site_packages
+        env=$1
+        venv_include_system_site_packages=$2
+        if [ -z "${venv_include_system_site_packages}" ]
+        then
+            env=${TUE_ENV}
+            if [ -z "${env}" ]
+            then
+                # This shouldn't be possible logical, should have exited after printing usage
+                echo "[tue-env](init-venv) no environment set or provided"
+                return 1
+            fi
+            venv_include_system_site_packages=$1
+        fi
+
+        /usr/bin/python3 -c "import virtualenv" 2>/dev/null ||
+        { echo "[tue-env](init-venv) 'virtualenv' module is not found. Make sure you install it 'sudo apt-get install python3-virtualenv'"; return 1; }
 
         local tue_env_dir
         tue_env_dir=$(cat "${TUE_DIR}"/user/envs/"${env}")
         local venv_dir
         venv_dir=${tue_env_dir}/.venv/${env}
-
-        if [ -d "$tue_env_targets_dir" ]
-        then
-            local targets_dir_moved
-            targets_dir_moved=$tue_env_targets_dir.$(date +%F_%R)
-            mv -f "$tue_env_targets_dir" "$targets_dir_moved"
-            echo "[tue-env] Moved old targets of environment '$env' to $targets_dir_moved"
-        fi
 
         if [[ -d "${venv_dir}" ]]
         then
@@ -322,7 +327,12 @@ Environment directory '${dir}' didn't exist (anymore)"""
             echo "Don't use it anymore as its old path is hardcoded in the virtualenv"
         fi
 
-        python3 -m virtualenv "${venv_dir}" -q --system-site-packages --symlinks 2>/dev/null
+        local system_site_args
+        if [[ "${venv_include_system_site_packages}" == "true" ]]
+        then
+            system_site_args="--system-site-packages"
+        fi
+        /usr/bin/python3 -m virtualenv "${venv_dir}" -q "${system_site_args}" --symlinks 2>/dev/null
         echo "[tue-env] Initialized virtualenv of environment '${env}'"
 
         if [ "${env}" == "${TUE_ENV}" ]
