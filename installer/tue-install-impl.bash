@@ -1705,7 +1705,7 @@ TUE_INSTALL_INFOS=
 tue-install-system-now curl git jq python-is-python3 python3-pip wget
 
 # Install in user or system site-packages
-tue-install-pip3-now --python-site="user" catkin-pkg PyYAML
+tue-install-pip3-now --python-site="user" catkin-pkg 'PyYAML>=6'
 
 
 # Handling of targets
