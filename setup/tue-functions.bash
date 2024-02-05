@@ -457,10 +457,10 @@ function tue-make
         # Disable symlink install for production
         if [ "${CI_INSTALL}" == "true" ]
         then
-            rm -rf "$TUE_SYSTEM_DIR"/install
-            python3 -m colcon --log-base "$TUE_SYSTEM_DIR"/log build --base-paths "$TUE_SYSTEM_DIR"/src --build-base "$TUE_SYSTEM_DIR"/build --install-base "$TUE_SYSTEM_DIR"/install "$@"
+            rm -rf "${TUE_SYSTEM_DIR}"/install
+            /usr/bin/python3 -m colcon --log-base "${TUE_SYSTEM_DIR}"/log build --base-paths "${TUE_SYSTEM_DIR}"/src --build-base "${TUE_SYSTEM_DIR}"/build --install-base "${TUE_SYSTEM_DIR}"/install "$@"
         else
-            python3 -m colcon --log-base "$TUE_SYSTEM_DIR"/log build --merge-install --symlink-install --base-paths "$TUE_SYSTEM_DIR"/src --build-base "$TUE_SYSTEM_DIR"/build --install-base "$TUE_SYSTEM_DIR"/install "$@"
+            /usr/bin/python3 -m colcon --log-base "${TUE_SYSTEM_DIR}"/log build --merge-install --symlink-install --base-paths "${TUE_SYSTEM_DIR}"/src --build-base "${TUE_SYSTEM_DIR}"/build --install-base "${TUE_SYSTEM_DIR}"/install "$@"
         fi
         return $?
     else
