@@ -168,7 +168,7 @@ function _remove_old_target_dep_recursively
     old_dep_dep_file="${TUE_INSTALL_DEPENDENCIES_DIR}"/"${old_dep_target}"
     if [[ -f "${old_dep_dep_file}" ]]
     then
-        # Iterate over all depencies of old_dep_target, which is removed.
+        # Iterate over all dependencies of old_dep_target, which is removed.
         while read -r dep_of_old_dep
         do
             # Actually remove the deps
@@ -183,11 +183,11 @@ function _remove_old_target_dep_recursively
         done < "${old_dep_dep_file}"
         rm -f "${old_dep_dep_file}"
     else
-        tue-install-debug "[remove_old_dep] No depencies file exist for target: ${old_dep_target}"
+        tue-install-debug "[remove_old_dep] No dependencies file exist for target: ${old_dep_target}"
     fi
 
     tue-install-debug "[remove_old_dep] Uninstalled '${old_dep_target}' as a dependency of '${parent_target}'"
-    tue-install-info "[remove_old_dep] '${old_dep_target}' has been uninstalled, you can remove it from the workspace or deinstall it in another way"
+    tue-install-info "[remove_old_dep] '${old_dep_target}' has been uninstalled, you can remove it from the workspace or uninstall it in another way"
     return ${error_code}
 }
 
@@ -352,7 +352,7 @@ function tue-install-target
         old_deps_removed=$(comm -23 <(echo "${old_deps}") <(echo "${new_deps}"))
         if [[ -n ${old_deps_removed} ]]
         then
-            tue-install-debug "Following dropped depedencies need to be removed:\n${old_deps_removed}"
+            tue-install-debug "Following dropped dependencies need to be removed:\n${old_deps_removed}"
         else
             tue-install-debug "No dropped dependencies to be removed"
         fi
@@ -361,7 +361,7 @@ function tue-install-target
         do
             # Remove this target from dep-on file of dep
             # When the dep-on file is now empty, remove it
-            # Recurisvely -> Remove it from the dep-on files of its deps
+            # Recursively -> Remove it from the dep-on files of its deps
             tue-install-debug "Going to remove '${dep}' as a dependency"
             _remove_old_target_dep_recursively "${target}" "${dep}" || tue-install-error "Something went wrong while removing '${dep}' as a dependency"
         done
@@ -1493,7 +1493,7 @@ function tue-install-ros
             local pkg_xml="$ros_pkg_dir"/package.xml
             if [ -f "$pkg_xml" ]
             then
-                # Catkin
+                # catkin/ament/colcon
                 tue-install-debug "Parsing $pkg_xml"
                 local deps
                 deps=$("$TUE_INSTALL_SCRIPTS_DIR"/parse_package_xml.py "$pkg_xml")
@@ -1674,7 +1674,7 @@ do
         tue-install-debug "[$target] marked as installed after a successful install"
         touch "$TUE_INSTALL_INSTALLED_DIR"/"$target"
     else
-        tue-install-debug "[$target] succesfully updated"
+        tue-install-debug "[$target] successfully updated"
     fi
 done
 
@@ -1746,6 +1746,6 @@ fi
 
 TUE_INSTALL_CURRENT_TARGET="main-loop"
 
-tue-install-echo "Installer completed succesfully"
+tue-install-echo "Installer completed successfully"
 
 return 0
