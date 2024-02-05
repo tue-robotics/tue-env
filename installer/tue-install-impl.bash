@@ -1093,6 +1093,48 @@ function tue-install-pip3
 
 # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # #
 
+function _handle_python_sites
+{
+    local pv
+    pv=$1
+    shift
+    # requires the parent function to have declared the following local variables:
+    # python_exec, site_arg, sudo_cmd, user_arg
+    tue-install-debug "_handle_python${pv}_sites $*"
+
+    local python_site
+    python_site=$1
+
+     case ${python_site} in
+        "system" )
+            python_exec=/usr/bin/python"${pv}"
+            site_arg="-s"
+            sudo_cmd="sudo -H"
+            user_arg=""
+            ;;
+        "user" )
+            python_exec=/usr/bin/python"${pv}"
+            site_arg=""
+            sudo_cmd=""
+            user_arg="--user"
+            ;;
+        "venv" )
+            python_exec=python"${pv}"
+            site_arg="-s"
+            sudo_cmd=""
+            user_arg=""
+            ;;
+        * )
+            tue-install-error "_handle_python${pv}_sites: Unknown input python_site: ${python_site}" ;;
+    esac
+
+    tue-install-debug "python_site: ${python_site}"
+    tue-install-debug "python_exec: ${python_exec}"
+    tue-install-debug "site_arg: ${site_arg}"
+    tue-install-debug "sudo_cmd: ${sudo_cmd}"
+    tue-install-debug "user_arg: ${user_arg}"
+}
+
 function _tue-install-pip-now
 {
     local pv
@@ -1105,25 +1147,41 @@ function _tue-install-pip-now
         tue-install-error "Invalid tue-install-pip${pv}-now call: needs package as argument."
     fi
 
-    local user_arg
-    [[ -z "${VIRTUAL_ENV}" ]] && user_arg="--user"
+    local pips python_site
+    { [[ -n ${VIRTUAL_ENV} ]] && python_site="venv"; } || python_site="user"
+    if [[ -n $1 ]]
+    then
+        for i in "$@"
+        do
+            case $i in
+                --python-site=* )
+                    python_site="${i#*=}" ;;
+                --* )
+                    tue-install-error "tue-install-pip${pv}-now: Unknown input variable ${i}" ;;
+                * )
+                    pips+=("$i") ;;
+            esac
+        done
+    fi
+
+    local python_exec site_arg sudo_cmd user_arg
+    _handle_python_sites "${pv}" "${python_site}"
 
     # Make sure pip is up-to-date before checking version and installing
     local pip_version desired_pip_version
-    pip_version=$(python"${pv}" -m pip --version | awk '{print $2}')
+    pip_version=$(${python_exec} ${site_arg:+${site_arg} }-m pip --version | awk '{print $2}')
     desired_pip_version="23"
     if version_gt "$desired_pip_version" "$pip_version"
     then
         tue-install-debug "pip${pv} not yet version >=$desired_pip_version, but $pip_version"
-        tue-install-pipe python"${pv}" -m pip install ${user_arg} --upgrade pip
+        tue-install-pipe ${sudo_cmd:+${sudo_cmd} }"${python_exec}" ${site_arg:+${site_arg} }-m pip install ${user_arg:+${user_arg} }--upgrade pip
         hash -r
     else
         tue-install-debug "Already pip${pv}>=$desired_pip_version"
     fi
 
     local pips_to_check pips_to_check_w_options pips_to_install pips_to_install_w_options git_pips_to_install
-    # shellcheck disable=SC2048
-    for pkg in $*
+    for pkg in "${pips[@]}"
     do
         if [[ "$pkg" == "git+"* ]]
         then
@@ -1143,7 +1201,7 @@ function _tue-install-pip-now
     then
         local indexes_to_install
         # shellcheck disable=SC2086
-        _tue-install-pip-check "$pv" $pips_to_check
+        _tue-install-pip-check "${pv}" --python-site=${python_site} ${pips_to_check}
 
         read -r -a pips_to_check <<< "$pips_to_check"
 
@@ -1165,7 +1223,7 @@ function _tue-install-pip-now
             pips_to_check_options_removed="$pips_to_check_options_removed ${pkg_split[0]}"
         done
         # shellcheck disable=SC2086
-        _tue-install-pip-check "$pv" $pips_to_check_options_removed
+        _tue-install-pip-check "${pv}" --python-site=${python_site} ${pips_to_check_options_removed}
 
         read -r -a pips_to_check_w_options <<< "$pips_to_check_w_options"
 
@@ -1181,7 +1239,7 @@ function _tue-install-pip-now
     if [ -n "$pips_to_install" ]
     then
         # shellcheck disable=SC2048,SC2086
-        tue-install-pipe python"${pv}" -m pip install ${user_arg} $pips_to_install <<< yes || tue-install-error "An error occurred while installing pip${pv} packages."
+        tue-install-pipe ${sudo_cmd:+${sudo_cmd} }"${python_exec}" ${site_arg:+${site_arg} }-m pip install ${user_arg:+${user_arg} }$pips_to_install <<< yes || tue-install-error "An error occurred while installing pip${pv} packages."
     fi
 
     if [ -n "$pips_to_install_w_options" ]
@@ -1189,7 +1247,7 @@ function _tue-install-pip-now
         for pkg in $pips_to_install_w_options
         do
             # shellcheck disable=SC2048,SC2086
-            tue-install-pipe python"${pv}" -m pip install ${user_arg} ${pkg//^/ } <<< yes || tue-install-error "An error occurred while installing pip${pv} packages with options."
+            tue-install-pipe${sudo_cmd:+${sudo_cmd} }"${python_exec}" ${site_arg:+${site_arg} }-m pip install ${user_arg:+${user_arg} }${pkg//^/ } <<< yes || tue-install-error "An error occurred while installing pip${pv} packages with options."
         done
     fi
 
@@ -1198,7 +1256,7 @@ function _tue-install-pip-now
         for pkg in $git_pips_to_install
         do
             # shellcheck disable=SC2048,SC2086
-            tue-install-pipe python"${pv}" -m pip install ${user_arg} ${pkg} <<< yes || tue-install-error "An error occurred while installing pip${pv} git packages."
+            tue-install-pipe ${sudo_cmd:+${sudo_cmd} }"${python_exec}"${site_arg:+${site_arg} }-m pip install ${user_arg:+${user_arg} }${pkg} <<< yes || tue-install-error "An error occurred while installing pip${pv} git packages."
         done
     fi
 }
@@ -1210,12 +1268,35 @@ function _tue-install-pip-check
     pv=$1
     shift
 
-    local pips_to_check installed_versions
-    pips_to_check=("$@")
+    local installed_versions python_site pips_to_check
+    if [[ -n $1 ]]
+    then
+        for i in "$@"
+        do
+            case $i in
+                --python-site=* )
+                    python_site="${i#*=}" ;;
+                --* )
+                    tue-install-error "Unknown input variable ${i}" ;;
+                * )
+                    pips_to_check+=("$i") ;;
+            esac
+        done
+    fi
+
+    if [[ -z "${VIRTUAL_ENV}" && "${python_site}" == "venv" ]]
+    then
+        tue-install-error "Trying to check pip packages in a virtualenv, but no virtualenv is activated"
+    fi
+
+    # Set by _handle_python_sites
+    local python_exec sudo_cmd site_arg user_arg
+    _handle_python_sites "${pv}" "${python_site}"
+
     if [ ${#pips_to_check[@]} -gt 0 ]
     then
         local error_code
-        installed_versions=$(python"${pv}" "$TUE_INSTALL_SCRIPTS_DIR"/check-pip-pkg-installed-version.py "${pips_to_check[@]}")
+        installed_versions=$(${python_exec} ${site_arg:+${site_arg} }"${TUE_INSTALL_SCRIPTS_DIR}"/check-pip-pkg-installed-version.py "${pips_to_check[@]}")
         error_code=$?
         if [ "$error_code" -gt 1 ]
         then
@@ -1623,7 +1704,8 @@ TUE_INSTALL_INFOS=
 # Make sure tools used by this installer are installed
 tue-install-system-now curl git jq python-is-python3 python3-pip wget
 
-tue-install-pip3-now catkin-pkg PyYAML
+# Install in user or system site-packages
+tue-install-pip3-now --python-site="user" catkin-pkg PyYAML
 
 
 # Handling of targets
