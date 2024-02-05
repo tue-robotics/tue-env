@@ -309,7 +309,7 @@ function tue-install-target
                 [ "$now" == "true" ] && now_cmd="--now"
                 # Do not use 'local cmds=' because it does not preserve command output status ($?)
                 local cmds
-                if cmds=$("$TUE_INSTALL_SCRIPTS_DIR"/parse_install_yaml.py "$install_file".yaml $now_cmd)
+                if cmds=$(/usr/bin/python3 "${TUE_INSTALL_SCRIPTS_DIR}"/parse_install_yaml.py "${install_file}".yaml ${now_cmd})
                 then
                     for cmd in $cmds
                     do
@@ -1495,8 +1495,9 @@ function tue-install-ros
             then
                 # catkin/ament/colcon
                 tue-install-debug "Parsing $pkg_xml"
+
                 local deps
-                deps=$("$TUE_INSTALL_SCRIPTS_DIR"/parse_package_xml.py "$pkg_xml")
+                deps=$(/usr/bin/python3 "${TUE_INSTALL_SCRIPTS_DIR}"/parse_package_xml.py "${pkg_xml}")
                 tue-install-debug "Parsed package.xml\n$deps"
 
                 for dep in $deps
