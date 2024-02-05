@@ -70,20 +70,15 @@ function main
     do
         case $i in
             --ros-version=* )
-                ros_version="${i#*=}"
-                ;;
+                ros_version="${i#*=}" ;;
             --ros-distro=* )
-                ros_distro="${i#*=}"
-                ;;
+                ros_distro="${i#*=}" ;;
             --targets-repo=* )
-                targets_repo="${i#*=}"
-                ;;
+                targets_repo="${i#*=}" ;;
             --create-virtualenv=* )
-                create_virtualenv="${i#*=}"
-                ;;
+                create_virtualenv="${i#*=}" ;;
             --virtualenv-include-system-site-packages=* )
-                virtualenv_include_system_site_packages="${i#*=}"
-                ;;
+                virtualenv_include_system_site_packages="${i#*=}" ;;
             * )
                 echo "[tue-env](bootstrap) Error! Unknown argument '${i}' provided to bootstrap script."
                 return 1
