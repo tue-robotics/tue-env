@@ -1111,7 +1111,7 @@ function _tue-install-pip-now
     # Make sure pip is up-to-date before checking version and installing
     local pip_version desired_pip_version
     pip_version=$(python"${pv}" -m pip --version | awk '{print $2}')
-    desired_pip_version="23"
+    desired_pip_version="24"
     if version_gt "$desired_pip_version" "$pip_version"
     then
         tue-install-debug "pip${pv} not yet version >=$desired_pip_version, but $pip_version"
