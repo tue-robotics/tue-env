@@ -459,8 +459,8 @@ function tue-install-git
 "The problem will probably be solved by resourcing the setup"
     fi
 
-    local targetdir version
-    targetdir=$(_git_url_to_repos_dir "${repo_pre}")
+    local target_dir version
+    target_dir=$(_git_url_to_repos_dir "${repo_pre}")
 
     # The shift here is to ensure that all options are explicitly checked as they can be at most 2
     # and are optional
@@ -476,8 +476,8 @@ function tue-install-git
         do
             case $i in
                 --target-dir=* )
-                    targetdir="${i#*=}"
-                    targetdir="${targetdir/#\~/$HOME}"
+                    target_dir="${i#*=}"
+                    target_dir="${target_dir/#\~/$HOME}"
                     ;;
                 --version=* )
                     version="${i#*=}" ;;
