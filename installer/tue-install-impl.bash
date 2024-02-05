@@ -1421,20 +1421,13 @@ function tue-install-ros
         do
             case $i in
                 --target-dir=* )
-                    repos_dir="${i#*=}"
-                    ;;
-
+                    repos_dir="${i#*=}" ;;
                 --version=* )
-                    version="${i#*=}"
-                    ;;
-
+                    version="${i#*=}" ;;
                 --sub-dir=* )
-                    sub_dir="${i#*=}"
-                    ;;
-
+                    sub_dir="${i#*=}" ;;
                 * )
-                    tue-install-error "Unknown input variable ${i}"
-                    ;;
+                    tue-install-error "Unknown input variable ${i}" ;;
             esac
         done
     fi
@@ -1563,38 +1556,31 @@ while test $# -gt 0
 do
     case "$1" in
         --debug)
-            DEBUG="true"
-            ;;
+            DEBUG="true" ;;
         --no-ros-deps)
-            export TUE_INSTALL_SKIP_ROS_DEPS="all"
-            ;;
+            export TUE_INSTALL_SKIP_ROS_DEPS="all" ;;
         --doc-depend)
             [[ "$TUE_INSTALL_SKIP_ROS_DEPS" == "all" ]] && export TUE_INSTALL_SKIP_ROS_DEPS="normal"
             export TUE_INSTALL_DOC_DEPEND="true"
             ;;
         --no-doc-depend)
-            export TUE_INSTALL_DOC_DEPEND="false"
-            ;;
+            export TUE_INSTALL_DOC_DEPEND="false" ;;
         --test-depend)
             [[ "$TUE_INSTALL_SKIP_ROS_DEPS" == "all" ]] && export TUE_INSTALL_SKIP_ROS_DEPS="normal"
             export TUE_INSTALL_TEST_DEPEND="true"
             ;;
         --no-test-depend)
-            export TUE_INSTALL_TEST_DEPEND="false"
-            ;;
+            export TUE_INSTALL_TEST_DEPEND="false" ;;
         --branch*)
-            echo "Usage of --branch is deprecated, switch to --try-branch"
-            ;;&
+            echo "Usage of --branch is deprecated, switch to --try-branch" ;;&
         --try-branch* | --branch*)
             # shellcheck disable=SC2001
             BRANCH="$(echo "$1" | sed -e 's/^[^=]*=//g')${BRANCH:+ ${BRANCH}}"  # Reverse order, so we try last one first
             ;;
         --*)
-            echo "unknown option $1"
-            ;;
+            echo "unknown option $1" ;;
         *)
-            targets="${targets:+${targets} }$1"
-            ;;
+            targets="${targets:+${targets} }$1" ;;
     esac
     shift
 done
