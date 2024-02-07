@@ -34,7 +34,7 @@ def get_release(url, filename, output) -> int:
 
 
 def download_url(url, root, filename=None, md5=None) -> None:
-    """Download a file from a url and place it in root.
+    """Download a file from an url and place it in root.
 
     Args:
         url (str): URL to download file from

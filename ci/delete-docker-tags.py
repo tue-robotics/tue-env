@@ -43,7 +43,7 @@ class DockerHubAuth(requests.auth.AuthBase):
         Actually gets the authentication token
 
         Raises:
-            AuthenticationError: didn't login right
+            AuthenticationError: didn't log in correctly
         """
         resp = self._session.post(
             f"{DH_API}/users/login/",
