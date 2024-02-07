@@ -18,7 +18,7 @@ export TUE_RELEASE_DIR
 #                                        HELPER FUNCTIONS
 # ----------------------------------------------------------------------------------------------------
 
-function _list_subdirs
+function _list_sub_dirs
 {
     fs=$(ls "$1")
     for f in $fs
@@ -84,11 +84,13 @@ function _tue-git-get-default-branch
 
 export -f _tue-git-get-default-branch
 
+# shellcheck disable=SC2120
 function __tue-git-checkout-default-branch
 {
-    local default_branch
-    default_branch=$(_tue-git-get-default-branch "$1")
-    _git_remote_checkout "$1" origin "$default_branch"
+    local default_branch repo
+    repo=$1
+    default_branch=$(_tue-git-get-default-branch "${repo}")
+    _git_remote_checkout "${repo}" origin "${default_branch}"
 }
 
 export -f __tue-git-checkout-default-branch
@@ -158,7 +160,7 @@ function _tue-git-clean-local
         git branch -d "$stale_branch" > /dev/null 2>&1
         error_code=$?
 
-        # If an error occured in safe deletion of a stale branch, add it to the
+        # If an error occurred in safe deletion of a stale branch, add it to the
         # list of unmerged stale branches which are to be forcefully removed
         # upon confirmation by the user
         if [ ! $error_code -eq 0 ]
@@ -412,7 +414,7 @@ export -f tue-git-deep-fetch
 #                                            TUE-MAKE
 # ----------------------------------------------------------------------------------------------------
 
-# catkin build/test worflow
+# catkin build/test workflow
 # catkin build -DCATKIN_ENABLE_TESTING=OFF # As we don't install test dependencies by default. Test shouldn't be build
 # When you want to test, make sure the test dependencies are installed
 # catkin build -DCATKIN_ENABLE_TESTING=ON # This will trigger cmake and will create the targets and build the tests
@@ -589,7 +591,7 @@ function _tue-make
 
     local options
     [[ "${TUE_ROS_VERSION}" -eq 2 ]] && options="${options} --packages-select"
-    mapfile -t COMPREPLY < <(compgen -W "$(_list_subdirs "${TUE_SYSTEM_DIR}"/src) ${options}" -- "${cur}")
+    mapfile -t COMPREPLY < <(compgen -W "$(_list_sub_dirs "${TUE_SYSTEM_DIR}"/src) ${options}" -- "${cur}")
 }
 
 complete -F _tue-make tue-make
@@ -761,18 +763,18 @@ function tue-revert
             new_hash=$(git -C "$pkg_dir"  rev-list -1 --before="$human_time" "$branch")
             current_hash=$(git -C "$pkg_dir"  rev-parse HEAD)
 
-            local newtime
+            local new_time
             if git -C "$pkg_dir"  diff -s --exit-code "$new_hash" "$current_hash"
             then
-                newtime=$(git -C "$pkg_dir"  show -s --format=%ci)
-                printf "\e[0;36m%-20s\e[0m %-15s \e[1m%s\e[0m %s\n" "$branch is fine" "$new_hash" "$newtime" "$pkg"
+                new_time=$(git -C "${pkg_dir}"  show -s --format=%ci)
+                printf "\e[0;36m%-20s\e[0m %-15s \e[1m%s\e[0m %s\n" "${branch} is fine" "${new_hash}" "${new_time}" "${pkg}"
             else
-                local newbranch
+                local new_branch
                 git -C "$pkg_dir"  checkout -q "$new_hash" --
-                newbranch=$(git -C "$pkg_dir"  rev-parse --abbrev-ref HEAD 2>&1)
-                newtime=$(git -C "$pkg_dir"  show -s --format=%ci)
+                new_branch=$(git -C "${pkg_dir}"  rev-parse --abbrev-ref HEAD 2>&1)
+                new_time=$(git -C "${pkg_dir}"  show -s --format=%ci)
                 echo "$branch" > "$pkg_dir/.do_not_commit_this"
-                printf "\e[0;36m%-20s\e[0m %-15s \e[1m%s\e[0m %s\n" "$newbranch based on $branch" "$new_hash" "$newtime" "$pkg"
+                printf "\e[0;36m%-20s\e[0m %-15s \e[1m%s\e[0m %s\n" "${new_branch} based on ${branch}" "${new_hash}" "${new_time}" "${pkg}"
             fi
         else
             echo "Package $pkg could not be reverted, current state: $branch"
@@ -859,10 +861,10 @@ function _remove_recursively
         fi
     fi
 
-    # If no packages depend on this target, remove it and its dependcies.
+    # If no packages depend on this target, remove it and its dependencies.
     if [ -f "$tue_dependencies_dir"/"$target" ]
     then
-        # Iterate over all depencies of target, which is removed.
+        # Iterate over all dependencies of target, which is removed.
         while read -r dep
         do
             # Target is removed, so remove yourself from depend-on files of deps
@@ -894,7 +896,7 @@ function _remove_recursively
         done < "$tue_dependencies_dir"/"$target"
         rm -f "$tue_dependencies_dir"/"$target"
     else
-        echo "[tue-get] No depencies file exist for target: $target"
+        echo "[tue-get] No dependencies file exist for target: $target"
     fi
 
     echo "[tue-get] Fully uninstalled $target and its dependencies"
@@ -922,10 +924,10 @@ function tue-get
     Possible options:
         --debug           - Shows more debugging information
         --no-ros-deps     - Do not install ROS dependencies (Breaks the dependency tree, not all setup files will be sourced)
-        --doc-depend      - Do install doc dependencies, overules config and --no-ros-deps
-        --no-doc-depend   - Do not install doc dependencies, overules config
-        --test-depend     - Do install test dependencies, overules config and --no-ros-deps
-        --no-test-depend  - Do not install test dependencies, overules config
+        --doc-depend      - Do install doc dependencies, overrules config and --no-ros-deps
+        --no-doc-depend   - Do not install doc dependencies, overrules config
+        --test-depend     - Do install test dependencies, overrules config and --no-ros-deps
+        --no-test-depend  - Do not install test dependencies, overrules config
         --try-branch=name - Try to checkout the branch (or tag) 'name'. This argument can be specified multiple times
                             and all the --try-branch arguments are processed in the reverse order of their declaration,
                             with the last one being the first. 'name' must only be an one word value, not a list or any
@@ -946,7 +948,7 @@ function tue-get
     cmd=$1
     shift
 
-    #Create btrfs snapshot if possible and usefull:
+    #Create btrfs snapshot if possible and useful:
     if [[ -n "$BTRFS_SNAPSHOT" && "$cmd" =~ ^(install|update|remove)$ ]] && { df --print-type / | grep -q btrfs; }
     then
         echo "[tue-get] Creating btrfs snapshot"
@@ -1035,7 +1037,7 @@ function tue-get
                 echo "[tue-get] Problems during uninstalling $target"
             else
                 rm "$tue_installed_dir"/"$target"
-                echo "[tue-get] Succesfully uninstalled: $target"
+                echo "[tue-get] Successfully uninstalled: ${target}"
             fi
         done
 
@@ -1069,24 +1071,24 @@ function tue-get
             echo "[tue-get](show) Provide at least one target name"
             return 1
         fi
-        local firsttarget
-        firsttarget=true
+        local first_target
+        first_target=true
         for target in "$@"
         do
-            if [[ $firsttarget == false ]]
+            if [[ ${first_target} == false ]]
             then
                 echo ""
             fi
             if [ ! -d "$TUE_ENV_TARGETS_DIR"/"$target" ]
             then
                 echo "[tue-get](show) '$target' is not a valid target"
-                firsttarget=false
+                first_target=false
                 continue
             fi
 
-            local firstfile
+            local first_file
             local -a files
-            firstfile=true
+            first_file=true
             mapfile -t files < <(find "$TUE_ENV_TARGETS_DIR"/"$target" -type f)
 
             # First show the common target files
@@ -1098,12 +1100,12 @@ function tue-get
                 do
                     if [ "${files[$key]}" == "$TUE_ENV_TARGETS_DIR"/"$target"/"$file" ]
                     then
-                        if [[ $firstfile == false ]]
+                        if [[ ${first_file} == false ]]
                         then
                             echo ""
                         fi
                         _show_file "$target" "$file"
-                        firstfile=false
+                        first_file=false
                         unset "files[$key]"
                         files=("${files[@]}")
                         break
@@ -1114,14 +1116,14 @@ function tue-get
             # Show all remaining files
             for file in "${files[@]}"
             do
-                if [[ $firstfile == false ]]
+                if [[ ${first_file} == false ]]
                 then
                     echo ""
                 fi
                 _show_file "$target" "${file#*"${TUE_ENV_TARGETS_DIR}/${target}/"}"
-                firstfile=false
+                first_file=false
             done
-            firsttarget=false
+            first_target=false
         done
 
     elif [[ $cmd == "dep" ]]
