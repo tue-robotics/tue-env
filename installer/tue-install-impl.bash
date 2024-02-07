@@ -487,20 +487,20 @@ function tue-install-git
         done
     fi
 
-    if [[ -z "${targetdir}" ]]
+    if [[ -z "${target_dir}" ]]
     then
         tue-install-error "Target directory path cannot be empty"
     fi
 
     local res
-    if [ ! -d "$targetdir" ]
+    if [ ! -d "${target_dir}" ]
     then
-        tue-install-debug "git clone --recursive $repo $targetdir"
-        res=$(git clone --recursive "$repo" "$targetdir" 2>&1)
-        TUE_INSTALL_GIT_PULL_Q+=("${targetdir}")
+        tue-install-debug "git clone --recursive ${repo} ${target_dir}"
+        res=$(git clone --recursive "${repo}" "${target_dir}" 2>&1)
+        TUE_INSTALL_GIT_PULL_Q+=("${target_dir}")
     else
         # Check if we have already pulled the repo
-        if [[ ${TUE_INSTALL_GIT_PULL_Q[*]} == "${targetdir}" ]]
+        if [[ ${TUE_INSTALL_GIT_PULL_Q[*]} == "${target_dir}" ]]
         then
             tue-install-debug "Repo previously pulled, skipping"
             # We have already pulled this repo, skip it
@@ -510,31 +510,31 @@ function tue-install-git
             # Switch url of origin to use https/ssh if different
             # Get current remote url
             local current_url
-            current_url=$(git -C "$targetdir" config --get remote.origin.url)
+            current_url=$(git -C "${target_dir}" config --get remote.origin.url)
 
             # If different, switch url
             if [ "$current_url" != "$repo" ]
             then
-                tue-install-pipe git -C "$targetdir" remote set-url origin "$repo" || tue-install-error "Could not change git url of '$targetdir' to '$repo'"
+                tue-install-pipe git -C "${target_dir}" remote set-url origin "${repo}" || tue-install-error "Could not change git url of '${target_dir}' to '${repo}'"
                 tue-install-info "URL has switched to $repo"
             fi
 
-            tue-install-debug "git -C $targetdir pull --ff-only --prune"
-            res=$(git -C "$targetdir" pull --ff-only --prune 2>&1)
+            tue-install-debug "git -C ${target_dir} pull --ff-only --prune"
+            res=$(git -C "${target_dir}" pull --ff-only --prune 2>&1)
             tue-install-debug "res: $res"
 
-            TUE_INSTALL_GIT_PULL_Q+=("${targetdir}")
+            TUE_INSTALL_GIT_PULL_Q+=("${target_dir}")
 
             local submodule_sync_res submodule_sync_error_code
-            tue-install-debug "git -C $targetdir submodule sync --recursive"
-            submodule_sync_res=$(git -C "$targetdir" submodule sync --recursive)
+            tue-install-debug "git -C ${target_dir} submodule sync --recursive"
+            submodule_sync_res=$(git -C "${target_dir}" submodule sync --recursive)
             submodule_sync_error_code=$?
             tue-install-debug "submodule_sync_res(${submodule_sync_error_code}): ${submodule_sync_res}"
             [ "${submodule_sync_error_code}" -gt 0 ] && [ -n "${submodule_sync_res}" ] && res="${res:+${res}\n}${submodule_sync_res}"
 
             local submodule_res
-            tue-install-debug "git -C $targetdir submodule update --init --recursive"
-            submodule_res=$(git -C "$targetdir" submodule update --init --recursive 2>&1)
+            tue-install-debug "git -C ${target_dir} submodule update --init --recursive"
+            submodule_res=$(git -C "${target_dir}" submodule update --init --recursive 2>&1)
             tue-install-debug "submodule_res: $submodule_res"
             [ -n "$submodule_res" ] && res="${res:+${res}\n}$submodule_res"
 
@@ -547,13 +547,13 @@ function tue-install-git
 
     tue-install-debug "Desired version: $version"
     local _try_branch_res # Will be used in _try_branch_git
-    local version_cache_file="$TUE_ENV_DIR/.env/version_cache/$targetdir"
+    local version_cache_file="${TUE_ENV_DIR}/.env/version_cache/${target_dir}"
     if [ -n "$version" ]
     then
         mkdir -p "$(dirname "$version_cache_file")"
         echo "$version" > "$version_cache_file"
         _try_branch_res=""
-        _try_branch_git "$targetdir" "$version"
+        _try_branch_git "${target_dir}" "${version}"
         [ -n "$_try_branch_res" ] && res="${res:+${res}\n}$_try_branch_res"
     else
         rm "$version_cache_file" 2>/dev/null
@@ -565,7 +565,7 @@ function tue-install-git
     do
         tue-install-debug "Parsed branch '${branch}'"
         _try_branch_res=""
-        _try_branch_git "${targetdir}" "${branch}"
+        _try_branch_git "${target_dir}" "${branch}"
         _try_branch_error_code=$?
         [ -n "${_try_branch_res}" ] && res="${res:+${res}\n}${_try_branch_res}"
         [ "${_try_branch_error_code}" -eq 0 ] && break
