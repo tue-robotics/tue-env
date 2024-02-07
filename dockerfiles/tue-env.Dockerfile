@@ -15,18 +15,18 @@ FROM base as builder
 # Build time arguments
 # BRANCH is the target branch if in PULL_REQUEST mode else it is the test branch
 ARG CI=false
-ARG BRANCH=
+ARG BRANCH
 ARG PULL_REQUEST=false
-ARG COMMIT=
-ARG REF_NAME=
+ARG COMMIT
+ARG REF_NAME
 # Default is empty and gives ROS1, for ROS2 use --build-arg ROS_VERSION=2
-ARG ROS_VERSION=
-ARG ROS_DISTRO=
+ARG ROS_VERSION
+ARG ROS_DISTRO
 # Default is empty and will result in the default targets repo
-ARG TARGETS_REPO=
+ARG TARGETS_REPO
 ARG CREATE_VENV=false
 ARG VENV_INCLUDE_SYSTEM_SITE_PACKAGES=false
-ARG OAUTH2_TOKEN=
+ARG OAUTH2_TOKEN
 
 # Inform scripts that no questions should be asked and set some environment
 # variables to prevent warnings and errors
