@@ -1013,14 +1013,16 @@ function tue-get
             return $error_code;
         fi
 
-        if [ -f /tmp/tue_get_remove_lock ]
+        local remove_lock_file
+        remove_lock_file=/tmp/tue_get_remove_lock
+        if [[ -f ${remove_lock_file} ]]
         then
             echo "[tue-get] Can't execute 'remove' as an other run is still busy"
-            echo "[tue-get] If this keeps happening, excute: rm /tmp/tue_get_remove_lock"
+            echo "[tue-get] If this keeps happening, execute: 'rm ${remove_lock_file}'"
             return 1
         fi
 
-        touch /tmp/tue_get_remove_lock
+        touch ${remove_lock_file}
         for target in $targets_to_remove
         do
             local target_error
@@ -1043,7 +1045,7 @@ function tue-get
             _generate_setup_file
         fi
 
-        rm /tmp/tue_get_remove_lock
+        rm ${remove_lock_file}
 
         echo ""
         if [ -n "$2" ]
