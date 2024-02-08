@@ -28,7 +28,7 @@ jobs:
       matrix:
         package_name: ${{ fromJson(needs.organization_containers.outputs.packages) }}
     steps:
-      - uses: actions/delete-package-versions@v4
+      - uses: actions/delete-package-versions@v5
         with:
           package-name: ${{ matrix.package_name }}
           package-type: container
