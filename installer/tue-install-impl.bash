@@ -1627,22 +1627,22 @@ then
     # If no targets are provided, update all installed targets
     targets=$(ls "$TUE_INSTALL_INSTALLED_DIR")
 else
-    raw_targets=$targets
-    targets=""
+    raw_targets=${targets}
+    targets_arr=()
     for target in $raw_targets
     do
-        resolved_targets="$(find "$TUE_INSTALL_TARGETS_DIR" -maxdepth 1 -name "$target" -type d -printf "%P ")"
-        if [ -z "$resolved_targets" ] # So the missing target is handled by _missing_targets_check
+        resolved_targets="$(find "${TUE_INSTALL_TARGETS_DIR}" -maxdepth 1 -name "${target}" -type d -printf "%P ")"
+        if [[ -z "${resolved_targets}" ]] # So the missing target is handled by _missing_targets_check
         then
-            resolved_targets="$target"
+            resolved_targets="${target}"
         fi
-        targets="${targets:+$targets }$resolved_targets"
+        targets_arr+=("${resolved_targets}")
     done
+    targets=${targets_arr[*]}
 fi
 
-
 # Check if all installed targets exist in the targets repo
-_missing_targets_check "$targets"
+_missing_targets_check "${targets}"
 
 for target in $targets
 do
