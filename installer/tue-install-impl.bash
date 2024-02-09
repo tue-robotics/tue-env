@@ -1247,7 +1247,7 @@ function _tue-install-pip-now
         for pkg in $pips_to_install_w_options
         do
             # shellcheck disable=SC2048,SC2086
-            tue-install-pipe${sudo_cmd:+${sudo_cmd} }"${python_exec}" ${site_arg:+${site_arg} }-m pip install ${user_arg:+${user_arg} }${pkg//^/ } <<< yes || tue-install-error "An error occurred while installing pip${pv} packages with options."
+            tue-install-pipe ${sudo_cmd:+${sudo_cmd} }"${python_exec}" ${site_arg:+${site_arg} }-m pip install ${user_arg:+${user_arg} }${pkg//^/ } <<< yes || tue-install-error "An error occurred while installing pip${pv} packages with options."
         done
     fi
 
