@@ -1061,23 +1061,40 @@ function tue-install-ppa-now
 
 function _tue-install-pip
 {
-    local pv name
+    local pv
     pv=$1
     shift
     tue-install-debug "tue-install-pip${pv} $*"
-    name="$*"
-    name="${name// /^}"
 
-    if [ -z "$1" ]
+    local pkg_req pkg_reqs python_site
+    { [[ -n ${VIRTUAL_ENV} ]] && python_site="venv"; } || python_site="user"
+    if [[ -n $1 ]]
     then
-        tue-install-error "Invalid tue-install-pip${pv} call: needs package as argument."
+        for i in "$@"
+        do
+            case $i in
+                --python-site=* )
+                    python_site="${i#*=}" ;;
+                --* )
+                    tue-install-error "tue-install-pip${pv}-now: Unknown input variable ${i}" ;;
+                * )
+                    pkg_reqs+=("$i") ;;
+            esac
+        done
+    fi
+    pkg_req=${pkg_reqs[*]}
+    pkg_req=${pkg_req// /^}
+
+    if [[ -n ${VIRTUAL_ENV} && ${TUE_PPM} == "poetry" && ${python_site} == "venv" ]]
+    then
+        tue-install-error "tue-install-pip${pv}: You are using poetry as package manager, but you are trying to install '${pkg_req}' in the virtual environment site-packages. This is not allowed as poetry manages the packages in the virtual environment."
     fi
 
-    tue-install-debug "Adding $name to pip${pv} list"
+    tue-install-debug "Adding ${pkg_req} to pip${pv} ${python_site} list"
     local list
-    list=TUE_INSTALL_PIP"${pv}"S
+    list=TUE_INSTALL_"${python_site^^}"_PIP"${pv}"S
     # shellcheck disable=SC2140
-    declare -g "$list"="$name ${!list}"
+    declare -g "${list}"="${pkg_req} ${!list}"
 }
 
 # Needed for backward compatibility
@@ -1690,7 +1707,9 @@ TUE_INSTALL_GIT_PULL_Q=()
 
 TUE_INSTALL_SYSTEMS=
 TUE_INSTALL_PPA=
-TUE_INSTALL_PIP3S=
+TUE_INSTALL_SYSTEM_PIP3S=
+TUE_INSTALL_USER_PIP3S=
+TUE_INSTALL_VENV_PIP3S=
 TUE_INSTALL_SNAPS=
 TUE_INSTALL_GEMS=
 
@@ -1781,16 +1800,44 @@ then
     tue-install-system-now "$TUE_INSTALL_SYSTEMS"
 fi
 
-
 # Installing all python3 (pip3) targets, which are collected during the install
-if [ -n "$TUE_INSTALL_PIP3S" ]
+if [[ -n "${TUE_INSTALL_SYSTEM_PIP3S}" ]]
 then
-    TUE_INSTALL_CURRENT_TARGET="PIP3"
+    TUE_INSTALL_CURRENT_TARGET="PIP3(SYSTEM)"
 
-    tue-install-debug "calling: tue-install-pip3-now $TUE_INSTALL_PIP3S"
-    tue-install-pip3-now "$TUE_INSTALL_PIP3S"
+    # No need to check for poetry, as you can always install in the system site-packages
+    tue-install-debug "calling: tue-install-pip3-now --python-site=\"system\" ${TUE_INSTALL_SYSTEM_PIP3S}"
+    tue-install-pip3-now --python-site="system" "${TUE_INSTALL_SYSTEM_PIP3S}"
 fi
 
+if [[ -n "${TUE_INSTALL_USER_PIP3S}" ]]
+then
+    TUE_INSTALL_CURRENT_TARGET="PIP3(USER)"
+
+    # No need to check for poetry, as you can always install in the user site-packages
+    tue-install-debug "calling: tue-install-pip3-now --python-site=\"user\" ${TUE_INSTALL_USER_PIP3S}"
+    tue-install-pip3-now --python-site="user" "${TUE_INSTALL_USER_PIP3S}"
+fi
+
+if [[ -n "${TUE_INSTALL_VENV_PIP3S}" ]]
+then
+    TUE_INSTALL_CURRENT_TARGET="PIP3(VENV)"
+
+    if [[ -z ${VIRTUAL_ENV} ]]
+    then
+        # This should not be reachable, but just in case
+        tue-install-error "You can't install pip3 packages in the virtualenv, when no virtualenv is activated"
+    fi
+
+    if [[ ${TUE_PPM} == "poetry" ]]
+    then
+        # This should not be reachable, but just in case
+        tue-install-error "You can't install pip3 packages in the virtualenv, when using poetry as python package manager"
+    fi
+
+    tue-install-debug "calling: tue-install-pip3-now --python-site=\"venv\" ${TUE_INSTALL_VENV_PIP3S}"
+    tue-install-pip3-now --python-site="venv" "${TUE_INSTALL_VENV_PIP3S}"
+fi
 
 # Installing all snap targets, which are collected during the install
 if [ -n "$TUE_INSTALL_SNAPS" ]
