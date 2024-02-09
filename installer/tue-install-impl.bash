@@ -1393,11 +1393,7 @@ function tue-install-ros
 
     local ros_pkg_name
     ros_pkg_name=${TUE_INSTALL_CURRENT_TARGET#ros-}
-    if [[ $ros_pkg_name == *-* ]]
-    then
-        tue-install-error "A ROS package cannot contain dashes (${ros_pkg_name}), make sure the package is named '${ros_pkg_name//-/_}' and rename the target to 'ros-${ros_pkg_name//-/_}'"
-        return 1
-    fi
+    [[ ${ros_pkg_name} == *-* ]] && tue-install-error "A ROS package cannot contain dashes (${ros_pkg_name}), make sure the package is named '${ros_pkg_name//-/_}' and rename the target to 'ros-${ros_pkg_name//-/_}'"
 
     # First of all, make sure ROS itself is installed
     tue-install-target ros"${TUE_ROS_VERSION}" || tue-install-error "Failed to install target 'ros${TUE_ROS_VERSION}'"
