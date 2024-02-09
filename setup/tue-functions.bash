@@ -439,12 +439,12 @@ function tue-make
         fi
         case $build_tool in
         'catkin build')
-            /usr/bin/python3 "$(command -v catkin)" build --workspace "$TUE_SYSTEM_DIR" "$@"
+            (deactivate &>/dev/null; /usr/bin/python3 "$(command -v catkin)" build --workspace "${TUE_SYSTEM_DIR}" "$@")
             return $?
             ;;
         '')
-            /usr/bin/python3 "$(command -v catkin)" config --init --mkdirs --workspace "$TUE_SYSTEM_DIR" --extend /opt/ros/"$TUE_ROS_DISTRO" -DCMAKE_BUILD_TYPE=RelWithDebInfo -DCATKIN_ENABLE_TESTING=OFF
-            /usr/bin/python3 "$(command -v catkin)" build --workspace "$TUE_SYSTEM_DIR" "$@"
+            (deactivate &>/dev/null; /usr/bin/python3 "$(command -v catkin)" config --init --mkdirs --workspace "${TUE_SYSTEM_DIR}" --extend /opt/ros/"${TUE_ROS_DISTRO}" -DCMAKE_BUILD_TYPE=RelWithDebInfo -DCATKIN_ENABLE_TESTING=OFF)
+            (deactivate &>/dev/null; /usr/bin/python3 "$(command -v catkin)" build --workspace "${TUE_SYSTEM_DIR}" "$@")
             touch "$TUE_SYSTEM_DIR"/devel/.catkin # hack to allow overlaying to this ws while being empty
             ;;
         *)
@@ -460,9 +460,9 @@ function tue-make
         if [ "${CI_INSTALL}" == "true" ]
         then
             rm -rf "${TUE_SYSTEM_DIR}"/install
-            /usr/bin/python3 -m colcon --log-base "${TUE_SYSTEM_DIR}"/log build --base-paths "${TUE_SYSTEM_DIR}"/src --build-base "${TUE_SYSTEM_DIR}"/build --install-base "${TUE_SYSTEM_DIR}"/install "$@"
+            (deactivate &>/dev/null; /usr/bin/python3 -m colcon --log-base "${TUE_SYSTEM_DIR}"/log build --base-paths "${TUE_SYSTEM_DIR}"/src --build-base "${TUE_SYSTEM_DIR}"/build --install-base "${TUE_SYSTEM_DIR}"/install "$@")
         else
-            /usr/bin/python3 -m colcon --log-base "${TUE_SYSTEM_DIR}"/log build --merge-install --symlink-install --base-paths "${TUE_SYSTEM_DIR}"/src --build-base "${TUE_SYSTEM_DIR}"/build --install-base "${TUE_SYSTEM_DIR}"/install "$@"
+            (deactivate &>/dev/null; /usr/bin/python3 -m colcon --log-base "${TUE_SYSTEM_DIR}"/log build --merge-install --symlink-install --base-paths "${TUE_SYSTEM_DIR}"/src --build-base "${TUE_SYSTEM_DIR}"/build --install-base "${TUE_SYSTEM_DIR}"/install "$@")
         fi
         return $?
     else
@@ -490,7 +490,7 @@ function tue-make-test
         fi
         case ${build_tool} in
         'catkin build')
-            /usr/bin/python3 "$(command -v catkin)" test --workspace "${TUE_SYSTEM_DIR}" "$@"
+            (deactivate &>/dev/null; /usr/bin/python3 "$(command -v catkin)" test --workspace "${TUE_SYSTEM_DIR}" "$@")
             return $?
             ;;
         '')
@@ -519,9 +519,9 @@ function tue-make-test
         # Disable symlink install for production
         if [ "${CI_INSTALL}" == "true" ]
         then
-            python3 -m colcon --log-base "${TUE_SYSTEM_DIR}"/log test --base-paths "${TUE_SYSTEM_DIR}"/src --build-base "${TUE_SYSTEM_DIR}"/build --install-base "${TUE_SYSTEM_DIR}"/install --executor sequential --event-handlers console_cohesion+ "$@"
+            (deactivate &>/dev/null; /usr/bin/python3 -m colcon --log-base "${TUE_SYSTEM_DIR}"/log test --base-paths "${TUE_SYSTEM_DIR}"/src --build-base "${TUE_SYSTEM_DIR}"/build --install-base "${TUE_SYSTEM_DIR}"/install --executor sequential --event-handlers console_cohesion+ "$@")
         else
-            python3 -m colcon --log-base "${TUE_SYSTEM_DIR}"/log test --merge-install --base-paths "${TUE_SYSTEM_DIR}"/src --build-base "${TUE_SYSTEM_DIR}"/build --install-base "${TUE_SYSTEM_DIR}"/install --executor sequential --event-handlers console_cohesion+ "$@"
+            (deactivate &>/dev/null; /usr/bin/python3 -m colcon --log-base "${TUE_SYSTEM_DIR}"/log test --merge-install --base-paths "${TUE_SYSTEM_DIR}"/src --build-base "${TUE_SYSTEM_DIR}"/build --install-base "${TUE_SYSTEM_DIR}"/install --executor sequential --event-handlers console_cohesion+ "$@")
         fi
         return $?
     else
@@ -549,7 +549,7 @@ function tue-make-test-result
         fi
         case $build_tool in
         'catkin build')
-            python3 "$(command -v catkin)" test_results "${TUE_SYSTEM_DIR}"/build "$@"
+            (deactivate &>/dev/null; /usr/bin/python3 "$(command -v catkin)" test_results "${TUE_SYSTEM_DIR}"/build "$@")
             return $?
             ;;
         '')
@@ -575,7 +575,7 @@ function tue-make-test-result
             return 1
         fi
 
-        python3 -m colcon --log-base "${TUE_SYSTEM_DIR}"/log test-result --test-result-base "${TUE_SYSTEM_DIR}"/build "$@"
+        (deactivate &>/dev/null; /usr/bin/python3 -m colcon --log-base "${TUE_SYSTEM_DIR}"/log test-result --test-result-base "${TUE_SYSTEM_DIR}"/build "$@")
         return $?
     else
         echo -e "\e[31;1mError! ROS_VERSION '${TUE_ROS_VERSION}' is not supported by tue-env.\e[0m"

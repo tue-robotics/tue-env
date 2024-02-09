@@ -50,21 +50,21 @@ if [[ "${ROS_VERSION}" == 1 ]]
 then
     # Build test targets
     echo -e "\e[35m\e[1mBuild test targets of this package (catkin build --this --no-deps -DCATKIN_ENABLE_TESTING=ON)\e[0m"
-    docker exec -t tue-env bash -c 'source ~/.bashrc; cd "${TUE_SYSTEM_DIR}"/src/"${PACKAGE}" && /usr/bin/python3 "$(command -v catkin)" build --this --no-status --no-deps -DCATKIN_ENABLE_TESTING=ON'
+    docker exec -t tue-env bash -c 'source ~/.bashrc; cd "${TUE_SYSTEM_DIR}"/src/"${PACKAGE}" && (deactivate &>/dev/null; /usr/bin/python3 "$(command -v catkin)" build --this --no-status --no-deps -DCATKIN_ENABLE_TESTING=ON)'
 
     # Run unit tests
     echo -e "\e[35m\e[1mRun tests on this package (catkin test --this --no-deps -DCATKIN_ENABLE_TESTING=ON)\e[0m"
-    docker exec -t tue-env bash -c 'source ~/.bashrc; cd "${TUE_SYSTEM_DIR}"/src/"${PACKAGE}" && /usr/bin/python3 "$(command -v catkin)" test --this --no-status --no-deps -DCATKIN_ENABLE_TESTING=ON'
+    docker exec -t tue-env bash -c 'source ~/.bashrc; cd "${TUE_SYSTEM_DIR}"/src/"${PACKAGE}" && (deactivate &>/dev/null; /usr/bin/python3 "$(command -v catkin)" test --this --no-status --no-deps -DCATKIN_ENABLE_TESTING=ON)'
 else
     # Build test targets
     echo -e "\e[35m\e[1mBuild test targets of this package (colcon build --packages-select ${PACKAGE} --mixin rel-with-deb-info build-testing-on)\e[0m"
-    docker exec -t tue-env bash -c 'source ~/.bashrc; cd "${TUE_SYSTEM_DIR}" && colcon build --packages-select "${PACKAGE}" --mixin rel-with-deb-info build-testing-on --event-handlers desktop_notification- status- terminal_title-'
+    docker exec -t tue-env bash -c 'source ~/.bashrc; cd "${TUE_SYSTEM_DIR}" && (deactivate &>/dev/null; /usr/bin/python3 -m colcon build --packages-select "${PACKAGE}" --mixin rel-with-deb-info build-testing-on --event-handlers desktop_notification- status- terminal_title-)'
 
     # Run unit tests
     echo -e "\e[35m\e[1mRun tests on this package (colcon test --packages-select ${PACKAGE} --executor sequential)\e[0m"
-    docker exec -t tue-env bash -c 'source ~/.bashrc; cd "${TUE_SYSTEM_DIR}" && colcon test --packages-select "${PACKAGE}" --executor sequential --event-handlers desktop_notification- status- terminal_title- console_cohesion+'
+    docker exec -t tue-env bash -c 'source ~/.bashrc; cd "${TUE_SYSTEM_DIR}" && (deactivate &>/dev/null; /usr/bin/python3 -m colcon test --packages-select "${PACKAGE}" --executor sequential --event-handlers desktop_notification- status- terminal_title- console_cohesion+)'
 
     # Check test results
     echo -e "\e[35m\e[1mCheck test results (colcon test-result --verbose)\e[0m"
-    docker exec -t tue-env bash -c 'source ~/.bashrc; cd "${TUE_SYSTEM_DIR}" && colcon test-result --verbose'
+    docker exec -t tue-env bash -c 'source ~/.bashrc; cd "${TUE_SYSTEM_DIR}" && (deactivate &>/dev/null; /usr/bin/python3 -m colcon test-result --verbose)'
 fi
