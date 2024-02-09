@@ -60,9 +60,10 @@ function main
     fi
 
     # Initialize variables
-    local create_virtualenv targets_repo tue_ros_distro tue_ros_version virtualenv_include_system_site_packages
+    local create_virtualenv targets_repo tue_ppm tue_ros_distro tue_ros_version virtualenv_include_system_site_packages
 
     # Default values
+    tue_ppm="pip"
     create_virtualenv="true"
     virtualenv_include_system_site_packages="false"
 
@@ -79,12 +80,23 @@ function main
                 create_virtualenv="${i#*=}" ;;
             --virtualenv-include-system-site-packages=* )
                 virtualenv_include_system_site_packages="${i#*=}" ;;
+            --pip )
+                tue_ppm="pip" ;;
+            --poetry )
+                tue_ppm="poetry" ;;
             * )
                 echo "[tue-env](bootstrap) Error! Unknown argument '${i}' provided to bootstrap script."
                 return 1
                 ;;
         esac
     done
+
+    # Poetry should only be used in combination with a virtualenv
+    if [[ "${tue_ppm}" == "poetry"  && "${create_virtualenv}" == "false" ]]
+    then
+        echo "[tue-env](bootstrap) Error! Poetry should only be used in combination with a virtualenv."
+        return 1
+    fi
 
     case ${distrib_release} in
         "20.04")
@@ -208,6 +220,13 @@ function main
         git clone "${env_url}" "${env_dir}"
     fi
 
+    # Install Poetry when needed
+    if [[ "${tue_ppm}" == "poetry" ]]
+    then
+        echo "[tue-env](bootstrap) Installing Poetry"
+        curl -sSL https://install.python-poetry.org | /usr/bin/python3 -
+    fi
+
     # Source the installer commands
     # No need to follow to a file which is already checked by CI
     # shellcheck disable=SC1090
@@ -225,6 +244,7 @@ function main
     # Configure environment
     tue-env config "${workspace}" set "TUE_ROS_DISTRO" "${tue_ros_distro}"
     tue-env config "${workspace}" set "TUE_ROS_VERSION" "${tue_ros_version}"
+    tue-env config "${workspace}" set "TUE_PPM" "${tue_ppm}"
 
     # Add loading of TU/e tools (tue-env, tue-get, etc) to bashrc
     # shellcheck disable=SC2088

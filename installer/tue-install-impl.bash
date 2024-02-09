@@ -1355,6 +1355,38 @@ function tue-install-pip3-now
 
 # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # #
 
+function tue-install-poetry-now
+{
+    tue-install-debug "tue-install-poetry-now $*"
+
+    if [[ -z "$1" ]]
+    then
+        tue-install-error "Invalid tue-install-poetry-now call: needs project as argument."
+    fi
+
+    local poetry_self_updated_file
+    poetry_self_updated_file=/tmp/tue_get_poetry_self_updated
+    if [[ ! -f ${poetry_self_updated_file} ]]
+    then
+        tue-install-pipe poetry self update
+        touch ${poetry_self_updated_file}
+    fi
+
+    local return_code sync_arg venv_include_system_site_packages
+    venv_include_system_site_packages=$(python3 -c "from pip._internal.utils.virtualenv import virtualenv_no_global; print(str(not virtualenv_no_global()).lower())")
+    return_code=$?
+    [[ "${return_code}" -ne 0 ]] && tue-install-warning "An error occurred while checking if the virtual environment includes the system site packages. Assuming it does." && venv_include_system_site_packages="true"
+    [[ "${venv_include_system_site_packages}" == "false" ]] && sync_arg="--sync"
+
+    local project_dir
+    project_dir=${TUE_WS_DIR}/src/${TUE_POETRY_PROJECT//-/_}
+    [[ ! -d ${project_dir} ]] && tue-install-error "tue-install-poetry-now: The project ${TUE_POETRY_PROJECT} does not exist in the workspace directory $(dirname "${project_dir}")"
+
+    tue-install-pipe poetry -C "${project_dir}" install ${sync_arg:+${sync_arg} } ${TUE_GET_POETRY_INSTALL_ARGS:+${TUE_GET_POETRY_INSTALL_ARGS} } || tue-install-error "An error occurred while installing the project ${TUE_POETRY_PROJECT} with poetry."
+}
+
+# # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # #
+
 function tue-install-snap
 {
     tue-install-debug "tue-install-snap $*"
@@ -1855,6 +1887,28 @@ then
 
     tue-install-debug "calling: tue-install-gem-now $TUE_INSTALL_GEMS"
     tue-install-gem-now "$TUE_INSTALL_GEMS"
+fi
+
+if [[ -n ${TUE_POETRY_PROJECT} ]]
+then
+    TUE_INSTALL_CURRENT_TARGET="POETRY"
+
+    poetry_project_target="ros-${TUE_POETRY_PROJECT//-/_}"
+    state_file=${TUE_INSTALL_STATE_DIR}/${poetry_project_target}
+    state_file_now=${state_file}-now
+    if [[ ! -f ${state_file} && ! -f ${state_file_now} ]]
+    then
+        tue-install-echo "The target (${poetry_project_target}) of the poetry root project (${TUE_POETRY_PROJECT}) is not processed in this run of tue-get. Therefore, the poetry root project will not be installed."
+    else
+        if [[ ${TUE_PPM} != "poetry" ]]
+        then
+            tue-install-error "You can't install poetry project '${TUE_POETRY_PROJECT}' when not using poetry as python package manager"
+        fi
+
+        tue-install-debug "calling: tue-install-poetry-now ${TUE_POETRY_PROJECT}"
+        tue-install-poetry-now "${TUE_POETRY_PROJECT}"
+    fi
+
 fi
 
 TUE_INSTALL_CURRENT_TARGET="main-loop"
