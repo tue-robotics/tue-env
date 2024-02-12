@@ -368,8 +368,10 @@ function tue-install-target
 
         if [ "$now" == "true" ]
         then
+            tue-install-debug "Execution finished with now enabled. Creating state file ${state_file_now}"
             touch "$state_file_now"
         else
+            tue-install-debug "Execution finished. Creating state file ${state_file}"
             touch "$state_file"
         fi
 
