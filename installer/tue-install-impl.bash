@@ -1760,17 +1760,27 @@ if [[ -z "${targets// }" ]] #If only whitespace
 then
     # If no targets are provided, update all installed targets
     targets=$(ls "$TUE_INSTALL_INSTALLED_DIR")
+    tue-install-debug "No targets provided, updating all installed targets:\n${targets}"
 else
     raw_targets=${targets}
+    tue-install-debug "Following raw target names provided: ${raw_targets}"
     targets_arr=()
     for target in $raw_targets
     do
         resolved_targets="$(find "${TUE_INSTALL_TARGETS_DIR}" -maxdepth 1 -name "${target}" -type d -printf "%P ")"
         if [[ -z "${resolved_targets}" ]] # So the missing target is handled by _missing_targets_check
         then
+            tue-install-debug "Target regex didn't match any target, just adding the raw target name '${target}', so it can be handled by _missing_targets_check"
             resolved_targets="${target}"
+        else
+            tue-install-debug "Target regex '${target}' matched the following targets: ${resolved_targets}"
         fi
-        targets_arr+=("${resolved_targets}")
+
+        # Unpack the resolved targets
+        for resolved_target in ${resolved_targets}
+        do
+            targets_arr+=("${resolved_target}")
+        done
     done
     targets=${targets_arr[*]}
 fi
