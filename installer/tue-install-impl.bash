@@ -1772,9 +1772,8 @@ else
         fi
         targets_arr+=("${resolved_targets}")
     done
+    targets=${targets_arr[*]}
 fi
-
-targets=${targets_arr[*]}
 
 # Check if all installed targets exist in the targets repo
 _missing_targets_check "${targets}"
