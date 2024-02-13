@@ -58,6 +58,16 @@ then
     source "$TUE_ENV_DIR"/.env/setup/user_setup.bash
 fi
 
+if [[ ${TUE_PPM} == "poetry" ]]
+then
+    if ! command -v poetry &> /dev/null
+    then
+        echo "[tue] Loading an environment with Poetry, but Poetry is not installed."
+        echo -e "[tue] Please install Poetry and try again.\n\ncurl -sSL https://install.python-poetry.org | /usr/bin/python3 -\n"
+        return 1
+    fi
+fi
+
 # -----------------------------------------
 # Load all the bash functions
 # shellcheck disable=SC1091

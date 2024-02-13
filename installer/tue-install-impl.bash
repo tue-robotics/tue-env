@@ -168,7 +168,7 @@ function _remove_old_target_dep_recursively
     old_dep_dep_file="${TUE_INSTALL_DEPENDENCIES_DIR}"/"${old_dep_target}"
     if [[ -f "${old_dep_dep_file}" ]]
     then
-        # Iterate over all depencies of old_dep_target, which is removed.
+        # Iterate over all dependencies of old_dep_target, which is removed.
         while read -r dep_of_old_dep
         do
             # Actually remove the deps
@@ -183,11 +183,11 @@ function _remove_old_target_dep_recursively
         done < "${old_dep_dep_file}"
         rm -f "${old_dep_dep_file}"
     else
-        tue-install-debug "[remove_old_dep] No depencies file exist for target: ${old_dep_target}"
+        tue-install-debug "[remove_old_dep] No dependencies file exist for target: ${old_dep_target}"
     fi
 
     tue-install-debug "[remove_old_dep] Uninstalled '${old_dep_target}' as a dependency of '${parent_target}'"
-    tue-install-info "[remove_old_dep] '${old_dep_target}' has been uninstalled, you can remove it from the workspace or deinstall it in another way"
+    tue-install-info "[remove_old_dep] '${old_dep_target}' has been uninstalled, you can remove it from the workspace or uninstall it in another way"
     return ${error_code}
 }
 
@@ -309,7 +309,7 @@ function tue-install-target
                 [ "$now" == "true" ] && now_cmd="--now"
                 # Do not use 'local cmds=' because it does not preserve command output status ($?)
                 local cmds
-                if cmds=$("$TUE_INSTALL_SCRIPTS_DIR"/parse_install_yaml.py "$install_file".yaml $now_cmd)
+                if cmds=$(/usr/bin/python3 "${TUE_INSTALL_SCRIPTS_DIR}"/parse_install_yaml.py "${install_file}".yaml ${now_cmd})
                 then
                     for cmd in $cmds
                     do
@@ -352,7 +352,7 @@ function tue-install-target
         old_deps_removed=$(comm -23 <(echo "${old_deps}") <(echo "${new_deps}"))
         if [[ -n ${old_deps_removed} ]]
         then
-            tue-install-debug "Following dropped depedencies need to be removed:\n${old_deps_removed}"
+            tue-install-debug "Following dropped dependencies need to be removed:\n${old_deps_removed}"
         else
             tue-install-debug "No dropped dependencies to be removed"
         fi
@@ -361,15 +361,17 @@ function tue-install-target
         do
             # Remove this target from dep-on file of dep
             # When the dep-on file is now empty, remove it
-            # Recurisvely -> Remove it from the dep-on files of its deps
+            # Recursively -> Remove it from the dep-on files of its deps
             tue-install-debug "Going to remove '${dep}' as a dependency"
             _remove_old_target_dep_recursively "${target}" "${dep}" || tue-install-error "Something went wrong while removing '${dep}' as a dependency"
         done
 
         if [ "$now" == "true" ]
         then
+            tue-install-debug "Execution finished with now enabled. Creating state file ${state_file_now}"
             touch "$state_file_now"
         else
+            tue-install-debug "Execution finished. Creating state file ${state_file}"
             touch "$state_file"
         fi
 
@@ -459,8 +461,8 @@ function tue-install-git
 "The problem will probably be solved by resourcing the setup"
     fi
 
-    local targetdir version
-    targetdir=$(_git_url_to_repos_dir "${repo_pre}")
+    local target_dir version
+    target_dir=$(_git_url_to_repos_dir "${repo_pre}")
 
     # The shift here is to ensure that all options are explicitly checked as they can be at most 2
     # and are optional
@@ -476,8 +478,8 @@ function tue-install-git
         do
             case $i in
                 --target-dir=* )
-                    targetdir="${i#*=}"
-                    targetdir="${targetdir/#\~/$HOME}"
+                    target_dir="${i#*=}"
+                    target_dir="${target_dir/#\~/$HOME}"
                     ;;
                 --version=* )
                     version="${i#*=}" ;;
@@ -487,53 +489,54 @@ function tue-install-git
         done
     fi
 
-    if [[ -z "${targetdir}" ]]
+    if [[ -z "${target_dir}" ]]
     then
         tue-install-error "Target directory path cannot be empty"
     fi
 
     local res
-    if [ ! -d "$targetdir" ]
+    if [ ! -d "${target_dir}" ]
     then
-        tue-install-debug "git clone --recursive $repo $targetdir"
-        res=$(git clone --recursive "$repo" "$targetdir" 2>&1)
-        TUE_INSTALL_GIT_PULL_Q+=:$targetdir:
+        tue-install-debug "git clone --recursive ${repo} ${target_dir}"
+        res=$(git clone --recursive "${repo}" "${target_dir}" 2>&1)
+        TUE_INSTALL_GIT_PULL_Q+=("${target_dir}")
     else
         # Check if we have already pulled the repo
-        if [[ $TUE_INSTALL_GIT_PULL_Q == *:$targetdir:* ]]
+        if [[ ${TUE_INSTALL_GIT_PULL_Q[*]} == "${target_dir}" ]]
         then
             tue-install-debug "Repo previously pulled, skipping"
             # We have already pulled this repo, skip it
             res=
         else
+            tue-install-debug "Repo not yet pulled, pulling"
             # Switch url of origin to use https/ssh if different
             # Get current remote url
             local current_url
-            current_url=$(git -C "$targetdir" config --get remote.origin.url)
+            current_url=$(git -C "${target_dir}" config --get remote.origin.url)
 
             # If different, switch url
             if [ "$current_url" != "$repo" ]
             then
-                tue-install-pipe git -C "$targetdir" remote set-url origin "$repo" || tue-install-error "Could not change git url of '$targetdir' to '$repo'"
+                tue-install-pipe git -C "${target_dir}" remote set-url origin "${repo}" || tue-install-error "Could not change git url of '${target_dir}' to '${repo}'"
                 tue-install-info "URL has switched to $repo"
             fi
 
-            tue-install-debug "git -C $targetdir pull --ff-only --prune"
-            res=$(git -C "$targetdir" pull --ff-only --prune 2>&1)
+            tue-install-debug "git -C ${target_dir} pull --ff-only --prune"
+            res=$(git -C "${target_dir}" pull --ff-only --prune 2>&1)
             tue-install-debug "res: $res"
 
-            TUE_INSTALL_GIT_PULL_Q+=:$targetdir:
+            TUE_INSTALL_GIT_PULL_Q+=("${target_dir}")
 
             local submodule_sync_res submodule_sync_error_code
-            tue-install-debug "git -C $targetdir submodule sync --recursive"
-            submodule_sync_res=$(git -C "$targetdir" submodule sync --recursive)
+            tue-install-debug "git -C ${target_dir} submodule sync --recursive"
+            submodule_sync_res=$(git -C "${target_dir}" submodule sync --recursive)
             submodule_sync_error_code=$?
             tue-install-debug "submodule_sync_res(${submodule_sync_error_code}): ${submodule_sync_res}"
             [ "${submodule_sync_error_code}" -gt 0 ] && [ -n "${submodule_sync_res}" ] && res="${res:+${res}\n}${submodule_sync_res}"
 
             local submodule_res
-            tue-install-debug "git -C $targetdir submodule update --init --recursive"
-            submodule_res=$(git -C "$targetdir" submodule update --init --recursive 2>&1)
+            tue-install-debug "git -C ${target_dir} submodule update --init --recursive"
+            submodule_res=$(git -C "${target_dir}" submodule update --init --recursive 2>&1)
             tue-install-debug "submodule_res: $submodule_res"
             [ -n "$submodule_res" ] && res="${res:+${res}\n}$submodule_res"
 
@@ -546,13 +549,13 @@ function tue-install-git
 
     tue-install-debug "Desired version: $version"
     local _try_branch_res # Will be used in _try_branch_git
-    local version_cache_file="$TUE_ENV_DIR/.env/version_cache/$targetdir"
+    local version_cache_file="${TUE_ENV_DIR}/.env/version_cache/${target_dir}"
     if [ -n "$version" ]
     then
         mkdir -p "$(dirname "$version_cache_file")"
         echo "$version" > "$version_cache_file"
         _try_branch_res=""
-        _try_branch_git "$targetdir" "$version"
+        _try_branch_git "${target_dir}" "${version}"
         [ -n "$_try_branch_res" ] && res="${res:+${res}\n}$_try_branch_res"
     else
         rm "$version_cache_file" 2>/dev/null
@@ -564,7 +567,7 @@ function tue-install-git
     do
         tue-install-debug "Parsed branch '${branch}'"
         _try_branch_res=""
-        _try_branch_git "${targetdir}" "${branch}"
+        _try_branch_git "${target_dir}" "${branch}"
         _try_branch_error_code=$?
         [ -n "${_try_branch_res}" ] && res="${res:+${res}\n}${_try_branch_res}"
         [ "${_try_branch_error_code}" -eq 0 ] && break
@@ -1060,23 +1063,40 @@ function tue-install-ppa-now
 
 function _tue-install-pip
 {
-    local pv name
+    local pv
     pv=$1
     shift
     tue-install-debug "tue-install-pip${pv} $*"
-    name="$*"
-    name="${name// /^}"
 
-    if [ -z "$1" ]
+    local pkg_req pkg_reqs python_site
+    { [[ -n ${VIRTUAL_ENV} ]] && python_site="venv"; } || python_site="user"
+    if [[ -n $1 ]]
     then
-        tue-install-error "Invalid tue-install-pip${pv} call: needs package as argument."
+        for i in "$@"
+        do
+            case $i in
+                --python-site=* )
+                    python_site="${i#*=}" ;;
+                --* )
+                    tue-install-error "tue-install-pip${pv}-now: Unknown input variable ${i}" ;;
+                * )
+                    pkg_reqs+=("$i") ;;
+            esac
+        done
+    fi
+    pkg_req=${pkg_reqs[*]}
+    pkg_req=${pkg_req// /^}
+
+    if [[ -n ${VIRTUAL_ENV} && ${TUE_PPM} == "poetry" && ${python_site} == "venv" ]]
+    then
+        tue-install-error "tue-install-pip${pv}: You are using poetry as package manager, but you are trying to install '${pkg_req}' in the virtual environment site-packages. This is not allowed as poetry manages the packages in the virtual environment."
     fi
 
-    tue-install-debug "Adding $name to pip${pv} list"
+    tue-install-debug "Adding ${pkg_req} to pip${pv} ${python_site} list"
     local list
-    list=TUE_INSTALL_PIP"${pv}"S
+    list=TUE_INSTALL_"${python_site^^}"_PIP"${pv}"S
     # shellcheck disable=SC2140
-    declare -g "$list"="$name ${!list}"
+    declare -g "${list}"="${pkg_req} ${!list}"
 }
 
 # Needed for backward compatibility
@@ -1092,6 +1112,48 @@ function tue-install-pip3
 
 # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # #
 
+function _handle_python_sites
+{
+    local pv
+    pv=$1
+    shift
+    # requires the parent function to have declared the following local variables:
+    # python_exec, site_arg, sudo_cmd, user_arg
+    tue-install-debug "_handle_python${pv}_sites $*"
+
+    local python_site
+    python_site=$1
+
+     case ${python_site} in
+        "system" )
+            python_exec=/usr/bin/python"${pv}"
+            site_arg="-s"
+            sudo_cmd="sudo -H"
+            user_arg=""
+            ;;
+        "user" )
+            python_exec=/usr/bin/python"${pv}"
+            site_arg=""
+            sudo_cmd=""
+            user_arg="--user"
+            ;;
+        "venv" )
+            python_exec=python"${pv}"
+            site_arg="-s"
+            sudo_cmd=""
+            user_arg=""
+            ;;
+        * )
+            tue-install-error "_handle_python${pv}_sites: Unknown input python_site: ${python_site}" ;;
+    esac
+
+    tue-install-debug "python_site: ${python_site}"
+    tue-install-debug "python_exec: ${python_exec}"
+    tue-install-debug "site_arg: ${site_arg}"
+    tue-install-debug "sudo_cmd: ${sudo_cmd}"
+    tue-install-debug "user_arg: ${user_arg}"
+}
+
 function _tue-install-pip-now
 {
     local pv
@@ -1104,25 +1166,41 @@ function _tue-install-pip-now
         tue-install-error "Invalid tue-install-pip${pv}-now call: needs package as argument."
     fi
 
-    local user_arg
-    [[ -z "${VIRTUAL_ENV}" ]] && user_arg="--user"
+    local pips python_site
+    { [[ -n ${VIRTUAL_ENV} ]] && python_site="venv"; } || python_site="user"
+    if [[ -n $1 ]]
+    then
+        for i in "$@"
+        do
+            case $i in
+                --python-site=* )
+                    python_site="${i#*=}" ;;
+                --* )
+                    tue-install-error "tue-install-pip${pv}-now: Unknown input variable ${i}" ;;
+                * )
+                    pips+=("$i") ;;
+            esac
+        done
+    fi
+
+    local python_exec site_arg sudo_cmd user_arg
+    _handle_python_sites "${pv}" "${python_site}"
 
     # Make sure pip is up-to-date before checking version and installing
     local pip_version desired_pip_version
-    pip_version=$(python"${pv}" -m pip --version | awk '{print $2}')
-    desired_pip_version="22"
+    pip_version=$(${python_exec} ${site_arg:+${site_arg} }-m pip --version | awk '{print $2}')
+    desired_pip_version="24"
     if version_gt "$desired_pip_version" "$pip_version"
     then
         tue-install-debug "pip${pv} not yet version >=$desired_pip_version, but $pip_version"
-        tue-install-pipe python"${pv}" -m pip install ${user_arg} --upgrade pip
+        tue-install-pipe ${sudo_cmd:+${sudo_cmd} }"${python_exec}" ${site_arg:+${site_arg} }-m pip install ${user_arg:+${user_arg} }--upgrade pip
         hash -r
     else
         tue-install-debug "Already pip${pv}>=$desired_pip_version"
     fi
 
     local pips_to_check pips_to_check_w_options pips_to_install pips_to_install_w_options git_pips_to_install
-    # shellcheck disable=SC2048
-    for pkg in $*
+    for pkg in "${pips[@]}"
     do
         if [[ "$pkg" == "git+"* ]]
         then
@@ -1142,7 +1220,7 @@ function _tue-install-pip-now
     then
         local indexes_to_install
         # shellcheck disable=SC2086
-        _tue-install-pip-check "$pv" $pips_to_check
+        _tue-install-pip-check "${pv}" --python-site=${python_site} ${pips_to_check}
 
         read -r -a pips_to_check <<< "$pips_to_check"
 
@@ -1164,7 +1242,7 @@ function _tue-install-pip-now
             pips_to_check_options_removed="$pips_to_check_options_removed ${pkg_split[0]}"
         done
         # shellcheck disable=SC2086
-        _tue-install-pip-check "$pv" $pips_to_check_options_removed
+        _tue-install-pip-check "${pv}" --python-site=${python_site} ${pips_to_check_options_removed}
 
         read -r -a pips_to_check_w_options <<< "$pips_to_check_w_options"
 
@@ -1180,7 +1258,7 @@ function _tue-install-pip-now
     if [ -n "$pips_to_install" ]
     then
         # shellcheck disable=SC2048,SC2086
-        tue-install-pipe python"${pv}" -m pip install ${user_arg} $pips_to_install <<< yes || tue-install-error "An error occurred while installing pip${pv} packages."
+        tue-install-pipe ${sudo_cmd:+${sudo_cmd} }"${python_exec}" ${site_arg:+${site_arg} }-m pip install ${user_arg:+${user_arg} }$pips_to_install <<< yes || tue-install-error "An error occurred while installing pip${pv} packages."
     fi
 
     if [ -n "$pips_to_install_w_options" ]
@@ -1188,7 +1266,7 @@ function _tue-install-pip-now
         for pkg in $pips_to_install_w_options
         do
             # shellcheck disable=SC2048,SC2086
-            tue-install-pipe python"${pv}" -m pip install ${user_arg} ${pkg//^/ } <<< yes || tue-install-error "An error occurred while installing pip${pv} packages with options."
+            tue-install-pipe ${sudo_cmd:+${sudo_cmd} }"${python_exec}" ${site_arg:+${site_arg} }-m pip install ${user_arg:+${user_arg} }${pkg//^/ } <<< yes || tue-install-error "An error occurred while installing pip${pv} packages with options."
         done
     fi
 
@@ -1197,7 +1275,7 @@ function _tue-install-pip-now
         for pkg in $git_pips_to_install
         do
             # shellcheck disable=SC2048,SC2086
-            tue-install-pipe python"${pv}" -m pip install ${user_arg} ${pkg} <<< yes || tue-install-error "An error occurred while installing pip${pv} git packages."
+            tue-install-pipe ${sudo_cmd:+${sudo_cmd} }"${python_exec}"${site_arg:+${site_arg} }-m pip install ${user_arg:+${user_arg} }${pkg} <<< yes || tue-install-error "An error occurred while installing pip${pv} git packages."
         done
     fi
 }
@@ -1209,12 +1287,35 @@ function _tue-install-pip-check
     pv=$1
     shift
 
-    local pips_to_check installed_versions
-    pips_to_check=("$@")
+    local installed_versions python_site pips_to_check
+    if [[ -n $1 ]]
+    then
+        for i in "$@"
+        do
+            case $i in
+                --python-site=* )
+                    python_site="${i#*=}" ;;
+                --* )
+                    tue-install-error "Unknown input variable ${i}" ;;
+                * )
+                    pips_to_check+=("$i") ;;
+            esac
+        done
+    fi
+
+    if [[ -z "${VIRTUAL_ENV}" && "${python_site}" == "venv" ]]
+    then
+        tue-install-error "Trying to check pip packages in a virtualenv, but no virtualenv is activated"
+    fi
+
+    # Set by _handle_python_sites
+    local python_exec sudo_cmd site_arg user_arg
+    _handle_python_sites "${pv}" "${python_site}"
+
     if [ ${#pips_to_check[@]} -gt 0 ]
     then
         local error_code
-        installed_versions=$(python"${pv}" "$TUE_INSTALL_SCRIPTS_DIR"/check-pip-pkg-installed-version.py "${pips_to_check[@]}")
+        installed_versions=$(${python_exec} ${site_arg:+${site_arg} }"${TUE_INSTALL_SCRIPTS_DIR}"/check-pip-pkg-installed-version.py "${pips_to_check[@]}")
         error_code=$?
         if [ "$error_code" -gt 1 ]
         then
@@ -1252,6 +1353,38 @@ function tue-install-pip-now
 function tue-install-pip3-now
 {
     _tue-install-pip-now "3" "$@"
+}
+
+# # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # #
+
+function tue-install-poetry-now
+{
+    tue-install-debug "tue-install-poetry-now $*"
+
+    if [[ -z "$1" ]]
+    then
+        tue-install-error "Invalid tue-install-poetry-now call: needs project as argument."
+    fi
+
+    local poetry_self_updated_file
+    poetry_self_updated_file=/tmp/tue_get_poetry_self_updated
+    if [[ ! -f ${poetry_self_updated_file} ]]
+    then
+        tue-install-pipe poetry self update
+        touch ${poetry_self_updated_file}
+    fi
+
+    local return_code sync_arg venv_include_system_site_packages
+    venv_include_system_site_packages=$(python3 -c "from pip._internal.utils.virtualenv import virtualenv_no_global; print(str(not virtualenv_no_global()).lower())")
+    return_code=$?
+    [[ "${return_code}" -ne 0 ]] && tue-install-warning "An error occurred while checking if the virtual environment includes the system site packages. Assuming it does." && venv_include_system_site_packages="true"
+    [[ "${venv_include_system_site_packages}" == "false" ]] && sync_arg="--sync"
+
+    local project_dir
+    project_dir=${TUE_WS_DIR}/src/${TUE_POETRY_PROJECT//-/_}
+    [[ ! -d ${project_dir} ]] && tue-install-error "tue-install-poetry-now: The project ${TUE_POETRY_PROJECT} does not exist in the workspace directory $(dirname "${project_dir}")"
+
+    tue-install-pipe poetry -C "${project_dir}" install ${sync_arg:+${sync_arg} } ${TUE_GET_POETRY_INSTALL_ARGS:+${TUE_GET_POETRY_INSTALL_ARGS} } || tue-install-error "An error occurred while installing the project ${TUE_POETRY_PROJECT} with poetry."
 }
 
 # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # #
@@ -1372,7 +1505,7 @@ function tue-install-dpkg
         tue-install-error "Invalid tue-install-dpkg call: needs package as argument."
     fi
     tue-install-pipe sudo dpkg --install "$1"
-    tue-install-pipe sudo apt-get --fix-broken --assume-yes -q install || tue-install-error "An error occured while fixing dpkg install"
+    tue-install-pipe sudo apt-get --fix-broken --assume-yes -q install || tue-install-error "An error occurred while fixing dpkg install"
 }
 
 # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # #
@@ -1392,11 +1525,7 @@ function tue-install-ros
 
     local ros_pkg_name
     ros_pkg_name=${TUE_INSTALL_CURRENT_TARGET#ros-}
-    if [[ $ros_pkg_name == *-* ]]
-    then
-        tue-install-error "A ROS package cannot contain dashes (${ros_pkg_name}), make sure the package is named '${ros_pkg_name//-/_}' and rename the target to 'ros-${ros_pkg_name//-/_}'"
-        return 1
-    fi
+    [[ $ros_pkg_name == *-* ]] && tue-install-error "A ROS package cannot contain dashes (${ros_pkg_name}), make sure the package is named '${ros_pkg_name//-/_}' and rename the target to 'ros-${ros_pkg_name//-/_}'"
 
     # First of all, make sure ROS itself is installed
     tue-install-target ros"${TUE_ROS_VERSION}" || tue-install-error "Failed to install target 'ros${TUE_ROS_VERSION}'"
@@ -1420,20 +1549,13 @@ function tue-install-ros
         do
             case $i in
                 --target-dir=* )
-                    repos_dir="${i#*=}"
-                    ;;
-
+                    repos_dir="${i#*=}" ;;
                 --version=* )
-                    version="${i#*=}"
-                    ;;
-
+                    version="${i#*=}" ;;
                 --sub-dir=* )
-                    sub_dir="${i#*=}"
-                    ;;
-
+                    sub_dir="${i#*=}" ;;
                 * )
-                    tue-install-error "Unknown input variable ${i}"
-                    ;;
+                    tue-install-error "Unknown input variable ${i}" ;;
             esac
         done
     fi
@@ -1492,10 +1614,11 @@ function tue-install-ros
             local pkg_xml="$ros_pkg_dir"/package.xml
             if [ -f "$pkg_xml" ]
             then
-                # Catkin
+                # catkin/ament/colcon
                 tue-install-debug "Parsing $pkg_xml"
+
                 local deps
-                deps=$("$TUE_INSTALL_SCRIPTS_DIR"/parse_package_xml.py "$pkg_xml")
+                deps=$(/usr/bin/python3 "${TUE_INSTALL_SCRIPTS_DIR}"/parse_package_xml.py "${pkg_xml}")
                 tue-install-debug "Parsed package.xml\n$deps"
 
                 for dep in $deps
@@ -1562,38 +1685,31 @@ while test $# -gt 0
 do
     case "$1" in
         --debug)
-            DEBUG="true"
-            ;;
+            DEBUG="true" ;;
         --no-ros-deps)
-            export TUE_INSTALL_SKIP_ROS_DEPS="all"
-            ;;
+            export TUE_INSTALL_SKIP_ROS_DEPS="all" ;;
         --doc-depend)
             [[ "$TUE_INSTALL_SKIP_ROS_DEPS" == "all" ]] && export TUE_INSTALL_SKIP_ROS_DEPS="normal"
             export TUE_INSTALL_DOC_DEPEND="true"
             ;;
         --no-doc-depend)
-            export TUE_INSTALL_DOC_DEPEND="false"
-            ;;
+            export TUE_INSTALL_DOC_DEPEND="false" ;;
         --test-depend)
             [[ "$TUE_INSTALL_SKIP_ROS_DEPS" == "all" ]] && export TUE_INSTALL_SKIP_ROS_DEPS="normal"
             export TUE_INSTALL_TEST_DEPEND="true"
             ;;
         --no-test-depend)
-            export TUE_INSTALL_TEST_DEPEND="false"
-            ;;
+            export TUE_INSTALL_TEST_DEPEND="false" ;;
         --branch*)
-            echo "Usage of --branch is deprecated, switch to --try-branch"
-            ;;&
+            echo "Usage of --branch is deprecated, switch to --try-branch" ;;&
         --try-branch* | --branch*)
             # shellcheck disable=SC2001
             BRANCH="$(echo "$1" | sed -e 's/^[^=]*=//g')${BRANCH:+ ${BRANCH}}"  # Reverse order, so we try last one first
             ;;
         --*)
-            echo "unknown option $1"
-            ;;
+            echo "unknown option $1" ;;
         *)
-            targets="${targets:+${targets} }$1"
-            ;;
+            targets="${targets:+${targets} }$1" ;;
     esac
     shift
 done
@@ -1625,7 +1741,9 @@ TUE_INSTALL_GIT_PULL_Q=()
 
 TUE_INSTALL_SYSTEMS=
 TUE_INSTALL_PPA=
-TUE_INSTALL_PIP3S=
+TUE_INSTALL_SYSTEM_PIP3S=
+TUE_INSTALL_USER_PIP3S=
+TUE_INSTALL_VENV_PIP3S=
 TUE_INSTALL_SNAPS=
 TUE_INSTALL_GEMS=
 
@@ -1635,7 +1753,8 @@ TUE_INSTALL_INFOS=
 # Make sure tools used by this installer are installed
 tue-install-system-now curl git jq python-is-python3 python3-pip wget
 
-tue-install-pip3-now catkin-pkg PyYAML
+# Install in user or system site-packages
+tue-install-pip3-now --python-site="user" catkin-pkg 'PyYAML>=6'
 
 
 # Handling of targets
@@ -1643,23 +1762,33 @@ if [[ -z "${targets// }" ]] #If only whitespace
 then
     # If no targets are provided, update all installed targets
     targets=$(ls "$TUE_INSTALL_INSTALLED_DIR")
+    tue-install-debug "No targets provided, updating all installed targets:\n${targets}"
 else
-    raw_targets=$targets
-    targets=""
+    raw_targets=${targets}
+    tue-install-debug "Following raw target names provided: ${raw_targets}"
+    targets_arr=()
     for target in $raw_targets
     do
-        resolved_targets="$(find "$TUE_INSTALL_TARGETS_DIR" -maxdepth 1 -name "$target" -type d -printf "%P ")"
-        if [ -z "$resolved_targets" ] # So the missing target is handled by _missing_targets_check
+        resolved_targets="$(find "${TUE_INSTALL_TARGETS_DIR}" -maxdepth 1 -name "${target}" -type d -printf "%P ")"
+        if [[ -z "${resolved_targets}" ]] # So the missing target is handled by _missing_targets_check
         then
-            resolved_targets="$target"
+            tue-install-debug "Target regex didn't match any target, just adding the raw target name '${target}', so it can be handled by _missing_targets_check"
+            resolved_targets="${target}"
+        else
+            tue-install-debug "Target regex '${target}' matched the following targets: ${resolved_targets}"
         fi
-        targets="${targets:+$targets }$resolved_targets"
+
+        # Unpack the resolved targets
+        for resolved_target in ${resolved_targets}
+        do
+            targets_arr+=("${resolved_target}")
+        done
     done
+    targets=${targets_arr[*]}
 fi
 
-
 # Check if all installed targets exist in the targets repo
-_missing_targets_check "$targets"
+_missing_targets_check "${targets}"
 
 for target in $targets
 do
@@ -1673,7 +1802,7 @@ do
         tue-install-debug "[$target] marked as installed after a successful install"
         touch "$TUE_INSTALL_INSTALLED_DIR"/"$target"
     else
-        tue-install-debug "[$target] succesfully updated"
+        tue-install-debug "[$target] successfully updated"
     fi
 done
 
@@ -1714,16 +1843,44 @@ then
     tue-install-system-now "$TUE_INSTALL_SYSTEMS"
 fi
 
-
 # Installing all python3 (pip3) targets, which are collected during the install
-if [ -n "$TUE_INSTALL_PIP3S" ]
+if [[ -n "${TUE_INSTALL_SYSTEM_PIP3S}" ]]
 then
-    TUE_INSTALL_CURRENT_TARGET="PIP3"
+    TUE_INSTALL_CURRENT_TARGET="PIP3(SYSTEM)"
 
-    tue-install-debug "calling: tue-install-pip3-now $TUE_INSTALL_PIP3S"
-    tue-install-pip3-now "$TUE_INSTALL_PIP3S"
+    # No need to check for poetry, as you can always install in the system site-packages
+    tue-install-debug "calling: tue-install-pip3-now --python-site=\"system\" ${TUE_INSTALL_SYSTEM_PIP3S}"
+    tue-install-pip3-now --python-site="system" "${TUE_INSTALL_SYSTEM_PIP3S}"
 fi
 
+if [[ -n "${TUE_INSTALL_USER_PIP3S}" ]]
+then
+    TUE_INSTALL_CURRENT_TARGET="PIP3(USER)"
+
+    # No need to check for poetry, as you can always install in the user site-packages
+    tue-install-debug "calling: tue-install-pip3-now --python-site=\"user\" ${TUE_INSTALL_USER_PIP3S}"
+    tue-install-pip3-now --python-site="user" "${TUE_INSTALL_USER_PIP3S}"
+fi
+
+if [[ -n "${TUE_INSTALL_VENV_PIP3S}" ]]
+then
+    TUE_INSTALL_CURRENT_TARGET="PIP3(VENV)"
+
+    if [[ -z ${VIRTUAL_ENV} ]]
+    then
+        # This should not be reachable, but just in case
+        tue-install-error "You can't install pip3 packages in the virtualenv, when no virtualenv is activated"
+    fi
+
+    if [[ ${TUE_PPM} == "poetry" ]]
+    then
+        # This should not be reachable, but just in case
+        tue-install-error "You can't install pip3 packages in the virtualenv, when using poetry as python package manager"
+    fi
+
+    tue-install-debug "calling: tue-install-pip3-now --python-site=\"venv\" ${TUE_INSTALL_VENV_PIP3S}"
+    tue-install-pip3-now --python-site="venv" "${TUE_INSTALL_VENV_PIP3S}"
+fi
 
 # Installing all snap targets, which are collected during the install
 if [ -n "$TUE_INSTALL_SNAPS" ]
@@ -1743,8 +1900,30 @@ then
     tue-install-gem-now "$TUE_INSTALL_GEMS"
 fi
 
+if [[ -n ${TUE_POETRY_PROJECT} ]]
+then
+    TUE_INSTALL_CURRENT_TARGET="POETRY"
+
+    poetry_project_target="ros-${TUE_POETRY_PROJECT//-/_}"
+    state_file=${TUE_INSTALL_STATE_DIR}/${poetry_project_target}
+    state_file_now=${state_file}-now
+    if [[ ! -f ${state_file} && ! -f ${state_file_now} ]]
+    then
+        tue-install-echo "The target (${poetry_project_target}) of the poetry root project (${TUE_POETRY_PROJECT}) is not processed in this run of tue-get. Therefore, the poetry root project will not be installed."
+    else
+        if [[ ${TUE_PPM} != "poetry" ]]
+        then
+            tue-install-error "You can't install poetry project '${TUE_POETRY_PROJECT}' when not using poetry as python package manager"
+        fi
+
+        tue-install-debug "calling: tue-install-poetry-now ${TUE_POETRY_PROJECT}"
+        tue-install-poetry-now "${TUE_POETRY_PROJECT}"
+    fi
+
+fi
+
 TUE_INSTALL_CURRENT_TARGET="main-loop"
 
-tue-install-echo "Installer completed succesfully"
+tue-install-echo "Installer completed successfully"
 
 return 0
