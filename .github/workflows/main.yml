@@ -110,6 +110,12 @@ jobs:
                   ssh-keyscan -t rsa -H "${host}" 2>&1 | tee -a "${HOME}"/.ssh/known_hosts
               done
           fi
+          # shellcheck disable=SC1083,SC2296
+          CREATE_VENV=${{ matrix.create-venv }}
+          CREATE_VENV=${CREATE_VENV:-false}
+          # shellcheck disable=SC1083,SC2296
+          VENV_INCLUDE_SYSTEM_SITE=${{ matrix.venv-include-system-site }}
+          VENV_INCLUDE_SYSTEM_SITE=${VENV_INCLUDE_SYSTEM_SITE:-true}
           # shellcheck disable=SC2296
           ci/build-docker-image.sh \
               --image="${TARGET_IMAGE}" \
@@ -123,6 +129,8 @@ jobs:
               --docker_file="dockerfiles/tue-env.Dockerfile" \
               --oauth2_token="${{ secrets.OAUTH2_TOKEN }}" \
               --platforms="${{ matrix.platform }}" \
+              --create-virtualenv="${CREATE_VENV}" \
+              --virtualenv-include-system-site-packages="${VENV_INCLUDE_SYSTEM_SITE}" \
               "${SSH_ARG[@]}"
           echo -e "\e[35m\e[1mimage=${TARGET_IMAGE} >> \${GITHUB_OUTPUT}\e[0m"
           echo "image=${TARGET_IMAGE}" >> "${GITHUB_OUTPUT}"
