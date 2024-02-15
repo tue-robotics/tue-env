@@ -46,6 +46,13 @@ jobs:
             platform: "amd64"
             base-image: "ubuntu:22.04"
             flavor: u22
+          - ros-distro: rolling
+            ros-version: 2
+            platform: "arm64"
+            base-image: "ubuntu:22.04"
+            flavor: u22-venv
+            create-venv: true
+            push-image: false
     outputs:
       key: ${{ steps.artifacts.outputs.key }}
       tag: ${{ steps.script.outputs.tag }}
