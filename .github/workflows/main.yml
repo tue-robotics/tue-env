@@ -73,9 +73,11 @@ jobs:
           BRANCH=${GITHUB_BASE_REF:-${GITHUB_REF}}
           # shellcheck disable=SC1083,SC2296
           PULLREQUEST=${{ github.event.number }}
-          PUSH_IMAGE=${PULLREQUEST:+false}
-          PUSH_IMAGE=${PUSH_IMAGE:-true}
           PULLREQUEST=${PULLREQUEST:-false}
+          # shellcheck disable=SC1083,SC2296
+          PUSH_IMAGE=${{ matrix.push-image }}
+          [[ ${PULLREQUEST} != "false" ]] && PUSH_IMAGE="false"
+          PUSH_IMAGE=${PUSH_IMAGE:-true}
           # shellcheck disable=SC1083,SC2296
           DEFAULT_BRANCH=${{ github.event.repository.default_branch }}
           if [[ "$BRANCH" == "$DEFAULT_BRANCH" ]]
