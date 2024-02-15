@@ -40,7 +40,7 @@ do
             CI_DOCKER_REGISTRY="${i#*=}" ;;
 
         --ssh )
-            CI_DOCKER_SSH=true ;;
+            CI_DOCKER_SSH="true" ;;
 
         --ssh-key=* )
             CI_DOCKER_SSH_KEY_PATH="${i#*=}" ;;
@@ -101,11 +101,14 @@ echo -e "\e[35;1mCI_TARGETS_REPO       = ${CI_TARGETS_REPO}\e[0m"
 
 [[ -z "$CI_DOCKER_LOGIN" ]] && CI_DOCKER_LOGIN="false"
 echo -e "\e[35;1mCI_DOCKER_LOGIN       = ${CI_DOCKER_LOGIN}\e[0m"
-
 [[ -z "$CI_DOCKER_BASE_IMAGE" ]] && CI_DOCKER_BASE_IMAGE="ubuntu:22.04"
 echo -e "\e[35;1mCI_DOCKER_BASE_IMAGE  = ${CI_DOCKER_BASE_IMAGE}\e[0m"
-
 echo -e "\e[35;1mCI_DOCKER_REGISTRY    = ${CI_DOCKER_REGISTRY}\e[0m"
+[[ -z "$CI_DOCKER_PUSH_IMAGE" ]] && CI_DOCKER_PUSH_IMAGE="false"
+echo -e "\e[35;1mCI_DOCKER_PUSH_IMAGE  = ${CI_DOCKER_PUSH_IMAGE}\e[0m"
+[[ -z "${CI_DOCKER_SSH}" ]] && CI_DOCKER_SSH="false"
+echo -e "\e[35;1mCI_DOCKER_SSH         = ${CI_DOCKER_SSH}\e[0m"
+
 
 # Declare arrays for storing the constructed docker build arguments
 CI_DOCKER_BUILD_ARGS=()
