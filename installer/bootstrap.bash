@@ -60,11 +60,11 @@ function main
     fi
 
     # Initialize variables
-    local create_virtualenv targets_repo tue_ros_distro tue_ros_version virtualenv_include_system_site_packages
+    local create_venv targets_repo tue_ros_distro tue_ros_version venv_include_system_site
 
     # Default values
-    create_virtualenv="true"
-    virtualenv_include_system_site_packages="false"
+    create_venv="true"
+    venv_include_system_site="false"
 
     for i in "$@"
     do
@@ -76,9 +76,9 @@ function main
             --targets-repo=* )
                 targets_repo="${i#*=}" ;;
             --create-virtualenv=* )
-                create_virtualenv="${i#*=}" ;;
+                create_venv="${i#*=}" ;;
             --virtualenv-include-system-site-packages=* )
-                virtualenv_include_system_site_packages="${i#*=}" ;;
+                venv_include_system_site="${i#*=}" ;;
             * )
                 echo "[tue-env](bootstrap) Error! Unknown argument '${i}' provided to bootstrap script."
                 return 1
@@ -218,8 +218,8 @@ function main
 
     # Initialize ros environment directory incl. targets
     tue-env init "${workspace}" "${workspace_dir}" \
-    "--create-virtualenv=${create_virtualenv}" \
-    "--virtualenv-include-system-site-packages=${virtualenv_include_system_site_packages}" \
+    "--create-virtualenv=${create_venv}" \
+    "--virtualenv-include-system-site-packages=${venv_include_system_site}" \
     "--targets-url=${env_targets_url}"
 
     # Configure environment
