@@ -67,13 +67,16 @@ jobs:
       - name: Script
         id: script
         run: |
+          #! /usr/bin/env bash
           GITHUB_REF=${GITHUB_REF#refs/heads/}
           GITHUB_REF=${GITHUB_REF#refs/tags/}
           BRANCH=${GITHUB_BASE_REF:-${GITHUB_REF}}
+          # shellcheck disable=SC1083,SC2296
           PULLREQUEST=${{ github.event.number }}
           PUSH_IMAGE=${PULLREQUEST:+false}
           PUSH_IMAGE=${PUSH_IMAGE:-true}
           PULLREQUEST=${PULLREQUEST:-false}
+          # shellcheck disable=SC1083,SC2296
           DEFAULT_BRANCH=${{ github.event.repository.default_branch }}
           if [[ "$BRANCH" == "$DEFAULT_BRANCH" ]]
           then
@@ -81,47 +84,50 @@ jobs:
           else
               IMAGE_TAG="$(echo "${BRANCH}" | tr '[:upper:]' '[:lower:]' | sed -e 's:/:_:g')"
           fi
+          # shellcheck disable=SC1083,SC2296
           IMAGE_FLAVOR=${{ matrix.flavor }}
           IMAGE_FLAVOR=${IMAGE_FLAVOR:+"-${IMAGE_FLAVOR}"}
+          # shellcheck disable=SC2296
           TARGET_IMAGE="${{ env.REGISTRY }}/tue-robotics/tue-env-ros-${{ matrix.ros-distro }}${IMAGE_FLAVOR}:${IMAGE_TAG}-${{ matrix.platform }}"
           SSH_KNOWN_HOSTS="github.com"
           SSH_ARG=()
           if [[ -n "${SSH_KEY}" ]]
           then
-            SSH_KEY_PATH="${HOME}/.ssh/ci_ssh_key"
-            mkdir -p "${HOME}"/.ssh
-            echo "${SSH_KEY}" > "${SSH_KEY_PATH}"
-            chmod 600 "${SSH_KEY_PATH}"
-            eval $(ssh-agent -s)
-            SSH_ARG+=("--ssh" "--ssh-key=${SSH_KEY_PATH}")
+              SSH_KEY_PATH="${HOME}/.ssh/ci_ssh_key"
+              mkdir -p "${HOME}"/.ssh
+              echo "${SSH_KEY}" > "${SSH_KEY_PATH}"
+              chmod 600 "${SSH_KEY_PATH}"
+              eval "$(ssh-agent -s)"
+              SSH_ARG+=("--ssh" "--ssh-key=${SSH_KEY_PATH}")
           fi
           if [[ -n "${SSH_KNOWN_HOSTS}" ]]
           then
-            echo -e "\e[35m\e[1mmkdir -p ${HOME}/.ssh\e[0m"
-            mkdir -p ${HOME}/.ssh
-            for host in ${SSH_KNOWN_HOSTS}
-            do
-              echo -e "\e[35m\e[1mssh-keyscan -t rsa -H \"${host}\" 2>&1 | tee -a ${HOME}/.ssh/known_hosts\e[0m"
-              ssh-keyscan -t rsa -H "${host}" 2>&1 | tee -a "${HOME}"/.ssh/known_hosts
-            done
+              echo -e "\e[35m\e[1mmkdir -p ${HOME}/.ssh\e[0m"
+              mkdir -p "${HOME}"/.ssh
+              for host in ${SSH_KNOWN_HOSTS}
+              do
+                  echo -e "\e[35m\e[1mssh-keyscan -t rsa -H \"${host}\" 2>&1 | tee -a ${HOME}/.ssh/known_hosts\e[0m"
+                  ssh-keyscan -t rsa -H "${host}" 2>&1 | tee -a "${HOME}"/.ssh/known_hosts
+              done
           fi
+          # shellcheck disable=SC2296
           ci/build-docker-image.sh \
-            --image="${TARGET_IMAGE}" \
-            --branch="${BRANCH}" \
-            --commit="${GITHUB_SHA}" \
-            --push_image="true" \
-            --pull_request="${PULLREQUEST}" \
-            --ros_version="${{ matrix.ros-version }}" \
-            --ros_distro="${{ matrix.ros-distro }}" \
-            --base_image="${{ matrix.base-image }}" \
-            --docker_file="dockerfiles/tue-env.Dockerfile" \
-            --oauth2_token="${{ secrets.OAUTH2_TOKEN }}" \
-            --platforms="${{ matrix.platform }}" \
-            "${SSH_ARG[@]}"
-          echo -e "\e[35m\e[1mimage=${TARGET_IMAGE} >> \$GITHUB_OUTPUT\e[0m"
-          echo "image=${TARGET_IMAGE}" >> $GITHUB_OUTPUT
-          echo -e "\e[35m\e[1mtag=${IMAGE_TAG} >> \$GITHUB_OUTPUT\e[0m"
-          echo "tag=${IMAGE_TAG}" >> $GITHUB_OUTPUT
+              --image="${TARGET_IMAGE}" \
+              --branch="${BRANCH}" \
+              --commit="${GITHUB_SHA}" \
+              --push_image="${PUSH_IMAGE}" \
+              --pull_request="${PULLREQUEST}" \
+              --ros_version="${{ matrix.ros-version }}" \
+              --ros_distro="${{ matrix.ros-distro }}" \
+              --base_image="${{ matrix.base-image }}" \
+              --docker_file="dockerfiles/tue-env.Dockerfile" \
+              --oauth2_token="${{ secrets.OAUTH2_TOKEN }}" \
+              --platforms="${{ matrix.platform }}" \
+              "${SSH_ARG[@]}"
+          echo -e "\e[35m\e[1mimage=${TARGET_IMAGE} >> \${GITHUB_OUTPUT}\e[0m"
+          echo "image=${TARGET_IMAGE}" >> "${GITHUB_OUTPUT}"
+          echo -e "\e[35m\e[1mtag=${IMAGE_TAG} >> \${GITHUB_OUTPUT}\e[0m"
+          echo "tag=${IMAGE_TAG}" >> "${GITHUB_OUTPUT}"
       - name: Generate artifacts
         id: artifacts
         if: github.event_name != 'pull_request'
