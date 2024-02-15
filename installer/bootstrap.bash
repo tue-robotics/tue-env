@@ -64,7 +64,7 @@ function main
 
     # Default values
     create_venv="true"
-    venv_include_system_site="false"
+    venv_include_system_site="true"
 
     for i in "$@"
     do

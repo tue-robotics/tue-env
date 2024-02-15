@@ -25,7 +25,7 @@ ARG ROS_DISTRO
 # Default is empty and will result in the default targets repo
 ARG TARGETS_REPO
 ARG CREATE_VENV=false
-ARG VENV_INCLUDE_SYSTEM_SITE=false
+ARG VENV_INCLUDE_SYSTEM_SITE=true
 ARG OAUTH2_TOKEN
 
 # Inform scripts that no questions should be asked and set some environment
