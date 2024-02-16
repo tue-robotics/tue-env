@@ -168,7 +168,7 @@ function _remove_old_target_dep_recursively
     old_dep_dep_file="${TUE_INSTALL_DEPENDENCIES_DIR}"/"${old_dep_target}"
     if [[ -f "${old_dep_dep_file}" ]]
     then
-        # Iterate over all depencies of old_dep_target, which is removed.
+        # Iterate over all dependencies of old_dep_target, which is removed.
         while read -r dep_of_old_dep
         do
             # Actually remove the deps
@@ -183,11 +183,11 @@ function _remove_old_target_dep_recursively
         done < "${old_dep_dep_file}"
         rm -f "${old_dep_dep_file}"
     else
-        tue-install-debug "[remove_old_dep] No depencies file exist for target: ${old_dep_target}"
+        tue-install-debug "[remove_old_dep] No dependencies file exist for target: ${old_dep_target}"
     fi
 
     tue-install-debug "[remove_old_dep] Uninstalled '${old_dep_target}' as a dependency of '${parent_target}'"
-    tue-install-info "[remove_old_dep] '${old_dep_target}' has been uninstalled, you can remove it from the workspace or deinstall it in another way"
+    tue-install-info "[remove_old_dep] '${old_dep_target}' has been uninstalled, you can remove it from the workspace or uninstall it in another way"
     return ${error_code}
 }
 
@@ -352,7 +352,7 @@ function tue-install-target
         old_deps_removed=$(comm -23 <(echo "${old_deps}") <(echo "${new_deps}"))
         if [[ -n ${old_deps_removed} ]]
         then
-            tue-install-debug "Following dropped depedencies need to be removed:\n${old_deps_removed}"
+            tue-install-debug "Following dropped dependencies need to be removed:\n${old_deps_removed}"
         else
             tue-install-debug "No dropped dependencies to be removed"
         fi
@@ -361,15 +361,17 @@ function tue-install-target
         do
             # Remove this target from dep-on file of dep
             # When the dep-on file is now empty, remove it
-            # Recurisvely -> Remove it from the dep-on files of its deps
+            # Recursively -> Remove it from the dep-on files of its deps
             tue-install-debug "Going to remove '${dep}' as a dependency"
             _remove_old_target_dep_recursively "${target}" "${dep}" || tue-install-error "Something went wrong while removing '${dep}' as a dependency"
         done
 
         if [ "$now" == "true" ]
         then
+            tue-install-debug "Execution finished with now enabled. Creating state file ${state_file_now}"
             touch "$state_file_now"
         else
+            tue-install-debug "Execution finished. Creating state file ${state_file}"
             touch "$state_file"
         fi
 
@@ -459,8 +461,8 @@ function tue-install-git
 "The problem will probably be solved by resourcing the setup"
     fi
 
-    local targetdir version
-    targetdir=$(_git_url_to_repos_dir "${repo_pre}")
+    local target_dir version
+    target_dir=$(_git_url_to_repos_dir "${repo_pre}")
 
     # The shift here is to ensure that all options are explicitly checked as they can be at most 2
     # and are optional
@@ -476,8 +478,8 @@ function tue-install-git
         do
             case $i in
                 --target-dir=* )
-                    targetdir="${i#*=}"
-                    targetdir="${targetdir/#\~/$HOME}"
+                    target_dir="${i#*=}"
+                    target_dir="${target_dir/#\~/$HOME}"
                     ;;
                 --version=* )
                     version="${i#*=}" ;;
@@ -487,53 +489,54 @@ function tue-install-git
         done
     fi
 
-    if [[ -z "${targetdir}" ]]
+    if [[ -z "${target_dir}" ]]
     then
         tue-install-error "Target directory path cannot be empty"
     fi
 
     local res
-    if [ ! -d "$targetdir" ]
+    if [ ! -d "${target_dir}" ]
     then
-        tue-install-debug "git clone --recursive $repo $targetdir"
-        res=$(git clone --recursive "$repo" "$targetdir" 2>&1)
-        TUE_INSTALL_GIT_PULL_Q+=:$targetdir:
+        tue-install-debug "git clone --recursive ${repo} ${target_dir}"
+        res=$(git clone --recursive "${repo}" "${target_dir}" 2>&1)
+        TUE_INSTALL_GIT_PULL_Q+=("${target_dir}")
     else
         # Check if we have already pulled the repo
-        if [[ $TUE_INSTALL_GIT_PULL_Q == *:$targetdir:* ]]
+        if [[ ${TUE_INSTALL_GIT_PULL_Q[*]} == "${target_dir}" ]]
         then
             tue-install-debug "Repo previously pulled, skipping"
             # We have already pulled this repo, skip it
             res=
         else
+            tue-install-debug "Repo not yet pulled, pulling"
             # Switch url of origin to use https/ssh if different
             # Get current remote url
             local current_url
-            current_url=$(git -C "$targetdir" config --get remote.origin.url)
+            current_url=$(git -C "${target_dir}" config --get remote.origin.url)
 
             # If different, switch url
             if [ "$current_url" != "$repo" ]
             then
-                tue-install-pipe git -C "$targetdir" remote set-url origin "$repo" || tue-install-error "Could not change git url of '$targetdir' to '$repo'"
+                tue-install-pipe git -C "${target_dir}" remote set-url origin "${repo}" || tue-install-error "Could not change git url of '${target_dir}' to '${repo}'"
                 tue-install-info "URL has switched to $repo"
             fi
 
-            tue-install-debug "git -C $targetdir pull --ff-only --prune"
-            res=$(git -C "$targetdir" pull --ff-only --prune 2>&1)
+            tue-install-debug "git -C ${target_dir} pull --ff-only --prune"
+            res=$(git -C "${target_dir}" pull --ff-only --prune 2>&1)
             tue-install-debug "res: $res"
 
-            TUE_INSTALL_GIT_PULL_Q+=:$targetdir:
+            TUE_INSTALL_GIT_PULL_Q+=("${target_dir}")
 
             local submodule_sync_res submodule_sync_error_code
-            tue-install-debug "git -C $targetdir submodule sync --recursive"
-            submodule_sync_res=$(git -C "$targetdir" submodule sync --recursive)
+            tue-install-debug "git -C ${target_dir} submodule sync --recursive"
+            submodule_sync_res=$(git -C "${target_dir}" submodule sync --recursive)
             submodule_sync_error_code=$?
             tue-install-debug "submodule_sync_res(${submodule_sync_error_code}): ${submodule_sync_res}"
             [ "${submodule_sync_error_code}" -gt 0 ] && [ -n "${submodule_sync_res}" ] && res="${res:+${res}\n}${submodule_sync_res}"
 
             local submodule_res
-            tue-install-debug "git -C $targetdir submodule update --init --recursive"
-            submodule_res=$(git -C "$targetdir" submodule update --init --recursive 2>&1)
+            tue-install-debug "git -C ${target_dir} submodule update --init --recursive"
+            submodule_res=$(git -C "${target_dir}" submodule update --init --recursive 2>&1)
             tue-install-debug "submodule_res: $submodule_res"
             [ -n "$submodule_res" ] && res="${res:+${res}\n}$submodule_res"
 
@@ -546,13 +549,13 @@ function tue-install-git
 
     tue-install-debug "Desired version: $version"
     local _try_branch_res # Will be used in _try_branch_git
-    local version_cache_file="$TUE_ENV_DIR/.env/version_cache/$targetdir"
+    local version_cache_file="${TUE_ENV_DIR}/.env/version_cache/${target_dir}"
     if [ -n "$version" ]
     then
         mkdir -p "$(dirname "$version_cache_file")"
         echo "$version" > "$version_cache_file"
         _try_branch_res=""
-        _try_branch_git "$targetdir" "$version"
+        _try_branch_git "${target_dir}" "${version}"
         [ -n "$_try_branch_res" ] && res="${res:+${res}\n}$_try_branch_res"
     else
         rm "$version_cache_file" 2>/dev/null
@@ -564,7 +567,7 @@ function tue-install-git
     do
         tue-install-debug "Parsed branch '${branch}'"
         _try_branch_res=""
-        _try_branch_git "${targetdir}" "${branch}"
+        _try_branch_git "${target_dir}" "${branch}"
         _try_branch_error_code=$?
         [ -n "${_try_branch_res}" ] && res="${res:+${res}\n}${_try_branch_res}"
         [ "${_try_branch_error_code}" -eq 0 ] && break
@@ -1110,7 +1113,7 @@ function _tue-install-pip-now
     # Make sure pip is up-to-date before checking version and installing
     local pip_version desired_pip_version
     pip_version=$(python"${pv}" -m pip --version | awk '{print $2}')
-    desired_pip_version="22"
+    desired_pip_version="24"
     if version_gt "$desired_pip_version" "$pip_version"
     then
         tue-install-debug "pip${pv} not yet version >=$desired_pip_version, but $pip_version"
@@ -1372,7 +1375,7 @@ function tue-install-dpkg
         tue-install-error "Invalid tue-install-dpkg call: needs package as argument."
     fi
     tue-install-pipe sudo dpkg --install "$1"
-    tue-install-pipe sudo apt-get --fix-broken --assume-yes -q install || tue-install-error "An error occured while fixing dpkg install"
+    tue-install-pipe sudo apt-get --fix-broken --assume-yes -q install || tue-install-error "An error occurred while fixing dpkg install"
 }
 
 # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # #
@@ -1392,11 +1395,7 @@ function tue-install-ros
 
     local ros_pkg_name
     ros_pkg_name=${TUE_INSTALL_CURRENT_TARGET#ros-}
-    if [[ $ros_pkg_name == *-* ]]
-    then
-        tue-install-error "A ROS package cannot contain dashes (${ros_pkg_name}), make sure the package is named '${ros_pkg_name//-/_}' and rename the target to 'ros-${ros_pkg_name//-/_}'"
-        return 1
-    fi
+    [[ ${ros_pkg_name} == *-* ]] && tue-install-error "A ROS package cannot contain dashes (${ros_pkg_name}), make sure the package is named '${ros_pkg_name//-/_}' and rename the target to 'ros-${ros_pkg_name//-/_}'"
 
     # First of all, make sure ROS itself is installed
     tue-install-target ros"${TUE_ROS_VERSION}" || tue-install-error "Failed to install target 'ros${TUE_ROS_VERSION}'"
@@ -1420,20 +1419,13 @@ function tue-install-ros
         do
             case $i in
                 --target-dir=* )
-                    repos_dir="${i#*=}"
-                    ;;
-
+                    repos_dir="${i#*=}" ;;
                 --version=* )
-                    version="${i#*=}"
-                    ;;
-
+                    version="${i#*=}" ;;
                 --sub-dir=* )
-                    sub_dir="${i#*=}"
-                    ;;
-
+                    sub_dir="${i#*=}" ;;
                 * )
-                    tue-install-error "Unknown input variable ${i}"
-                    ;;
+                    tue-install-error "Unknown input variable ${i}" ;;
             esac
         done
     fi
@@ -1492,7 +1484,7 @@ function tue-install-ros
             local pkg_xml="$ros_pkg_dir"/package.xml
             if [ -f "$pkg_xml" ]
             then
-                # Catkin
+                # catkin/ament/colcon
                 tue-install-debug "Parsing $pkg_xml"
                 local deps
                 deps=$("$TUE_INSTALL_SCRIPTS_DIR"/parse_package_xml.py "$pkg_xml")
@@ -1562,38 +1554,31 @@ while test $# -gt 0
 do
     case "$1" in
         --debug)
-            DEBUG="true"
-            ;;
+            DEBUG="true" ;;
         --no-ros-deps)
-            export TUE_INSTALL_SKIP_ROS_DEPS="all"
-            ;;
+            export TUE_INSTALL_SKIP_ROS_DEPS="all" ;;
         --doc-depend)
             [[ "$TUE_INSTALL_SKIP_ROS_DEPS" == "all" ]] && export TUE_INSTALL_SKIP_ROS_DEPS="normal"
             export TUE_INSTALL_DOC_DEPEND="true"
             ;;
         --no-doc-depend)
-            export TUE_INSTALL_DOC_DEPEND="false"
-            ;;
+            export TUE_INSTALL_DOC_DEPEND="false" ;;
         --test-depend)
             [[ "$TUE_INSTALL_SKIP_ROS_DEPS" == "all" ]] && export TUE_INSTALL_SKIP_ROS_DEPS="normal"
             export TUE_INSTALL_TEST_DEPEND="true"
             ;;
         --no-test-depend)
-            export TUE_INSTALL_TEST_DEPEND="false"
-            ;;
+            export TUE_INSTALL_TEST_DEPEND="false" ;;
         --branch*)
-            echo "Usage of --branch is deprecated, switch to --try-branch"
-            ;;&
+            echo "Usage of --branch is deprecated, switch to --try-branch" ;;&
         --try-branch* | --branch*)
             # shellcheck disable=SC2001
             BRANCH="$(echo "$1" | sed -e 's/^[^=]*=//g')${BRANCH:+ ${BRANCH}}"  # Reverse order, so we try last one first
             ;;
         --*)
-            echo "unknown option $1"
-            ;;
+            echo "unknown option $1" ;;
         *)
-            targets="${targets:+${targets} }$1"
-            ;;
+            targets="${targets:+${targets} }$1" ;;
     esac
     shift
 done
@@ -1643,23 +1628,33 @@ if [[ -z "${targets// }" ]] #If only whitespace
 then
     # If no targets are provided, update all installed targets
     targets=$(ls "$TUE_INSTALL_INSTALLED_DIR")
+    tue-install-debug "No targets provided, updating all installed targets:\n${targets}"
 else
-    raw_targets=$targets
-    targets=""
+    raw_targets=${targets}
+    tue-install-debug "Following raw target names provided: ${raw_targets}"
+    targets_arr=()
     for target in $raw_targets
     do
-        resolved_targets="$(find "$TUE_INSTALL_TARGETS_DIR" -maxdepth 1 -name "$target" -type d -printf "%P ")"
-        if [ -z "$resolved_targets" ] # So the missing target is handled by _missing_targets_check
+        resolved_targets="$(find "${TUE_INSTALL_TARGETS_DIR}" -maxdepth 1 -name "${target}" -type d -printf "%P ")"
+        if [[ -z "${resolved_targets}" ]] # So the missing target is handled by _missing_targets_check
         then
-            resolved_targets="$target"
+            tue-install-debug "Target regex didn't match any target, just adding the raw target name '${target}', so it can be handled by _missing_targets_check"
+            resolved_targets="${target}"
+        else
+            tue-install-debug "Target regex '${target}' matched the following targets: ${resolved_targets}"
         fi
-        targets="${targets:+$targets }$resolved_targets"
+
+        # Unpack the resolved targets
+        for resolved_target in ${resolved_targets}
+        do
+            targets_arr+=("${resolved_target}")
+        done
     done
+    targets=${targets_arr[*]}
 fi
 
-
 # Check if all installed targets exist in the targets repo
-_missing_targets_check "$targets"
+_missing_targets_check "${targets}"
 
 for target in $targets
 do
@@ -1673,7 +1668,7 @@ do
         tue-install-debug "[$target] marked as installed after a successful install"
         touch "$TUE_INSTALL_INSTALLED_DIR"/"$target"
     else
-        tue-install-debug "[$target] succesfully updated"
+        tue-install-debug "[$target] successfully updated"
     fi
 done
 
@@ -1745,6 +1740,6 @@ fi
 
 TUE_INSTALL_CURRENT_TARGET="main-loop"
 
-tue-install-echo "Installer completed succesfully"
+tue-install-echo "Installer completed successfully"
 
 return 0

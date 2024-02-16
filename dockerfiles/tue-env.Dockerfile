@@ -15,17 +15,18 @@ FROM base as builder
 # Build time arguments
 # BRANCH is the target branch if in PULL_REQUEST mode else it is the test branch
 ARG CI=false
-ARG BRANCH=
+ARG BRANCH
 ARG PULL_REQUEST=false
-ARG COMMIT=
-ARG REF_NAME=
+ARG COMMIT
+ARG REF_NAME
 # Default is empty and gives ROS1, for ROS2 use --build-arg ROS_VERSION=2
-ARG ROS_VERSION=
-ARG ROS_DISTRO=
+ARG ROS_VERSION
+ARG ROS_DISTRO
 # Default is empty and will result in the default targets repo
-ARG TARGETS_REPO=
+ARG TARGETS_REPO
 ARG CREATE_VENV=false
-ARG OAUTH2_TOKEN=
+ARG VENV_INCLUDE_SYSTEM_SITE=true
+ARG OAUTH2_TOKEN
 
 # Inform scripts that no questions should be asked and set some environment
 # variables to prevent warnings and errors
@@ -79,7 +80,12 @@ RUN --mount=type=ssh,uid=1000 sed -e s/return//g -i ~/.bashrc && \
     export COMMIT=$COMMIT && \
     export REF_NAME=$REF_NAME && \
     # Run the standard installation script
-    source bootstrap.bash --ros-version="${ROS_VERSION}" --ros-distro="${ROS_DISTRO}" --create-virtualenv="${CREATE_VENV}"--targets-repo="${TARGETS_REPO}" && \
+    source bootstrap.bash \
+    --ros-version="${ROS_VERSION}" \
+    --ros-distro="${ROS_DISTRO}" \
+    --create-virtualenv="${CREATE_VENV}" \
+    --virtualenv-include-system-site-packages="${VENV_INCLUDE_SYSTEM_SITE}" \
+    --targets-repo="${TARGETS_REPO}" && \
     # Make tue-env to be available to the environment
     source ~/.bashrc && \
     # Install target ros
