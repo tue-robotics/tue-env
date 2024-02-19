@@ -6,7 +6,20 @@
 
 function tue-env
 {
-    if [ -z "$1" ]
+    local show_help
+    show_help="false" # Default value
+    if [[ -z "$1" ]]
+    then
+        show_help="true"
+    else
+        case $1 in
+            --help | -h )
+                show_help="true"
+                ;;
+        esac
+    fi
+
+    if [[ "${show_help}" == "true" ]]
     then
         # shellcheck disable=SC1078,SC1079
         echo """tue-env is a tool for switching between different installation environments.
@@ -16,7 +29,7 @@ function tue-env
     Possible commands:
 
         init           - Initializes new environment
-        remove         - Removes an existing environment
+        remove/rm      - Removes an existing environment
         switch         - Switch to a different environment
         config         - Configures current environment
         set-default    - Set default environment
@@ -27,6 +40,9 @@ function tue-env
         list           - List all possible environments
         current        - Shows current environment
         cd             - Changes directory to environment directory
+
+    Possible options:
+        --help, -h     - Show this help message and exit
 """
         return 1
     fi
@@ -38,16 +54,15 @@ function tue-env
     # Make sure the correct directories are there
     mkdir -p "$TUE_DIR"/user/envs
 
-    local create_venv dir env_name targets_url show_help
+    local create_venv dir env_name targets_url
     create_venv="false"
-    show_help="false"
 
     if [[ ${cmd} == "init" ]]
     then
-        if [[ -n "$1" ]]
+        if [[ -z "$1" ]]
         then
-            env_name=$1
-            shift
+            show_help="true"
+        else
             for i in "$@"
             do
                 case $i in
@@ -55,10 +70,15 @@ function tue-env
                         targets_url="${i#*=}" ;;
                     --create-virtualenv=* )
                         create_venv="${i#*=}" ;;
-                    --help )
-                        show_help="true" ;;
+                    --help | -h )
+                        show_help="true"
+                        break
+                        ;;
                     * )
-                        if [[ -z "${dir}" ]]
+                        if [[ -z "${env_name}" ]]
+                        then
+                            env_name="$i"
+                        elif [[ -z "${dir}" ]]
                         then
                             dir="$i"
                         else
@@ -67,13 +87,11 @@ function tue-env
                         ;;
                 esac
             done
-        else
-            show_help="true"
         fi
 
         if [[ "${show_help}" == "true" ]]
         then
-            echo "Usage: tue-env init NAME [ DIRECTORY ] [--help] [--targets-url=TARGETS GIT URL] [--create-virtualenv=false|true]"
+            echo "Usage: tue-env init NAME [DIRECTORY] [--help|-h] [--targets-url=TARGETS GIT URL] [--create-virtualenv=false|true]"
             return 1
         fi
 
@@ -110,24 +128,22 @@ function tue-env
 
     elif [[ ${cmd} == "remove" || ${cmd} == "rm" ]]
     then
-        if [ -z "$1" ]
+        # Set purge to be false by default
+        local PURGE env
+        PURGE=false
+        if [[ -z "$1" ]]
         then
-            # shellcheck disable=SC1078,SC1079
-            echo """Usage: tue-env remove [options] ENVIRONMENT
-options:
-    --purge
-        Using this would completely remove the selected ENVIRONMENT if it exists"""
-            return 1
+            show_help="true"
         else
-            # Set purge to be false by default
-            local PURGE env
-            PURGE=false
-            env=
             for i in "$@"
             do
                 case $i in
                     --purge)
                         PURGE=true
+                        ;;
+                    --help | -h )
+                        show_help="true"
+                        break
                         ;;
                     --*)
                         echo "[tue-env] Unknown option $i"
@@ -142,6 +158,18 @@ options:
                         ;;
                 esac
             done
+        fi
+
+        if [[ ${show_help} == "true" ]]
+        then
+            # shellcheck disable=SC1078,SC1079
+            echo """Usage: tue-env remove [options] ENVIRONMENT
+options:
+    --help, -h
+        Show this help message and exit
+    --purge
+        Using this would completely remove the selected ENVIRONMENT if it exists"""
+            return 1
         fi
 
         if [ ! -f "$TUE_DIR"/user/envs/"$env" ]
@@ -177,7 +205,17 @@ Environment directory '${dir}' didn't exist (anymore)"""
 
     elif [[ ${cmd} == "switch" ]]
     then
-        if [ -z "$1" ]
+        [[ -z "$1" ]] && show_help="true"
+        for i in "$@"
+        do
+            [[ ${show_help} == "true" ]] && break
+            case $i in
+                --help | -h )
+                    show_help="true" ;;
+            esac
+        done
+
+        if [[ ${show_help} == "true" ]]
         then
             echo "Usage: tue-env switch ENVIRONMENT"
             return 1
@@ -198,7 +236,22 @@ Environment directory '${dir}' didn't exist (anymore)"""
 
     elif [[ ${cmd} == "set-default" ]]
     then
-        if [ -z "$1" ]
+        if [[ -z "$1" ]]
+        then
+            show_help="true"
+        else
+            for i in "$@"
+            do
+                case $i in
+                    --help | -h )
+                        show_help="true"
+                        break
+                        ;;
+                esac
+            done
+        fi
+
+        if [[ ${show_help} == "true" ]]
         then
             echo "Usage: tue-env set-default ENVIRONMENT"
             return 1
@@ -210,7 +263,9 @@ Environment directory '${dir}' didn't exist (anymore)"""
 
     elif [[ ${cmd} == "unset-default" ]]
     then
-        if [ -n "$1" ]
+        [[ -n "$1" ]] && show_help="true" # No arguments allowed
+
+        if [[ ${show_help} == "true" ]]
         then
             echo "Usage: tue-env unset-default"
             echo "No arguments allowed"
@@ -229,7 +284,22 @@ Environment directory '${dir}' didn't exist (anymore)"""
 
     elif [[ ${cmd} == "init-targets" ]]
     then
-        if [ -z "$1" ] || { [ -z "$TUE_ENV" ] && [ -z "$2" ]; }
+        if { [[ -z "$1" ]] || { [ -z "${TUE_ENV}" ] && [ -z "$2" ]; }; }
+        then
+            show_help="true"
+        else
+            for i in "$@"
+            do
+                case $i in
+                    --help | -h )
+                        show_help="true"
+                        break
+                        ;;
+                esac
+            done
+        fi
+
+        if [[ ${show_help} == "true" ]]
         then
             echo "Usage: tue-env init-targets [ENVIRONMENT] TARGETS_GIT_URL"
             return 1
@@ -268,6 +338,22 @@ Environment directory '${dir}' didn't exist (anymore)"""
 
     elif [[ ${cmd} == "targets" ]]
     then
+        for i in "$@"
+        do
+            case $i in
+                --help | -h )
+                    show_help="true"
+                    break
+                    ;;
+            esac
+        done
+
+        if [[ ${show_help} == "true" ]]
+        then
+            echo "Usage: tue-env targets [ENVIRONMENT]"
+            return 1
+        fi
+
         local env
         env=$1
         [ -n "$env" ] || env=$TUE_ENV
@@ -281,6 +367,22 @@ Environment directory '${dir}' didn't exist (anymore)"""
 
     elif [[ ${cmd} == "init-venv" ]]
     then
+        for i in "$@"
+        do
+            case $i in
+                --help | -h )
+                    show_help="true"
+                    break
+                    ;;
+            esac
+        done
+
+        if [[ ${show_help} == "true" ]]
+        then
+            echo "Usage: tue-env init-venv [ENVIRONMENT]"
+            return 1
+        fi
+
         local env
         env=$1
         [ -n "${env}" ] || env=${TUE_ENV}
@@ -336,6 +438,22 @@ Environment directory '${dir}' didn't exist (anymore)"""
 
     elif [[ ${cmd} == "config" ]]
     then
+        for i in "$@"
+        do
+            case $i in
+                --help | -h )
+                    show_help="true"
+                    break
+                    ;;
+            esac
+        done
+
+        if [[ ${show_help} == "true" ]]
+        then
+            echo "Usage: tue-env config [ENVIRONMENT] [FUNCTION]"
+            return 1
+        fi
+
         local env
         env=$1
         shift
@@ -353,6 +471,22 @@ Environment directory '${dir}' didn't exist (anymore)"""
 
     elif [[ ${cmd} == "cd" ]]
     then
+        for i in "$@"
+        do
+            case $i in
+                --help | -h )
+                    show_help="true"
+                    break
+                    ;;
+            esac
+        done
+
+        if [[ ${show_help} == "true" ]]
+        then
+            echo "Usage: tue-env cd [ENVIRONMENT]"
+            return 1
+        fi
+
         local env
         env=$1
         [ -n "$env" ] || env=$TUE_ENV
@@ -400,9 +534,12 @@ function _tue-env
     local cur
     cur=${COMP_WORDS[COMP_CWORD]}
 
+    local help_options
+    help_options="'-h' '--help'"
+
     if [ "$COMP_CWORD" -eq 1 ]
     then
-        mapfile -t COMPREPLY < <(compgen -W "init list switch current remove rm cd set-default config init-targets targets init-venv" -- "$cur")
+        mapfile -t COMPREPLY < <(compgen -W "init list switch current remove rm cd set-default config init-targets targets init-venv ${help_options}" -- "$cur")
     else
         local cmd
         cmd=${COMP_WORDS[1]}
@@ -413,13 +550,12 @@ function _tue-env
                 local envs
                 [ -d "$TUE_DIR"/user/envs ] && envs=$(ls "$TUE_DIR"/user/envs)
 
-                mapfile -t COMPREPLY < <(compgen -W "$envs" -- "$cur")
+                mapfile -t COMPREPLY < <(compgen -W "${envs} ${help_options}" -- "${cur}")
 
             elif [[ ${cmd} == "remove" || ${cmd} == "rm" ]] && [ "$COMP_CWORD" -eq 3 ]
             then
                 local IFS
-                IFS=$'\n'
-                mapfile -t COMPREPLY < <(compgen -W "'--purge'" -- "$cur")
+                mapfile -t COMPREPLY < <(compgen -W "'--purge' ${help_options}" -- "${cur}")
             fi
         elif [[ ${cmd} == "config" ]]
         then
@@ -427,14 +563,14 @@ function _tue-env
             then
                 local envs
                 [ -d "$TUE_DIR/user/envs" ] && envs=$(ls "$TUE_DIR"/user/envs)
-                mapfile -t COMPREPLY < <(compgen -W "$envs" -- "$cur")
+                mapfile -t COMPREPLY < <(compgen -W "${envs} ${help_options}" -- "$cur")
             fi
             if [ "$COMP_CWORD" -eq 3 ]
             then
                 local functions
                 functions=$(grep 'function ' "$TUE_DIR"/setup/tue-env-config.bash | awk '{print $2}' | grep "tue-env-")
                 functions=${functions//tue-env-/}
-                mapfile -t COMPREPLY < <(compgen -W "$functions" -- "$cur")
+                mapfile -t COMPREPLY < <(compgen -W "${functions} ${help_options}" -- "$cur")
             fi
         fi
     fi
