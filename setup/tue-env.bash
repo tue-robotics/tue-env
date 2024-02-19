@@ -42,7 +42,7 @@ function tue-env
     create_venv="false"
     show_help="false"
 
-    if [[ $cmd == "init" ]]
+    if [[ ${cmd} == "init" ]]
     then
         if [[ -n "$1" ]]
         then
@@ -108,7 +108,7 @@ function tue-env
             tue-env init-venv "${env_name}"
         fi
 
-    elif [[ $cmd == "remove" ]]
+    elif [[ ${cmd} == "remove" || ${cmd} == "rm" ]]
     then
         if [ -z "$1" ]
         then
@@ -175,7 +175,7 @@ Purged environment directory '${dir}'"""
 Environment directory '${dir}' didn't exist (anymore)"""
         fi
 
-    elif [[ $cmd == "switch" ]]
+    elif [[ ${cmd} == "switch" ]]
     then
         if [ -z "$1" ]
         then
@@ -196,7 +196,7 @@ Environment directory '${dir}' didn't exist (anymore)"""
         # shellcheck disable=SC1091
         source "$TUE_DIR"/setup.bash
 
-    elif [[ $cmd == "set-default" ]]
+    elif [[ ${cmd} == "set-default" ]]
     then
         if [ -z "$1" ]
         then
@@ -208,7 +208,7 @@ Environment directory '${dir}' didn't exist (anymore)"""
         echo "$1" > "$TUE_DIR"/user/config/default_env
         echo "[tue-env] Default environment set to $1"
 
-    elif [[ $cmd == "unset-default" ]]
+    elif [[ ${cmd} == "unset-default" ]]
     then
         if [ -n "$1" ]
         then
@@ -227,7 +227,7 @@ Environment directory '${dir}' didn't exist (anymore)"""
         echo "[tue-env] Default environment '${default_env}' unset"
         return 0
 
-    elif [[ $cmd == "init-targets" ]]
+    elif [[ ${cmd} == "init-targets" ]]
     then
         if [ -z "$1" ] || { [ -z "$TUE_ENV" ] && [ -z "$2" ]; }
         then
@@ -266,7 +266,7 @@ Environment directory '${dir}' didn't exist (anymore)"""
         git clone --recursive "$url" "$tue_env_targets_dir"
         echo "[tue-env] cloned targets of environment '$env' from $url"
 
-    elif [[ $cmd == "targets" ]]
+    elif [[ ${cmd} == "targets" ]]
     then
         local env
         env=$1
@@ -279,7 +279,7 @@ Environment directory '${dir}' didn't exist (anymore)"""
             cd "${tue_env_dir}"/.env/targets || { echo -e "Targets directory '${tue_env_dir}/.env/targets' (environment '${env}') does not exist"; return 1; }
         fi
 
-    elif [[ $cmd == "init-venv" ]]
+    elif [[ ${cmd} == "init-venv" ]]
     then
         local env
         env=$1
@@ -334,7 +334,7 @@ Environment directory '${dir}' didn't exist (anymore)"""
             echo "[tue-env] Activated new virtualenv of currently active environment '${env}'"
         fi
 
-    elif [[ $cmd == "config" ]]
+    elif [[ ${cmd} == "config" ]]
     then
         local env
         env=$1
@@ -351,7 +351,7 @@ Environment directory '${dir}' didn't exist (anymore)"""
             source "$tue_env_dir"/.env/setup/user_setup.bash
         fi
 
-    elif [[ $cmd == "cd" ]]
+    elif [[ ${cmd} == "cd" ]]
     then
         local env
         env=$1
@@ -367,7 +367,7 @@ Environment directory '${dir}' didn't exist (anymore)"""
             return 1
         fi
 
-    elif [[ $cmd == "list" ]]
+    elif [[ ${cmd} == "list" ]]
     then
         [ -d "$TUE_DIR"/user/envs ] || return 0
 
@@ -376,7 +376,7 @@ Environment directory '${dir}' didn't exist (anymore)"""
             basename "$env"
         done
 
-    elif [[ $cmd == "current" ]]
+    elif [[ ${cmd} == "current" ]]
     then
         if [[ -n $TUE_ENV ]]
         then
@@ -386,7 +386,7 @@ Environment directory '${dir}' didn't exist (anymore)"""
         fi
 
     else
-        echo "[tue-env] Unknown command: '$cmd'"
+        echo "[tue-env] Unknown command: '${cmd}'"
         return 1
     fi
 }
@@ -402,11 +402,11 @@ function _tue-env
 
     if [ "$COMP_CWORD" -eq 1 ]
     then
-        mapfile -t COMPREPLY < <(compgen -W "init list switch current remove cd set-default config init-targets targets init-venv" -- "$cur")
+        mapfile -t COMPREPLY < <(compgen -W "init list switch current remove rm cd set-default config init-targets targets init-venv" -- "$cur")
     else
         local cmd
         cmd=${COMP_WORDS[1]}
-        if [[ $cmd == "switch" ]] || [[ $cmd == "remove" ]] || [[ $cmd == "cd" ]] || [[ $cmd == "set-default" ]] || [[ $cmd == "init-targets" ]] || [[ $cmd == "targets" ]] || [[ $cmd == "init-venv" ]]
+        if [[ ${cmd} == "switch" ]] || [[ ${cmd} == "remove" || ${cmd} == "rm" ]] || [[ ${cmd} == "cd" ]] || [[ ${cmd} == "set-default" ]] || [[ ${cmd} == "init-targets" ]] || [[ ${cmd} == "targets" ]] || [[ ${cmd} == "init-venv" ]]
         then
             if [ "$COMP_CWORD" -eq 2 ]
             then
@@ -415,13 +415,13 @@ function _tue-env
 
                 mapfile -t COMPREPLY < <(compgen -W "$envs" -- "$cur")
 
-            elif [[ $cmd == "remove" ]] && [ "$COMP_CWORD" -eq 3 ]
+            elif [[ ${cmd} == "remove" || ${cmd} == "rm" ]] && [ "$COMP_CWORD" -eq 3 ]
             then
                 local IFS
                 IFS=$'\n'
                 mapfile -t COMPREPLY < <(compgen -W "'--purge'" -- "$cur")
             fi
-        elif [[ $cmd == "config" ]]
+        elif [[ ${cmd} == "config" ]]
         then
             if [ "$COMP_CWORD" -eq 2 ]
             then
