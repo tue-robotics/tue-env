@@ -54,8 +54,9 @@ function tue-env
     # Make sure the correct directories are there
     mkdir -p "$TUE_DIR"/user/envs
 
-    local create_venv dir env_name targets_url
-    create_venv="false"
+    local create_venv dir env_name targets_url venv_include_system_site
+    create_venv="true"
+    venv_include_system_site="true"
 
     if [[ ${cmd} == "init" ]]
     then
@@ -70,6 +71,8 @@ function tue-env
                         targets_url="${i#*=}" ;;
                     --create-virtualenv=* )
                         create_venv="${i#*=}" ;;
+                    --virtualenv-include-system-site-packages=* )
+                        venv_include_system_site="${i#*=}" ;;
                     --help | -h )
                         show_help="true"
                         break
@@ -91,7 +94,7 @@ function tue-env
 
         if [[ "${show_help}" == "true" ]]
         then
-            echo "Usage: tue-env init NAME [DIRECTORY] [--help|-h] [--targets-url=TARGETS GIT URL] [--create-virtualenv=false|true]"
+            echo "Usage: tue-env init NAME [DIRECTORY] [--help|-h] [--targets-url=TARGETS GIT URL] [--create-virtualenv=false|TRUE] [--virtualenv-include-system-site-packages=false|TRUE]"
             return 1
         fi
 
@@ -123,7 +126,7 @@ function tue-env
 
         if [[ "${create_venv}" == "true" ]]
         then
-            tue-env init-venv "${env_name}"
+            tue-env init-venv "${env_name}" --include-system-site-packages="${venv_include_system_site}"
         fi
 
     elif [[ ${cmd} == "remove" || ${cmd} == "rm" ]]
@@ -367,6 +370,8 @@ Environment directory '${dir}' didn't exist (anymore)"""
 
     elif [[ ${cmd} == "init-venv" ]]
     then
+        local env include_system_site
+        include_system_site="true"
         for i in "$@"
         do
             case $i in
@@ -374,23 +379,28 @@ Environment directory '${dir}' didn't exist (anymore)"""
                     show_help="true"
                     break
                     ;;
+                --include-system-site-packages=* )
+                    include_system_site="${i#*=}" ;;
+                --* )
+                    echo "[tue-env] Unknown option $i" ;;
+                * )
+                    if [[ -z "${env}" ]]
+                    then
+                        env=$i
+                    else
+                        echo "[tue-env] Unknown input variable $i"
+                        return 1
+                    fi
+                    ;;
             esac
         done
 
+        [[ -n "${env}" ]] || env=${TUE_ENV}
+        [[ -z "${env}" ]] && show_help="true" && echo "[tue-env](init-venv) no environment set or provided"
+
         if [[ ${show_help} == "true" ]]
         then
-            echo "Usage: tue-env init-venv [ENVIRONMENT]"
-            return 1
-        fi
-
-        local env
-        env=$1
-        [ -n "${env}" ] || env=${TUE_ENV}
-
-        if [[ -z "${env}" ]]
-        then
-            echo "[tue-env](init-venv) no environment set or provided"
-            echo "Usage: tue-env init-venv [ NAME ]"
+            echo "Usage: tue-env init-venv [ENVIRONMENT] [--include-system-site-packages=false|true]"
             return 1
         fi
 
@@ -424,7 +434,12 @@ Environment directory '${dir}' didn't exist (anymore)"""
             echo "Don't use it anymore as its old path is hardcoded in the virtualenv"
         fi
 
-        python3 -m virtualenv "${venv_dir}" -q --system-site-packages --symlinks 2>/dev/null
+        local system_site_args
+        if [[ "${include_system_site}" == "true" ]]
+        then
+            system_site_args="--system-site-packages"
+        fi
+        python3 -m virtualenv "${venv_dir}" ${system_site_args:+${system_site_args} }--symlinks -q 2>/dev/null
         echo "[tue-env] Initialized virtualenv of environment '${env}'"
 
         if [ "${env}" == "${TUE_ENV}" ]
@@ -554,8 +569,10 @@ function _tue-env
 
             elif [[ ${cmd} == "remove" || ${cmd} == "rm" ]] && [ "$COMP_CWORD" -eq 3 ]
             then
-                local IFS
                 mapfile -t COMPREPLY < <(compgen -W "'--purge' ${help_options}" -- "${cur}")
+            elif [[ ${cmd} == "init-venv" ]] && [ "$COMP_CWORD" -eq 3 ]
+            then
+                mapfile -t COMPREPLY < <(compgen -W "'--include-system-site-packages=false' '--include-system-site-packages=true' ${help_options}" -- "${cur}")
             fi
         elif [[ ${cmd} == "config" ]]
         then
