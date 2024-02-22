@@ -246,7 +246,6 @@ function __tue-git-clean-local
     local IFS options
     IFS=$'\n'
     options="'--force-remove'"
-    # shellcheck disable=SC2178
     mapfile -t COMPREPLY < <(compgen -W "$(echo -e "$options")" -- "$cur")
 }
 complete -F __tue-git-clean-local tue-git-clean-local
@@ -1145,7 +1144,6 @@ function _tue-get
         local IFS options
         IFS=$'\n'
         options="'dep '\n'install '\n'update '\n'remove '\n'list-installed '\n'show '"
-        # shellcheck disable=SC2178
         mapfile -t COMPREPLY < <(compgen -W "$(echo -e "$options")" -- "$cur")
     else
         local cmd
@@ -1154,35 +1152,29 @@ function _tue-get
         then
             local IFS
             IFS=$'\n'
-            # shellcheck disable=SC2178
             mapfile -t COMPREPLY < <(compgen -W "$(echo -e "$(find "$TUE_ENV_TARGETS_DIR" -mindepth 1 -maxdepth 1 -type d -not -name ".*" -printf "%f\n" | sed "s/.*/'& '/g")\n'--debug '\n'--no-ros-deps '\n'--doc-depend '\n'--no-doc-depend '\n'--test-depend '\n'--no-test-depend '\n'--try-branch='")" -- "$cur")
         elif [[ $cmd == "dep" ]]
         then
             local IFS
             IFS=$'\n'
-            # shellcheck disable=SC2178
             mapfile -t COMPREPLY < <(compgen -W "$(echo -e "$(find "$TUE_ENV_DIR"/.env/dependencies -mindepth 1 -maxdepth 1 -type f -not -name ".*" -printf "%f\n" | sed "s/.*/'& '/g")\n'--plain '\n'--verbose '\n'--ros-only '\n'--all '\n'--level='")" -- "$cur")
         elif [[ $cmd == "update" ]]
         then
             local IFS
             IFS=$'\n'
-            # shellcheck disable=SC2178
             mapfile -t COMPREPLY < <(compgen -W "$(echo -e "$(find "$TUE_ENV_DIR"/.env/dependencies -mindepth 1 -maxdepth 1 -type f -not -name ".*" -printf "%f\n" | sed "s/.*/'& '/g")\n'--debug '\n'--no-ros-deps '\n'--doc-depend '\n'--no-doc-depend '\n'--test-depend '\n'--no-test-depend '\n'--try-branch='")" -- "$cur")
         elif [[ $cmd == "remove" ]]
         then
             local IFS
             IFS=$'\n'
-            # shellcheck disable=SC2178
             mapfile -t COMPREPLY < <(compgen -W "$(find "$TUE_ENV_DIR"/.env/installed -mindepth 1 -maxdepth 1 -type f -not -name ".*" -printf "%f\n" | sed "s/.*/'& '/g")" -- "$cur")
         elif [[ $cmd == "show" ]]
         then
             local IFS
             IFS=$'\n'
-            # shellcheck disable=SC2178
             mapfile -t COMPREPLY < <(compgen -W "$(find "$TUE_ENV_TARGETS_DIR" -mindepth 1 -maxdepth 1 -type d -not -name ".*" -printf "%f\n" | sed "s/.*/'& '/g")" -- "$cur")
         else
-            # shellcheck disable=SC2178
-            COMPREPLY=""
+            COMPREPLY=()
         fi
     fi
 }
