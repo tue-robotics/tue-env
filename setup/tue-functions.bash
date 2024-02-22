@@ -1438,7 +1438,8 @@ function _tue-repos-do
     echo -e "\e[1m[tue-env-targets]\e[0m"
     eval "${cmd_array[*]}"
 
-    for repos_dir in $(echo "${repos_dirs}" | tr ':' '\n')
+    # Using eval to resolve variables in the string, which do need to be single quoted.
+    for repos_dir in $(eval echo "${repos_dirs}" | tr ':' '\n')
     do
         for repo_dir in $(find "$(realpath --no-symlinks "${repos_dir}")" -name '.git' -type d -prune -print0 | xargs -0 dirname)
         do
