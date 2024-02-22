@@ -50,7 +50,7 @@ tue-env [ENVIRONMENT] remove-venv [--purge]
 A customized targets repository can be setup with this package manager (currently only one git repository is supported). If `tue-env` is already installed, to set up the targets repository run:
 
 ```bash
-tue-env init ENVIRONMENT DIRECTORY <targets_repo_git_url>
+tue-env init ENVIRONMENT DIRECTORY --targets-url=<targets_repo_git_url>
 ```
 
 This will do the same as running the commands separately:
