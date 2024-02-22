@@ -42,9 +42,7 @@ When a new environment is created, a python virtual environment is created by de
 When you want to remove the virtual environment from an existing environment, you can run:
 
 ```bash
-tue-env cd [environment]
-rm -rf .venv
-# Open a new terminal
+tue-env [ENVIRONMENT] remove-venv [--purge]
 ```
 
 #### Custom targets repository

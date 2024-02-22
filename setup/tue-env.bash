@@ -37,6 +37,8 @@ function tue-env
         init-targets   - (Re-)Initialize the target list
         targets        - Changes directory to targets directory
         init-venv      - Initializes a virtualenv
+        remove-venv/
+        rm-venv        - Removes a virtualenv
         list           - List all possible environments
         current        - Shows current environment
         cd             - Changes directory to environment directory
@@ -453,6 +455,68 @@ Environment directory '${dir}' didn't exist (anymore)"""
             echo "[tue-env] Activated new virtualenv of currently active environment '${env}'"
         fi
 
+    elif [[ ${cmd} == "remove-venv" || ${cmd} == "rm-venv" ]]
+    then
+        local env purge
+        purge="false"
+        for i in "$@"
+        do
+            case $i in
+                --help | -h )
+                    show_help="true"
+                    break
+                    ;;
+                --purge)
+                    purge="true"
+                    ;;
+                * )
+                    if [[ -z "${env}" ]]
+                    then
+                        env=$i
+                    else
+                        echo "[tue-env] Unknown input variable $i"
+                        return 1
+                    fi
+                    ;;
+            esac
+        done
+
+        [[ -n "${env}" ]] || env=${TUE_ENV}
+        [[ -z "${env}" ]] && show_help="true" && echo "[tue-env](remove-venv) no environment set or provided"
+
+        if [[ ${show_help} == "true" ]]
+        then
+            echo "Usage: tue-env remove-venv [ENVIRONMENT]"
+            return 1
+        fi
+
+        local tue_env_dir
+        tue_env_dir=$(cat "${TUE_DIR}"/user/envs/"${env}")
+        local venv_dir
+        venv_dir=${tue_env_dir}/.venv/${env}
+
+        if [[ -d "${venv_dir}" ]]
+        then
+            if [[ $(basename "${VIRTUAL_ENV}") == "${env}" ]]
+            then
+                echo "[tue-env](remove-venv) deactivating currently active virtualenv of environment '${env}'"
+                deactivate
+            fi
+            if [[ "${purge}" == "true" ]]
+            then
+                rm -rf "${venv_dir}"
+                echo "[tue-env](remove-venv) Purged virtualenv of environment '${env}'"
+                return 0
+            else
+                local venv_dir_moved
+                venv_dir_moved=${venv_dir}.$(date +%F_%R)
+                mv -f "${venv_dir}" "${venv_dir_moved}"
+                echo "[tue-env](remove-venv) Moved old virtualenv of environment '${env}' to ${venv_dir_moved}"
+            fi
+        else
+            echo "[tue-env](remove-venv) No virtualenv found for environment '${env}'"
+        fi
+
     elif [[ ${cmd} == "config" ]]
     then
         for i in "$@"
@@ -558,18 +622,18 @@ function _tue-env
 
     if [[ "${COMP_CWORD}" -eq 1 ]]
     then
-        mapfile -t COMPREPLY < <(compgen -W "$(echo -e "'init '\n'list '\n'switch '\n'current '\n'remove '\n'rm '\n'cd '\n'set-default '\n'unset-default '\n'config '\n'init-targets '\n'targets '\n'init-venv '\n${help_options}")" -- "${cur}")
+        mapfile -t COMPREPLY < <(compgen -W "$(echo -e "'init '\n'list '\n'switch '\n'current '\n'remove '\n'rm '\n'cd '\n'set-default '\n'unset-default '\n'config '\n'init-targets '\n'targets '\n'init-venv '\n'remove-venv '\n'rm-venv '\n${help_options}")" -- "${cur}")
     else
         local cmd
         cmd=${COMP_WORDS[1]}
-        if [[ ${cmd} == "switch" ]] || [[ ${cmd} == "remove" || ${cmd} == "rm" ]] || [[ ${cmd} == "cd" ]] || [[ ${cmd} == "set-default" ]] || [[ ${cmd} == "init-targets" ]] || [[ ${cmd} == "targets" ]] || [[ ${cmd} == "init-venv" ]]
+        if [[ ${cmd} == "switch" ]] || [[ ${cmd} == "remove" || ${cmd} == "rm" ]] || [[ ${cmd} == "cd" ]] || [[ ${cmd} == "set-default" ]] || [[ ${cmd} == "init-targets" ]] || [[ ${cmd} == "targets" ]] || [[ ${cmd} == "init-venv" ]] || [[ ${cmd} == "remove-venv" || ${cmd} == "rm-venv" ]]
         then
             if [[ "${COMP_CWORD}" -eq 2 ]]
             then
                 [[ ! -d "${TUE_DIR}"/user/envs ]] && return 1
                 mapfile -t COMPREPLY < <(compgen -W "$(echo -e "$(find "${TUE_DIR}"/user/envs -mindepth 1 -maxdepth 1 -type f -not -name ".*" -printf "%f\n" | sed "s/.*/'& '/g")")" -- "${cur}")
 
-            elif [[ ${cmd} == "remove" || ${cmd} == "rm" ]] && [[ "${COMP_CWORD}" -eq 3 ]]
+            elif [[ ${cmd} == "remove" || ${cmd} == "rm" || ${cmd} == "remove-venv" || ${cmd} == "rm-venv" ]] && [[ "${COMP_CWORD}" -eq 3 ]]
             then
                 mapfile -t COMPREPLY < <(compgen -W "$(echo -e "'--purge '\n${help_options}")" -- "${cur}")
             elif [[ ${cmd} == "init-venv" ]] && [[ "${COMP_CWORD}" -eq 3 ]]
