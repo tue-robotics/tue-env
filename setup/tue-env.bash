@@ -546,50 +546,55 @@ export -f tue-env
 
 function _tue-env
 {
+    local IFS
+    IFS=$'\n'
     local cur
     cur=${COMP_WORDS[COMP_CWORD]}
 
     local help_options
-    help_options="'-h' '--help'"
+    help_options="'-h '\n'--help '"
 
-    if [ "$COMP_CWORD" -eq 1 ]
+    if [[ "${COMP_CWORD}" -eq 1 ]]
     then
-        mapfile -t COMPREPLY < <(compgen -W "init list switch current remove rm cd set-default config init-targets targets init-venv ${help_options}" -- "$cur")
+        mapfile -t COMPREPLY < <(compgen -W "$(echo -e "'init '\n'list '\n'switch '\n'current '\n'remove '\n'rm '\n'cd '\n'set-default '\n'unset-default '\n'config '\n'init-targets '\n'targets '\n'init-venv '\n${help_options}")" -- "${cur}")
     else
         local cmd
         cmd=${COMP_WORDS[1]}
         if [[ ${cmd} == "switch" ]] || [[ ${cmd} == "remove" || ${cmd} == "rm" ]] || [[ ${cmd} == "cd" ]] || [[ ${cmd} == "set-default" ]] || [[ ${cmd} == "init-targets" ]] || [[ ${cmd} == "targets" ]] || [[ ${cmd} == "init-venv" ]]
         then
-            if [ "$COMP_CWORD" -eq 2 ]
+            if [[ "${COMP_CWORD}" -eq 2 ]]
             then
-                local envs
-                [ -d "$TUE_DIR"/user/envs ] && envs=$(ls "$TUE_DIR"/user/envs)
+                [[ ! -d "${TUE_DIR}"/user/envs ]] && return 1
+                mapfile -t COMPREPLY < <(compgen -W "$(echo -e "$(find "${TUE_DIR}"/user/envs -mindepth 1 -maxdepth 1 -type f -not -name ".*" -printf "%f\n" | sed "s/.*/'& '/g")")" -- "${cur}")
 
-                mapfile -t COMPREPLY < <(compgen -W "${envs} ${help_options}" -- "${cur}")
-
-            elif [[ ${cmd} == "remove" || ${cmd} == "rm" ]] && [ "$COMP_CWORD" -eq 3 ]
+            elif [[ ${cmd} == "remove" || ${cmd} == "rm" ]] && [[ "${COMP_CWORD}" -eq 3 ]]
             then
-                mapfile -t COMPREPLY < <(compgen -W "'--purge' ${help_options}" -- "${cur}")
-            elif [[ ${cmd} == "init-venv" ]] && [ "$COMP_CWORD" -eq 3 ]
+                mapfile -t COMPREPLY < <(compgen -W "$(echo -e "'--purge '\n${help_options}")" -- "${cur}")
+            elif [[ ${cmd} == "init-venv" ]] && [[ "${COMP_CWORD}" -eq 3 ]]
             then
-                mapfile -t COMPREPLY < <(compgen -W "'--include-system-site-packages=false' '--include-system-site-packages=true' ${help_options}" -- "${cur}")
+                mapfile -t COMPREPLY < <(compgen -W "$(echo -e "'--include-system-site-packages='\n${help_options}")" -- "${cur}")
             fi
         elif [[ ${cmd} == "config" ]]
         then
-            if [ "$COMP_CWORD" -eq 2 ]
+            if [[ "${COMP_CWORD}" -eq 2 ]]
             then
-                local envs
-                [ -d "$TUE_DIR/user/envs" ] && envs=$(ls "$TUE_DIR"/user/envs)
-                mapfile -t COMPREPLY < <(compgen -W "${envs} ${help_options}" -- "$cur")
+                [[ ! -d "${TUE_DIR}"/user/envs ]] && return 1
+                mapfile -t COMPREPLY < <(compgen -W "$(echo -e "$(find "${TUE_DIR}"/user/envs -mindepth 1 -maxdepth 1 -type f -not -name ".*" -printf "%f\n" | sed "s/.*/'& '/g")")" -- "${cur}")
             fi
-            if [ "$COMP_CWORD" -eq 3 ]
+            if [[ "${COMP_CWORD}" -eq 3 ]]
             then
                 local functions
-                functions=$(grep 'function ' "$TUE_DIR"/setup/tue-env-config.bash | awk '{print $2}' | grep "tue-env-")
+                functions=$(grep 'function tue-env-' "${TUE_DIR}"/setup/tue-env-config.bash | awk '{print $2,"\n"}')
                 functions=${functions//tue-env-/}
-                mapfile -t COMPREPLY < <(compgen -W "${functions} ${help_options}" -- "$cur")
+                mapfile -t COMPREPLY < <(compgen -W "$(echo -e "${functions}\n${help_options}")" -- "${cur}")
+            fi
+        elif [[ ${cmd} == "init" ]]
+        then
+            if [[ "${COMP_CWORD}" -ge 3 ]]
+            then
+                mapfile -t COMPREPLY < <(compgen -W "$(echo -e "'--targets-url='\n'--create-virtualenv='\n'--virtualenv-include-system-site-packages='\n${help_options}")" -- "${cur}")
             fi
         fi
     fi
 }
-complete -F _tue-env tue-env
+complete -o nospace -F _tue-env tue-env
