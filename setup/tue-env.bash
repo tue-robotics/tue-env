@@ -230,6 +230,8 @@ Environment directory '${dir}' didn't exist (anymore)"""
             return 1
         fi
 
+        [[ -n ${VIRTUAL_ENV} ]] && echo "[tue-env](switch) deactivating old virtualenv" && deactivate
+
         export TUE_ENV=$1
         TUE_ENV_DIR=$(cat "$TUE_DIR"/user/envs/"$1")
         export TUE_ENV_DIR
