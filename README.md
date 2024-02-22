@@ -35,6 +35,20 @@ Standard tue-env installation with targets from [tue-env-targets](https://github
 
 ### Customization
 
+#### Virtual environment
+
+When a new environment is created, a python virtual environment is created by default. This can be disabled by adding `--create-virtualenv=false` to the bootstrap script.
+
+When you want to remove the virtual environment from an existing environment, you can run:
+
+```bash
+tue-env cd [environment]
+rm -rf .venv
+# Open a new terminal
+```
+
+#### Custom targets repository
+
 A customized targets repository can be setup with this package manager (currently only one git repository is supported). If `tue-env` is already installed, to set up the targets repository run:
 
 ```bash
