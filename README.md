@@ -35,10 +35,22 @@ Standard tue-env installation with targets from [tue-env-targets](https://github
 
 ### Customization
 
+#### Virtual environment
+
+When a new environment is created, a python virtual environment is created by default. This can be disabled by adding `--create-virtualenv=false` to the bootstrap script.
+
+When you want to remove the virtual environment from an existing environment, you can run:
+
+```bash
+tue-env [ENVIRONMENT] remove-venv [--purge]
+```
+
+#### Custom targets repository
+
 A customized targets repository can be setup with this package manager (currently only one git repository is supported). If `tue-env` is already installed, to set up the targets repository run:
 
 ```bash
-tue-env init ENVIRONMENT DIRECTORY <targets_repo_git_url>
+tue-env init ENVIRONMENT DIRECTORY --targets-url=<targets_repo_git_url>
 ```
 
 This will do the same as running the commands separately:
@@ -56,6 +68,16 @@ Add `--targets-repo=<targets_repo_git_url>` as argument, this can be any type of
 
 When a targets repository is already initialized. It can be switched by running the same `init-targets` command.
 This will rename the old targets folder with a timestamp and clone the new targets repo in place.
+
+#### Custom repository list
+
+Various utility commands use `_tue-repos-do` to execute a command in all repositories. By default, this command will execute the command in all repositories in the `tue-env` workspace. This can be changed by setting the `TUE_REPOS_DO_DIRS` environment variable to a list of repositories folders. This can be done by adding the setting it with:
+
+```bash
+tue-env config [environment] set TUE_REPOS_DO_DIRS PATH1:PATH2:PATH3
+# Also possible to use variables in the paths, the variable needs to be single quoted
+tue-env config [environment] set TUE_REPOS_DO_DIRS '${TUE_REPOS_DIR}'/some/path:'${HOME}'some/other/path
+```
 
 #### Add SSH key to GitHub to gain access to this repository
 
