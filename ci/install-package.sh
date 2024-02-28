@@ -209,8 +209,8 @@ then
     echo -e "\e[35;1mActive SSH keys:\e[0m"
     docker exec -t tue-env bash -c "ssh-add -l 2>/dev/null" | awk '{print $2}'
 
-    echo -e "\e[35;1mssh -o 'StrictHostKeyChecking no' -Tv git@ssh.github.com:\e[0m"
-    docker exec -t tue-env bash -c "ssh -o 'StrictHostKeyChecking no' -Tv git@ssh.github.com"
+    echo -e "\e[35;1mecho -e 'Host *\n  StrictHostKeyChecking no' >> ~/.ssh/config:\e[0m"
+    docker exec -t tue-env bash -c "echo -e 'Host *\n  StrictHostKeyChecking no' >> ~/.ssh/config"
 fi
 
 # Use docker environment variables in all exec commands instead of script variables
