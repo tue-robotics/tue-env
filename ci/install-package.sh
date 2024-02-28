@@ -208,6 +208,9 @@ then
 
     echo -e "\e[35;1mActive SSH keys:\e[0m"
     docker exec -t tue-env bash -c "ssh-add -l 2>/dev/null" | awk '{print $2}'
+
+    echo -e "\e[35;1mssh -Tv git@ssh.github.com:\e[0m"
+    docker exec -t tue-env bash -c "ssh -Tv git@ssh.github.com"
 fi
 
 # Use docker environment variables in all exec commands instead of script variables
