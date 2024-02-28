@@ -203,6 +203,9 @@ then
     docker exec -t tue-env bash -c "[[ -f ~/.ssh/known_hosts && -f ~/.ssh/known_hosts_container ]] && ~/.tue/ci/ssh-merge-known_hosts.py ~/.ssh/known_hosts_container ~/.ssh/known_hosts --output ~/.ssh/known_hosts"
     docker exec -e DOCKER_SSH_AUTH_SOCK="$DOCKER_SSH_AUTH_SOCK" -t tue-env bash -c 'eval "$(ssh-agent -s)" && ln -sf "$SSH_AUTH_SOCK" "$DOCKER_SSH_AUTH_SOCK" && grep -slR "PRIVATE" ~/.ssh/ | xargs ssh-add'
 
+    echo -e "\e[35;1mcat ~/.ssh/known_hosts:\e[0m"
+    docker exec -t tue-env bash -c "cat ~/.ssh/known_hosts"
+
     echo -e "\e[35;1mActive SSH keys:\e[0m"
     docker exec -t tue-env bash -c "ssh-add -l 2>/dev/null" | awk '{print $2}'
 fi
