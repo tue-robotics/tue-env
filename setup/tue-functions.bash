@@ -1441,7 +1441,7 @@ function _tue-repos-do
     # Using eval to resolve variables in the string, which do need to be single quoted.
     for repos_dir in $(eval echo "${repos_dirs}" | tr ':' '\n')
     do
-        for repo_dir in $(find "$(realpath --no-symlinks "${repos_dir}")" -name '.git' -type d -prune -print0 | xargs -0 dirname)
+        for repo_dir in $(find "$(realpath --no-symlinks "${repos_dir}")" -name '.git' -type d -prune -print0 2>/dev/null | xargs -r -0 dirname)
         do
             local repo
             repo=$(realpath --relative-to="${repos_dir}" "${repo_dir}")
