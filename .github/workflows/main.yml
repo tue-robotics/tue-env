@@ -65,10 +65,13 @@ jobs:
       - name: Maximize build space
         uses: easimon/maximize-build-space@master
         with:
+          build-mount-path: /var/lib/docker/
           remove-android: true
           remove-dotnet: true
           root-reserve-mb: 2048
           temp-reserve-mb: 512
+      - name: Restart docker
+        run: sudo service docker restart
       - uses: actions/checkout@v4
       - name: Login to Docker registry
         uses: docker/login-action@v3
