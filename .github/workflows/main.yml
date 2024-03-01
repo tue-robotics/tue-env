@@ -60,6 +60,8 @@ jobs:
         with:
           remove-android: true
           remove-dotnet: true
+          root-reserve-mb: 2048
+          temp-reserve-mb: 512
       - uses: actions/checkout@v4
       - name: Login to Docker registry
         uses: docker/login-action@v3
