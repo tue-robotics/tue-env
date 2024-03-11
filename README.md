@@ -23,13 +23,13 @@ Standard tue-env installation with targets from [tue-env-targets](https://github
    source <(wget -O - https://raw.githubusercontent.com/tue-robotics/tue-env/master/installer/bootstrap.bash) --ros-version=2  # for ROS2
    ```
 
-3. Install target(s)
+2. Install target(s)
 
    ```bash
    tue-get install [package_name]
    ```
 
-4. Build sources
+3. Build sources
 
    ```bash
    tue-make
