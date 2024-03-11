@@ -14,9 +14,12 @@ Standard tue-env installation with targets from [tue-env-targets](https://github
 
 1. Bootstrap the package manager
 
+   For default ROS1
    ```bash
    source <(wget -O - https://raw.githubusercontent.com/tue-robotics/tue-env/master/installer/bootstrap.bash)  # for default ROS1
-   # Or
+   ```
+   Or for ROS2
+   ```bash
    source <(wget -O - https://raw.githubusercontent.com/tue-robotics/tue-env/master/installer/bootstrap.bash) --ros-version=2  # for ROS2
    ```
 
