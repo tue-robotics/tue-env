@@ -41,11 +41,14 @@ SHELL ["/bin/bash", "-c"]
 
 # Install commands used in our scripts and standard present on a clean ubuntu
 # installation and setup a user with sudo priviledges
-RUN apt-get update -qq && \
+RUN --mount=type=cache,target=/var/cache/apt,sharing=locked \
+    --mount=type=cache,target=/var/lib/apt,sharing=locked \
+    apt-get update -qq && \
     echo "resolvconf resolvconf/linkify-resolvconf boolean false" | debconf-set-selections && \
-    apt-get install -qq --assume-yes --no-install-recommends apt-transport-https apt-utils bash-completion ca-certificates curl dbus debconf-utils dialog git keyboard-configuration lsb-release iproute2 iputils-ping mesa-utils net-tools openssh-client psmisc resolvconf sudo tzdata wget > /dev/null && \
+    apt-get install -qq --assume-yes --no-install-recommends apt-transport-https apt-utils bash-completion ca-certificates curl dbus debconf-utils dialog git keyboard-configuration lsb-release iproute2 iputils-ping mesa-utils net-tools openssh-client psmisc resolvconf sudo tzdata wget > /dev/null
+
     # Add defined user
-    adduser -u 1000 --disabled-password --gecos "" $USER && \
+RUN adduser -u 1000 --disabled-password --gecos "" $USER && \
     groupadd -g 109 render && \
     usermod -aG sudo $USER && \
     usermod -aG adm $USER && \
@@ -59,8 +62,6 @@ RUN apt-get update -qq && \
 USER "$USER"
 WORKDIR /home/"$USER"
 
-ADD installer/bootstrap.bash ./bootstrap.bash
-
 RUN mkdir -p -m 0700 ~/.ssh
 ADD ./known_hosts ./.ssh/known_hosts
 RUN sudo chown 1000:1000 ~/.ssh/known_hosts && sudo chmod 644 ~/.ssh/known_hosts
@@ -69,8 +70,11 @@ RUN sudo chown 1000:1000 ~/.ssh/known_hosts && sudo chmod 644 ~/.ssh/known_hosts
 RUN { [[ -n "$OAUTH2_TOKEN" ]] && git config --global credential.helper '!f() { printf "%s\n" "username=oauth2" "password=$OAUTH2_TOKEN"; };f'; } || exit 0
 
 # Setup tue-env and install target ros
+RUN --mount=type=ssh,uid=1000 --mount=type=bind,source=installer/bootstrap.bash,target=bootstrap.bash \
+    --mount=type=cache,target=/var/cache/apt,sharing=locked \
+    --mount=type=cache,target=/var/lib/apt,sharing=locked \
     # Remove interactive check from bashrc, otherwise bashrc refuses to execute
-RUN --mount=type=ssh,uid=1000 sed -e s/return//g -i ~/.bashrc && \
+    sed -e s/return//g -i ~/.bashrc && \
     # Set the CI args in the container as docker currently provides no method to
     # remove the environment variables
     # NOTE: The following exports will exist only in this container
@@ -94,11 +98,14 @@ RUN --mount=type=ssh,uid=1000 sed -e s/return//g -i ~/.bashrc && \
     tue-get install ccache --test-depend && \
     # Remove temp tue files
     (rm -rf /tmp/tue_* > /dev/null || true) && \
-    # Show ownership of .tue
+    # Show ownership of ~/.tue
+    echo -e "\e[35mOwner of ~/.tue\e[0m" && \
     namei -l ~/.tue && \
     # Check git remote origin
+    echo -e "\e[35mgit -C ~/.tue remote -v\e[0m" && \
     git -C ~/.tue remote -v && \
     # Show the branches of tue-env
+    echo -e "\e[35mgit -C ~/.tue branch\e[0m" && \
     git -C ~/.tue branch && \
     # Remove docker-clean. APT will be able to autocomplete packages now
     sudo rm /etc/apt/apt.conf.d/docker-clean && \
