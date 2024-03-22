@@ -52,6 +52,7 @@ jobs:
             platform: "amd64"
             base-image: "ubuntu:24.04"
             flavor: u24
+            create-venv: true
     outputs:
       key: ${{ steps.artifacts.outputs.key }}
       tag: ${{ steps.script.outputs.tag }}
