@@ -145,8 +145,31 @@ function main
                 echo "[tue-env](bootstrap) Using default ROS_DISTRO '${tue_ros_distro}' with ROS_VERSION '${tue_ros_version}'"
             fi
             ;;
+        "24.04")
+            if [[ -n "${ros_version}" ]] && [[ "${ros_version}" -ne 2 ]]
+            then
+                 echo "[tue-env](bootstrap) Error! Only ROS version 2 is supported with ubuntu 22.04 and newer"
+                 return 1
+            fi
+            tue_ros_version=2
+
+            if [[ "${ros_distro}" == "jazzy" ]]
+            then
+                tue_ros_distro="jazzy"
+            elif [[ "${ros_distro}" == "rolling" ]]
+            then
+                tue_ros_distro="rolling"
+            elif [[ -n "${ros_distro}" ]]
+            then
+                echo "[tue-env](bootstrap) Error! ROS ${ros_distro} is unsupported with tue-env."
+                return 1
+            else
+                tue_ros_distro="jazzy"
+                echo "[tue-env](bootstrap) Using default ROS_DISTRO '${tue_ros_distro}' with ROS_VERSION '${tue_ros_version}'"
+            fi
+            ;;
         *)
-            echo "[tue-env](bootstrap) Ubuntu ${distrib_release} is unsupported. Please use one of Ubuntu 20.04 or 22.04."
+            echo "[tue-env](bootstrap) Ubuntu ${distrib_release} is unsupported. Please use one of Ubuntu 20.04, 22.04 or 24.04."
             return 1
             ;;
     esac

@@ -41,6 +41,7 @@ jobs:
           - ros-distro: humble
             ros-version: 2
             platform: "amd64"
+            base-image: "ubuntu:22.04"
           - ros-distro: rolling
             ros-version: 2
             platform: "amd64"
