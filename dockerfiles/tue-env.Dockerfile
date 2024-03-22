@@ -1,4 +1,4 @@
-# syntax = docker/dockerfile:experimental
+# syntax = docker/dockerfile:latest
 # ----------------------------------------------------------------
 #       Dockerfile to build working Ubuntu image with tue-env
 # ----------------------------------------------------------------
@@ -28,12 +28,16 @@ ARG CREATE_VENV=false
 ARG VENV_INCLUDE_SYSTEM_SITE=true
 ARG OAUTH2_TOKEN
 
+ARG DOCKER_USER=docker
+ARG DOCKER_USER_ID=1000
+
 # Inform scripts that no questions should be asked and set some environment
 # variables to prevent warnings and errors
 ENV DEBIAN_FRONTEND=noninteractive \
     LANG=C.UTF-8 \
     DOCKER=true \
-    USER=docker \
+    USER=$DOCKER_USER \
+    USER_ID=$DOCKER_USER_ID \
     TERM=xterm-256color
 
 # Set default shell to be bash
@@ -45,7 +49,7 @@ RUN apt-get update -qq && \
     echo "resolvconf resolvconf/linkify-resolvconf boolean false" | debconf-set-selections && \
     apt-get install -qq --assume-yes --no-install-recommends apt-transport-https apt-utils bash-completion ca-certificates curl dbus debconf-utils dialog git keyboard-configuration lsb-release iproute2 iputils-ping mesa-utils net-tools openssh-client psmisc resolvconf sudo tzdata wget > /dev/null && \
     # Add defined user
-    adduser -u 1000 --disabled-password --gecos "" $USER && \
+    adduser -u $USER_ID --disabled-password --gecos "" $USER && \
     groupadd -g 109 render && \
     usermod -aG sudo $USER && \
     usermod -aG adm $USER && \
@@ -63,14 +67,14 @@ ADD installer/bootstrap.bash ./bootstrap.bash
 
 RUN mkdir -p -m 0700 ~/.ssh
 ADD ./known_hosts ./.ssh/known_hosts
-RUN sudo chown 1000:1000 ~/.ssh/known_hosts && sudo chmod 644 ~/.ssh/known_hosts
+RUN sudo chown $USER_ID:$USER_ID ~/.ssh/known_hosts && sudo chmod 644 ~/.ssh/known_hosts
 
 # Setup Git HTTPS token authentication
 RUN { [[ -n "$OAUTH2_TOKEN" ]] && git config --global credential.helper '!f() { printf "%s\n" "username=oauth2" "password=$OAUTH2_TOKEN"; };f'; } || exit 0
 
 # Setup tue-env and install target ros
     # Remove interactive check from bashrc, otherwise bashrc refuses to execute
-RUN --mount=type=ssh,uid=1000 sed -e s/return//g -i ~/.bashrc && \
+RUN --mount=type=ssh,uid=$USER_ID sed -e s/return//g -i ~/.bashrc && \
     # Set the CI args in the container as docker currently provides no method to
     # remove the environment variables
     # NOTE: The following exports will exist only in this container
@@ -114,7 +118,8 @@ FROM base
 ENV DEBIAN_FRONTEND=noninteractive \
     LANG=C.UTF-8 \
     DOCKER=true \
-    USER=docker \
+    USER=$DOCKER_USER \
+    USER_ID=$DOCKER_USER_ID \
     TERM=xterm-256color
 USER "$USER"
 WORKDIR /home/"$USER"
