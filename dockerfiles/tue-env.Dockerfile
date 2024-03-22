@@ -29,7 +29,7 @@ ARG VENV_INCLUDE_SYSTEM_SITE=true
 ARG OAUTH2_TOKEN
 
 ARG DOCKER_USER=docker
-ARG DOCKER_USER_ID=1000
+ARG DOCKER_USER_ID=1001
 
 # Inform scripts that no questions should be asked and set some environment
 # variables to prevent warnings and errors
