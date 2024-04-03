@@ -1,4 +1,4 @@
-#!/usr/bin/python
+#!/usr/bin/env python3
 
 # LSB release detection module for Debian
 # (C) 2005-10 Chris Lawrence <lawrencc@debian.org>
@@ -18,8 +18,6 @@
 #    Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA
 #    02110-1301 USA
 
-# Python3-compatible print() function
-from __future__ import print_function
 
 import sys
 import subprocess
@@ -30,14 +28,8 @@ import csv
 
 def get_distro_info(origin='Debian'):
     try:
-        FileNotFoundException = FileNotFoundError
-    except NameError:
-        # There is no FileNotFoundError in python2
-        FileNotFoundException = IOError
-
-    try:
         csvfile = open('/usr/share/distro-info/%s.csv' % origin.lower())
-    except FileNotFoundException:
+    except FileNotFoundError:
         # Unknown distro, fallback to Debian
         csvfile = open('/usr/share/distro-info/debian.csv')
 
