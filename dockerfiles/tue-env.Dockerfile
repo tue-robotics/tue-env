@@ -115,6 +115,10 @@ RUN { [[ -n "$OAUTH2_TOKEN" ]] && git config --global --unset credential.helper;
 #                           STAGE 2
 # ----------------------------------------------------------------
 FROM base
+
+ARG DOCKER_USER=docker
+ARG DOCKER_USER_ID=1001
+
 ENV DEBIAN_FRONTEND=noninteractive \
     LANG=C.UTF-8 \
     DOCKER=true \
