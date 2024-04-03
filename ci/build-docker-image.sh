@@ -78,6 +78,12 @@ do
         --base_image=* )
             CI_DOCKER_BASE_IMAGE="${i#*=}" ;;
 
+        --docker_user=* )
+            CI_DOCKER_USER="${i#*=}" ;;
+
+        --docker_user_id=* )
+            CI_DOCKER_USER_ID="${i#*=}" ;;
+
         --create-virtualenv=* )
             CI_CREATE_VENV="${i#*=}" ;;
 
@@ -111,8 +117,12 @@ echo -e "\e[35;1mCI_VENV_INCLUDE_SYSTEM_SITE = ${CI_VENV_INCLUDE_SYSTEM_SITE}\e[
 
 [[ -z "$CI_DOCKER_LOGIN" ]] && CI_DOCKER_LOGIN="false"
 echo -e "\e[35;1mCI_DOCKER_LOGIN       = ${CI_DOCKER_LOGIN}\e[0m"
-[[ -z "$CI_DOCKER_BASE_IMAGE" ]] && CI_DOCKER_BASE_IMAGE="ubuntu:22.04"
+[[ -z "$CI_DOCKER_BASE_IMAGE" ]] && CI_DOCKER_BASE_IMAGE="ubuntu:24.04"
 echo -e "\e[35;1mCI_DOCKER_BASE_IMAGE  = ${CI_DOCKER_BASE_IMAGE}\e[0m"
+[[ -z "$CI_DOCKER_USER" ]] && CI_DOCKER_USER="docker"
+echo -e "\e[35;1mCI_DOCKER_USER        = ${CI_DOCKER_USER}\e[0m"
+[[ -z "$CI_DOCKER_USER_ID" ]] && CI_DOCKER_USER_ID="1001"
+echo -e "\e[35;1mCI_DOCKER_USER_ID     = ${CI_DOCKER_USER_ID}\e[0m"
 echo -e "\e[35;1mCI_DOCKER_REGISTRY    = ${CI_DOCKER_REGISTRY}\e[0m"
 [[ -z "$CI_DOCKER_PUSH_IMAGE" ]] && CI_DOCKER_PUSH_IMAGE="false"
 echo -e "\e[35;1mCI_DOCKER_PUSH_IMAGE  = ${CI_DOCKER_PUSH_IMAGE}\e[0m"
@@ -142,10 +152,21 @@ else
     CI_DOCKER_IMAGE_TAG=$(echo "$CI_BRANCH" | tr '[:upper:]' '[:lower:]' | sed -e 's:/:_:g')
 fi
 
-CI_DOCKER_BUILD_ARGS+=("--build-arg=BRANCH=$CI_BRANCH" "--build-arg=PULL_REQUEST=$CI_PULL_REQUEST" "--build-arg=COMMIT=$CI_COMMIT" "--build-arg=CI=$CI" \
-    "--build-arg=REF_NAME=$CI_REF_NAME" "--build-arg=BASE_IMAGE=$CI_DOCKER_BASE_IMAGE" "--build-arg=ROS_VERSION=$CI_ROS_VERSION" \
-    "--build-arg=ROS_DISTRO=${CI_ROS_DISTRO}" "--build-arg=TARGETS_REPO=${CI_TARGETS_REPO}" "--build-arg=CREATE_VENV=${CI_CREATE_VENV}" \
-    "--build-arg=VENV_INCLUDE_SYSTEM_SITE=${CI_VENV_INCLUDE_SYSTEM_SITE}" "--provenance=false")
+CI_DOCKER_BUILD_ARGS+=(
+    "--build-arg=BRANCH=${CI_BRANCH}" \
+    "--build-arg=PULL_REQUEST=${CI_PULL_REQUEST}" \
+    "--build-arg=COMMIT=${CI_COMMIT}" \
+    "--build-arg=CI=${CI}" \
+    "--build-arg=REF_NAME=${CI_REF_NAME}" \
+    "--build-arg=BASE_IMAGE=${CI_DOCKER_BASE_IMAGE}" \
+    "--build-arg=ROS_VERSION=${CI_ROS_VERSION}" \
+    "--build-arg=ROS_DISTRO=${CI_ROS_DISTRO}" \
+    "--build-arg=TARGETS_REPO=${CI_TARGETS_REPO}"
+    "--build-arg=CREATE_VENV=${CI_CREATE_VENV}" \
+    "--build-arg=VENV_INCLUDE_SYSTEM_SITE=${CI_VENV_INCLUDE_SYSTEM_SITE}" \
+    "--build-arg=DOCKER_USER=${CI_DOCKER_USER}" \
+    "--build-arg=DOCKER_USER_ID=${CI_DOCKER_USER_ID}" \
+    "--provenance=false")
 
 # Check the constructed Docker image name against the input
 image_name_expected="${image_dirname}/${image_name}:${CI_DOCKER_IMAGE_TAG}-${CI_DOCKER_PLATFORMS}"
