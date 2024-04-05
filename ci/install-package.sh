@@ -23,7 +23,7 @@ do
             PACKAGE="${i#*=}" ;;
 
         -b=* | --branch=* )
-        # BRANCH should allways be targetbranch
+        # BRANCH should allways be target branch
             BRANCH="${i#*=}" ;;
 
         -c=* | --commit=* )
@@ -206,8 +206,8 @@ fi
 
 # Use docker environment variables in all exec commands instead of script variables
 # Catch the ROS_DISTRO of the docker container
-# stip carriage return from docker output by "tr -d '\r'"
-# see https://unix.stackexchange.com/a/487185
+# Stop carriage return from docker output by "tr -d '\r'"
+# See https://unix.stackexchange.com/a/487185
 ROS_DISTRO=$(docker exec tue-env bash -c 'source ~/.bashrc; echo "${ROS_DISTRO}"' | tr -d '\r')
 echo -e "\e[35;1mROS_DISTRO = ${ROS_DISTRO}\e[0m"
 
