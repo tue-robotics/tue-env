@@ -26,6 +26,20 @@
 # Copied from https://blog.ganneff.de/2019/04/ssh-known-hosts-merge-by-key.html
 
 import argparse
+from collections import defaultdict
+from typing import Dict, List, Optional, Set, Tuple, Union
+
+
+def key_dict_factory() -> Dict[str, Union[Set[str], Optional[str]]]:
+    return {"hosts": set(), "comments": set(), "marker": None}
+
+
+def truncate(s: str, w: int) -> str:
+    s = s.strip()
+    if len(s) > w:
+        s = s[: w - 3].strip() + "..."
+    return s
+
 
 parser = argparse.ArgumentParser(
     description="Merge ssh known host entries by key",
@@ -56,26 +70,42 @@ else:
 
     output = stdout
 
-hostkeys = {}
+hostkeys: Dict[Tuple[str, str], Dict[str, Union[Set[str], str]]] = defaultdict(key_dict_factory)
 for kfile in args.files:
     with open(kfile) as kf:
         for line in kf:
             if line[0] == "#":
                 continue
-            line_splitted = line.rstrip().split(" ")
-            hosts = line_splitted.pop(0).split(",")
-            key_type = line_splitted.pop(0)
-            key = line_splitted[0]
-            if key not in hostkeys:
-                hostkeys[key] = {}
-                hostkeys[key]["hosts"] = []
-            hostkeys[key]["key_type"] = key_type
-            # Store the host entries, uniquify them
-            hostkeys[key]["hosts"].extend(hosts)
+            line_splitted: List[str] = line.rstrip().split(" ")
+            marker: Optional[str] = None
+            if line_splitted[0].startswith("@"):
+                marker = line_splitted.pop(0)
+            hosts: List[str] = line_splitted.pop(0).split(",")
+            key_type: str = line_splitted.pop(0)
+            key = line_splitted.pop(0)
+            unique_key = (key_type, key)
+            if line_splitted:
+                if not line_splitted[0].startswith("#"):
+                    raise ValueError(f"Unknown remainder in line: {line}")
+                comment = " ".join(line_splitted)
+                hostkeys[unique_key]["comments"].add(comment)
+            hostkeys[unique_key]["hosts"].update(hosts)
+            if marker is not None:
+                if hostkeys[unique_key]["marker"] is not None:
+                    raise ValueError(f"Multiple markers for same key: {truncate(str(unique_key), 50)}")
+                hostkeys[unique_key]["marker"] = marker
 
 # And now output it all
-for k, v in hostkeys.items():
-    output.write("%s %s %s\n" % (",".join(v["hosts"]), v["key_type"], k))
+for (key_type, key), v in hostkeys.items():
+    line_items = []
+    if v["marker"] is not None:
+        line_items.append(v["marker"])
+    line_items.append(",".join(sorted(v["hosts"])))
+    line_items.append(key_type)
+    line_items.append(key)
+    if v["comments"]:
+        line_items.append(" ".join(v["comments"]))
+    output.write(f"{' '.join(line_items)}\n")
 
 # Write to output file
 if args.output:
