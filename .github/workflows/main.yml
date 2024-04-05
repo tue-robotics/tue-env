@@ -58,11 +58,13 @@ jobs:
             platform: "amd64"
             base-image: "nvidia/cuda:12.1.1-devel-ubuntu20.04"
             flavor: cu12.1.1-devel
+            maximize-build-space: true
     outputs:
       key: ${{ steps.artifacts.outputs.key }}
       tag: ${{ steps.script.outputs.tag }}
     steps:
       - name: Maximize build space
+        if: ${{ matrix.maximize-build-space == true }}
         uses: easimon/maximize-build-space@master
         with:
           build-mount-path: /var/lib/docker/
