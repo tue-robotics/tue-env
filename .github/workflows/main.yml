@@ -68,8 +68,6 @@ jobs:
         uses: easimon/maximize-build-space@master
         with:
           build-mount-path: /var/lib/docker/
-          remove-android: true
-          remove-dotnet: true
           root-reserve-mb: 2048
           temp-reserve-mb: 512
       - name: Restart docker
