@@ -117,6 +117,7 @@ RUN --mount=type=ssh,uid=$USER_ID --mount=type=bind,source=installer/bootstrap.b
 # Restore known_hosts to one provided by the user
 RUN mv -f ~/.ssh/known_hosts.bak ~/.ssh/known_hosts
 
+# Remove Git HTTPS token authentication
 RUN { [[ -n "$OAUTH2_TOKEN" ]] && git config --global --unset credential.helper; } || exit 0
 
 # ----------------------------------------------------------------
