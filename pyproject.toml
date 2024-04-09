@@ -1,0 +1,56 @@
+[tool.ruff]
+line-length = 120
+indent-width = 4
+
+output-format = "full"
+
+target-version = "py38"
+
+[tool.ruff.lint]
+select = [
+    # flake8-builtins
+    "A",
+    # flake8-annotations
+    "ANN",
+    # Bugbear
+    "B",
+    # pydocstyle
+    "D",
+    # pycodestyle
+    "E",
+    "W",
+    # Pyflakes
+    "F",
+    # isort
+    "I",
+    # pep8-naming
+    "N",
+    # flake8-quotes
+    "Q",
+    # pyupgrade
+    "UP",
+]
+
+ignore = ["ANN002", "ANN003", "ANN101", "D10", "D203", "D212", "D407", "N817"]
+
+# Allow fix for all enabled rules (when `--fix`) is provided.
+#fixable = ["ALL"]
+#unfixable = []
+
+# Allow unused variables when underscore-prefixed.
+dummy-variable-rgx = "^(_+|(_+[a-zA-Z0-9_]*[a-zA-Z0-9]+?))$"
+
+[tool.ruff.format]
+docstring-code-format = true
+
+# Like Black, use double quotes for strings.
+quote-style = "double"
+
+# Like Black, indent with spaces, rather than tabs.
+indent-style = "space"
+
+# Like Black, respect magic trailing commas.
+skip-magic-trailing-comma = false
+
+# Like Black, automatically detect the appropriate line ending.
+line-ending = "auto"
