@@ -1,10 +1,10 @@
 #! /usr/bin/env python3
 
-from typing import List, Mapping, Optional
-from os import environ
 import sys
-import yaml
+from os import environ
+from typing import List, Mapping, Optional, Union
 
+import yaml
 from lsb_release import get_distro_information
 
 ubuntu_release = get_distro_information()["CODENAME"]
@@ -15,7 +15,7 @@ def show_error(error: str) -> int:
     return 1
 
 
-def type_git(install_item: Mapping, allowed_keys: Optional[List[str]] = None) -> str:
+def type_git(install_item: Mapping[str, str], allowed_keys: Optional[List[str]] = None) -> str:
     """
     Function to check the parsed yaml for install type git and generate the command string.
 
@@ -59,7 +59,7 @@ def type_git(install_item: Mapping, allowed_keys: Optional[List[str]] = None) ->
     return command
 
 
-def catkin_git(source: Mapping) -> str:
+def catkin_git(source: Mapping[str, Union[Mapping[str, str], str]]) -> str:
     """
     Function to generate installation command for catkin git targets from the extracted yaml
 
@@ -108,7 +108,7 @@ def main() -> int:
     return 0
 
 
-def installyaml_parser(path: str, now: bool = False) -> Mapping:
+def installyaml_parser(path: str, now: bool = False) -> Mapping[str, Union[List[str], str]]:
     with open(path) as f:
         try:
             install_items = yaml.load(f, yaml.CSafeLoader)
@@ -120,15 +120,17 @@ def installyaml_parser(path: str, now: bool = False) -> Mapping:
     if not isinstance(install_items, list):
         raise ValueError("Root of install.yaml file should be a YAML sequence")
 
-    system_packages = []
+    system_packages: List[str] = []
 
-    commands = []
+    commands: List[str] = []
 
     def commands_append(command: str) -> None:
         command = command.replace(" ", "^")
         commands.append(command)
 
-    def get_distro_item(item: Mapping, key: str, release_version: str, release_type: str) -> Optional[str]:
+    def get_distro_item(
+        item: Mapping[str, Union[Mapping[str, str], str]], key: str, release_version: str, release_type: str
+    ) -> Optional[Union[Mapping[str, str], str]]:
         if key in item:
             value = item[key]
             if value is None:
@@ -259,9 +261,9 @@ def installyaml_parser(path: str, now: bool = False) -> Mapping:
             command = f"tue-install-{install_type} {pkg_list}"
             commands_append(command)
 
-    commands = " ".join(commands)
+    commands_str: str = " ".join(commands)
 
-    return {"system_packages": system_packages, "commands": commands}
+    return {"system_packages": system_packages, "commands": commands_str}
 
 
 if __name__ == "__main__":
