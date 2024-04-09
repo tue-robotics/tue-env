@@ -2,6 +2,7 @@
 
 import site
 from typing import List
+
 from pip._internal.req.constructors import install_req_from_line
 from pip._internal.utils.virtualenv import running_under_virtualenv
 

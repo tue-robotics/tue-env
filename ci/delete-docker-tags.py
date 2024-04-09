@@ -6,8 +6,9 @@ Inspired by https://github.com/avoinea/DockerHub-API
 
 import argparse
 import json
-import requests
 import sys
+
+import requests
 
 DH_API = "https://hub.docker.com/v2"
 

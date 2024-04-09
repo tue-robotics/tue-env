@@ -1,12 +1,12 @@
 #! /usr/bin/env python3
 
+import os
 import platform
 import sys
-import os
 from typing import Mapping
-from parse_package_xml import packagexml_parser
-from parse_install_yaml import installyaml_parser
 
+from parse_install_yaml import installyaml_parser
+from parse_package_xml import packagexml_parser
 
 TUE_ENV_TARGETS_DIR = os.environ["TUE_ENV_TARGETS_DIR"]
 TUE_ROS_DISTRO = os.environ["TUE_ROS_DISTRO"]

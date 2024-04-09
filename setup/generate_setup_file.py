@@ -1,10 +1,9 @@
 #! /usr/bin/env python3
 
-from typing import List
-
 import os
 import sys
 import traceback
+from typing import List
 
 
 class SetupGenerator:

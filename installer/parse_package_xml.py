@@ -1,9 +1,9 @@
 #! /usr/bin/env python3
 
-from typing import Mapping
 import os
 import sys
 import xml.etree.ElementTree as ET
+from typing import Mapping
 
 from catkin_pkg.condition import evaluate_condition
 

@@ -19,12 +19,12 @@
 #    02110-1301 USA
 
 
-import sys
-import subprocess
+import csv
 import os
 import re
+import subprocess
+import sys
 import warnings
-import csv
 
 
 def get_distro_info(origin="Debian"):

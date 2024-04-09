@@ -1,13 +1,13 @@
 #! /usr/bin/env python3
 
-import sys
-import urllib.request
-import json
-import re
 import argparse
-import os
 import hashlib
+import json
+import os
+import re
+import sys
 import time
+import urllib.request
 
 
 def get_release(url, filename, output) -> int:
