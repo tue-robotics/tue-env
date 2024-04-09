@@ -56,8 +56,8 @@ jobs:
           - ros-distro: noetic
             ros-version: 1
             platform: "amd64"
-            base-image: "nvidia/cuda:12.1.1-cudnn8-devel-ubuntu20.04"
-            flavor: cu12.1.1-cudnn8-devel
+            base-image: "nvidia/cuda:12.1.1-devel-ubuntu20.04"
+            flavor: cu12.1.1-devel
     outputs:
       key: ${{ steps.artifacts.outputs.key }}
       tag: ${{ steps.script.outputs.tag }}
