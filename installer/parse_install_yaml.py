@@ -1,10 +1,10 @@
 #! /usr/bin/env python3
 
-from typing import List, Mapping, Optional
-from os import environ
 import sys
-import yaml
+from os import environ
+from typing import List, Mapping, Optional, Union
 
+import yaml
 from lsb_release import get_distro_information
 
 ubuntu_release = get_distro_information()["CODENAME"]
@@ -48,15 +48,15 @@ def type_git(install_item: Mapping, allowed_keys: Optional[List[str]] = None) ->
     if not url:
         raise KeyError("'url' is a mandatory key for install type 'git'")
 
-    command = url
+    command: List[str] = [url]
 
     if path:
-        command += f" --target-dir={path}"
+        command.append(f"--target-dir={path}")
 
     if version:
-        command += f" --version={version}"
+        command.append(f"--version={version}")
 
-    return command
+    return " ".join(command)
 
 
 def catkin_git(source: Mapping) -> str:
@@ -98,7 +98,7 @@ def main() -> int:
             return show_error(f"Unknown option: {sys.argv[2]}")
 
     try:
-        result = installyaml_parser(sys.argv[1], now)
+        result = install_yaml_parser(sys.argv[1], now)
     except Exception as e:
         return show_error(str(e))
 
@@ -108,7 +108,7 @@ def main() -> int:
     return 0
 
 
-def installyaml_parser(path: str, now: bool = False) -> Mapping:
+def install_yaml_parser(path: str, now: bool = False) -> Mapping[str, str]:
     with open(path) as f:
         try:
             install_items = yaml.load(f, yaml.CSafeLoader)
@@ -120,21 +120,24 @@ def installyaml_parser(path: str, now: bool = False) -> Mapping:
     if not isinstance(install_items, list):
         raise ValueError("Root of install.yaml file should be a YAML sequence")
 
-    system_packages = []
+    system_packages: List[str] = []
 
-    commands = []
+    commands: List[str] = []
 
     def commands_append(command: str) -> None:
-        command = command.replace(" ", "^")
-        commands.append(command)
+        commands.append(command.replace(" ", "^"))
 
-    def get_distro_item(item: Mapping, key: str, release_version: str, release_type: str) -> Optional[str]:
+    def get_distro_item(
+        item: Mapping, key: str, release_version: str, release_type: str
+    ) -> Optional[Union[Mapping[str, str], str]]:
         if key in item:
             value = item[key]
             if value is None:
                 raise ValueError(f"'{key}' is defined, but has no value")
         elif len(item) < 3 or "default" not in item:
-            raise ValueError(f"At least one distro and 'default' should be specified or none in install.yaml")
+            raise ValueError(
+                f"At least one {release_type} distro and 'default' should be specified or none in install.yaml"
+            )
         else:
             for version in [release_version, "default"]:
                 if version in item:
@@ -160,12 +163,12 @@ def installyaml_parser(path: str, now: bool = False) -> Mapping:
             install_type = install_item["type"]
 
             if install_type == "empty":
-                return {"system_packages": system_packages, "commands": commands}
+                return {"system_packages": system_packages, "commands": " ".join(commands)}
 
             elif install_type == "ros" or install_type == "ros-remove-source":
                 ros_release = environ["TUE_ROS_DISTRO"]
                 try:
-                    source = get_distro_item(install_item, "source", ros_release, "ROS")
+                    source: Optional[Mapping[str, str]] = get_distro_item(install_item, "source", ros_release, "ROS")
                 except ValueError as e:
                     raise ValueError(f"[{install_type}]: {e.args[0]}")
 
@@ -224,7 +227,7 @@ def installyaml_parser(path: str, now: bool = False) -> Mapping:
                     install_type += "-now"
 
                 try:
-                    pkg_name = get_distro_item(install_item, "name", ubuntu_release, "Ubuntu")
+                    pkg_name: str = get_distro_item(install_item, "name", ubuntu_release, "Ubuntu")
                 except ValueError as e:
                     raise ValueError(f"[{install_type}]: {e.args[0]}")
 
@@ -259,9 +262,7 @@ def installyaml_parser(path: str, now: bool = False) -> Mapping:
             command = f"tue-install-{install_type} {pkg_list}"
             commands_append(command)
 
-    commands = " ".join(commands)
-
-    return {"system_packages": system_packages, "commands": commands}
+    return {"system_packages": system_packages, "commands": " ".join(commands)}
 
 
 if __name__ == "__main__":
