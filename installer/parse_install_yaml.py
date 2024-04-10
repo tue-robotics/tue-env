@@ -162,7 +162,7 @@ def installyaml_parser(path: str, now: bool = False) -> Mapping:
             if install_type == "empty":
                 return {"system_packages": system_packages, "commands": commands}
 
-            elif install_type == "ros":
+            elif install_type == "ros" or install_type == "ros-remove-source":
                 ros_release = environ["TUE_ROS_DISTRO"]
                 try:
                     source = get_distro_item(install_item, "source", ros_release, "ROS")
@@ -173,14 +173,24 @@ def installyaml_parser(path: str, now: bool = False) -> Mapping:
                 if source is None:
                     continue
 
-                source_type = source["type"]
-                if source_type == "git":
-                    command = f"tue-install-ros {catkin_git(source)}"
-                elif source_type == "system":
-                    system_packages.append(f"ros-{ros_release}-{source['name']}")
-                    command = f"tue-install-ros system {source['name']}"
-                else:
-                    raise ValueError(f"Unknown ROS install type: '{source_type}'")
+                if install_type == "ros":
+                    source_type = source["type"]
+                    if source_type == "git":
+                        command = f"tue-install-ros {catkin_git(source)}"
+                    elif source_type == "system":
+                        system_packages.append(f"ros-{ros_release}-{source['name']}")
+                        command = f"tue-install-ros system {source['name']}"
+                    else:
+                        raise ValueError(f"Unknown ROS install type: '{source_type}'")
+                elif install_type == "ros-remove-source":
+                    command_list = ["tue-install-ros-remove-source"]
+                    command_list.append(type_git(source, ["eol"]))
+
+                    if "eol" not in source:
+                        raise KeyError("EOL is a mandatory key for install type 'ros-remove-source'")
+                    command_list.append(f"--eol={source['eol']}")
+
+                    command = " ".join(command_list)
 
             # Non ros targets that are packaged to be built with catkin
             elif install_type == "catkin":
