@@ -1419,7 +1419,9 @@ function tue-install-ros
         do
             case $i in
                 --target-dir=* )
-                    repos_dir="${i#*=}" ;;
+                    repos_dir="${i#*=}"
+                    repos_dir="${repos_dir/#\~/$HOME}"
+                    ;;
                 --version=* )
                     version="${i#*=}" ;;
                 --sub-dir=* )
