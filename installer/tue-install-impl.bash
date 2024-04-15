@@ -1419,7 +1419,9 @@ function tue-install-ros
         do
             case $i in
                 --target-dir=* )
-                    repos_dir="${i#*=}" ;;
+                    repos_dir="${i#*=}"
+                    repos_dir="${repos_dir/#\~/$HOME}"
+                    ;;
                 --version=* )
                     version="${i#*=}" ;;
                 --sub-dir=* )
@@ -1509,6 +1511,107 @@ function tue-install-ros
     fi
 
     TUE_INSTALL_PKG_DIR=$ros_pkg_dir
+}
+
+# # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # #
+
+function tue-install-ros-remove-source
+{
+    tue-install-debug "tue-install-ros-remove-source $*"
+
+    local repo repo_pre
+    repo=$1
+    repo_pre="${repo}"
+
+    # Change url to https/ssh
+    repo=$(_git_https_or_ssh "${repo}")
+    if [[ -z "${repo}" ]]
+    then
+        # shellcheck disable=SC2140
+        tue-install-error "repo: '${repo}' is invalid. It is generated from: '${repo_pre}'\n"\
+"The problem will probably be solved by resourcing the setup"
+    fi
+
+    local repos_dir eol
+    repos_dir=$(_git_url_to_repos_dir "${repo_pre}")
+
+    # The shift here is to ensure that all options are explicitly checked as they can be at most 2
+    # and are optional
+    shift
+    if [[ $# -gt 2 ]]
+    then
+        tue-install-error "Invalid number of arguments"
+    fi
+
+    if [[ -n $1 ]]
+    then
+        for i in "$@"
+        do
+            case $i in
+                --target-dir=* )
+                    repos_dir="${i#*=}"
+                    repos_dir="${repos_dir/#\~/$HOME}"
+                    ;;
+                --eol=* )
+                    eol="${i#*=}" ;;
+                * )
+                    tue-install-error "Unknown input variable ${i}" ;;
+            esac
+        done
+    fi
+
+    if [[ -z "${repos_dir}" ]]
+    then
+        tue-install-error "Repo directory path cannot be empty"
+    fi
+
+    [[ -n "${TUE_ROS_VERSION}" ]] || tue-install-error "Environment variable 'TUE_ROS_VERSION' is not set."
+
+    local ros_pkg_name
+    ros_pkg_name=${TUE_INSTALL_CURRENT_TARGET#ros-}
+
+    local ros_pkg_dir
+    ros_pkg_dir="${ROS_PACKAGE_INSTALL_DIR}"/"${ros_pkg_name}"
+
+    if [[ -e "${ros_pkg_dir}" ]]
+    then
+        tue-install-debug "Source package found in the workspace, removing it, so the system installed version is used"
+        tue-install-pipe rm "${ros_pkg_dir}"
+
+        # Clean the package from the workspace
+        if [[ "${TUE_ROS_VERSION}" != "1" ]]
+        then
+            tue-install-pipe /usr/bin/python3 -m colcon clean packages --log-base "${TUE_WS_DIR}"/log --base-paths "${TUE_WS_DIR}"/src --build-base "${TUE_WS_DIR}"/build --install-base "${TUE_WS_DIR}"/install --packages-select "${ros_pkg_name}" -y
+        else
+            tue-install-pipe catkin clean --workspace "${TUE_WS_DIR}" --orphans
+        fi
+    else
+        tue-install-debug "Source package was already removed"
+    fi
+
+    if [[ -n ${repos_dir} ]] && [[ -d ${repos_dir} ]]
+    then
+        links=$(find "${TUE_WS_DIR}"/src -lname "${repos_dir}*")
+        if [[ -n ${repos_dir} ]] && [[ -z ${links} ]]
+        then
+            tue-install-debug "No symlinks left to the repo or a sub-folder of it, deleting it"
+            tue-install-pipe rm -rf ${repos_dir}
+        else
+            tue-install-debug "Keeping the repo as there still exist symlinks to it in the workspace"
+        fi
+    else
+        tue-install-debug "Repo already removed"
+    fi
+
+    # Warn about the eol of removing the source
+    local today_date eol_date
+    today_date=$(date +%s)
+    eol_date=$(date -d ${eol} +%s)
+
+    if [[ ${today_date} -ge ${eol_date} ]]
+    then
+        tue-install-warning "The remove instruction of the source of the package '${ros_pkg_name}' has reached its end-of-life (${eol}). You should remove it from the target."
+    fi
 }
 
 # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # #

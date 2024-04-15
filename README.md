@@ -232,6 +232,37 @@ Taking the above into account, the following combinations for `install.yaml` are
 
 Both ROS distro specific as default can be 'null'. Preferred usage is default for current and feature distributions and exceptions for old distributions.
 
+##### ROS package source removal
+
+When switching from a source installation to a system installation, the source installation must be removed.
+This can be done by adding a `ros-remove-source` target to the `install.yaml` file.
+It removes the package from the workspace, including uninstalling.
+It checks whether there are still references to the repository in the workspace,
+otherwise it will delete the repository as well.
+
+```yaml
+- type: ros-remove-source
+  remove:
+    type: git
+    url: <Repository URL>
+    eol: <End of life date>
+    path: <Directory of the cloned repository> (Optional field)
+```
+
+Again, this can be distro-specific.
+
+```yaml
+- type: ros-remove-source
+  default:
+    source:
+      type: git
+      url: <Repository URL>
+      eol: <End of life date>
+      path: <Directory of the cloned repository> (Optional field)
+  noetic:
+    remove: null
+```
+
 #### Catkin package install
 
 ```yaml
