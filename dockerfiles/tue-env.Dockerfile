@@ -29,7 +29,7 @@ ARG VENV_INCLUDE_SYSTEM_SITE=true
 ARG OAUTH2_TOKEN
 
 ARG DOCKER_USER=docker
-ARG DOCKER_USER_ID=1001
+ARG DOCKER_USER_ID=1000
 
 # Inform scripts that no questions should be asked and set some environment
 # variables to prevent warnings and errors
@@ -117,7 +117,7 @@ RUN { [[ -n "$OAUTH2_TOKEN" ]] && git config --global --unset credential.helper;
 FROM base
 
 ARG DOCKER_USER=docker
-ARG DOCKER_USER_ID=1001
+ARG DOCKER_USER_ID=1000
 
 ENV DEBIAN_FRONTEND=noninteractive \
     LANG=C.UTF-8 \
