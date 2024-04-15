@@ -148,7 +148,7 @@ jobs:
           DOCKER_USER=${DOCKER_USER:-docker}
           # shellcheck disable=SC1083,SC2296
           DOCKER_USER_ID=${{ matrix.docker-user-id }}
-          DOCKER_USER_ID=${DOCKER_USER_ID:-1001}
+          DOCKER_USER_ID=${DOCKER_USER_ID:-1000}
           # shellcheck disable=SC2296
           ci/build-docker-image.sh \
               --registry="${{ env.REGISTRY }}" \
