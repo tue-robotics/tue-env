@@ -411,11 +411,17 @@ function _try_branch_git
         tue-install-error "Invalid _try_branch_git: needs two arguments (repo and branch)."
     fi
 
-    local repo branch _checkout_error_code
+    local repo branch _checkout_error_code sparse_sub_dir
     repo="$1"
     branch="$2"
-    tue-install-debug "git -C ${repo} checkout ${branch} --recurse-submodules --"
-    _try_branch_res=$(git -C "${repo}" checkout "${branch}" --recurse-submodules -- 2>&1)  # _try_branch_res is a "global" variable from tue-install-git
+    [[ -n "$3" ]] && sparse_sub_dir="$3"
+
+    local sparse_args
+    sparse_args=()
+    [[ -n "${sparse_sub_dir}" ]] && sparse_args+=("${sparse_sub_dir}")
+
+    tue-install-debug "git -C ${repo} checkout ${branch} --recurse-submodules -- ${sparse_args[*]}"
+    _try_branch_res=$(git -C "${repo}" checkout "${branch}" --recurse-submodules -- "${sparse_args[@]}" 2>&1)  # _try_branch_res is a "global" variable from tue-install-git
     _checkout_error_code=$?
     tue-install-debug "_try_branch_res(${_checkout_error_code}): ${_try_branch_res}"
 
@@ -426,14 +432,14 @@ function _try_branch_git
     [ "${_checkout_error_code}" -gt 0 ] && return ${_checkout_error_code}
 
     local _submodule_sync_res _submodule_sync_error_code
-    tue-install-debug "git -C $repo submodule sync --recursive"
-    _submodule_sync_res=$(git -C "$repo" submodule sync --recursive 2>&1)
+    tue-install-debug "git -C ${repo} submodule sync --recursive -- ${sparse_args[*]}"
+    _submodule_sync_res=$(git -C "${repo}" submodule sync --recursive -- "${sparse_args[@]}" 2>&1)
     _submodule_sync_error_code=$?
     tue-install-debug "_submodule_sync_res(${_submodule_sync_error_code}): ${_submodule_sync_res}"
 
     local _submodule_res
-    tue-install-debug "git -C $repo submodule update --init --recursive"
-    _submodule_res=$(git -C "$repo" submodule update --init --recursive 2>&1)
+    tue-install-debug "git -C ${repo} submodule update --init --recursive -- ${sparse_args[*]}"
+    _submodule_res=$(git -C "${repo}" submodule update --init --recursive -- "${sparse_args[@]}" 2>&1)
     tue-install-debug "_submodule_res: $_submodule_res"
 
     [ "$_submodule_sync_error_code" -gt 0 ] && [ -n "$_submodule_sync_res" ] && _try_branch_res="${res:+${res}\n}$_submodule_sync_res"
@@ -461,13 +467,13 @@ function tue-install-git
 "The problem will probably be solved by resourcing the setup"
     fi
 
-    local target_dir version
+    local sparse_sub_dir target_dir version
     target_dir=$(_git_url_to_repos_dir "${repo_pre}")
 
-    # The shift here is to ensure that all options are explicitly checked as they can be at most 2
+    # The shift here is to ensure that all options are explicitly checked as they can be at most 3
     # and are optional
     shift
-    if [[ $# -gt 2 ]]
+    if [[ $# -gt 3 ]]
     then
         tue-install-error "Invalid number of arguments"
     fi
@@ -483,6 +489,8 @@ function tue-install-git
                     ;;
                 --version=* )
                     version="${i#*=}" ;;
+                --sparse-sub-dir=* )
+                    sparse_sub_dir="${i#*=}" ;;
                 * )
                     tue-install-error "Unknown input variable ${i}" ;;
             esac
@@ -497,8 +505,12 @@ function tue-install-git
     local res
     if [ ! -d "${target_dir}" ]
     then
-        tue-install-debug "git clone --recursive ${repo} ${target_dir}"
-        res=$(git clone --recursive "${repo}" "${target_dir}" 2>&1)
+        local sparse_args
+        sparse_args=()
+        { [[ -n "${sparse_sub_dir}" ]] && sparse_args+=("--sparse"); } || sparse_args+=("--recursive")
+
+        tue-install-debug "git clone ${repo} ${target_dir} ${sparse_args[*]}"
+        res=$(git clone "${repo}" "${target_dir}" "${sparse_args[@]}" 2>&1)
         TUE_INSTALL_GIT_PULL_Q+=("${target_dir}")
     else
         # Check if we have already pulled the repo
@@ -527,16 +539,19 @@ function tue-install-git
 
             TUE_INSTALL_GIT_PULL_Q+=("${target_dir}")
 
-            local submodule_sync_res submodule_sync_error_code
-            tue-install-debug "git -C ${target_dir} submodule sync --recursive"
-            submodule_sync_res=$(git -C "${target_dir}" submodule sync --recursive)
+            local sparse_args submodule_sync_res submodule_sync_error_code
+            submodule_sparse_args=()
+            [[ -n "${sparse_sub_dir}" ]] && submodule_sparse_args+=("${sparse_sub_dir}")
+
+            tue-install-debug "git -C ${target_dir} submodule sync --recursive -- ${submodule_sparse_args[*]}"
+            submodule_sync_res=$(git -C "${target_dir}" submodule sync --recursive -- "${submodule_sparse_args[@]}")
             submodule_sync_error_code=$?
             tue-install-debug "submodule_sync_res(${submodule_sync_error_code}): ${submodule_sync_res}"
             [ "${submodule_sync_error_code}" -gt 0 ] && [ -n "${submodule_sync_res}" ] && res="${res:+${res}\n}${submodule_sync_res}"
 
             local submodule_res
-            tue-install-debug "git -C ${target_dir} submodule update --init --recursive"
-            submodule_res=$(git -C "${target_dir}" submodule update --init --recursive 2>&1)
+            tue-install-debug "git -C ${target_dir} submodule update --init --recursive -- ${submodule_sparse_args[*]}"
+            submodule_res=$(git -C "${target_dir}" submodule update --init --recursive -- "${submodule_sparse_args[@]}" 2>&1)
             tue-install-debug "submodule_res: $submodule_res"
             [ -n "$submodule_res" ] && res="${res:+${res}\n}$submodule_res"
 
@@ -555,7 +570,7 @@ function tue-install-git
         mkdir -p "$(dirname "$version_cache_file")"
         echo "$version" > "$version_cache_file"
         _try_branch_res=""
-        _try_branch_git "${target_dir}" "${version}"
+        _try_branch_git "${target_dir}" "${version}" "${sparse_sub_dir}"
         [ -n "$_try_branch_res" ] && res="${res:+${res}\n}$_try_branch_res"
     else
         rm "$version_cache_file" 2>/dev/null
@@ -567,7 +582,7 @@ function tue-install-git
     do
         tue-install-debug "Parsed branch '${branch}'"
         _try_branch_res=""
-        _try_branch_git "${target_dir}" "${branch}"
+        _try_branch_git "${target_dir}" "${branch}" "${sparse_sub_dir}"
         _try_branch_error_code=$?
         [ -n "${_try_branch_res}" ] && res="${res:+${res}\n}${_try_branch_res}"
         [ "${_try_branch_error_code}" -eq 0 ] && break
@@ -1451,7 +1466,10 @@ function tue-install-ros
 
     tue-install-debug "repos_dir: $repos_dir"
 
-    tue-install-git "$src" --target-dir="$repos_dir" --version="$version"
+    local sparse_sub_dir_args
+    sparse_sub_dir_args=()
+    [[ ("${CI}" == "true" || "${TUE_SPARSE_CHECKOUT}") && -n "${sub_dir}" ]] && sparse_sub_dir_args=("--sparse-sub-dir=${sub_dir}")
+    tue-install-git "${src}" --target-dir="${repos_dir}" --version="${version}" "${sparse_sub_dir_args[@]}"
 
     if [ -d "$repos_dir" ]
     then
