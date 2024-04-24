@@ -502,7 +502,7 @@ function tue-install-git
         TUE_INSTALL_GIT_PULL_Q+=("${target_dir}")
     else
         # Check if we have already pulled the repo
-        if [[ ${TUE_INSTALL_GIT_PULL_Q[*]} == "${target_dir}" ]]
+        if [[ ${TUE_INSTALL_GIT_PULL_Q[*]} =~ ^"${target_dir}"$ ]]
         then
             tue-install-debug "Repo previously pulled, skipping"
             # We have already pulled this repo, skip it
