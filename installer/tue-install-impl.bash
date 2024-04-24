@@ -502,6 +502,9 @@ function tue-install-git
         tue-install-error "Target directory path cannot be empty"
     fi
 
+    # First make sure we install an optional git target
+    tue-install-target git true || true
+
     local res
     if [ ! -d "${target_dir}" ]
     then
