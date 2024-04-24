@@ -505,7 +505,8 @@ function tue-install-git
     # First make sure we install an optional git target
     tue-install-target git true || true
 
-    local res
+    local res submodule_update_required
+    submodule_update_required="false"
     if [ ! -d "${target_dir}" ]
     then
         local sparse_args
@@ -523,8 +524,10 @@ function tue-install-git
             tue-install-debug "Repo previously pulled, skipping"
             # We have already pulled this repo, skip it
             res=
+            [[ -n "${sparse_sub_dir}" ]] && submodule_update_required="true"
         else
             tue-install-debug "Repo not yet pulled, pulling"
+
             # Switch url of origin to use https/ssh if different
             # Get current remote url
             local current_url
@@ -547,32 +550,37 @@ function tue-install-git
             then
                 res=
             fi
+
+            submodule_update_required="true"
         fi
     fi
 
-    if [[ -n "${sparse_sub_dir}" ]]
+    if [[ ${submodule_update_required} == "true" ]]
     then
-        local sparse_checkout_res
-        tue-install-debug "git -C ${target_dir} sparse-checkout add ${sparse_sub_dir}"
-        sparse_checkout_res=$(git -C "${target_dir}" sparse-checkout add "${sparse_sub_dir}" 2>&1)
-        [[ -n "${sparse_checkout_res}" ]] && res="${res:+${res}\n}${sparse_checkout_res}"
+        if [[ -n "${sparse_sub_dir}" ]]
+        then
+            local sparse_checkout_res
+            tue-install-debug "git -C ${target_dir} sparse-checkout add ${sparse_sub_dir}"
+            sparse_checkout_res=$(git -C "${target_dir}" sparse-checkout add "${sparse_sub_dir}" 2>&1)
+            [[ -n "${sparse_checkout_res}" ]] && res="${res:+${res}\n}${sparse_checkout_res}"
+        fi
+
+        local sparse_args submodule_sync_res submodule_sync_error_code
+        submodule_sparse_args=()
+        [[ -n "${sparse_sub_dir}" ]] && submodule_sparse_args+=("${sparse_sub_dir}")
+
+        tue-install-debug "git -C ${target_dir} submodule sync --recursive -- ${submodule_sparse_args[*]}"
+        submodule_sync_res=$(git -C "${target_dir}" submodule sync --recursive -- "${submodule_sparse_args[@]}")
+        submodule_sync_error_code=$?
+        tue-install-debug "submodule_sync_res(${submodule_sync_error_code}): ${submodule_sync_res}"
+        [[ "${submodule_sync_error_code}" -gt 0 ]] && [[ -n "${submodule_sync_res}" ]] && res="${res:+${res}\n}${submodule_sync_res}"
+
+        local submodule_res
+        tue-install-debug "git -C ${target_dir} submodule update --init --recursive -- ${submodule_sparse_args[*]}"
+        submodule_res=$(git -C "${target_dir}" submodule update --init --recursive -- "${submodule_sparse_args[@]}" 2>&1)
+        tue-install-debug "submodule_res: {$submodule_res}"
+        [[ -n "${submodule_res}" ]] && res="${res:+${res}\n}${submodule_res}"
     fi
-
-    local sparse_args submodule_sync_res submodule_sync_error_code
-    submodule_sparse_args=()
-    [[ -n "${sparse_sub_dir}" ]] && submodule_sparse_args+=("${sparse_sub_dir}")
-
-    tue-install-debug "git -C ${target_dir} submodule sync --recursive -- ${submodule_sparse_args[*]}"
-    submodule_sync_res=$(git -C "${target_dir}" submodule sync --recursive -- "${submodule_sparse_args[@]}")
-    submodule_sync_error_code=$?
-    tue-install-debug "submodule_sync_res(${submodule_sync_error_code}): ${submodule_sync_res}"
-    [[ "${submodule_sync_error_code}" -gt 0 ]] && [[ -n "${submodule_sync_res}" ]] && res="${res:+${res}\n}${submodule_sync_res}"
-
-    local submodule_res
-    tue-install-debug "git -C ${target_dir} submodule update --init --recursive -- ${submodule_sparse_args[*]}"
-    submodule_res=$(git -C "${target_dir}" submodule update --init --recursive -- "${submodule_sparse_args[@]}" 2>&1)
-    tue-install-debug "submodule_res: {$submodule_res}"
-    [[ -n "${submodule_res}" ]] && res="${res:+${res}\n}${submodule_res}"
 
     tue-install-debug "Desired version: $version"
     local _try_branch_res # Will be used in _try_branch_git
