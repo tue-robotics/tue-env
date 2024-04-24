@@ -14,8 +14,7 @@ function tue-env
     else
         case $1 in
             --help | -h )
-                show_help="true"
-                ;;
+                show_help="true" ;;
         esac
     fi
 
@@ -56,7 +55,7 @@ function tue-env
     # Make sure the correct directories are there
     mkdir -p "$TUE_DIR"/user/envs
 
-    local create_venv dir env_name targets_url venv_include_system_site
+    local create_venv targets_url tue_env tue_env_dir venv_include_system_site
     create_venv="true"
     venv_include_system_site="true"
 
@@ -79,20 +78,27 @@ function tue-env
                         show_help="true"
                         break
                         ;;
+                    --* )
+                        echo "[tue-env](init) Unknown option $i"
+                        show_help="true"
+                        ;;
                     * )
-                        if [[ -z "${env_name}" ]]
+                        if [[ -z "${tue_env}" ]]
                         then
-                            env_name="$i"
-                        elif [[ -z "${dir}" ]]
+                            tue_env="$i"
+                        elif [[ -z "${tue_env_dir}" ]]
                         then
-                            dir="$i"
+                            tue_env_dir="$i"
                         else
-                            tue-install-error "Unknown input variable $i"
+                            echo "[tue-env](init) Unknown input variable $i"
+                            show_help="true"
                         fi
                         ;;
                 esac
             done
         fi
+
+        [[ -z "${tue_env}" ]] && show_help="true" && echo "[tue-env](init) no environment provided"
 
         if [[ "${show_help}" == "true" ]]
         then
@@ -100,42 +106,42 @@ function tue-env
             return 1
         fi
 
-        [[ -z "${dir}" ]] && dir=${PWD} # If no directory is given, use current directory
-        dir="$( realpath "${dir}" )"
+        [[ -z "${tue_env_dir}" ]] && tue_env_dir=${PWD} # If no directory is given, use current directory
+        tue_env_dir="$( realpath "${tue_env_dir}" )"
 
-        if [ -f "${TUE_DIR}"/user/envs/"${env_name}" ]
+        if [ -f "${TUE_DIR}"/user/envs/"${tue_env}" ]
         then
-            echo "[tue-env] Environment '${env_name}' already exists"
+            echo "[tue-env](init) Environment '${tue_env}' already exists"
             return 1
         fi
 
-        if [ -d "$dir"/.env ]
+        if [[ -d "${tue_env_dir}"/.env ]]
         then
-            echo "[tue-env] Directory '$dir' is already an environment directory."
+            echo "[tue-env](init) Directory '${tue_env_dir}' is already an environment directory."
             return 1
         fi
 
-        echo "${dir}" > "${TUE_DIR}"/user/envs/"${env_name}"
+        echo "${tue_env_dir}" > "${TUE_DIR}"/user/envs/"${tue_env}"
         # Create .env and .env/setup directories
-        mkdir -p "$dir"/.env/setup
-        echo -e "#! /usr/bin/env bash\n" > "$dir"/.env/setup/user_setup.bash
-        echo "[tue-env] Created new environment ${env_name}"
+        mkdir -p "${tue_env_dir}"/.env/setup
+        echo -e "#! /usr/bin/env bash\n" > "${tue_env_dir}"/.env/setup/user_setup.bash
+        echo "[tue-env](init) Created new environment ${tue_env}"
 
         if [[ -n "${targets_url}" ]]
         then
-            tue-env init-targets "${env_name}" "${targets_url}"
+            tue-env init-targets "${tue_env}" "${targets_url}"
         fi
 
         if [[ "${create_venv}" == "true" ]]
         then
-            tue-env init-venv "${env_name}" --include-system-site-packages="${venv_include_system_site}"
+            tue-env init-venv "${tue_env}" --include-system-site-packages="${venv_include_system_site}"
         fi
 
     elif [[ ${cmd} == "remove" || ${cmd} == "rm" ]]
     then
         # Set purge to be false by default
-        local PURGE env
-        PURGE=false
+        local purge tue_env
+        purge="false"
         if [[ -z "$1" ]]
         then
             show_help="true"
@@ -144,26 +150,31 @@ function tue-env
             do
                 case $i in
                     --purge)
-                        PURGE=true
-                        ;;
+                        purge=true ;;
                     --help | -h )
                         show_help="true"
                         break
                         ;;
                     --*)
-                        echo "[tue-env] Unknown option $i"
+                        echo "[tue-env](rm) Unknown option $i"
+                        show_help="true"
                         ;;
                     *)
                         # Read only the first passed environment name and ignore
                         # the rest
-                        if [ -z "${env}" ]
+                        if [ -z "${tue_env}" ]
                         then
-                            env=$i
+                            tue_env=$i
+                        else
+                            echo "[tue-env](rm) Unknown input variable $i"
+                            show_help="true"
                         fi
                         ;;
                 esac
             done
         fi
+
+        [[ -z "${tue_env}" ]]  && show_help="true" && echo "[tue-env](rm) no environment provided"
 
         if [[ ${show_help} == "true" ]]
         then
@@ -177,72 +188,37 @@ options:
             return 1
         fi
 
-        if [ ! -f "$TUE_DIR"/user/envs/"$env" ]
-        then
-            echo "[tue-env] No such environment: '$env'."
-            return 1
-        fi
+        [[ -f "${TUE_DIR}"/user/envs/"${tue_env}" ]] || { echo "[tue-env](rm) No such environment: '${tue_env}'"; return 1; }
 
-        local dir
-        dir=$(cat "$TUE_DIR"/user/envs/"$env")
-        rm "$TUE_DIR"/user/envs/"$env"
+        local tue_env_dir
+        tue_env_dir=$(cat "${TUE_DIR}"/user/envs/"${tue_env}")
+        rm "${TUE_DIR}"/user/envs/"${tue_env}"
 
-        if [[ -d ${dir} ]]
+        if [[ -d ${tue_env_dir} ]]
         then
-            if [ $PURGE == "false" ]
+            if [[ ${purge} == "false" ]]
             then
-                dir_moved=$dir.$(date +%F_%R)
-                mv "${dir}" "${dir_moved}"
+                local tue_env_dir_moved
+                tue_env_dir_moved=${tue_env_dir}.$(date +%F_%R)
+                mv "${tue_env_dir}" "${tue_env_dir_moved}"
                 # shellcheck disable=SC1078,SC1079
-                echo """[tue-env] Removed environment '${env}'
-Moved environment directory from '${dir}' to '${dir_moved}'"""
+                echo """[tue-env] Removed environment '${tue_env}'
+Moved environment directory from '${tue_env_dir}' to '${tue_env_dir_moved}'"""
             else
-                rm -rf "${dir}"
+                rm -rf "${tue_env_dir}"
                 # shellcheck disable=SC1078,SC1079
-                echo """[tue-env] Removed environment '$env'
-Purged environment directory '${dir}'"""
+                echo """[tue-env] Removed environment '${tue_env}'
+Purged environment directory '${tue_env_dir}'"""
             fi
         else
             # shellcheck disable=SC1078,SC1079
-            echo """[tue-env] Removed environment '${env}'
-Environment directory '${dir}' didn't exist (anymore)"""
+            echo """[tue-env] Removed environment '${tue_env}'
+Environment directory '${tue_env_dir}' didn't exist (anymore)"""
         fi
 
     elif [[ ${cmd} == "switch" ]]
     then
-        [[ -z "$1" ]] && show_help="true"
-        for i in "$@"
-        do
-            [[ ${show_help} == "true" ]] && break
-            case $i in
-                --help | -h )
-                    show_help="true" ;;
-            esac
-        done
-
-        if [[ ${show_help} == "true" ]]
-        then
-            echo "Usage: tue-env switch ENVIRONMENT"
-            return 1
-        fi
-
-        if [ ! -f "$TUE_DIR"/user/envs/"$1" ]
-        then
-            echo "[tue-env] No such environment: '$1'."
-            return 1
-        fi
-
-        [[ -n ${VIRTUAL_ENV} ]] && echo "[tue-env](switch) deactivating old virtualenv" && deactivate
-
-        export TUE_ENV=$1
-        TUE_ENV_DIR=$(cat "$TUE_DIR"/user/envs/"$1")
-        export TUE_ENV_DIR
-
-        # shellcheck disable=SC1091
-        source "$TUE_DIR"/setup.bash
-
-    elif [[ ${cmd} == "set-default" ]]
-    then
+        local tue_env
         if [[ -z "$1" ]]
         then
             show_help="true"
@@ -254,9 +230,79 @@ Environment directory '${dir}' didn't exist (anymore)"""
                         show_help="true"
                         break
                         ;;
+                    --*)
+                        echo "[tue-env](switch) Unknown option $i"
+                        show_help="true"
+                        ;;
+                    * )
+                        if [[ -z "${tue_env}" ]]
+                        then
+                            tue_env=$i
+                        else
+                            echo "[tue-env](switch) Unknown input variable $i"
+                            show_help="true"
+                        fi
+                        ;;
                 esac
             done
         fi
+
+        [[ -z "${tue_env}" ]] && show_help="true" && echo "[tue-env](switch) no environment provided"
+
+        if [[ ${show_help} == "true" ]]
+        then
+            echo "Usage: tue-env switch ENVIRONMENT"
+            return 1
+        fi
+
+        [[ -f "${TUE_DIR}"/user/envs/"${tue_env}" ]] || { echo "[tue-env](switch) No such environment: '${tue_env}'"; return 1; }
+        local tue_env_dir
+        tue_env_dir=$(cat "${TUE_DIR}"/user/envs/"${tue_env}")
+        [[ -d "${tue_env_dir}" ]] || { echo "[tue-env](switch) Environment directory '${tue_env_dir}' (environment '${tue_env}') does not exist"; return 1; }
+
+        [[ -n ${VIRTUAL_ENV} ]] && echo "[tue-env](switch) deactivating old virtualenv" && deactivate
+
+        # Successful, so we can set the environment variables
+        TUE_ENV=${tue_env}
+        export TUE_ENV
+        TUE_ENV_DIR=${tue_env_dir}
+        export TUE_ENV_DIR
+
+        # shellcheck disable=SC1091
+        source "$TUE_DIR"/setup.bash
+
+    elif [[ ${cmd} == "set-default" ]]
+    then
+        local tue_env
+        if [[ -z "$1" ]]
+        then
+            show_help="true"
+        else
+            for i in "$@"
+            do
+                case $i in
+                    --help | -h )
+                        show_help="true"
+                        break
+                        ;;
+                    --*)
+                        echo "[tue-env](set-default) Unknown option $i"
+                        show_help="true"
+                        ;;
+                    * )
+                        if [[ -z "${tue_env}" ]]
+                        then
+                            tue_env=$i
+                        else
+                            echo "[tue-env](set-default) Unknown input variable $i"
+                            show_help="true"
+                        fi
+                        ;;
+                esac
+            done
+        fi
+
+        [[ -z "${tue_env}" ]] && show_help="true" && echo "[tue-env](set-default) no environment provided"
 
         if [[ ${show_help} == "true" ]]
         then
@@ -264,9 +310,9 @@ Environment directory '${dir}' didn't exist (anymore)"""
             return 1
         fi
 
-        mkdir -p "$TUE_DIR"/user/config
-        echo "$1" > "$TUE_DIR"/user/config/default_env
-        echo "[tue-env] Default environment set to $1"
+        mkdir -p "${TUE_DIR}"/user/config
+        echo "${tue_env}" > "${TUE_DIR}"/user/config/default_env
+        echo "[tue-env](set-default) Default environment set to '${tue_env}'"
 
     elif [[ ${cmd} == "unset-default" ]]
     then
@@ -280,17 +326,18 @@ Environment directory '${dir}' didn't exist (anymore)"""
 
         if [[ ! -f "${TUE_DIR}"/user/config/default_env ]]
         then
-            echo "[tue-env] No default environment set, nothing to unset"
+            echo "[tue-env](unset-default) No default environment set, nothing to unset"
             return 1
         fi
         local default_env
         default_env=$(cat "${TUE_DIR}"/user/config/default_env)
         rm -f "${TUE_DIR}"/user/config/default_env
-        echo "[tue-env] Default environment '${default_env}' unset"
+        echo "[tue-env](unset-default) Default environment '${default_env}' unset"
         return 0
 
     elif [[ ${cmd} == "init-targets" ]]
     then
+        local tue_env url
         if { [[ -z "$1" ]] || { [ -z "${TUE_ENV}" ] && [ -z "$2" ]; }; }
         then
             show_help="true"
@@ -302,9 +349,33 @@ Environment directory '${dir}' didn't exist (anymore)"""
                         show_help="true"
                         break
                         ;;
+                    --* )
+                        echo "[tue-env](init-targets) Unknown option $i"
+                        show_help="true"
+                        ;;
+                    * )
+                        if [[ -z "${tue_env}" ]]
+                        then
+                            tue_env=$i
+                        elif [[ -z "${url}" ]]
+                        then
+                            url=$i
+                        else
+                            echo "[tue-env](init-targets) Unknown input variable $i"
+                            show_help="true"
+                        fi
+                        ;;
                 esac
             done
         fi
+
+        if [[ -z "${url}" ]]
+        then
+            url=${tue_env} # If no environment was given, the url was assigned to tue_env
+            tue_env=${TUE_ENV}
+        fi
+
+        [[ -z "${tue_env}" ]] && show_help="true" && echo "[tue-env](init-targets) no environment set or provided"
 
         if [[ ${show_help} == "true" ]]
         then
@@ -312,23 +383,11 @@ Environment directory '${dir}' didn't exist (anymore)"""
             return 1
         fi
 
-        local env url
-        env=$1
-        url=$2
-        if [ -z "$url" ]
-        then
-            env=$TUE_ENV
-            if [ -z "$env" ]
-            then
-                # This shouldn't be possible logical, should have exited after printing usage
-                echo "[tue-env](init-targets) no environment set or provided"
-                return 1
-            fi
-            url=$1
-        fi
-
+        [[ -f "${TUE_DIR}"/user/envs/"${tue_env}" ]] || { echo "[tue-env](init-targets) No such environment: '${tue_env}'"; return 1; }
         local tue_env_dir
-        tue_env_dir=$(cat "$TUE_DIR"/user/envs/"$env")
+        tue_env_dir=$(cat "${TUE_DIR}"/user/envs/"${tue_env}")
+        [[ -d "${tue_env_dir}" ]] || { echo "[tue-env](init-targets) Environment directory '${tue_env_dir}' (environment '${tue_env}') does not exist"; return 1; }
+
         local tue_env_targets_dir
         tue_env_targets_dir=$tue_env_dir/.env/targets
 
@@ -337,14 +396,15 @@ Environment directory '${dir}' didn't exist (anymore)"""
             local targets_dir_moved
             targets_dir_moved=$tue_env_targets_dir.$(date +%F_%R)
             mv -f "$tue_env_targets_dir" "$targets_dir_moved"
-            echo "[tue-env] Moved old targets of environment '$env' to $targets_dir_moved"
+            echo "[tue-env] Moved old targets of environment '${tue_env}' to ${targets_dir_moved}"
         fi
 
         git clone --recursive "$url" "$tue_env_targets_dir"
-        echo "[tue-env] cloned targets of environment '$env' from $url"
+        echo "[tue-env] cloned targets of environment '${tue_env}' from ${url}"
 
     elif [[ ${cmd} == "targets" ]]
     then
+        local tue_env
         for i in "$@"
         do
             case $i in
@@ -352,8 +412,24 @@ Environment directory '${dir}' didn't exist (anymore)"""
                     show_help="true"
                     break
                     ;;
+                --* )
+                    echo "[tue-env](targets) Unknown option $i"
+                    show_help="true"
+                    ;;
+                * )
+                    if [[ -z "${tue_env}" ]]
+                    then
+                        tue_env=$i
+                    else
+                        echo "[tue-env](targets) Unknown input variable $i"
+                        show_help="true"
+                    fi
+                    ;;
             esac
         done
+
+        [[ -n "${tue_env}" ]] || tue_env=${TUE_ENV}
+        [[ -z "${tue_env}" ]] && show_help="true" && echo "[tue-env](targets) no environment set or provided"
 
         if [[ ${show_help} == "true" ]]
         then
@@ -361,20 +437,15 @@ Environment directory '${dir}' didn't exist (anymore)"""
             return 1
         fi
 
-        local env
-        env=$1
-        [ -n "$env" ] || env=$TUE_ENV
-
-        if [ -n "$env" ]
-        then
-            local tue_env_dir
-            tue_env_dir=$(cat "$TUE_DIR"/user/envs/"$env")
-            cd "${tue_env_dir}"/.env/targets || { echo -e "Targets directory '${tue_env_dir}/.env/targets' (environment '${env}') does not exist"; return 1; }
-        fi
+        [[ -f "${TUE_DIR}"/user/envs/"${tue_env}" ]] || { echo "[tue-env](targets) No such environment: '${tue_env}'"; return 1; }
+        local tue_env_dir
+        tue_env_dir=$(cat "${TUE_DIR}"/user/envs/"${tue_env}")
+        [[ -d "${tue_env_dir}" ]] || { echo "[tue-env](targets) Environment directory '${tue_env_dir}' (environment '${tue_env}') does not exist"; return 1; }
+        cd "${tue_env_dir}"/.env/targets || { echo -e "Targets directory '${tue_env_dir}/.env/targets' (environment '${tue_env}') does not exist"; return 1; }
 
     elif [[ ${cmd} == "init-venv" ]]
     then
-        local env include_system_site
+        local include_system_site tue_env
         include_system_site="true"
         for i in "$@"
         do
@@ -386,21 +457,23 @@ Environment directory '${dir}' didn't exist (anymore)"""
                 --include-system-site-packages=* )
                     include_system_site="${i#*=}" ;;
                 --* )
-                    echo "[tue-env] Unknown option $i" ;;
+                    echo "[tue-env] Unknown option $i"
+                    show_help="true"
+                    ;;
                 * )
-                    if [[ -z "${env}" ]]
+                    if [[ -z "${tue_env}" ]]
                     then
-                        env=$i
+                        tue_env=$i
                     else
                         echo "[tue-env] Unknown input variable $i"
-                        return 1
+                        show_help="true"
                     fi
                     ;;
             esac
         done
 
-        [[ -n "${env}" ]] || env=${TUE_ENV}
-        [[ -z "${env}" ]] && show_help="true" && echo "[tue-env](init-venv) no environment set or provided"
+        [[ -n "${tue_env}" ]] || tue_env=${TUE_ENV}
+        [[ -z "${tue_env}" ]] && show_help="true" && echo "[tue-env](init-venv) no environment set or provided"
 
         if [[ ${show_help} == "true" ]]
         then
@@ -411,30 +484,24 @@ Environment directory '${dir}' didn't exist (anymore)"""
         python3 -c "import virtualenv" 2>/dev/null ||
         { echo -e "[tue-env](init-venv) 'virtualenv' module is not found. Make sure you install it 'sudo apt-get install python3-virtualenv'"; return 1; }
 
+        [[ -f "${TUE_DIR}"/user/envs/"${tue_env}" ]] || { echo "[tue-env](init-venv) No such environment: '${tue_env}'"; return 1; }
         local tue_env_dir
-        tue_env_dir=$(cat "${TUE_DIR}"/user/envs/"${env}")
+        tue_env_dir=$(cat "${TUE_DIR}"/user/envs/"${tue_env}")
+        [[ -d "${tue_env_dir}" ]] || { echo "[tue-env](init-venv) Environment directory '${tue_env_dir}' (environment '${tue_env}') does not exist"; return 1; }
         local venv_dir
-        venv_dir=${tue_env_dir}/.venv/${env}
-
-        if [ -d "$tue_env_targets_dir" ]
-        then
-            local targets_dir_moved
-            targets_dir_moved=$tue_env_targets_dir.$(date +%F_%R)
-            mv -f "$tue_env_targets_dir" "$targets_dir_moved"
-            echo "[tue-env] Moved old targets of environment '$env' to $targets_dir_moved"
-        fi
+        venv_dir=${tue_env_dir}/.venv/${tue_env}
 
         if [[ -d "${venv_dir}" ]]
         then
             local venv_dir_moved
             venv_dir_moved=${venv_dir}.$(date +%F_%R)
-            if [[ $(basename "${VIRTUAL_ENV}") == "${env}" ]]
+            if [[ $(basename "${VIRTUAL_ENV}") == "${tue_env}" ]]
             then
-                echo "[tue-env](init-venv) deactivating currently active virtualenv of environment '${env}'"
+                echo "[tue-env](init-venv) deactivating currently active virtualenv of environment '${tue_env}'"
                 deactivate
             fi
             mv -f "${venv_dir}" "${venv_dir_moved}"
-            echo "[tue-env] Moved old virtualenv of environment '${env}' to ${venv_dir_moved}"
+            echo "[tue-env](init-venv) Moved old virtualenv of environment '${tue_env}' to ${venv_dir_moved}"
             echo "Don't use it anymore as its old path is hardcoded in the virtualenv"
         fi
 
@@ -444,20 +511,21 @@ Environment directory '${dir}' didn't exist (anymore)"""
             system_site_args="--system-site-packages"
         fi
         python3 -m virtualenv "${venv_dir}" ${system_site_args:+${system_site_args} }--symlinks -q 2>/dev/null
-        echo "[tue-env] Initialized virtualenv of environment '${env}'"
+        echo "[tue-env](init-venv) Initialized virtualenv of environment '${tue_env}'"
 
-        if [ "${env}" == "${TUE_ENV}" ]
+        if [ "${tue_env}" == "${TUE_ENV}" ]
         then
+            # No need to check if the environment really exists, as it was checked before
             local tue_env_dir
-            tue_env_dir=$(cat "${TUE_DIR}"/user/envs/"${env}")
+            tue_env_dir=$(cat "${TUE_DIR}"/user/envs/"${tue_env}")
             # shellcheck disable=SC1090
-            source "${tue_env_dir}"/.venv/"${env}"/bin/activate
-            echo "[tue-env] Activated new virtualenv of currently active environment '${env}'"
+            source "${tue_env_dir}"/.venv/"${tue_env}"/bin/activate
+            echo "[tue-env](init-venv) Activated new virtualenv of currently active environment '${tue_env}'"
         fi
 
     elif [[ ${cmd} == "remove-venv" || ${cmd} == "rm-venv" ]]
     then
-        local env purge
+        local purge tue_env
         purge="false"
         for i in "$@"
         do
@@ -467,22 +535,25 @@ Environment directory '${dir}' didn't exist (anymore)"""
                     break
                     ;;
                 --purge)
-                    purge="true"
+                    purge="true" ;;
+                --* )
+                    echo "[tue-env](rm-venv) Unknown option $i"
+                    show_help="true"
                     ;;
                 * )
-                    if [[ -z "${env}" ]]
+                    if [[ -z "${tue_env}" ]]
                     then
-                        env=$i
+                        tue_env=$i
                     else
-                        echo "[tue-env] Unknown input variable $i"
-                        return 1
+                        echo "[tue-env](rm-venv) Unknown input variable $i"
+                        show_help="true"
                     fi
                     ;;
             esac
         done
 
-        [[ -n "${env}" ]] || env=${TUE_ENV}
-        [[ -z "${env}" ]] && show_help="true" && echo "[tue-env](remove-venv) no environment set or provided"
+        [[ -n "${tue_env}" ]] || tue_env=${TUE_ENV}
+        [[ -z "${tue_env}" ]] && show_help="true" && echo "[tue-env](rm-venv) no environment set or provided"
 
         if [[ ${show_help} == "true" ]]
         then
@@ -490,35 +561,39 @@ Environment directory '${dir}' didn't exist (anymore)"""
             return 1
         fi
 
+        [[ -f "${TUE_DIR}"/user/envs/"${tue_env}" ]] || { echo "[tue-env](rm-venv) No such environment: '${tue_env}'"; return 1; }
         local tue_env_dir
-        tue_env_dir=$(cat "${TUE_DIR}"/user/envs/"${env}")
+        tue_env_dir=$(cat "${TUE_DIR}"/user/envs/"${tue_env}")
+        [[ -d "${tue_env_dir}" ]] || { echo "[tue-env](rm-venv) Environment directory '${tue_env_dir}' (environment '${tue_env}') does not exist"; return 1; }
         local venv_dir
-        venv_dir=${tue_env_dir}/.venv/${env}
+        venv_dir=${tue_env_dir}/.venv/${tue_env}
 
         if [[ -d "${venv_dir}" ]]
         then
-            if [[ $(basename "${VIRTUAL_ENV}") == "${env}" ]]
+            if [[ $(basename "${VIRTUAL_ENV}") == "${tue_env}" ]]
             then
-                echo "[tue-env](remove-venv) deactivating currently active virtualenv of environment '${env}'"
+                echo "[tue-env](rm-venv) deactivating currently active virtualenv of environment '${tue_env}'"
                 deactivate
             fi
             if [[ "${purge}" == "true" ]]
             then
                 rm -rf "${venv_dir}"
-                echo "[tue-env](remove-venv) Purged virtualenv of environment '${env}'"
+                echo "[tue-env](rm-venv) Purged virtualenv of environment '${tue_env}'"
                 return 0
             else
                 local venv_dir_moved
                 venv_dir_moved=${venv_dir}.$(date +%F_%R)
                 mv -f "${venv_dir}" "${venv_dir_moved}"
-                echo "[tue-env](remove-venv) Moved old virtualenv of environment '${env}' to ${venv_dir_moved}"
+                echo "[tue-env](rm-venv) Moved old virtualenv of environment '${tue_env}' to ${venv_dir_moved}"
             fi
         else
-            echo "[tue-env](remove-venv) No virtualenv found for environment '${env}'"
+            echo "[tue-env](rm-venv) No virtualenv found for environment '${tue_env}'"
         fi
 
     elif [[ ${cmd} == "config" ]]
     then
+        local tue_env args
+        args=()
         for i in "$@"
         do
             case $i in
@@ -526,8 +601,19 @@ Environment directory '${dir}' didn't exist (anymore)"""
                     show_help="true"
                     break
                     ;;
+                * )
+                    if [[ -z "${tue_env}" ]]
+                    then
+                        tue_env=$i
+                    else
+                        args+=("$i")
+                    fi
+                    ;;
             esac
         done
+
+        [[ -n "${tue_env}" ]] || tue_env=${TUE_ENV}
+        [[ -z "${tue_env}" ]] && show_help="true" && echo "[tue-env](config) no environment set or provided"
 
         if [[ ${show_help} == "true" ]]
         then
@@ -535,23 +621,20 @@ Environment directory '${dir}' didn't exist (anymore)"""
             return 1
         fi
 
-        local env
-        env=$1
-        shift
-        [ -n "$env" ] || env=$TUE_ENV
+        "${TUE_DIR}"/setup/tue-env-config.bash "${tue_env}" "${args[@]}"
 
-        "$TUE_DIR"/setup/tue-env-config.bash "$env" "$@"
-
-        if [ "$env" == "$TUE_ENV" ]
+        if [[ "${tue_env}" == "${TUE_ENV}" ]]
         then
+            # Assuming the current environment does exist
             local tue_env_dir
-            tue_env_dir=$(cat "$TUE_DIR"/user/envs/"$env")
+            tue_env_dir=$(cat "${TUE_DIR}"/user/envs/"${tue_env}")
             # shellcheck disable=SC1091
-            source "$tue_env_dir"/.env/setup/user_setup.bash
+            source "${tue_env_dir}"/.env/setup/user_setup.bash
         fi
 
     elif [[ ${cmd} == "cd" ]]
     then
+        local tue_env
         for i in "$@"
         do
             case $i in
@@ -559,8 +642,24 @@ Environment directory '${dir}' didn't exist (anymore)"""
                     show_help="true"
                     break
                     ;;
+                --* )
+                    echo "[tue-env](cd) Unknown option $i"
+                    show_help="true"
+                    ;;
+                * )
+                    if [[ -z "${tue_env}" ]]
+                    then
+                        tue_env=$i
+                    else
+                        echo "[tue-env](cd) Unknown input variable $i"
+                        show_help="true"
+                    fi
+                    ;;
             esac
         done
+
+        [[ -n "${tue_env}" ]] || tue_env=${TUE_ENV}
+        [[ -z "${tue_env}" ]] && show_help="true" && echo "[tue-env](cd) no environment set or provided"
 
         if [[ ${show_help} == "true" ]]
         then
@@ -568,27 +667,18 @@ Environment directory '${dir}' didn't exist (anymore)"""
             return 1
         fi
 
-        local env
-        env=$1
-        [ -n "$env" ] || env=$TUE_ENV
-
-        if [ -n "$env" ]
-        then
-            local tue_env_dir
-            tue_env_dir=$(cat "$TUE_DIR"/user/envs/"$env")
-            cd "${tue_env_dir}" || { echo -e "Environment directory '${tue_env_dir}' (environment '${env}') does not exist"; return 1; }
-        else
-            echo "[tue-env](cd) no environment set or provided"
-            return 1
-        fi
+        [[ -f "${TUE_DIR}"/user/envs/"${tue_env}" ]] || { echo "[tue-env](cd) No such environment: '${tue_env}'"; return 1; }
+        local tue_env_dir
+        tue_env_dir=$(cat "${TUE_DIR}"/user/envs/"${tue_env}")
+        cd "${tue_env_dir}" || { echo "[tue-env](cd) Environment directory '${tue_env_dir}' (environment '${tue_env}') does not exist"; return 1; }
 
     elif [[ ${cmd} == "list" ]]
     then
         [ -d "$TUE_DIR"/user/envs ] || return 0
 
-        for env in "$TUE_DIR"/user/envs/*
+        for tue_env in "${TUE_DIR}"/user/envs/*
         do
-            basename "$env"
+            basename "${tue_env}"
         done
 
     elif [[ ${cmd} == "current" ]]
@@ -597,7 +687,7 @@ Environment directory '${dir}' didn't exist (anymore)"""
         then
             echo "$TUE_ENV"
         else
-            echo "[tue-env] no environment set"
+            echo "[tue-env](current) no environment set"
         fi
 
     else
