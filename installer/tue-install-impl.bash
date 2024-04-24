@@ -514,6 +514,14 @@ function tue-install-git
 
         tue-install-debug "git clone ${repo} ${target_dir} ${sparse_args[*]}"
         res=$(git clone "${repo}" "${target_dir}" "${sparse_args[@]}" 2>&1)
+
+        if [[ -n "${sparse_sub_dir}" ]]
+        then
+            local sparse_checkout_res
+            tue-install-debug "git -C ${target_dir} sparse-checkout add ${sparse_sub_dir}"
+            sparse_checkout_res=$(git -C "${target_dir}" sparse-checkout add "${sparse_sub_dir}" 2>&1)
+            [ -n "${sparse_checkout_res}" ] && res="${res:+${res}\n}${sparse_checkout_res}"
+        fi
         TUE_INSTALL_GIT_PULL_Q+=("${target_dir}")
     else
         # Check if we have already pulled the repo
