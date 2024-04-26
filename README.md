@@ -242,7 +242,7 @@ otherwise it will delete the repository as well.
 
 ```yaml
 - type: ros-remove-source
-  remove:
+  source:
     type: git
     url: <Repository URL>
     eol: <End of life date>
@@ -260,7 +260,7 @@ Again, this can be distro-specific.
       eol: <End of life date>
       path: <Directory of the cloned repository> (Optional field)
   noetic:
-    remove: null
+    source: null
 ```
 
 #### Catkin package install
