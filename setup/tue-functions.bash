@@ -1720,7 +1720,7 @@ function tue-robocup-remote-checkout
     # to the roboticssrv
     local remote branch
     remote="roboticssrv"
-    branch=$TUE_ROBOCUP_BRANCH
+    branch=${TUE_ROBOCUP_BRANCH}
 
     _tue-repos-do "_tue-robocup-remote-checkout $remote $branch"
 }
@@ -1796,24 +1796,24 @@ function tue-robocup-ssh-copy-id
 function _allow_robocup_branch
 {
     # allow TUE_ROBOCUP_BRANCH as branch in tue-status
-    if [ ! -f "$TUE_DIR"/user/config/robocup ]
+    if [[ ! -f "${TUE_ENV_DIR}"/.env/robocup/allowed_branch ]]
     then
-        echo $TUE_ROBOCUP_BRANCH > "$TUE_DIR"/user/config/robocup
+        echo ${TUE_ROBOCUP_BRANCH} > "${TUE_ENV_DIR}"/.env/robocup/allowed_branch
     fi
 }
 
 function _disallow_robocup_branch
 {
     # disallow TUE_ROBOCUP_BRANCH as branch in tue-status
-    if [ -f "$TUE_DIR"/user/config/robocup ]
+    if [ -f "${TUE_ENV_DIR}"/.env/robocup/allowed_branch ]
     then
-        rm "$TUE_DIR"/user/config/robocup
+        rm "${TUE_ENV_DIR}"/.env/robocup/allowed_branch
     fi
 }
 
 function tue-robocup-set-github
 {
-    tue-robocup-change-remote $TUE_ROBOCUP_BRANCH origin
+    tue-robocup-change-remote ${TUE_ROBOCUP_BRANCH} origin
     _tue-git-checkout-default-branch
     _disallow_robocup_branch
 }
@@ -1857,7 +1857,7 @@ function tue-robocup-install-package
     local remote server branch
     remote="roboticssrv"
     server="amigo@roboticssrv.local:"
-    branch=$TUE_ROBOCUP_BRANCH
+    branch=${TUE_ROBOCUP_BRANCH}
 
     # If directory already exists, return
     [ -d "$repo_dir" ] && return 0
