@@ -262,6 +262,12 @@ Environment directory '${tue_env_dir}' didn't exist (anymore)"""
 
         [[ -n ${VIRTUAL_ENV} ]] && echo "[tue-env](switch) deactivating old virtualenv" && deactivate
 
+        echo "[tue-env](switch) Unsetting all TUE_ENV* of the old environment: '${TUE_ENV}'"
+        for var in ${!TUE_ENV*}
+        do
+            unset "${var}"
+        done
+
         # Successful, so we can set the environment variables
         TUE_ENV=${tue_env}
         export TUE_ENV
