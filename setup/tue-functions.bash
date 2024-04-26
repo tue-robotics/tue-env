@@ -1,18 +1,33 @@
 #! /usr/bin/env bash
 
+# TODO(anyone): Remove the use of TUE_XXX, when migration to TUE_ENV_XXX is complete
 TUE_SYSTEM_DIR="${TUE_ENV_DIR}"/system  # This variable is deprecated and will be removed in a future version of the tool
 TUE_WS_DIR="${TUE_SYSTEM_DIR}"
 export TUE_SYSTEM_DIR
 export TUE_WS_DIR
 
+TUE_ENV_WS_DIR="${TUE_ENV_DIR}"/system
+export TUE_ENV_WS_DIR
+
+# TODO(anyone): Remove the use of TUE_XXX, when migration to TUE_ENV_XXX is complete
 if [[ -z "${TUE_REPOS_DIR}" ]]  # Only set this variable if there exists no default in user_setup.bash
 then
     TUE_REPOS_DIR="${TUE_ENV_DIR}"/repos
     export TUE_REPOS_DIR
 fi
 
-TUE_RELEASE_DIR="${TUE_SYSTEM_DIR}"/release
+if [[ -z "${TUE_ENV_REPOS_DIR}" ]]  # Only set this variable if there exists no default in user_setup.bash
+then
+    TUE_ENV_REPOS_DIR="${TUE_ENV_DIR}"/repos
+    export TUE_ENV_REPOS_DIR
+fi
+
+# TODO(anyone): Remove the use of TUE_XXX, when migration to TUE_ENV_XXX is complete
+TUE_RELEASE_DIR="${TUE_ENV_WS_DIR}"/release
 export TUE_RELEASE_DIR
+
+TUE_ENV_RELEASE_DIR="${TUE_ENV_WS_DIR}"/release
+export TUE_ENV_RELEASE_DIR
 
 # ----------------------------------------------------------------------------------------------------
 #                                        HELPER FUNCTIONS
@@ -333,13 +348,20 @@ function _git_https_or_ssh
     local input_url output_url test_var
     input_url=$1
 
-    # TODO: Remove the use of TUE_USE_SSH when migration to TUE_GIT_USE_SSH is complete
-    [[ -v "TUE_USE_SSH" ]] && test_var="TUE_USE_SSH"
+    # TODO(anyone): Remove the use of TUE_USE_SSH when migration to TUE_ENV_GIT_USE_SSH is complete
+    [[ -v TUE_USE_SSH ]] && { test_var="TUE_USE_SSH"; >&2 echo "Replace 'TUE_USE_SSH' in your environment config to 'TUE_ENV_GIT_USE_SSH'"; }
 
-    [[ -v "TUE_GIT_USE_SSH" ]] && test_var="TUE_GIT_USE_SSH"
+    # TODO(anyone): Remove the use of TUE_XXX, when migration to TUE_ENV_XXX is complete
+    [[ -v TUE_GIT_USE_SSH ]] && { test_var="TUE_GIT_USE_SSH"; >&2 echo "Replace 'TUE_GIT_USE_SSH' in your environment config to 'TUE_ENV_GIT_USE_SSH'"; }
 
-    [[ "$input_url" == *"github"* ]] && [[ -v "TUE_GITHUB_USE_SSH" ]] && test_var="TUE_GITHUB_USE_SSH"
-    [[ "$input_url" == *"gitlab"* ]] && [[ -v "TUE_GITLAB_USE_SSH" ]] && test_var="TUE_GITLAB_USE_SSH"
+    [[ -v TUE_ENV_GIT_USE_SSH ]] && test_var="TUE_ENV_GIT_USE_SSH"
+
+    # TODO(anyone): Remove the use of TUE_XXX, when migration to TUE_ENV_XXX is complete
+    [[ "$input_url" == *"github"* ]] && [[ -v TUE_GITHUB_USE_SSH ]] && { test_var="TUE_GITHUB_USE_SSH"; >&2 echo "Replace 'TUE_GITHUB_USE_SSH' in your environment config to 'TUE_ENV_GITHUB_USE_SSH'"; }
+    [[ "$input_url" == *"gitlab"* ]] && [[ -v TUE_GITLAB_USE_SSH ]] && { test_var="TUE_GITLAB_USE_SSH"; >&2 echo "Replace 'TUE_GITLAB_USE_SSH' in your environment config to 'TUE_ENV_GITLAB_USE_SSH'"; }
+
+    [[ "$input_url" == *"github"* ]] && [[ -v TUE_ENV_GITHUB_USE_SSH ]] && test_var="TUE_ENV_GITHUB_USE_SSH"
+    [[ "$input_url" == *"gitlab"* ]] && [[ -v TUE_ENV_GITLAB_USE_SSH ]] && test_var="TUE_ENV_GITLAB_USE_SSH"
 
     if [[ -n "$test_var" && "${!test_var}" == "true" ]]
     then
@@ -360,7 +382,7 @@ export -f _git_https_or_ssh # otherwise not available in sourced files
 ######################################################################################################################
 # Generate the path where a cloned git repository will be stored, based on its url
 # Globals:
-#   TUE_REPOS_DIR, used as the base directory of the generated path
+#   TUE_ENV_REPOS_DIR, used as the base directory of the generated path
 # Arguments:
 #   URL, A valid git repository url
 # Return:
@@ -381,7 +403,7 @@ function _git_url_to_repos_dir
     read -r -a array <<< "$output"
     domain_name=${array[0]}
     repo_address=${array[1]}
-    repos_dir="$TUE_REPOS_DIR"/"$domain_name"/"$repo_address"
+    repos_dir="${TUE_ENV_REPOS_DIR}"/"${domain_name}"/"${repo_address}"
 
     echo "${repos_dir}"
 }
@@ -422,46 +444,50 @@ export -f tue-git-deep-fetch
 
 function tue-make
 {
-    [[ -z "${TUE_ROS_DISTRO}" ]] && { echo -e "\e[31;1mError! tue-env variable TUE_ROS_DISTRO not set.\e[0m"; return 1; }
+    # TODO(anyone): Remove the use of TUE_XXX, when migration to TUE_ENV_XXX is complete
+    [[ -v TUE_ENV_ROS_DISTRO  || -v TUE_ROS_DISTRO ]] || TUE_ENV_ROS_DISTRO=${TUE_ROS_DISTRO}
+    [[ -z "${TUE_ENV_ROS_DISTRO}" ]] && { echo -e "\e[31;1mError! tue-env variable TUE_ENV_ROS_DISTRO not set.\e[0m"; return 1; }
 
-    [[ -z "${TUE_ROS_VERSION}" ]] && { echo -e "\e[31;1mError! TUE_ROS_VERSION is not set.\nSet TUE_ROS_VERSION before executing this function.\e[0m"; return 1; }
+    # TODO(anyone): Remove the use of TUE_XXX, when migration to TUE_ENV_XXX is complete
+    [[ -v TUE_ENV_ROS_VERSION  || -v TUE_ROS_VERSION ]] || TUE_ENV_ROS_VERSION=${TUE_ROS_VERSION}
+    [[ -z "${TUE_ENV_ROS_VERSION}" ]] && { echo -e "\e[31;1mError! TUE_ENV_ROS_VERSION is not set.\nSet TUE_ENV_ROS_VERSION before executing this function.\e[0m"; return 1; }
 
-    [[ ! -d "${TUE_SYSTEM_DIR}" ]] && { echo -e "\e[31;1mError! The workspace '${TUE_SYSTEM_DIR}' does not exist. Run 'tue-get install ros${TUE_ROS_VERSION}' first.\e[0m"; return 1; }
+    [[ ! -d "${TUE_ENV_WS_DIR}" ]] && { echo -e "\e[31;1mError! The workspace '${TUE_ENV_WS_DIR}' does not exist. Run 'tue-get install ros${TUE_ENV_ROS_VERSION}' first.\e[0m"; return 1; }
 
-    if [[ "${TUE_ROS_VERSION}" -eq 1 ]]
+    if [[ "${TUE_ENV_ROS_VERSION}" -eq 1 ]]
     then
         local build_tool
         build_tool=""
-        if [ -f "$TUE_SYSTEM_DIR"/build/.built_by ]
+        if [ -f "${TUE_ENV_WS_DIR}"/build/.built_by ]
         then
-            build_tool=$(cat "$TUE_SYSTEM_DIR"/build/.built_by)
+            build_tool=$(cat "${TUE_ENV_WS_DIR}"/build/.built_by)
         fi
         case $build_tool in
         'catkin build')
-            /usr/bin/python3 "$(command -v catkin)" build --workspace "$TUE_SYSTEM_DIR" "$@"
+            /usr/bin/python3 "$(command -v catkin)" build --workspace "${TUE_ENV_WS_DIR}" "$@"
             return $?
             ;;
         '')
-            /usr/bin/python3 "$(command -v catkin)" config --init --mkdirs --workspace "$TUE_SYSTEM_DIR" --extend /opt/ros/"$TUE_ROS_DISTRO" -DCMAKE_BUILD_TYPE=RelWithDebInfo -DCATKIN_ENABLE_TESTING=OFF
-            /usr/bin/python3 "$(command -v catkin)" build --workspace "$TUE_SYSTEM_DIR" "$@"
-            touch "$TUE_SYSTEM_DIR"/devel/.catkin # hack to allow overlaying to this ws while being empty
+            /usr/bin/python3 "$(command -v catkin)" config --init --mkdirs --workspace "${TUE_ENV_WS_DIR}" --extend /opt/ros/"${TUE_ENV_ROS_DISTRO}" -DCMAKE_BUILD_TYPE=RelWithDebInfo -DCATKIN_ENABLE_TESTING=OFF
+            /usr/bin/python3 "$(command -v catkin)" build --workspace "${TUE_ENV_WS_DIR}" "$@"
+            touch "${TUE_ENV_WS_DIR}"/devel/.catkin # hack to allow overlaying to this ws while being empty
             ;;
         *)
             echo -e "\e[31;1mError! ${build_tool} is not supported (anymore), use catkin tools\e[0m"
             return 1
             ;;
         esac
-    elif [[ "${TUE_ROS_VERSION}" -eq 2 ]]
+    elif [[ "${TUE_ENV_ROS_VERSION}" -eq 2 ]]
     then
-        mkdir -p "$TUE_SYSTEM_DIR"/src
+        mkdir -p "${TUE_ENV_WS_DIR}"/src
 
         # Disable symlink install for production
         if [ "${CI_INSTALL}" == "true" ]
         then
-            rm -rf "$TUE_SYSTEM_DIR"/install
-            python3 -m colcon --log-base "$TUE_SYSTEM_DIR"/log build --base-paths "$TUE_SYSTEM_DIR"/src --build-base "$TUE_SYSTEM_DIR"/build --install-base "$TUE_SYSTEM_DIR"/install "$@"
+            rm -rf "${TUE_ENV_WS_DIR}"/install
+            python3 -m colcon --log-base "${TUE_ENV_WS_DIR}"/log build --base-paths "${TUE_ENV_WS_DIR}"/src --build-base "${TUE_ENV_WS_DIR}"/build --install-base "${TUE_ENV_WS_DIR}"/install "$@"
         else
-            python3 -m colcon --log-base "$TUE_SYSTEM_DIR"/log build --merge-install --symlink-install --base-paths "$TUE_SYSTEM_DIR"/src --build-base "$TUE_SYSTEM_DIR"/build --install-base "$TUE_SYSTEM_DIR"/install "$@"
+            python3 -m colcon --log-base "${TUE_ENV_WS_DIR}"/log build --merge-install --symlink-install --base-paths "${TUE_ENV_WS_DIR}"/src --build-base "${TUE_ENV_WS_DIR}"/build --install-base "${TUE_ENV_WS_DIR}"/install "$@"
         fi
         return $?
     else
@@ -473,23 +499,27 @@ export -f tue-make
 
 function tue-make-test
 {
-    [[ -z "${TUE_ROS_DISTRO}" ]] && { echo -e "\e[31;1mError! tue-env variable TUE_ROS_DISTRO not set.\e[0m"; return 1; }
+    # TODO(anyone): Remove the use of TUE_XXX, when migration to TUE_ENV_XXX is complete
+    [[ -v TUE_ENV_ROS_DISTRO  || -v TUE_ROS_DISTRO ]] || TUE_ENV_ROS_DISTRO=${TUE_ROS_DISTRO}
+    [[ -z "${TUE_ENV_ROS_DISTRO}" ]] && { echo -e "\e[31;1mError! tue-env variable TUE_ENV_ROS_DISTRO not set.\e[0m"; return 1; }
 
-    [[ -z "${TUE_ROS_VERSION}" ]] && { echo -e "\e[31;1mError! TUE_ROS_VERSION is not set.\nSet TUE_ROS_VERSION before executing this function.\e[0m"; return 1; }
+    # TODO(anyone): Remove the use of TUE_XXX, when migration to TUE_ENV_XXX is complete
+    [[ -v TUE_ENV_ROS_VERSION  || -v TUE_ROS_VERSION ]] || TUE_ENV_ROS_VERSION=${TUE_ROS_VERSION}
+    [[ -z "${TUE_ENV_ROS_VERSION}" ]] && { echo -e "\e[31;1mError! TUE_ENV_ROS_VERSION is not set.\nSet TUE_ENV_ROS_VERSION before executing this function.\e[0m"; return 1; }
 
-    [[ ! -d "${TUE_SYSTEM_DIR}" ]] && { echo -e "\e[31;1mError! The workspace '${TUE_SYSTEM_DIR}' does not exist. Run 'tue-get install ros${TUE_ROS_VERSION}' first.\e[0m"; return 1; }
+    [[ ! -d "${TUE_ENV_WS_DIR}" ]] && { echo -e "\e[31;1mError! The workspace '${TUE_ENV_WS_DIR}' does not exist. Run 'tue-get install ros${TUE_ENV_ROS_VERSION}' first.\e[0m"; return 1; }
 
-    if [[ "${TUE_ROS_VERSION}" -eq 1 ]]
+    if [[ "${TUE_ENV_ROS_VERSION}" -eq 1 ]]
     then
         local build_tool
         build_tool=""
-        if [ -f "${TUE_SYSTEM_DIR}"/build/.built_by ]
+        if [ -f "${TUE_ENV_WS_DIR}"/build/.built_by ]
         then
-            build_tool=$(cat "${TUE_SYSTEM_DIR}"/build/.built_by)
+            build_tool=$(cat "${TUE_ENV_WS_DIR}"/build/.built_by)
         fi
         case ${build_tool} in
         'catkin build')
-            /usr/bin/python3 "$(command -v catkin)" test --workspace "${TUE_SYSTEM_DIR}" "$@"
+            /usr/bin/python3 "$(command -v catkin)" test --workspace "${TUE_ENV_WS_DIR}" "$@"
             return $?
             ;;
         '')
@@ -501,30 +531,30 @@ function tue-make-test
             return 1
             ;;
         esac
-    elif [[ "${TUE_ROS_VERSION}" -eq 2 ]]
+    elif [[ "${TUE_ENV_ROS_VERSION}" -eq 2 ]]
     then
-        if [[ ! -d "${TUE_SYSTEM_DIR}"/src ]]
+        if [[ ! -d "${TUE_ENV_WS_DIR}"/src ]]
         then
-            echo -e "\e[31;1mError! No 'src' directory exists in the workspace '${TUE_SYSTEM_DIR}'\e[0m"
+            echo -e "\e[31;1mError! No 'src' directory exists in the workspace '${TUE_ENV_WS_DIR}'\e[0m"
             return 1
         fi
 
-        if [[ ! -d "${TUE_SYSTEM_DIR}"/build ]]
+        if [[ ! -d "${TUE_ENV_WS_DIR}"/build ]]
         then
-            echo -e "\e[31;1mError! No 'build' directory exists in the workspace '${TUE_SYSTEM_DIR}'. Build the workspace before running tests\e[0m"
+            echo -e "\e[31;1mError! No 'build' directory exists in the workspace '${TUE_ENV_WS_DIR}'. Build the workspace before running tests\e[0m"
             return 1
         fi
 
         # Disable symlink install for production
         if [ "${CI_INSTALL}" == "true" ]
         then
-            python3 -m colcon --log-base "${TUE_SYSTEM_DIR}"/log test --base-paths "${TUE_SYSTEM_DIR}"/src --build-base "${TUE_SYSTEM_DIR}"/build --install-base "${TUE_SYSTEM_DIR}"/install --executor sequential --event-handlers console_cohesion+ "$@"
+            python3 -m colcon --log-base "${TUE_ENV_WS_DIR}"/log test --base-paths "${TUE_ENV_WS_DIR}"/src --build-base "${TUE_ENV_WS_DIR}"/build --install-base "${TUE_ENV_WS_DIR}"/install --executor sequential --event-handlers console_cohesion+ "$@"
         else
-            python3 -m colcon --log-base "${TUE_SYSTEM_DIR}"/log test --merge-install --base-paths "${TUE_SYSTEM_DIR}"/src --build-base "${TUE_SYSTEM_DIR}"/build --install-base "${TUE_SYSTEM_DIR}"/install --executor sequential --event-handlers console_cohesion+ "$@"
+            python3 -m colcon --log-base "${TUE_ENV_WS_DIR}"/log test --merge-install --base-paths "${TUE_ENV_WS_DIR}"/src --build-base "${TUE_ENV_WS_DIR}"/build --install-base "${TUE_ENV_WS_DIR}"/install --executor sequential --event-handlers console_cohesion+ "$@"
         fi
         return $?
     else
-        echo -e "\e[31;1mError! ROS_VERSION '${TUE_ROS_VERSION}' is not supported by tue-env.\e[0m"
+        echo -e "\e[31;1mError! ROS_VERSION '${TUE_ENV_ROS_VERSION}' is not supported by tue-env.\e[0m"
         return 1
     fi
 }
@@ -532,23 +562,27 @@ export -f tue-make-test
 
 function tue-make-test-result
 {
-    [[ -z "${TUE_ROS_DISTRO}" ]] && { echo -e "\e[31;1mError! tue-env variable TUE_ROS_DISTRO not set.\e[0m"; return 1; }
+    # TODO(anyone): Remove the use of TUE_XXX, when migration to TUE_ENV_XXX is complete
+    [[ -v TUE_ENV_ROS_DISTRO  || -v TUE_ROS_DISTRO ]] || TUE_ENV_ROS_DISTRO=${TUE_ROS_DISTRO}
+    [[ -z "${TUE_ENV_ROS_DISTRO}" ]] && { echo -e "\e[31;1mError! tue-env variable TUE_ENV_ROS_DISTRO not set.\e[0m"; return 1; }
 
-    [[ -z "${TUE_ROS_VERSION}" ]] && { echo -e "\e[31;1mError! TUE_ROS_VERSION is not set.\nSet TUE_ROS_VERSION before executing this function.\e[0m"; return 1; }
+    # TODO(anyone): Remove the use of TUE_XXX, when migration to TUE_ENV_XXX is complete
+    [[ -v TUE_ENV_ROS_VERSION  || -v TUE_ROS_VERSION ]] || TUE_ENV_ROS_VERSION=${TUE_ROS_VERSION}
+    [[ -z "${TUE_ENV_ROS_VERSION}" ]] && { echo -e "\e[31;1mError! TUE_ENV_ROS_VERSION is not set.\nSet TUE_ENV_ROS_VERSION before executing this function.\e[0m"; return 1; }
 
-    [[ ! -d "${TUE_SYSTEM_DIR}" ]] && { echo -e "\e[31;1mError! The workspace '${TUE_SYSTEM_DIR}' does not exist. Run 'tue-get install ros${TUE_ROS_VERSION}' first.\e[0m"; return 1; }
+    [[ ! -d "${TUE_ENV_WS_DIR}" ]] && { echo -e "\e[31;1mError! The workspace '${TUE_ENV_WS_DIR}' does not exist. Run 'tue-get install ros${TUE_ENV_ROS_VERSION}' first.\e[0m"; return 1; }
 
-    if [[ "${TUE_ROS_VERSION}" -eq 1 ]]
+    if [[ "${TUE_ENV_ROS_VERSION}" -eq 1 ]]
     then
         local build_tool
         build_tool=""
-        if [ -f "$TUE_SYSTEM_DIR"/build/.built_by ]
+        if [ -f "${TUE_ENV_WS_DIR}"/build/.built_by ]
         then
-            build_tool=$(cat "$TUE_SYSTEM_DIR"/build/.built_by)
+            build_tool=$(cat "${TUE_ENV_WS_DIR}"/build/.built_by)
         fi
         case $build_tool in
         'catkin build')
-            python3 "$(command -v catkin)" test_results "${TUE_SYSTEM_DIR}"/build "$@"
+            python3 "$(command -v catkin)" test_results "${TUE_ENV_WS_DIR}"/build "$@"
             return $?
             ;;
         '')
@@ -560,24 +594,24 @@ function tue-make-test-result
             return 1
             ;;
         esac
-    elif [[ "${TUE_ROS_VERSION}" -eq 2 ]]
+    elif [[ "${TUE_ENV_ROS_VERSION}" -eq 2 ]]
     then
-        if [[ ! -d "${TUE_SYSTEM_DIR}"/src ]]
+        if [[ ! -d "${TUE_ENV_WS_DIR}"/src ]]
         then
-            echo -e "\e[31;1mError! No 'src' directory exists in the workspace '${TUE_SYSTEM_DIR}'\e[0m"
+            echo -e "\e[31;1mError! No 'src' directory exists in the workspace '${TUE_ENV_WS_DIR}'\e[0m"
             return 1
         fi
 
-        if [[ ! -d "${TUE_SYSTEM_DIR}"/build ]]
+        if [[ ! -d "${TUE_ENV_WS_DIR}"/build ]]
         then
-            echo -e "\e[31;1mError! No 'build' directory exists in the workspace '${TUE_SYSTEM_DIR}'. Build the workspace, run tests before checking test results\e[0m"
+            echo -e "\e[31;1mError! No 'build' directory exists in the workspace '${TUE_ENV_WS_DIR}'. Build the workspace, run tests before checking test results\e[0m"
             return 1
         fi
 
-        python3 -m colcon --log-base "${TUE_SYSTEM_DIR}"/log test-result --test-result-base "${TUE_SYSTEM_DIR}"/build "$@"
+        python3 -m colcon --log-base "${TUE_ENV_WS_DIR}"/log test-result --test-result-base "${TUE_ENV_WS_DIR}"/build "$@"
         return $?
     else
-        echo -e "\e[31;1mError! ROS_VERSION '${TUE_ROS_VERSION}' is not supported by tue-env.\e[0m"
+        echo -e "\e[31;1mError! ROS_VERSION '${TUE_ENV_ROS_VERSION}' is not supported by tue-env.\e[0m"
         return 1
     fi
 }
@@ -589,8 +623,8 @@ function _tue-make
     cur=${COMP_WORDS[COMP_CWORD]}
 
     local options
-    [[ "${TUE_ROS_VERSION}" -eq 2 ]] && options="${options} --packages-select"
-    mapfile -t COMPREPLY < <(compgen -W "$(_list_sub_dirs "${TUE_SYSTEM_DIR}"/src) ${options}" -- "${cur}")
+    [[ "${TUE_ENV_ROS_VERSION}" -eq 2 ]] && options="${options} --packages-select"
+    mapfile -t COMPREPLY < <(compgen -W "$(_list_sub_dirs "${TUE_ENV_WS_DIR}"/src) ${options}" -- "${cur}")
 }
 
 complete -F _tue-make tue-make
@@ -612,7 +646,7 @@ function _robocup_branch_allowed
 
 function _get_robocup_branch
 {
-    [ -f "$TUE_DIR"/user/config/robocup ] && cat "$TUE_DIR"/user/config/robocup
+    [[ -f "${TUE_ENV_DIR}"/.env/robocup/allowed_branch ]] && cat "${TUE_ENV_DIR}"/.env/robocup/allowed_branch
 }
 
 function _tue-repo-status
@@ -716,7 +750,7 @@ function _tue-dir-status
 
 function tue-status
 {
-    _tue-dir-status "$TUE_SYSTEM_DIR"/src
+    _tue-dir-status "${TUE_ENV_WS_DIR}"/src
     _tue-repo-status "tue-env" "$TUE_DIR"
     _tue-repo-status "tue-env-targets" "$TUE_ENV_TARGETS_DIR"
 }
@@ -725,7 +759,7 @@ function tue-status
 
 function tue-git-status
 {
-    for pkg_dir in "$TUE_SYSTEM_DIR"/src/*/
+    for pkg_dir in "${TUE_ENV_WS_DIR}"/src/*/
     do
         local pkg
         pkg=$(basename "$pkg_dir")
@@ -749,7 +783,7 @@ function tue-revert
     local human_time
     human_time="$*"
 
-    for pkg_dir in "$TUE_SYSTEM_DIR"/src/*/
+    for pkg_dir in "${TUE_ENV_WS_DIR}"/src/*/
     do
         local pkg
         pkg=$(basename "$pkg_dir")
@@ -787,7 +821,7 @@ function tue-revert
 
 function tue-revert-undo
 {
-    for pkg_dir in "$TUE_SYSTEM_DIR"/src/*/
+    for pkg_dir in "${TUE_ENV_WS_DIR}"/src/*/
     do
         local pkg
         pkg=$(basename "$pkg_dir")
@@ -1214,7 +1248,7 @@ function tue-checkout
         shift
     done
 
-    fs=$(ls -d -1 "$TUE_SYSTEM_DIR"/src/**)
+    fs=$(ls -d -1 "${TUE_ENV_WS_DIR}"/src/**)
     if [ -z "$NO_TUE_ENV" ]
     then
         fs="$TUE_DIR $TUE_ENV_TARGETS_DIR $fs"
@@ -1222,7 +1256,7 @@ function tue-checkout
     for pkg_dir in $fs
     do
         local pkg
-        pkg=${pkg_dir#"${TUE_SYSTEM_DIR}/src/"}
+        pkg=${pkg_dir#"${TUE_ENV_WS_DIR}/src/"}
         if [ -z "$NO_TUE_ENV" ]
         then
             if [[ $pkg =~ .tue ]]
@@ -1275,19 +1309,23 @@ function tue-checkout
 
 function tue-deb-generate
 {
-    [[ -z "${TUE_ROS_DISTRO}" ]] && { echo -e "\e[31;1mError! tue-env variable TUE_ROS_DISTRO not set.\e[0m"; return 1; }
+    # TODO(anyone): Remove the use of TUE_XXX, when migration to TUE_ENV_XXX is complete
+    [[ -v TUE_ENV_ROS_DISTRO  || -v TUE_ROS_DISTRO ]] || TUE_ENV_ROS_DISTRO=${TUE_ROS_DISTRO}
+    [[ -z "${TUE_ENV_ROS_DISTRO}" ]] && { echo -e "\e[31;1mError! tue-env variable TUE_ENV_ROS_DISTRO not set.\e[0m"; return 1; }
 
-    [[ -z "${TUE_ROS_VERSION}" ]] && { echo -e "\e[31;1mError! TUE_ROS_VERSION is not set.\nSet TUE_ROS_VERSION before executing this function.\e[0m"; return 1; }
+    # TODO(anyone): Remove the use of TUE_XXX, when migration to TUE_ENV_XXX is complete
+    [[ -v TUE_ENV_ROS_VERSION  || -v TUE_ROS_VERSION ]] || TUE_ENV_ROS_VERSION=${TUE_ROS_VERSION}
+    [[ -z "${TUE_ENV_ROS_VERSION}" ]] && { echo -e "\e[31;1mError! TUE_ENV_ROS_VERSION is not set.\nSet TUE_ENV_ROS_VERSION before executing this function.\e[0m"; return 1; }
 
-    [[ ! -d "${TUE_SYSTEM_DIR}" ]] && { echo -e "\e[31;1mError! The workspace '${TUE_SYSTEM_DIR}' does not exist. Run 'tue-get install ros${TUE_ROS_VERSION}' first.\e[0m"; return 1; }
+    [[ ! -d "${TUE_ENV_WS_DIR}" ]] && { echo -e "\e[31;1mError! The workspace '${TUE_ENV_WS_DIR}' does not exist. Run 'tue-get install ros${TUE_ENV_ROS_VERSION}' first.\e[0m"; return 1; }
 
-    [[ "${TUE_ROS_VERSION}" -ne 2 ]] && { echo -e "\e[31;1mError! This command is supported only with TUE_ROS_VERSION=2.\e[0m"; return 1; }
+    [[ "${TUE_ENV_ROS_DISTRO}" -ne 2 ]] && { echo -e "\e[31;1mError! This command is supported only with TUE_ENV_ROS_DISTRO=2.\e[0m"; return 1; }
 
     local packages_list
     if [[ -z "${1}" ]]
     then
         echo -e "\e[33;1mNo packages specified, so packaging the entire workspace. \e[0m"
-        for pkg_path in "${TUE_SYSTEM_DIR}"/src/*
+        for pkg_path in "${TUE_ENV_WS_DIR}"/src/*
         do
             pkg="$(basename "${pkg_path}")"
             packages_list="${pkg} ${packages_list}"
@@ -1306,7 +1344,7 @@ function tue-deb-generate
     local PACKAGES_NOT_BUILT
     for package in $packages_list
     do
-        if [[ ! -d "${TUE_SYSTEM_DIR}"/install/"${package}" ]]
+        if [[ ! -d "${TUE_ENV_WS_DIR}"/install/"${package}" ]]
         then
             PACKAGES_NOT_BUILT="${PACKAGES_NOT_BUILT} ${package}"
         fi
@@ -1330,7 +1368,7 @@ function tue-deb-generate
     for package in $packages_list
     do
         local pkg_rel_dir
-        pkg_rel_dir="$("${TUE_DIR}"/installer/generate_deb_control.py "${TUE_RELEASE_DIR}" "${TUE_SYSTEM_DIR}"/src/"${package}"/package.xml "${timestamp}")"
+        pkg_rel_dir="$("${TUE_DIR}"/installer/generate_deb_control.py "${TUE_ENV_RELEASE_DIR}" "${TUE_ENV_WS_DIR}"/src/"${package}"/package.xml "${timestamp}")"
 
 
         if [[ ! -d "${pkg_rel_dir}" ]]
@@ -1340,8 +1378,8 @@ function tue-deb-generate
             return 1
         fi
 
-        mkdir -p "${pkg_rel_dir}"/opt/ros/"${TUE_ROS_DISTRO}"
-        cp -r "${TUE_SYSTEM_DIR}"/install/"${package}"/* "${pkg_rel_dir}"/opt/ros/"${TUE_ROS_DISTRO}"/
+        mkdir -p "${pkg_rel_dir}"/opt/ros/"${TUE_ENV_ROS_DISTRO}"
+        cp -r "${TUE_ENV_WS_DIR}"/install/"${package}"/* "${pkg_rel_dir}"/opt/ros/"${TUE_ENV_ROS_DISTRO}"/
 
         dpkg-deb --build --root-owner-group "${pkg_rel_dir}"
         rm -rf "${pkg_rel_dir}"
@@ -1381,7 +1419,7 @@ function tue-deb-gitlab-release
         return 1
     fi
 
-    for deb in "${TUE_RELEASE_DIR}"/*
+    for deb in "${TUE_ENV_RELEASE_DIR}"/*
     do
         local deb_pkg pkgwithversion pkg version
         deb_pkg="$(basename "${deb}")"
@@ -1422,12 +1460,15 @@ function _tue-repos-do
     cmd_array=("$@")
 
     local repos_dirs
-    if [[ -n ${TUE_REPOS_DO_DIRS} ]]
+    if [[ -n ${TUE_ENV_REPOS_DO_DIRS} ]]
+    then
+        repos_dirs=${TUE_ENV_REPOS_DO_DIRS}
+    elif [[ -n ${TUE_REPOS_DO_DIRS} ]]
     then
         repos_dirs=${TUE_REPOS_DO_DIRS}
     else
-        repos_dirs=${TUE_REPOS_DIR}/github.com/tue-robotics
-        echo -e "No 'TUE_REPOS_DO_DIRS' set, using: \e[1m${repos_dirs}\e[0m"
+        repos_dirs=${TUE_ENV_REPOS_DIR}/github.com/tue-robotics
+        echo -e "No 'TUE_ENV_REPOS_DO_DIRS' set, using: \e[1m${repos_dirs}\e[0m"
     fi
 
     { [ -n "$TUE_DIR" ] && cd "$TUE_DIR"; } || { echo -e "TUE_DIR '$TUE_DIR' does not exist"; return 1; }
@@ -1807,7 +1848,7 @@ function _ping_bool
 function tue-robocup-install-package
 {
     local repos_dir repo_dir
-    repos_dir=$TUE_REPOS_DIR/github.com/tue-robotics
+    repos_dir=${TUE_ENV_REPOS_DIR}/github.com/tue-robotics
     repo_dir=$repos_dir/${1}.git
 
     local mem_pwd

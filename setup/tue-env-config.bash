@@ -22,7 +22,7 @@ function _set_export_option
 function tue-env-git-use-ssh
 {
     local option value
-    option="TUE_GIT_USE_SSH"
+    option="TUE_ENV_GIT_USE_SSH"
     value="true"
     _set_export_option "${option}" "${value}" "${tue_env_dir}"/.env/setup/user_setup.bash
 
@@ -32,7 +32,7 @@ function tue-env-git-use-ssh
 function tue-env-git-use-https
 {
     local option value
-    option="TUE_GIT_USE_SSH"
+    option="TUE_ENV_GIT_USE_SSH"
     value="false"
     _set_export_option "${option}" "${value}" "${tue_env_dir}"/.env/setup/user_setup.bash
 
@@ -42,7 +42,7 @@ function tue-env-git-use-https
 function tue-env-github-use-ssh
 {
     local option value
-    option="TUE_GITHUB_USE_SSH"
+    option="TUE_ENV_GITHUB_USE_SSH"
     value="true"
     _set_export_option "${option}" "${value}" "${tue_env_dir}"/.env/setup/user_setup.bash
 
@@ -52,7 +52,7 @@ function tue-env-github-use-ssh
 function tue-env-github-use-https
 {
     local option value
-    option="TUE_GITHUB_USE_SSH"
+    option="TUE_ENV_GITHUB_USE_SSH"
     value="false"
     _set_export_option "${option}" "${value}" "${tue_env_dir}"/.env/setup/user_setup.bash
 
@@ -62,7 +62,7 @@ function tue-env-github-use-https
 function tue-env-gitlab-use-ssh
 {
     local option value
-    option="TUE_GITLAB_USE_SSH"
+    option="TUE_ENV_GITLAB_USE_SSH"
     value="true"
     _set_export_option "${option}" "${value}" "${tue_env_dir}"/.env/setup/user_setup.bash
 
@@ -72,7 +72,7 @@ function tue-env-gitlab-use-ssh
 function tue-env-gitlab-use-https
 {
     local option value
-    option="TUE_GITLAB_USE_SSH"
+    option="TUE_ENV_GITLAB_USE_SSH"
     value="false"
     _set_export_option "${option}" "${value}" "${tue_env_dir}"/.env/setup/user_setup.bash
 
@@ -82,7 +82,7 @@ function tue-env-gitlab-use-https
 function tue-env-install-test-depend
 {
     local option value
-    option="TUE_INSTALL_TEST_DEPEND"
+    option="TUE_ENV_INSTALL_TEST_DEPEND"
     value="true"
     _set_export_option "${option}" "${value}" "${tue_env_dir}"/.env/setup/user_setup.bash
 
@@ -92,7 +92,7 @@ function tue-env-install-test-depend
 function tue-env-not-install-test-depend
 {
     local option value
-    option="TUE_INSTALL_TEST_DEPEND"
+    option="TUE_ENV_INSTALL_TEST_DEPEND"
     value="false"
     _set_export_option "${option}" "${value}" "${tue_env_dir}"/.env/setup/user_setup.bash
 
@@ -102,7 +102,7 @@ function tue-env-not-install-test-depend
 function tue-env-install-doc-depend
 {
     local option value
-    option="TUE_INSTALL_DOC_DEPEND"
+    option="TUE_ENV_INSTALL_DOC_DEPEND"
     value="true"
     _set_export_option "${option}" "${value}" "${tue_env_dir}"/.env/setup/user_setup.bash
 
@@ -112,7 +112,7 @@ function tue-env-install-doc-depend
 function tue-env-not-install-doc-depend
 {
     local option value
-    option="TUE_INSTALL_DOC_DEPEND"
+    option="TUE_ENV_INSTALL_DOC_DEPEND"
     value="false"
     _set_export_option "${option}" "${value}" "${tue_env_dir}"/.env/setup/user_setup.bash
 

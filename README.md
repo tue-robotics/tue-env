@@ -76,12 +76,12 @@ This will rename the old targets folder with a timestamp and clone the new targe
 
 #### Custom repository list
 
-Various utility commands use `_tue-repos-do` to execute a command in all repositories. By default, this command will execute the command in all repositories in the `tue-env` workspace. This can be changed by setting the `TUE_REPOS_DO_DIRS` environment variable to a list of repositories folders. This can be done by adding the setting it with:
+Various utility commands use `_tue-repos-do` to execute a command in all repositories. By default, this command will execute the command in all repositories in the `tue-env` workspace. This can be changed by setting the `TUE_ENV_REPOS_DO_DIRS` environment variable to a list of repositories folders. This can be done by adding the setting it with:
 
 ```bash
-tue-env config [environment] set TUE_REPOS_DO_DIRS PATH1:PATH2:PATH3
+tue-env config [environment] set TUE_ENV_REPOS_DO_DIRS PATH1:PATH2:PATH3
 # Also possible to use variables in the paths, the variable needs to be single quoted
-tue-env config [environment] set TUE_REPOS_DO_DIRS '${TUE_REPOS_DIR}'/some/path:'${HOME}'some/other/path
+tue-env config [environment] set TUE_ENV_REPOS_DO_DIRS '${TUE_ENV_REPOS_DIR}'/some/path:'${HOME}'some/other/path
 ```
 
 #### Add an SSH key to GitHub to gain access to this repository
