@@ -27,7 +27,7 @@ def packagexml_parser(path: str) -> Mapping:
     fields = ["name", "version", "description", "maintainer", "export"]
     parsed = {}
 
-    if os.getenv("TUE_INSTALL_SKIP_ROS_DEPS", "false") == "false":
+    if os.getenv("TUE_ENV_INSTALL_SKIP_ROS_DEPS", "false") == "false":
         dep_types.extend(
             [
                 "build_depend",
@@ -40,10 +40,10 @@ def packagexml_parser(path: str) -> Mapping:
             ]
         )
 
-    if os.getenv("TUE_INSTALL_TEST_DEPEND", "false") == "true":
+    if os.getenv("TUE_ENV_INSTALL_TEST_DEPEND", "false") == "true":
         dep_types.append("test_depend")
 
-    if os.getenv("TUE_INSTALL_DOC_DEPEND", "false") == "true":
+    if os.getenv("TUE_ENV_INSTALL_DOC_DEPEND", "false") == "true":
         dep_types.append("doc_depend")
 
     for types in fields + dep_types:

@@ -248,7 +248,7 @@ fi
 ROS_DISTRO=$(docker exec tue-env bash -c 'source ~/.bashrc; echo "${ROS_DISTRO}"' | tr -d '\r')
 echo -e "\e[35;1mROS_DISTRO = ${ROS_DISTRO}\e[0m"
 
-TUE_SYSTEM_DIR=$(docker exec tue-env bash -c 'source ~/.bashrc; echo "${TUE_SYSTEM_DIR}"' | tr -d '\r')
+TUE_ENV_WS_DIR=$(docker exec tue-env bash -c 'source ~/.bashrc; echo "${TUE_ENV_WS_DIR}"' | tr -d '\r')
 
 # First install only the git repo of the package so that appropriate branch can be checked out later
 echo -e "\e[35;1mtue-get install ros-${PACKAGE} --no-ros-deps ${ADDITIONAL_ARGS_TUE_GET[*]}\e[0m"
@@ -265,8 +265,8 @@ then
     # After a tue-get run, we checkout forced, just to be sure.
 
     # Fetch the merged branch
-    echo -e "\e[35;1mgit -C ~${TUE_SYSTEM_DIR#"${DOCKER_HOME}"}/src/${PACKAGE} fetch origin ${REF_NAME}/${PULL_REQUEST}/merge:PULLREQUEST\e[0m"
-    docker exec -t tue-env bash -c 'source ~/.bashrc; git -C "$TUE_SYSTEM_DIR"/src/"$PACKAGE" fetch origin "$REF_NAME"/"$PULL_REQUEST"/merge:PULLREQUEST'
+    echo -e "\e[35;1mgit -C ~${TUE_ENV_WS_DIR#"${DOCKER_HOME}"}/src/${PACKAGE} fetch origin ${REF_NAME}/${PULL_REQUEST}/merge:PULLREQUEST\e[0m"
+    docker exec -t tue-env bash -c 'source ~/.bashrc; git -C "${TUE_ENV_WS_DIR}"/src/"${PACKAGE}" fetch origin "${REF_NAME}"/"${PULL_REQUEST}"/merge:PULLREQUEST'
 
     # Install the package completely
     branch_string=${BRANCH:+" --try-branch=${BRANCH}"}
@@ -274,8 +274,8 @@ then
     docker exec -t tue-env bash -c 'source ~/.bashrc; tue-get install ros-"${PACKAGE}" --test-depend --try-branch="${BRANCH}" --try-branch=PULLREQUEST '"${ADDITIONAL_ARGS_TUE_GET[*]}"
 
     # Checkout -f to be really sure
-    echo -e "\e[35;1mgit -C ~${TUE_SYSTEM_DIR#"${DOCKER_HOME}"}/src/${PACKAGE} checkout -f PULLREQUEST --\e[0m"
-    docker exec -t tue-env bash -c 'source ~/.bashrc; git -C "$TUE_SYSTEM_DIR"/src/"$PACKAGE" checkout -f PULLREQUEST --'
+    echo -e "\e[35;1mgit -C ~${TUE_ENV_WS_DIR#"${DOCKER_HOME}"}/src/${PACKAGE} checkout -f PULLREQUEST --\e[0m"
+    docker exec -t tue-env bash -c 'source ~/.bashrc; git -C "${TUE_ENV_WS_DIR}"/src/"${PACKAGE}" checkout -f PULLREQUEST --'
 else
     # Install the package
     branch_string=${BRANCH:+" --try-branch=${BRANCH}"}
@@ -284,8 +284,8 @@ else
 
     # Set the package to the right commit
     echo -e "\e[35;1mReset package to this commit\e[0m"
-    echo -e "\e[35;1mgit -C ~${TUE_SYSTEM_DIR#"${DOCKER_HOME}"}/src/${PACKAGE} reset --hard ${COMMIT}\e[0m"
-    docker exec -t tue-env bash -c 'source ~/.bashrc; git -C "${TUE_SYSTEM_DIR}"/src/"${PACKAGE}" reset --hard "${COMMIT}"'
+    echo -e "\e[35;1mgit -C ~${TUE_ENV_WS_DIR#"${DOCKER_HOME}"}/src/${PACKAGE} reset --hard ${COMMIT}\e[0m"
+    docker exec -t tue-env bash -c 'source ~/.bashrc; git -C "${TUE_ENV_WS_DIR}"/src/"${PACKAGE}" reset --hard "${COMMIT}"'
 fi
 
 # Allow everyone to read ~/.cache/pip folder for caching inside CI pipelines

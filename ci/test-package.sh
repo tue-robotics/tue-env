@@ -59,11 +59,11 @@ then
     fi
     # Build test targets
     echo -e "\e[35;1mBuild test targets of this package (catkin build --this --no-deps ${CATKIN_ADDITIONAL_ARGS[*]} -DCATKIN_ENABLE_TESTING=ON)\e[0m"
-    docker exec -t tue-env bash -c 'source ~/.bashrc; cd "${TUE_SYSTEM_DIR}"/src/"${PACKAGE}" && /usr/bin/python3 "$(command -v catkin)" build --this --no-status --no-deps '"${CATKIN_ADDITIONAL_ARGS[*]}"' -DCATKIN_ENABLE_TESTING=ON'
+    docker exec -t tue-env bash -c 'source ~/.bashrc; cd "${TUE_ENV_WS_DIR}"/src/"${PACKAGE}" && /usr/bin/python3 "$(command -v catkin)" build --this --no-status --no-deps '"${CATKIN_ADDITIONAL_ARGS[*]}"' -DCATKIN_ENABLE_TESTING=ON'
 
     # Run unit tests
     echo -e "\e[35;1mRun tests on this package (catkin test --this --no-deps ${CATKIN_ADDITIONAL_ARGS[*]} -DCATKIN_ENABLE_TESTING=ON)\e[0m"
-    docker exec -t tue-env bash -c 'source ~/.bashrc; cd "${TUE_SYSTEM_DIR}"/src/"${PACKAGE}" && /usr/bin/python3 "$(command -v catkin)" test --this --no-status --no-deps '"${CATKIN_ADDITIONAL_ARGS[*]}"' -DCATKIN_ENABLE_TESTING=ON'
+    docker exec -t tue-env bash -c 'source ~/.bashrc; cd "${TUE_ENV_WS_DIR}"/src/"${PACKAGE}" && /usr/bin/python3 "$(command -v catkin)" test --this --no-status --no-deps '"${CATKIN_ADDITIONAL_ARGS[*]}"' -DCATKIN_ENABLE_TESTING=ON'
 else
     COLCON_ADDITIONAL_ARGS=()
     if [[ ${DEBUG} == "true" ]]
@@ -72,13 +72,13 @@ else
     fi
     # Build test targets
     echo -e "\e[35;1mBuild test targets of this package (colcon ${COLCON_ADDITIONAL_ARGS[*]} build --packages-select ${PACKAGE} --mixin rel-with-deb-info build-testing-on)\e[0m"
-    docker exec -t tue-env bash -c 'source ~/.bashrc; cd "${TUE_SYSTEM_DIR}" && colcon '"${COLCON_ADDITIONAL_ARGS[*]}"' build --packages-select "${PACKAGE}" --mixin rel-with-deb-info build-testing-on --event-handlers desktop_notification- status- terminal_title-'
+    docker exec -t tue-env bash -c 'source ~/.bashrc; cd "${TUE_ENV_WS_DIR}" && colcon '"${COLCON_ADDITIONAL_ARGS[*]}"' build --packages-select "${PACKAGE}" --mixin rel-with-deb-info build-testing-on --event-handlers desktop_notification- status- terminal_title-'
 
     # Run unit tests
     echo -e "\e[35;1mRun tests on this package (colcon ${COLCON_ADDITIONAL_ARGS[*]} test --packages-select ${PACKAGE} --executor sequential)\e[0m"
-    docker exec -t tue-env bash -c 'source ~/.bashrc; cd "${TUE_SYSTEM_DIR}" && colcon '"${COLCON_ADDITIONAL_ARGS[*]}"' test --packages-select "${PACKAGE}" --executor sequential --event-handlers desktop_notification- status- terminal_title- console_cohesion+'
+    docker exec -t tue-env bash -c 'source ~/.bashrc; cd "${TUE_ENV_WS_DIR}" && colcon '"${COLCON_ADDITIONAL_ARGS[*]}"' test --packages-select "${PACKAGE}" --executor sequential --event-handlers desktop_notification- status- terminal_title- console_cohesion+'
 
     # Check test results
     echo -e "\e[35;1mCheck test results (colcon ${COLCON_ADDITIONAL_ARGS[*]} test-result --verbose)\e[0m"
-    docker exec -t tue-env bash -c 'source ~/.bashrc; cd "${TUE_SYSTEM_DIR}" && colcon '"${COLCON_ADDITIONAL_ARGS[*]}"' test-result --verbose'
+    docker exec -t tue-env bash -c 'source ~/.bashrc; cd "${TUE_ENV_WS_DIR}" && colcon '"${COLCON_ADDITIONAL_ARGS[*]}"' test-result --verbose'
 fi
