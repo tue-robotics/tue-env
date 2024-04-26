@@ -218,7 +218,8 @@ Environment directory '${tue_env_dir}' didn't exist (anymore)"""
 
     elif [[ ${cmd} == "switch" ]]
     then
-        local tue_env
+        local persistent tue_env
+        persistent="false"
         if [[ -z "$1" ]]
         then
             show_help="true"
@@ -230,6 +231,8 @@ Environment directory '${tue_env_dir}' didn't exist (anymore)"""
                         show_help="true"
                         break
                         ;;
+                    --persistent )
+                        persistent="true" ;;
                     --*)
                         echo "[tue-env](switch) Unknown option $i"
                         show_help="true"
@@ -260,6 +263,9 @@ Environment directory '${tue_env_dir}' didn't exist (anymore)"""
         tue_env_dir=$(cat "${TUE_DIR}"/user/envs/"${tue_env}")
         [[ -d "${tue_env_dir}" ]] || { echo "[tue-env](switch) Environment directory '${tue_env_dir}' (environment '${tue_env}') does not exist"; return 1; }
 
+        [[ "${persistent}" == "true" ]] && tue-env set-default "${tue_env}"
+
+        # Deactivate the old virtualenv if it exists
         [[ -n ${VIRTUAL_ENV} ]] && echo "[tue-env](switch) deactivating old virtualenv" && deactivate
 
         echo "[tue-env](switch) Unsetting all TUE_ENV* of the old environment: '${TUE_ENV}'"
@@ -274,6 +280,7 @@ Environment directory '${tue_env_dir}' didn't exist (anymore)"""
         TUE_ENV_DIR=${tue_env_dir}
         export TUE_ENV_DIR
 
+        echo "[tue-env](switch) Loading the new '${TUE_ENV}' environment"
         # shellcheck disable=SC1091
         source "$TUE_DIR"/setup.bash
 
@@ -732,6 +739,9 @@ function _tue-env
             elif [[ ${cmd} == "remove" || ${cmd} == "rm" || ${cmd} == "remove-venv" || ${cmd} == "rm-venv" ]] && [[ "${COMP_CWORD}" -eq 3 ]]
             then
                 mapfile -t COMPREPLY < <(compgen -W "$(echo -e "'--purge '\n${help_options}")" -- "${cur}")
+            elif [[ ${cmd} == "switch" ]] && [[ "${COMP_CWORD}" -eq 3 ]]
+            then
+                mapfile -t COMPREPLY < <(compgen -W "$(echo -e "'--persistent '\n${help_options}")" -- "${cur}")
             elif [[ ${cmd} == "init-venv" ]] && [[ "${COMP_CWORD}" -eq 3 ]]
             then
                 mapfile -t COMPREPLY < <(compgen -W "$(echo -e "'--include-system-site-packages='\n${help_options}")" -- "${cur}")
