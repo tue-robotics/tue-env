@@ -119,6 +119,27 @@ function tue-env-not-install-doc-depend
     echo -e "[tue-env](config) Environment '${tue_env}' set to not install doc dependencies"
 }
 
+function tue-env-set-sparse-checkout
+{
+    local option value
+    option="TUE_ENV_SPARSE_CHECKOUT"
+    value="true"
+    _set_export_option "${option}" "${value}" "${tue_env_dir}"/.env/setup/user_setup.bash
+
+    echo -e "[tue-env](config) Environment '${tue_env}' set to use sparse checkout"
+}
+
+function tue-env-unset-sparse-checkout
+{
+    local option value
+    option="TUE_ENV_SPARSE_CHECKOUT"
+    value="false"
+    _set_export_option "${option}" "${value}" "${tue_env_dir}"/.env/setup/user_setup.bash
+
+    echo -e "[tue-env](config) Environment '${tue_env}' unset sparse checkout"
+
+}
+
 function tue-env-set
 {
     local option value

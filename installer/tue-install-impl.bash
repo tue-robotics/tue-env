@@ -1488,7 +1488,7 @@ function tue-install-ros
 
     local sparse_sub_dir_args
     sparse_sub_dir_args=()
-    [[ ("${CI}" == "true" || "${TUE_SPARSE_CHECKOUT}") && -n "${sub_dir}" ]] && sparse_sub_dir_args=("--sparse-sub-dir=${sub_dir}")
+    [[ ("${CI}" == "true" || "${TUE_ENV_SPARSE_CHECKOUT}") && -n "${sub_dir}" ]] && sparse_sub_dir_args=("--sparse-sub-dir=${sub_dir}")
     tue-install-git "${src}" --target-dir="${repos_dir}" --version="${version}" "${sparse_sub_dir_args[@]}"
 
     if [ -d "$repos_dir" ]
