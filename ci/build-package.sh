@@ -33,7 +33,7 @@ do
 done
 
 echo -e "\e[35m\e[1mPACKAGE     = ${PACKAGE}\e[0m"
-ROS_VERSION=$(docker exec -t tue-env bash -c 'source ~/.bashrc; echo "${ROS_VERSION}"' | tr -d '\r')
+ROS_VERSION=$(docker exec tue-env bash -c 'source ~/.bashrc; echo "${ROS_VERSION}"' | tr -d '\r')
 echo -e "\e[35m\e[1mROS_VERSION = ${ROS_VERSION}\e[0m"
 
 # If packages is non-zero, this is a multi-package repo. In multi-package repo, check if this package needs CI.
@@ -53,7 +53,7 @@ then
     docker exec -t tue-env bash -c 'source ~/.bashrc; cd "${TUE_SYSTEM_DIR}"/src/"${PACKAGE}" && /usr/bin/python3 "$(command -v catkin)" build --this --no-status -DCMAKE_BUILD_TYPE=RelWithDebInfo -DCATKIN_ENABLE_TESTING=OFF'
 else
     echo -e "\e[35m\e[1mCheck for default mixin repo (colcon mixin list)\e[0m"
-    MIXIN_REPOS=$(docker exec -t tue-env bash -c 'source ~/.bashrc; cd "${TUE_SYSTEM_DIR}" && colcon mixin list | grep -v "^- "' | tr -d '\r' | awk -F ": " '{print $1}')
+    MIXIN_REPOS=$(docker exec tue-env bash -c 'source ~/.bashrc; cd "${TUE_SYSTEM_DIR}" && colcon mixin list | grep -v "^- "' | tr -d '\r' | awk -F ": " '{print $1}')
     if ! echo -e "${MIXIN_REPOS}" | grep "^default$" -q
     then
         echo -e "\e[35m\e[1mAdd the default mixin repo (colcon mixin add default https://raw.githubusercontent.com/colcon/colcon-mixin-repository/master/index.yaml)\e[0m"
