@@ -173,7 +173,7 @@ fi
 
 # Docker container can show a header on start-up. We don't want to capture it
 docker run --detach --tty --name tue-env "${IMAGE_NAME}:${BRANCH_TAG}"
-DOCKER_HOME=$(docker exec -t tue-env bash -c 'echo "${HOME}"' | tr -d '\r')
+DOCKER_HOME=$(docker exec tue-env bash -c 'echo "${HOME}"' | tr -d '\r')
 docker stop tue-env  &> /dev/null || true
 docker rm tue-env &> /dev/null || true
 
@@ -208,10 +208,10 @@ fi
 # Catch the ROS_DISTRO of the docker container
 # stip carriage return from docker output by "tr -d '\r'"
 # see https://unix.stackexchange.com/a/487185
-ROS_DISTRO=$(docker exec -t tue-env bash -c 'source ~/.bashrc; echo "$ROS_DISTRO"' | tr -d '\r')
+ROS_DISTRO=$(docker exec tue-env bash -c 'source ~/.bashrc; echo "${ROS_DISTRO}"' | tr -d '\r')
 echo -e "\e[35m\e[1mROS_DISTRO = ${ROS_DISTRO}\e[0m"
 
-TUE_SYSTEM_DIR=$(docker exec -t tue-env bash -c 'source ~/.bashrc; echo "$TUE_SYSTEM_DIR"' | tr -d '\r')
+TUE_SYSTEM_DIR=$(docker exec tue-env bash -c 'source ~/.bashrc; echo "${TUE_SYSTEM_DIR}"' | tr -d '\r')
 
 # First install only the git repo of the package so that appropriate branch can be checked out later
 echo -e "\e[35m\e[1mtue-get install ros-$PACKAGE --no-ros-deps\e[0m"

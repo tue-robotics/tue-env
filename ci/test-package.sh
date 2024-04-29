@@ -33,7 +33,7 @@ do
 done
 
 echo -e "\e[35m\e[1mPACKAGE     = ${PACKAGE}\e[0m"
-ROS_VERSION=$(docker exec -t tue-env bash -c 'source ~/.bashrc; echo "${ROS_VERSION}"' | tr -d '\r')
+ROS_VERSION=$(docker exec tue-env bash -c 'source ~/.bashrc; echo "${ROS_VERSION}"' | tr -d '\r')
 echo -e "\e[35m\e[1mROS_VERSION = ${ROS_VERSION}\e[0m"
 
 # If packages is non-zero, this is a multi-package repo. In multi-package repo, check if this package needs CI.
