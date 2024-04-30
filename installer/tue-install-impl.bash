@@ -516,6 +516,8 @@ function tue-install-git
         tue-install-debug "git clone ${repo} ${target_dir} ${sparse_args[*]}"
         res=$(git clone "${repo}" "${target_dir}" "${sparse_args[@]}" 2>&1)
 
+        submodule_update_required="true"
+
         TUE_INSTALL_GIT_PULL_Q+=("${target_dir}")
     else
         # Check if we have already pulled the repo
