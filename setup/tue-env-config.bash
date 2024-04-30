@@ -24,9 +24,9 @@ function tue-env-git-use-ssh
     local option value
     option="TUE_GIT_USE_SSH"
     value="true"
-    _set_export_option "$option" "$value" "$tue_env_dir"/.env/setup/user_setup.bash
+    _set_export_option "${option}" "${value}" "${tue_env_dir}"/.env/setup/user_setup.bash
 
-    echo -e "[tue-env](config) Environment '$env' set to use SSH for git as default"
+    echo -e "[tue-env](config) Environment '${tue_env}' set to use SSH for git as default"
 }
 
 function tue-env-git-use-https
@@ -34,9 +34,9 @@ function tue-env-git-use-https
     local option value
     option="TUE_GIT_USE_SSH"
     value="false"
-    _set_export_option "$option" "$value" "$tue_env_dir"/.env/setup/user_setup.bash
+    _set_export_option "${option}" "${value}" "${tue_env_dir}"/.env/setup/user_setup.bash
 
-    echo -e "[tue-env](config) Environment '$env' set to use HTTPS for git as default"
+    echo -e "[tue-env](config) Environment '${tue_env}' set to use HTTPS for git as default"
 }
 
 function tue-env-github-use-ssh
@@ -44,9 +44,9 @@ function tue-env-github-use-ssh
     local option value
     option="TUE_GITHUB_USE_SSH"
     value="true"
-    _set_export_option "$option" "$value" "$tue_env_dir"/.env/setup/user_setup.bash
+    _set_export_option "${option}" "${value}" "${tue_env_dir}"/.env/setup/user_setup.bash
 
-    echo -e "[tue-env](config) Environment '$env' set to use SSH for GitHub"
+    echo -e "[tue-env](config) Environment '${tue_env}' set to use SSH for GitHub"
 }
 
 function tue-env-github-use-https
@@ -54,9 +54,9 @@ function tue-env-github-use-https
     local option value
     option="TUE_GITHUB_USE_SSH"
     value="false"
-    _set_export_option "$option" "$value" "$tue_env_dir"/.env/setup/user_setup.bash
+    _set_export_option "${option}" "${value}" "${tue_env_dir}"/.env/setup/user_setup.bash
 
-    echo -e "[tue-env](config) Environment '$env' set to use HTTPS for GitHub"
+    echo -e "[tue-env](config) Environment '${tue_env}' set to use HTTPS for GitHub"
 }
 
 function tue-env-gitlab-use-ssh
@@ -64,9 +64,9 @@ function tue-env-gitlab-use-ssh
     local option value
     option="TUE_GITLAB_USE_SSH"
     value="true"
-    _set_export_option "$option" "$value" "$tue_env_dir"/.env/setup/user_setup.bash
+    _set_export_option "${option}" "${value}" "${tue_env_dir}"/.env/setup/user_setup.bash
 
-    echo -e "[tue-env](config) Environment '$env' set to use SSH for GitLab"
+    echo -e "[tue-env](config) Environment '${tue_env}' set to use SSH for GitLab"
 }
 
 function tue-env-gitlab-use-https
@@ -74,9 +74,9 @@ function tue-env-gitlab-use-https
     local option value
     option="TUE_GITLAB_USE_SSH"
     value="false"
-    _set_export_option "$option" "$value" "$tue_env_dir"/.env/setup/user_setup.bash
+    _set_export_option "${option}" "${value}" "${tue_env_dir}"/.env/setup/user_setup.bash
 
-    echo -e "[tue-env](config) Environment '$env' set to use HTTPS for GitLab"
+    echo -e "[tue-env](config) Environment '${tue_env}' set to use HTTPS for GitLab"
 }
 
 function tue-env-install-test-depend
@@ -84,9 +84,9 @@ function tue-env-install-test-depend
     local option value
     option="TUE_INSTALL_TEST_DEPEND"
     value="true"
-    _set_export_option "$option" "$value" "$tue_env_dir"/.env/setup/user_setup.bash
+    _set_export_option "${option}" "${value}" "${tue_env_dir}"/.env/setup/user_setup.bash
 
-    echo -e "[tue-env](config) Environment '$env' set to install test dependencies"
+    echo -e "[tue-env](config) Environment '${tue_env}' set to install test dependencies"
 }
 
 function tue-env-not-install-test-depend
@@ -94,9 +94,9 @@ function tue-env-not-install-test-depend
     local option value
     option="TUE_INSTALL_TEST_DEPEND"
     value="false"
-    _set_export_option "$option" "$value" "$tue_env_dir"/.env/setup/user_setup.bash
+    _set_export_option "${option}" "${value}" "${tue_env_dir}"/.env/setup/user_setup.bash
 
-    echo -e "[tue-env](config) Environment '$env' set to not install test dependencies"
+    echo -e "[tue-env](config) Environment '${tue_env}' set to not install test dependencies"
 }
 
 function tue-env-install-doc-depend
@@ -104,9 +104,9 @@ function tue-env-install-doc-depend
     local option value
     option="TUE_INSTALL_DOC_DEPEND"
     value="true"
-    _set_export_option "$option" "$value" "$tue_env_dir"/.env/setup/user_setup.bash
+    _set_export_option "${option}" "${value}" "${tue_env_dir}"/.env/setup/user_setup.bash
 
-    echo -e "[tue-env](config) Environment '$env' set to install doc dependencies"
+    echo -e "[tue-env](config) Environment '${tue_env}' set to install doc dependencies"
 }
 
 function tue-env-not-install-doc-depend
@@ -114,9 +114,30 @@ function tue-env-not-install-doc-depend
     local option value
     option="TUE_INSTALL_DOC_DEPEND"
     value="false"
-    _set_export_option "$option" "$value" "$tue_env_dir"/.env/setup/user_setup.bash
+    _set_export_option "${option}" "${value}" "${tue_env_dir}"/.env/setup/user_setup.bash
 
-    echo -e "[tue-env](config) Environment '$env' set to not install doc dependencies"
+    echo -e "[tue-env](config) Environment '${tue_env}' set to not install doc dependencies"
+}
+
+function tue-env-set-sparse-checkout
+{
+    local option value
+    option="TUE_ENV_SPARSE_CHECKOUT"
+    value="true"
+    _set_export_option "${option}" "${value}" "${tue_env_dir}"/.env/setup/user_setup.bash
+
+    echo -e "[tue-env](config) Environment '${tue_env}' set to use sparse checkout"
+}
+
+function tue-env-unset-sparse-checkout
+{
+    local option value
+    option="TUE_ENV_SPARSE_CHECKOUT"
+    value="false"
+    _set_export_option "${option}" "${value}" "${tue_env_dir}"/.env/setup/user_setup.bash
+
+    echo -e "[tue-env](config) Environment '${tue_env}' unset sparse checkout"
+
 }
 
 function tue-env-set
@@ -124,9 +145,9 @@ function tue-env-set
     local option value
     option="$1"
     value="$2"
-    _set_export_option "$option" "$value" "$tue_env_dir"/.env/setup/user_setup.bash
+    _set_export_option "${option}" "${value}" "${tue_env_dir}"/.env/setup/user_setup.bash
 
-    echo -e "[tue-env](config) Environment '$env' has '$option' set to '$value'"
+    echo -e "[tue-env](config) Environment '${tue_env}' has '${option}' set to '${value}'"
 }
 
 function _main
@@ -136,12 +157,12 @@ function _main
         echo -e "[tue-env](config) no environment set or provided"
         exit 1
     else
-        local env
-        env=$1
+        local tue_env
+        tue_env=$1
         shift
 
         local tue_env_dir
-        tue_env_dir="$(cat "$TUE_DIR"/user/envs/"$env")"
+        tue_env_dir="$(cat "${TUE_DIR}"/user/envs/"${tue_env}")"
 
         if [ -z "$1" ]
         then
