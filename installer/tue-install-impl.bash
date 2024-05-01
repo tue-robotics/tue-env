@@ -1057,7 +1057,6 @@ function tue-install-ppa-now
 
         if [ "$needs_to_be_added" == "true" ]
         then
-            tue-install-system-now software-properties-common
             tue-install-info "Adding ppa: $ppa"
 
             # Wait for apt-lock first (https://askubuntu.com/a/375031)
@@ -1761,7 +1760,7 @@ TUE_INSTALL_WARNINGS=
 TUE_INSTALL_INFOS=
 
 # Make sure tools used by this installer are installed
-tue-install-system-now curl git jq python-is-python3 python3-pip wget
+tue-install-system-now curl git jq python-is-python3 python3-pip software-properties-common wget
 
 tue-install-pip3-now catkin-pkg PyYAML
 
