@@ -420,8 +420,8 @@ function _try_branch_git
     sparse_args=()
     [[ -n "${sparse_sub_dir}" ]] && sparse_args+=("${sparse_sub_dir}")
 
-    tue-install-debug "git -C ${repo} checkout ${branch} --recurse-submodules -- ${sparse_args[*]}"
-    _try_branch_res=$(git -C "${repo}" checkout "${branch}" --recurse-submodules -- "${sparse_args[@]}" 2>&1)  # _try_branch_res is a "global" variable from tue-install-git
+    tue-install-debug "git -C ${repo} checkout ${branch} --recurse-submodules --"
+    _try_branch_res=$(git -C "${repo}" checkout "${branch}" --recurse-submodules -- 2>&1)  # _try_branch_res is a "global" variable from tue-install-git
     _checkout_error_code=$?
     tue-install-debug "_try_branch_res(${_checkout_error_code}): ${_try_branch_res}"
 
