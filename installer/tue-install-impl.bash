@@ -1615,13 +1615,17 @@ function tue-install-ros-remove-source
     if [[ -e "${ros_pkg_dir}" ]]
     then
         tue-install-debug "Source package found in the workspace, removing it, so the system installed version is used"
-        tue-install-pipe rm "${ros_pkg_dir}"
-
-        # Clean the package from the workspace
-        if [[ "${TUE_ROS_VERSION}" != "1" ]]
+        # Clean the package from the workspace in colcon
+        if [[ "${TUE_ENV_ROS_VERSION}" != "1" ]]
         then
             tue-install-pipe /usr/bin/python3 -m colcon clean packages --log-base "${TUE_WS_DIR}"/log --base-paths "${TUE_WS_DIR}"/src --build-base "${TUE_WS_DIR}"/build --install-base "${TUE_WS_DIR}"/install --packages-select "${ros_pkg_name}" -y
-        else
+        fi
+
+        tue-install-pipe rm "${ros_pkg_dir}"
+
+        # Clean the package from the workspace in catkin
+        if [[ "${TUE_ROS_VERSION}" == "1" ]]
+        then
             tue-install-pipe catkin clean --workspace "${TUE_WS_DIR}" --orphans
         fi
     else
