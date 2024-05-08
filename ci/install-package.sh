@@ -77,7 +77,7 @@ echo -e "\e[35;1mSHARED_DIR   = ${SHARED_DIR}\e[0m"
 # Set default value for REF_NAME
 [ -z "$REF_NAME" ] && REF_NAME="pull"
 echo -e "\e[35;1mREF_NAME     = ${REF_NAME}\e[0m"
-echo -e "\e[35;1mDEBUG       = ${DEBUG}\e[0m"
+echo -e "\e[35;1mDEBUG        = ${DEBUG}\e[0m"
 
 ADDITIONAL_ARGS_LOCAL_INSTALL=()
 ADDITIONAL_ARGS_LOCAL_BUILD=()

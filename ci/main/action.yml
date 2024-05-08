@@ -79,7 +79,8 @@ runs:
           done
         fi
         DEBUG_ARGS=()
-        DEBUG=${RUNNER_DEBUG:-false}
+        DEBUG=${RUNNER_DEBUG:+true}
+        DEBUG=${DEBUG:-false}
         if [[ ${DEBUG} == "true" ]]
         then
           DEBUG_ARGS+=("--debug")
@@ -100,7 +101,8 @@ runs:
       run: |
         echo "::group::build-package.sh"
         DEBUG_ARGS=()
-        DEBUG=${RUNNER_DEBUG:-false}
+        DEBUG=${RUNNER_DEBUG:+true}
+        DEBUG=${DEBUG:-false}
         if [[ ${DEBUG} == "true" ]]
         then
           DEBUG_ARGS+=("--debug")
@@ -116,7 +118,8 @@ runs:
       run: |
         echo "::group::test-package.sh"
         DEBUG_ARGS=()
-        DEBUG=${RUNNER_DEBUG:-false}
+        DEBUG=${RUNNER_DEBUG:+true}
+        DEBUG=${DEBUG:-false}
         if [[ ${DEBUG} == "true" ]]
         then
           DEBUG_ARGS+=("--debug")
