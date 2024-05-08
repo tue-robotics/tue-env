@@ -59,22 +59,30 @@ runs:
         PULLREQUEST=${PULLREQUEST:-false}
         SSH_KEY="${{ inputs.ssh-key }}"
         SSH_KNOWN_HOSTS="${{ inputs.ssh-known-hosts }}"
+        SSH_ARGS=()
         if [[ -n "${SSH_KEY}" ]]
         then
-          SSH_ARG="--ssh"
+          SSH_KEY_PATH="${HOME}"/.ssh/ci_ssh_key
+          echo -e "\e[35;1mmkdir -p ${HOME}/.ssh\e[0m"
           mkdir -p "${HOME}"/.ssh
-          echo "${SSH_KEY}" > "${HOME}"/.ssh/ci_ssh_key
-          SSH_KEY_ARG="--ssh-key=${HOME}/.ssh/ci_ssh_key"
+          echo "${SSH_KEY}" > "${SSH_KEY_PATH}"
+          SSH_ARGS+=("--ssh" "--ssh-key=${SSH_KEY_PATH}")
         fi
         if [[ -n "${SSH_KNOWN_HOSTS}" ]]
         then
-          echo -e "\e[35m\e[1m mkdir -p ${HOME}/.ssh \e[0m"
-          mkdir -p ${HOME}/.ssh
+          echo -e "\e[35;1mmkdir -p ${HOME}/.ssh\e[0m"
+          mkdir -p "${HOME}"/.ssh
           for host in ${SSH_KNOWN_HOSTS}
           do
-            echo -e "\e[35m\e[1m ssh-keyscan -t rsa -H \"${host}\" 2>&1 | tee -a ${HOME}/.ssh/known_hosts \e[0m"
+            echo -e "\e[35;1mssh-keyscan -t rsa -H \"${host}\" 2>&1 | tee -a ${HOME}/.ssh/known_hosts\e[0m"
             ssh-keyscan -t rsa -H "${host}" 2>&1 | tee -a "${HOME}"/.ssh/known_hosts
           done
+        fi
+        DEBUG_ARGS=()
+        DEBUG=${RUNNER_DEBUG:-false}
+        if [[ ${DEBUG} == "true" ]]
+        then
+          DEBUG_ARGS+=("--debug")
         fi
         ${{ github.action_path }}/../install-package.sh \
           --image=${{ inputs.image }} \
@@ -82,8 +90,8 @@ runs:
           --branch="${BRANCH}" \
           --commit="${GITHUB_SHA}" \
           --pullrequest="${PULLREQUEST}" \
-          "${SSH_ARG}" \
-          "${SSH_KEY_ARG}"
+          "${SSH_ARGS[@]}" \
+          "${DEBUG_ARGS[@]}"
         echo "::endgroup::"
       shell: bash
 
@@ -91,8 +99,15 @@ runs:
       id: build
       run: |
         echo "::group::build-package.sh"
+        DEBUG_ARGS=()
+        DEBUG=${RUNNER_DEBUG:-false}
+        if [[ ${DEBUG} == "true" ]]
+        then
+          DEBUG_ARGS+=("--debug")
+        fi
         ${{ github.action_path }}/../build-package.sh \
-          --package=${{ inputs.package }}
+          --package=${{ inputs.package }} \
+          "${DEBUG_ARGS[@]}"
         echo "::endgroup::"
       shell: bash
 
@@ -100,7 +115,14 @@ runs:
       id: test
       run: |
         echo "::group::test-package.sh"
+        DEBUG_ARGS=()
+        DEBUG=${RUNNER_DEBUG:-false}
+        if [[ ${DEBUG} == "true" ]]
+        then
+          DEBUG_ARGS+=("--debug")
+        fi
         ${{ github.action_path }}/../test-package.sh \
-          --package=${{ inputs.package }}
+          --package=${{ inputs.package }} \
+          "${DEBUG_ARGS[@]}"
         echo "::endgroup::"
       shell: bash

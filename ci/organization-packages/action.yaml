@@ -27,6 +27,6 @@ runs:
       id: packages
       run: |
         source ${{ github.action_path }}/../organization-packages.sh --organization=${{ inputs.organization }} --type=${{ inputs.package-type }} --token=${{ inputs.token }}
-        echo -e "\e[35m\e[1mpackages=${packages_list} >> \${GITHUB_OUTPUT}\e[0m"
+        echo -e "\e[35;1mpackages=${packages_list} >> \${GITHUB_OUTPUT}\e[0m"
         echo "packages=${packages_list}" >> ${GITHUB_OUTPUT}
       shell: bash --noprofile --norc -o pipefail {0}

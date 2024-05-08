@@ -63,8 +63,6 @@ RUN apt-get update -qq && \
 USER "$USER"
 WORKDIR /home/"$USER"
 
-ADD installer/bootstrap.bash ./bootstrap.bash
-
 RUN mkdir -p -m 0700 ~/.ssh
 ADD ./known_hosts ./.ssh/known_hosts
 RUN sudo chown $USER_ID:$USER_ID ~/.ssh/known_hosts && sudo chmod 644 ~/.ssh/known_hosts
@@ -73,8 +71,9 @@ RUN sudo chown $USER_ID:$USER_ID ~/.ssh/known_hosts && sudo chmod 644 ~/.ssh/kno
 RUN { [[ -n "$OAUTH2_TOKEN" ]] && git config --global credential.helper '!f() { printf "%s\n" "username=oauth2" "password=$OAUTH2_TOKEN"; };f'; } || exit 0
 
 # Setup tue-env and install target ros
+RUN --mount=type=ssh,uid=$USER_ID --mount=type=bind,source=installer/bootstrap.bash,target=bootstrap.bash \
     # Remove interactive check from bashrc, otherwise bashrc refuses to execute
-RUN --mount=type=ssh,uid=$USER_ID sed -e s/return//g -i ~/.bashrc && \
+    sed -e s/return//g -i ~/.bashrc && \
     # Set the CI args in the container as docker currently provides no method to
     # remove the environment variables
     # NOTE: The following exports will exist only in this container
@@ -92,17 +91,22 @@ RUN --mount=type=ssh,uid=$USER_ID sed -e s/return//g -i ~/.bashrc && \
     --targets-repo="${TARGETS_REPO}" && \
     # Make tue-env to be available to the environment
     source ~/.bashrc && \
-    # Install target ros
-    tue-get install ros${ROS_VERSION} --test-depend --branch="$BRANCH" && \
+    # Install optional git target
+    { tue-get install git --test-depend || true; } && \
     # Install target ccache
     tue-get install ccache --test-depend && \
+    # Install target ros
+    tue-get install ros${ROS_VERSION} --test-depend --branch="$BRANCH" && \
     # Remove temp tue files
     (rm -rf /tmp/tue_* > /dev/null || true) && \
-    # Show ownership of .tue
+    # Show ownership of ~/.tue
+    echo -e "\e[35mOwner of ~/.tue\e[0m" && \
     namei -l ~/.tue && \
     # Check git remote origin
+    echo -e "\e[35mgit -C ~/.tue remote -v\e[0m" && \
     git -C ~/.tue remote -v && \
     # Show the branches of tue-env
+    echo -e "\e[35mgit -C ~/.tue branch\e[0m" && \
     git -C ~/.tue branch && \
     # Remove docker-clean. APT will be able to autocomplete packages now
     sudo rm /etc/apt/apt.conf.d/docker-clean && \

@@ -7,8 +7,15 @@
 # Stop on errors
 set -o errexit
 
+function cleanup {
+  echo -e "\e[35;1mRemoving ./known_hosts\e[0m"
+  rm -f ./known_hosts
+}
+
+trap cleanup EXIT
+
 # Execute script only in a CI environment
-if [[ "$CI" != "true" ]]
+if [[ "${CI}" != "true" ]]
 then
     echo -e "\e[35;1mError!\e[0m Trying to execute a CI script in a non-CI environment. Exiting script."
     exit 1
@@ -227,7 +234,8 @@ then
     echo -e "\e[35;1mCreating a new docker context for multi-arch builds\e[0m"
     docker context create multiarch-environment
     echo -e "\e[35;1mCreating a new buildx builder for multi-arch builds\e[0m"
-    docker buildx create --name multiarchbuilder --driver docker-container --use multiarch-environment
+    docker buildx create --name multiarch-builder --driver docker-container --use multiarch-environment
+    echo -e "\e[35;1mdocker buildx ls\e[0m"
     docker buildx ls
 fi
 
