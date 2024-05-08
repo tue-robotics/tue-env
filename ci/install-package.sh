@@ -134,7 +134,7 @@ then
     echo -e "\e[35;1mSSH_KEY      = ${SSH_KEY_FINGERPRINT}\e[0m"
 
     DOCKER_SSH_AUTH_SOCK="/tmp/ssh_auth_sock"
-    DOCKER_MOUNT_KNOWN_HOSTS_ARGS=("-e" "SSH_AUTH_SOCK=${DOCKER_SSH_AUTH_SOCK}" "--mount" "type=bind,source=$SHARED_DIR/.ssh,target=/tmp/.ssh")
+    DOCKER_MOUNT_KNOWN_HOSTS_ARGS=("-e" "SSH_AUTH_SOCK=${DOCKER_SSH_AUTH_SOCK}" "--mount" "type=bind,source=${SHARED_DIR}/.ssh,target=/tmp/.ssh")
 
     # Used in the print statement to reproduce CI build locally
     ADDITIONAL_ARGS_LOCAL_INSTALL+=("--shared=/tmp/shared/${PACKAGE}" "--ssh")
