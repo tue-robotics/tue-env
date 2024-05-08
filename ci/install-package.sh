@@ -250,7 +250,7 @@ then
 
     # Install the package completely
     branch_string=${BRANCH:+" --try-branch=${BRANCH}"}
-    echo -e "\e[35;1mtue-get install ros-${PACKAGE} --test-depend${branch_string} --try-branch=PULLREQUEST\e[0m"
+    echo -e "\e[35;1mtue-get install ros-${PACKAGE} --test-depend${branch_string} --try-branch=PULLREQUEST ${ADDITIONAL_ARGS_TUE_GET[*]}\e[0m"
     docker exec -t tue-env bash -c 'source ~/.bashrc; tue-get install ros-"${PACKAGE}" --test-depend --try-branch="${BRANCH}" --try-branch=PULLREQUEST '"${ADDITIONAL_ARGS_TUE_GET[*]}"
 
     # Checkout -f to be really sure
@@ -259,7 +259,7 @@ then
 else
     # Install the package
     branch_string=${BRANCH:+" --try-branch=${BRANCH}"}
-    echo -e "\e[35;1mtue-get install ros-${PACKAGE} --test-depend${branch_string}\e[0m"
+    echo -e "\e[35;1mtue-get install ros-${PACKAGE} --test-depend${branch_string} ${ADDITIONAL_ARGS_TUE_GET[*]}\e[0m"
     docker exec -t tue-env bash -c 'source ~/.bashrc; tue-get install ros-"${PACKAGE}" --test-depend --try-branch="${BRANCH}" '"${ADDITIONAL_ARGS_TUE_GET[*]}"
 
     # Set the package to the right commit
