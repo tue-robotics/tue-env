@@ -91,6 +91,8 @@ RUN --mount=type=ssh,uid=$USER_ID --mount=type=bind,source=installer/bootstrap.b
     --targets-repo="${TARGETS_REPO}" && \
     # Make tue-env to be available to the environment
     source ~/.bashrc && \
+    # Install optional git target
+    { tue-get install git --test-depend || true; } && \
     # Install target ccache
     tue-get install ccache --test-depend && \
     # Install target ros
