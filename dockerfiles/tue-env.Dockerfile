@@ -45,11 +45,14 @@ SHELL ["/bin/bash", "-c"]
 
 # Install commands used in our scripts and standard present on a clean ubuntu
 # installation and setup a user with sudo priviledges
-RUN apt-get update -qq && \
+RUN --mount=type=cache,target=/var/cache/apt,sharing=locked \
+    --mount=type=cache,target=/var/lib/apt,sharing=locked \
+    apt-get update -qq && \
     echo "resolvconf resolvconf/linkify-resolvconf boolean false" | debconf-set-selections && \
-    apt-get install -qq --assume-yes --no-install-recommends apt-transport-https apt-utils bash-completion ca-certificates curl dbus debconf-utils dialog git keyboard-configuration lsb-release iproute2 iputils-ping mesa-utils net-tools openssh-client psmisc resolvconf sudo tzdata wget > /dev/null && \
+    apt-get install -qq --assume-yes --no-install-recommends apt-transport-https apt-utils bash-completion ca-certificates curl dbus debconf-utils dialog git keyboard-configuration lsb-release iproute2 iputils-ping mesa-utils net-tools openssh-client psmisc resolvconf sudo tzdata wget > /dev/null
+
     # Add defined user
-    adduser -u $USER_ID --disabled-password --gecos "" $USER && \
+RUN adduser -u $USER_ID --disabled-password --gecos "" $USER && \
     groupadd -g 109 render && \
     usermod -aG sudo $USER && \
     usermod -aG adm $USER && \
@@ -72,6 +75,8 @@ RUN { [[ -n "$OAUTH2_TOKEN" ]] && git config --global credential.helper '!f() { 
 
 # Setup tue-env and install target ros
 RUN --mount=type=ssh,uid=$USER_ID --mount=type=bind,source=installer/bootstrap.bash,target=bootstrap.bash \
+    --mount=type=cache,target=/var/cache/apt,sharing=locked \
+    --mount=type=cache,target=/var/lib/apt,sharing=locked \
     # Remove interactive check from bashrc, otherwise bashrc refuses to execute
     sed -e s/return//g -i ~/.bashrc && \
     # Set the CI args in the container as docker currently provides no method to
