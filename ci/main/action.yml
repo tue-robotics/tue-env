@@ -78,13 +78,20 @@ runs:
             ssh-keyscan -t rsa -H "${host}" 2>&1 | tee -a "${HOME}"/.ssh/known_hosts
           done
         fi
+        DEBUG_ARGS=()
+        DEBUG=${RUNNER_DEBUG:-false}
+        if [[ ${DEBUG} == "true" ]]
+        then
+          DEBUG_ARGS+=("--debug")
+        fi
         ${{ github.action_path }}/../install-package.sh \
           --image=${{ inputs.image }} \
           --package=${{ inputs.package }} \
           --branch="${BRANCH}" \
           --commit="${GITHUB_SHA}" \
           --pullrequest="${PULLREQUEST}" \
-          "${SSH_ARGS[@]}"
+          "${SSH_ARGS[@]}" \
+          "${DEBUG_ARGS[@]}"
         echo "::endgroup::"
       shell: bash
 
@@ -92,8 +99,15 @@ runs:
       id: build
       run: |
         echo "::group::build-package.sh"
+        DEBUG_ARGS=()
+        DEBUG=${RUNNER_DEBUG:-false}
+        if [[ ${DEBUG} == "true" ]]
+        then
+          DEBUG_ARGS+=("--debug")
+        fi
         ${{ github.action_path }}/../build-package.sh \
-          --package=${{ inputs.package }}
+          --package=${{ inputs.package }} \
+          "${DEBUG_ARGS[@]}"
         echo "::endgroup::"
       shell: bash
 
@@ -101,7 +115,14 @@ runs:
       id: test
       run: |
         echo "::group::test-package.sh"
+        DEBUG_ARGS=()
+        DEBUG=${RUNNER_DEBUG:-false}
+        if [[ ${DEBUG} == "true" ]]
+        then
+          DEBUG_ARGS+=("--debug")
+        fi
         ${{ github.action_path }}/../test-package.sh \
-          --package=${{ inputs.package }}
+          --package=${{ inputs.package }} \
+          "${DEBUG_ARGS[@]}"
         echo "::endgroup::"
       shell: bash

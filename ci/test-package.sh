@@ -21,6 +21,9 @@ do
         -p=* | --package=* )
             PACKAGE="${i#*=}" ;;
 
+        --debug )
+            DEBUG="true" ;;
+
         * )
             # unknown option
             if [[ -n "$i" ]]  # Ignore empty arguments
@@ -35,6 +38,7 @@ done
 echo -e "\e[35;1mPACKAGE     = ${PACKAGE}\e[0m"
 ROS_VERSION=$(docker exec tue-env bash -c 'source ~/.bashrc; echo "${ROS_VERSION}"' | tr -d '\r')
 echo -e "\e[35;1mROS_VERSION = ${ROS_VERSION}\e[0m"
+echo -e "\e[35;1mDEBUG       = ${DEBUG}\e[0m"
 
 # If packages is non-zero, this is a multi-package repo. In multi-package repo, check if this package needs CI.
 # If a single-package repo, CI is always needed.
@@ -48,23 +52,33 @@ fi
 # Use docker environment variables in all exec commands instead of script variables
 if [[ "${ROS_VERSION}" == 1 ]]
 then
+    CATKIN_ADDITIONAL_ARGS=()
+    if [[ ${DEBUG} == "true" ]]
+    then
+        CATKIN_ADDITIONAL_ARGS+=("--verbose")
+    fi
     # Build test targets
-    echo -e "\e[35;1mBuild test targets of this package (catkin build --this --no-deps -DCATKIN_ENABLE_TESTING=ON)\e[0m"
-    docker exec -t tue-env bash -c 'source ~/.bashrc; cd "${TUE_SYSTEM_DIR}"/src/"${PACKAGE}" && /usr/bin/python3 "$(command -v catkin)" build --this --no-status --no-deps -DCATKIN_ENABLE_TESTING=ON'
+    echo -e "\e[35;1mBuild test targets of this package (catkin build --this --no-deps ${CATKIN_ADDITIONAL_ARGS[*]} -DCATKIN_ENABLE_TESTING=ON)\e[0m"
+    docker exec -t tue-env bash -c 'source ~/.bashrc; cd "${TUE_SYSTEM_DIR}"/src/"${PACKAGE}" && /usr/bin/python3 "$(command -v catkin)" build --this --no-status --no-deps '"${CATKIN_ADDITIONAL_ARGS[*]}"' -DCATKIN_ENABLE_TESTING=ON'
 
     # Run unit tests
-    echo -e "\e[35;1mRun tests on this package (catkin test --this --no-deps -DCATKIN_ENABLE_TESTING=ON)\e[0m"
-    docker exec -t tue-env bash -c 'source ~/.bashrc; cd "${TUE_SYSTEM_DIR}"/src/"${PACKAGE}" && /usr/bin/python3 "$(command -v catkin)" test --this --no-status --no-deps -DCATKIN_ENABLE_TESTING=ON'
+    echo -e "\e[35;1mRun tests on this package (catkin test --this --no-deps ${CATKIN_ADDITIONAL_ARGS[*]} -DCATKIN_ENABLE_TESTING=ON)\e[0m"
+    docker exec -t tue-env bash -c 'source ~/.bashrc; cd "${TUE_SYSTEM_DIR}"/src/"${PACKAGE}" && /usr/bin/python3 "$(command -v catkin)" test --this --no-status --no-deps '"${CATKIN_ADDITIONAL_ARGS[*]}"' -DCATKIN_ENABLE_TESTING=ON'
 else
+    COLCON_ADDITIONAL_ARGS=()
+    if [[ ${DEBUG} == "true" ]]
+    then
+        COLCON_ADDITIONAL_ARGS+=("--log-level" "debug")
+    fi
     # Build test targets
-    echo -e "\e[35;1mBuild test targets of this package (colcon build --packages-select ${PACKAGE} --mixin rel-with-deb-info build-testing-on)\e[0m"
-    docker exec -t tue-env bash -c 'source ~/.bashrc; cd "${TUE_SYSTEM_DIR}" && colcon build --packages-select "${PACKAGE}" --mixin rel-with-deb-info build-testing-on --event-handlers desktop_notification- status- terminal_title-'
+    echo -e "\e[35;1mBuild test targets of this package (colcon ${COLCON_ADDITIONAL_ARGS[*]} build --packages-select ${PACKAGE} --mixin rel-with-deb-info build-testing-on)\e[0m"
+    docker exec -t tue-env bash -c 'source ~/.bashrc; cd "${TUE_SYSTEM_DIR}" && colcon '"${COLCON_ADDITIONAL_ARGS[*]}"' build --packages-select "${PACKAGE}" --mixin rel-with-deb-info build-testing-on --event-handlers desktop_notification- status- terminal_title-'
 
     # Run unit tests
-    echo -e "\e[35;1mRun tests on this package (colcon test --packages-select ${PACKAGE} --executor sequential)\e[0m"
-    docker exec -t tue-env bash -c 'source ~/.bashrc; cd "${TUE_SYSTEM_DIR}" && colcon test --packages-select "${PACKAGE}" --executor sequential --event-handlers desktop_notification- status- terminal_title- console_cohesion+'
+    echo -e "\e[35;1mRun tests on this package (colcon ${COLCON_ADDITIONAL_ARGS[*]} test --packages-select ${PACKAGE} --executor sequential)\e[0m"
+    docker exec -t tue-env bash -c 'source ~/.bashrc; cd "${TUE_SYSTEM_DIR}" && colcon '"${COLCON_ADDITIONAL_ARGS[*]}"' test --packages-select "${PACKAGE}" --executor sequential --event-handlers desktop_notification- status- terminal_title- console_cohesion+'
 
     # Check test results
-    echo -e "\e[35;1mCheck test results (colcon test-result --verbose)\e[0m"
-    docker exec -t tue-env bash -c 'source ~/.bashrc; cd "${TUE_SYSTEM_DIR}" && colcon test-result --verbose'
+    echo -e "\e[35;1mCheck test results (colcon ${COLCON_ADDITIONAL_ARGS[*]} test-result --verbose)\e[0m"
+    docker exec -t tue-env bash -c 'source ~/.bashrc; cd "${TUE_SYSTEM_DIR}" && colcon '"${COLCON_ADDITIONAL_ARGS[*]}"' test-result --verbose'
 fi

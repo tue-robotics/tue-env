@@ -47,6 +47,9 @@ do
         --ref-name=* )
             REF_NAME="${i#*=}" ;;
 
+        --debug )
+            DEBUG=true ;;
+
         * )
             # unknown option
             if [[ -n "$i" ]]  # Ignore empty arguments
@@ -74,6 +77,11 @@ echo -e "\e[35;1mSHARED_DIR   = ${SHARED_DIR}\e[0m"
 # Set default value for REF_NAME
 [ -z "$REF_NAME" ] && REF_NAME="pull"
 echo -e "\e[35;1mREF_NAME     = ${REF_NAME}\e[0m"
+echo -e "\e[35;1mDEBUG       = ${DEBUG}\e[0m"
+
+ADDITIONAL_ARGS_LOCAL_INSTALL=()
+ADDITIONAL_ARGS_LOCAL_BUILD=()
+ADDITIONAL_ARGS_LOCAL_TEST=()
 
 if [ "$USE_SSH" == "true" ]
 then
@@ -126,19 +134,28 @@ then
     echo -e "\e[35;1mSSH_KEY      = ${SSH_KEY_FINGERPRINT}\e[0m"
 
     DOCKER_SSH_AUTH_SOCK="/tmp/ssh_auth_sock"
-    DOCKER_MOUNT_KNOWN_HOSTS_ARGS="-e SSH_AUTH_SOCK=$DOCKER_SSH_AUTH_SOCK --mount type=bind,source=$SHARED_DIR/.ssh,target=/tmp/.ssh"
+    DOCKER_MOUNT_KNOWN_HOSTS_ARGS=("-e" "SSH_AUTH_SOCK=${DOCKER_SSH_AUTH_SOCK}" "--mount" "type=bind,source=$SHARED_DIR/.ssh,target=/tmp/.ssh")
 
     # Used in the print statement to reproduce CI build locally
-    ADDITIONAL_ARGS_LOCAL_BUILD="--shared=/tmp/shared/${PACKAGE} --ssh"
+    ADDITIONAL_ARGS_LOCAL_INSTALL+=("--shared=/tmp/shared/${PACKAGE}" "--ssh")
+fi
+
+ADDITIONAL_ARGS_TUE_GET=()
+if [[ ${DEBUG} == "true" ]]
+then
+    ADDITIONAL_ARGS_LOCAL_INSTALL+=("--debug")
+    ADDITIONAL_ARGS_LOCAL_BUILD+=("--debug")
+    ADDITIONAL_ARGS_LOCAL_TEST+=("--debug")
+    ADDITIONAL_ARGS_TUE_GET+=("--debug")
 fi
 
 echo -e "\e[35;1m
 This build can be reproduced locally using the following commands:
 
 tue-get install docker
-"'${TUE_DIR}'"/ci/install-package.sh --package=${PACKAGE} --branch=${BRANCH} --commit=${COMMIT} --pullrequest=${PULL_REQUEST} --image=${IMAGE_NAME} --ref-name=${REF_NAME} ${ADDITIONAL_ARGS_LOCAL_BUILD}
-"'${TUE_DIR}'"/ci/build-package.sh --package=${PACKAGE}
-"'${TUE_DIR}'"/ci/test-package.sh --package=${PACKAGE}
+"'${TUE_DIR}'"/ci/install-package.sh --package=${PACKAGE} --branch=${BRANCH} --commit=${COMMIT} --pullrequest=${PULL_REQUEST} --image=${IMAGE_NAME} --ref-name=${REF_NAME} ${ADDITIONAL_ARGS_LOCAL_INSTALL[*]}
+"'${TUE_DIR}'"/ci/build-package.sh --package=${PACKAGE} ${ADDITIONAL_ARGS_LOCAL_BUILD[*]}
+"'${TUE_DIR}'"/ci/test-package.sh --package=${PACKAGE} ${ADDITIONAL_ARGS_LOCAL_TEST[*]}
 
 Optionally fix your compilation errors and re-run only the last command
 \e[0m"
@@ -185,7 +202,7 @@ mkdir -p "$HOME"/.cache/pip
 
 # Run the docker image along with setting new environment variables
 # shellcheck disable=SC2086
-docker run --detach --interactive --tty -e CI="true" -e PACKAGE="$PACKAGE" -e BRANCH="$BRANCH" -e COMMIT="$COMMIT" -e PULL_REQUEST="$PULL_REQUEST" -e REF_NAME="$REF_NAME" --name tue-env --mount type=bind,source=$HOME/.ccache,target=$DOCKER_HOME/.ccache --mount type=bind,source=$HOME/.cache/pip,target=$DOCKER_HOME/.cache/pip $DOCKER_MOUNT_KNOWN_HOSTS_ARGS "$IMAGE_NAME:$BRANCH_TAG"
+docker run --detach --interactive --tty -e CI="true" -e PACKAGE="${PACKAGE}" -e BRANCH="${BRANCH}" -e COMMIT="${COMMIT}" -e PULL_REQUEST="${PULL_REQUEST}" -e REF_NAME="${REF_NAME}" --name tue-env --mount type=bind,source=${HOME}/.ccache,target=${DOCKER_HOME}/.ccache --mount type=bind,source=${HOME}/.cache/pip,target=${DOCKER_HOME}/.cache/pip "${DOCKER_MOUNT_KNOWN_HOSTS_ARGS[@]}" "${IMAGE_NAME}:${BRANCH_TAG}"
 
 # Own the ~/.ccache folder for permissions
 docker exec -t tue-env bash -c 'sudo chown "${USER}":"${USER}" -R ~/.ccache'
@@ -214,9 +231,9 @@ echo -e "\e[35;1mROS_DISTRO = ${ROS_DISTRO}\e[0m"
 TUE_SYSTEM_DIR=$(docker exec tue-env bash -c 'source ~/.bashrc; echo "${TUE_SYSTEM_DIR}"' | tr -d '\r')
 
 # First install only the git repo of the package so that appropriate branch can be checked out later
-echo -e "\e[35;1mtue-get install ros-${PACKAGE} --no-ros-deps\e[0m"
+echo -e "\e[35;1mtue-get install ros-${PACKAGE} --no-ros-deps ${ADDITIONAL_ARGS_TUE_GET[*]}\e[0m"
 docker exec -t tue-env bash -c 'echo "debconf debconf/frontend select Noninteractive" | sudo debconf-set-selections'
-docker exec -t tue-env bash -c 'source ~/.bashrc; tue-get install ros-"${PACKAGE}" --no-ros-deps'
+docker exec -t tue-env bash -c 'source ~/.bashrc; tue-get install ros-"${PACKAGE}" --no-ros-deps '"${ADDITIONAL_ARGS_TUE_GET[*]}"
 
 if [[ $PULL_REQUEST != "false" ]]
 then
@@ -234,7 +251,7 @@ then
     # Install the package completely
     branch_string=${BRANCH:+" --try-branch=${BRANCH}"}
     echo -e "\e[35;1mtue-get install ros-${PACKAGE} --test-depend${branch_string} --try-branch=PULLREQUEST\e[0m"
-    docker exec -t tue-env bash -c 'source ~/.bashrc; tue-get install ros-"${PACKAGE}" --test-depend --try-branch="${BRANCH}" --try-branch=PULLREQUEST'
+    docker exec -t tue-env bash -c 'source ~/.bashrc; tue-get install ros-"${PACKAGE}" --test-depend --try-branch="${BRANCH}" --try-branch=PULLREQUEST '"${ADDITIONAL_ARGS_TUE_GET[*]}"
 
     # Checkout -f to be really sure
     echo -e "\e[35;1mgit -C ~${TUE_SYSTEM_DIR#"${DOCKER_HOME}"}/src/${PACKAGE} checkout -f PULLREQUEST --\e[0m"
@@ -243,12 +260,12 @@ else
     # Install the package
     branch_string=${BRANCH:+" --try-branch=${BRANCH}"}
     echo -e "\e[35;1mtue-get install ros-${PACKAGE} --test-depend${branch_string}\e[0m"
-    docker exec -t tue-env bash -c 'source ~/.bashrc; tue-get install ros-"${PACKAGE}" --test-depend --try-branch="${BRANCH}"'
+    docker exec -t tue-env bash -c 'source ~/.bashrc; tue-get install ros-"${PACKAGE}" --test-depend --try-branch="${BRANCH}" '"${ADDITIONAL_ARGS_TUE_GET[*]}"
 
     # Set the package to the right commit
     echo -e "\e[35;1mReset package to this commit\e[0m"
     echo -e "\e[35;1mgit -C ~${TUE_SYSTEM_DIR#"${DOCKER_HOME}"}/src/${PACKAGE} reset --hard ${COMMIT}\e[0m"
-    docker exec -t tue-env bash -c 'source ~/.bashrc; git -C "$TUE_SYSTEM_DIR"/src/"$PACKAGE" reset --hard "$COMMIT"'
+    docker exec -t tue-env bash -c 'source ~/.bashrc; git -C "${TUE_SYSTEM_DIR}"/src/"${PACKAGE}" reset --hard "${COMMIT}"'
 fi
 
 # Allow everyone to read ~/.cache/pip folder for caching inside CI pipelines
