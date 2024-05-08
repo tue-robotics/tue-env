@@ -83,7 +83,7 @@ function main
     fi
 
     # Initialize variables
-    local create_venv targets_repo tue_ros_distro tue_ros_version venv_include_system_site
+    local create_venv targets_repo tue_env_ros_distro tue_env_ros_version venv_include_system_site
 
     # Default values
     create_venv="true"
@@ -113,36 +113,36 @@ function main
         "20.04")
             if [[ "${ros_version}" -eq 2 ]]
             then
-                tue_ros_version=2
+                tue_env_ros_version=2
                 if [[ "${ros_distro}" == "foxy" ]]
                 then
-                    tue_ros_distro="foxy"
+                    tue_env_ros_distro="foxy"
                 elif [[ "${ros_distro}" == "galactic" ]]
                 then
-                    tue_ros_distro="galactic"
+                    tue_env_ros_distro="galactic"
                 elif [[ "${ros_distro}" == "rolling" ]]
                 then
-                    tue_ros_distro="rolling"
+                    tue_env_ros_distro="rolling"
                 elif [[ -n "${ros_distro}" ]]
                 then
                     echo "[tue-env](bootstrap) Error! ROS ${ros_distro} is unsupported with tue-env."
                     return 1
                 else
-                    tue_ros_distro="galactic"
-                    echo "[tue-env](bootstrap) Using default ROS_DISTRO '${tue_ros_distro}' with ROS_VERSION '${tue_ros_version}'"
+                    tue_env_ros_distro="galactic"
+                    echo "[tue-env](bootstrap) Using default ROS_DISTRO '${tue_env_ros_distro}' with ROS_VERSION '${tue_env_ros_version}'"
                 fi
             elif [[ "${ros_version}" -eq 1 ]]
             then
-                tue_ros_distro="noetic"
-                tue_ros_version=1
+                tue_env_ros_distro="noetic"
+                tue_env_ros_version=1
             elif [[ -n "${ros_version}" ]]
             then
                 echo "[tue-env](bootstrap) Error! ROS ${ros_version} is unsupported with tue-env."
                 return 1
             else
-                tue_ros_distro="noetic"
-                tue_ros_version=1
-                echo "[tue-env](bootstrap) Using default ROS_DISTRO '${tue_ros_distro}' with ROS_VERSION '${tue_ros_version}'"
+                tue_env_ros_distro="noetic"
+                tue_env_ros_version=1
+                echo "[tue-env](bootstrap) Using default ROS_DISTRO '${tue_env_ros_distro}' with ROS_VERSION '${tue_env_ros_version}'"
             fi
             ;;
         "22.04")
@@ -151,21 +151,21 @@ function main
                  echo "[tue-env](bootstrap) Error! Only ROS version 2 is supported with ubuntu 22.04 and newer"
                  return 1
             fi
-            tue_ros_version=2
+            tue_env_ros_version=2
 
             if [[ "${ros_distro}" == "humble" ]]
             then
-                tue_ros_distro="humble"
+                tue_env_ros_distro="humble"
             elif [[ "${ros_distro}" == "rolling" ]]
             then
-                tue_ros_distro="rolling"
+                tue_env_ros_distro="rolling"
             elif [[ -n "${ros_distro}" ]]
             then
                 echo "[tue-env](bootstrap) Error! ROS ${ros_distro} is unsupported with tue-env."
                 return 1
             else
-                tue_ros_distro="humble"
-                echo "[tue-env](bootstrap) Using default ROS_DISTRO '${tue_ros_distro}' with ROS_VERSION '${tue_ros_version}'"
+                tue_env_ros_distro="humble"
+                echo "[tue-env](bootstrap) Using default ROS_DISTRO '${tue_env_ros_distro}' with ROS_VERSION '${tue_env_ros_version}'"
             fi
             ;;
         "24.04")
@@ -174,21 +174,21 @@ function main
                  echo "[tue-env](bootstrap) Error! Only ROS version 2 is supported with ubuntu 22.04 and newer"
                  return 1
             fi
-            tue_ros_version=2
+            tue_env_ros_version=2
 
             if [[ "${ros_distro}" == "jazzy" ]]
             then
-                tue_ros_distro="jazzy"
+                tue_env_ros_distro="jazzy"
             elif [[ "${ros_distro}" == "rolling" ]]
             then
-                tue_ros_distro="rolling"
+                tue_env_ros_distro="rolling"
             elif [[ -n "${ros_distro}" ]]
             then
                 echo "[tue-env](bootstrap) Error! ROS ${ros_distro} is unsupported with tue-env."
                 return 1
             else
-                tue_ros_distro="jazzy"
-                echo "[tue-env](bootstrap) Using default ROS_DISTRO '${tue_ros_distro}' with ROS_VERSION '${tue_ros_version}'"
+                tue_env_ros_distro="jazzy"
+                echo "[tue-env](bootstrap) Using default ROS_DISTRO '${tue_env_ros_distro}' with ROS_VERSION '${tue_env_ros_version}'"
             fi
             ;;
         *)
@@ -203,8 +203,8 @@ function main
     { [[ -n "${targets_repo}" ]] && env_targets_url="${targets_repo}"; } || env_targets_url="https://github.com/tue-robotics/tue-env-targets.git"
     [[ -n "${create_virtualenv}" ]] || create_virtualenv="true"
     env_dir="${HOME}/.tue"
-    workspace="ros-${tue_ros_distro}"
-    workspace_dir="${HOME}/ros/${tue_ros_distro}"
+    workspace="ros-${tue_env_ros_distro}"
+    workspace_dir="${HOME}/ros/${tue_env_ros_distro}"
 
     # Move old environments and installer
     if [[ -d "${env_dir}" ]] && [[ -z "${CI}" ]]
@@ -269,8 +269,12 @@ function main
     "--targets-url=${env_targets_url}"
 
     # Configure environment
-    tue-env config "${workspace}" set "TUE_ROS_DISTRO" "${tue_ros_distro}"
-    tue-env config "${workspace}" set "TUE_ROS_VERSION" "${tue_ros_version}"
+    # TODO(anyone): Remove the use of TUE_XXX, when migration to TUE_ENV_XXX is complete
+    tue-env config "${workspace}" set "TUE_ROS_DISTRO" "${tue_env_ros_distro}"
+    tue-env config "${workspace}" set "TUE_ROS_VERSION" "${tue_env_ros_version}"
+
+    tue-env config "${workspace}" set "TUE_ENV_ROS_DISTRO" "${tue_env_ros_distro}"
+    tue-env config "${workspace}" set "TUE_ENV_ROS_VERSION" "${tue_env_ros_version}"
 
     # Add loading of TU/e tools (tue-env, tue-get, etc) to bashrc
     # shellcheck disable=SC2088
