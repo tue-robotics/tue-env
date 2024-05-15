@@ -73,10 +73,10 @@ else:
 hostkeys: Dict[Tuple[str, str], Dict[str, Union[Set[str], str]]] = defaultdict(key_dict_factory)
 for kfile in args.files:
     with open(kfile) as kf:
-        leading_comment_line = None
+        leading_comment_lines = set()
         for line in kf:
             if line[0] == "#":
-                leading_comment_line = line
+                leading_comment_lines.add(line)
                 continue
             line_splitted: List[str] = line.rstrip().split(" ")
             marker: Optional[str] = None
@@ -92,9 +92,9 @@ for kfile in args.files:
                 comment = " ".join(line_splitted)
                 hostkeys[unique_key]["comments"].add(comment)
             hostkeys[unique_key]["hosts"].update(hosts)
-            if leading_comment_line is not None:
-                hostkeys[unique_key]["leading_comment_lines"].add(leading_comment_line)
-                leading_comment_line = None
+            if leading_comment_lines:
+                hostkeys[unique_key]["leading_comment_lines"].update(leading_comment_lines)
+                leading_comment_lines = set()
             if marker is not None:
                 if hostkeys[unique_key]["marker"] is not None:
                     raise ValueError(f"Multiple markers for same key: {truncate(str(unique_key), 50)}")
