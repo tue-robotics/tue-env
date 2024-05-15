@@ -31,7 +31,7 @@ from typing import Dict, List, Optional, Set, Tuple, Union
 
 
 def key_dict_factory() -> Dict[str, Union[Set[str], Optional[str]]]:
-    return {"hosts": set(), "comments": set(), "leading_comment_lines": set(), "marker": None}
+    return {"comments": set(), "leading_comment_lines": set(), "marker": None}
 
 
 def truncate(s: str, w: int) -> str:
@@ -70,7 +70,7 @@ else:
 
     output = stdout
 
-hostkeys: Dict[Tuple[str, str], Dict[str, Union[Set[str], str]]] = defaultdict(key_dict_factory)
+hostkeys: Dict[Tuple[str, str, str], Dict[str, Union[Set[str], str]]] = defaultdict(key_dict_factory)
 for kfile in args.files:
     with open(kfile) as kf:
         leading_comment_lines = set()
@@ -85,30 +85,36 @@ for kfile in args.files:
             hosts: List[str] = line_splitted.pop(0).split(",")
             key_type: str = line_splitted.pop(0)
             key = line_splitted.pop(0)
-            unique_key = (key_type, key)
+            comment: Optional[str] = None
             if line_splitted:
                 if not line_splitted[0].startswith("#"):
                     raise ValueError(f"Unknown remainder in line: {line}")
                 comment = " ".join(line_splitted)
-                hostkeys[unique_key]["comments"].add(comment)
-            hostkeys[unique_key]["hosts"].update(hosts)
-            if leading_comment_lines:
-                hostkeys[unique_key]["leading_comment_lines"].update(leading_comment_lines)
-                leading_comment_lines = set()
-            if marker is not None:
-                if hostkeys[unique_key]["marker"] is not None:
-                    raise ValueError(f"Multiple markers for same key: {truncate(str(unique_key), 50)}")
-                hostkeys[unique_key]["marker"] = marker
+            for host in hosts:
+                unique_key = (host, key_type, key)
+                entry = hostkeys[unique_key]
+                if comment is not None:
+                    entry["comments"].add(comment)
+                if leading_comment_lines:
+                    entry["leading_comment_lines"].update(leading_comment_lines)
+                if marker is not None:
+                    if hostkeys[unique_key]["marker"] is not None:
+                        raise ValueError(
+                            f"Multiple markers for same key: ({truncate(unique_key[0], 25)}, {unique_key[1]}, {truncate(unique_key[2], 25)})"
+                        )
+                    entry["marker"] = marker
+
+            leading_comment_lines = set()
 
 # And now output it all
-for (key_type, key), v in hostkeys.items():
+for (host, key_type, key), v in hostkeys.items():
     if v["leading_comment_lines"]:
         for line in v["leading_comment_lines"]:
             output.write(line)
     line_items = []
     if v["marker"] is not None:
         line_items.append(v["marker"])
-    line_items.append(",".join(sorted(v["hosts"])))
+    line_items.append(host)
     line_items.append(key_type)
     line_items.append(key)
     if v["comments"]:
