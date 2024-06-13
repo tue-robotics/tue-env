@@ -1,6 +1,7 @@
 #! /usr/bin/env python3
 
-from typing import List, Mapping, Optional
+from typing import Any, List, Mapping, Optional
+from functools import partial
 from os import environ
 import sys
 import yaml
@@ -260,6 +261,144 @@ def installyaml_parser(path: str, now: bool = False) -> Mapping:
             commands_append(command)
 
     commands = " ".join(commands)
+
+    return {"system_packages": system_packages, "commands": commands}
+
+
+def installyaml_parser2(installer: Any, path: str, now: bool = False) -> Mapping:
+    with open(path) as f:
+        try:
+            install_items = yaml.load(f, yaml.CSafeLoader)
+        except AttributeError:
+            install_items = yaml.load(f, yaml.SafeLoader)
+        except (yaml.parser.ParserError, yaml.scanner.ScannerError) as e:
+            raise ValueError(f"Invalid yaml syntax: {e}")
+
+    if not isinstance(install_items, list):
+        raise ValueError("Root of install.yaml file should be a YAML sequence")
+
+    system_packages = []
+
+    commands = []
+
+    def get_distro_item(item: Mapping, key: str, release_version: str, release_type: str) -> Optional[str]:
+        if key in item:
+            value = item[key]
+            if value is None:
+                raise ValueError(f"'{key}' is defined, but has no value")
+        elif len(item) < 3 or "default" not in item:
+            raise ValueError(f"At least one distro and 'default' should be specified or none in install.yaml")
+        else:
+            for version in [release_version, "default"]:
+                if version in item:
+                    value = item[version][key]
+                    break
+
+        return value
+
+    # Combine now calls
+    now_cache = {
+        "system-now": [],
+        "pip-now": [],
+        "pip3-now": [],
+        "ppa-now": [],
+        "snap-now": [],
+        "gem-now": [],
+    }
+
+    for install_item in install_items:
+        command = None
+
+        try:
+            install_type = install_item["type"]  # type: str
+
+            if install_type == "empty":
+                return {"system_packages": system_packages, "commands": commands}
+
+            elif install_type == "ros":
+                try:
+                    source = get_distro_item(install_item, "source", ros_release, "ROS")
+                except ValueError as e:
+                    raise ValueError(f"[{install_type}]: {e.args[0]}")
+
+                # Both release and default are allowed to be None
+                if source is None:
+                    continue
+
+                source_type = source["type"]
+                if source_type == "git":
+                    command = partial(getattr(installer, "tue_install_ros", "git", catkin_git(source)))
+                elif source_type == "system":
+                    system_packages.append(f"ros-{ros_release}-{source['name']}")
+                    command = partial(getattr(installer, "tue_install_ros", "system", catkin_git(source)))
+                else:
+                    raise ValueError(f"Unknown ROS install type: '{source_type}'")
+
+            # Non ros targets that are packaged to be built with catkin
+            elif install_type == "catkin":
+                source = install_item["source"]
+
+                if not source["type"] == "git":
+                    raise ValueError(f"Unknown catkin install type: '{source['type']}'")
+                command = partial(getattr(installer, "tue_install_ros", "git", catkin_git(source)))
+
+            elif install_type == "git":
+                command = partial(getattr(installer, "tue_install_git", "git", type_git(install_item)))
+
+            elif install_type in [
+                "target",
+                "system",
+                "pip",
+                "pip3",
+                "ppa",
+                "snap",
+                "gem",
+                "dpkg",
+                "target-now",
+                "system-now",
+                "pip-now",
+                "pip3-now",
+                "ppa-now",
+                "snap-now",
+                "gem-now",
+            ]:
+                install_type = install_type.replace("-", "_")
+                if now and "now" not in install_type:
+                    install_type += "_now"
+
+                try:
+                    pkg_name = get_distro_item(install_item, "name", ubuntu_release, "Ubuntu")
+                except ValueError as e:
+                    raise ValueError(f"[{install_type}]: {e.args[0]}")
+
+                # Both release and default are allowed to be None
+                if pkg_name is None:
+                    continue
+
+                if "system" in install_type:
+                    system_packages.append(pkg_name)
+
+                # Cache install types which accept multiple pkgs at once
+                if install_type in now_cache:
+                    now_cache[install_type].append(pkg_name)
+                    continue
+                command = partial(getattr(installer, f"tue_install_{install_type}", pkg_name))
+
+            else:
+                raise ValueError(f"Unknown install type: '{install_type}'")
+
+        except KeyError as e:
+            raise KeyError(f"Invalid install.yaml file: Key '{e}' could not be found.")
+
+        if not command:
+            raise ValueError("Invalid install.yaml file")
+
+        commands.append(command)
+
+    for install_type, pkg_list in now_cache.items():
+        if pkg_list:
+            command = partial(getattr(installer, f"tue_install_{install_type}", pkg_list))
+            commands.append(command)
 
     return {"system_packages": system_packages, "commands": commands}
 
