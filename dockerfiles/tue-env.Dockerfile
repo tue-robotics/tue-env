@@ -66,6 +66,7 @@ WORKDIR /home/"$USER"
 RUN mkdir -p -m 0700 ~/.ssh
 ADD ./known_hosts ./.ssh/known_hosts
 RUN sudo chown $USER_ID:$USER_ID ~/.ssh/known_hosts && sudo chmod 644 ~/.ssh/known_hosts
+RUN cp ~/.ssh/known_hosts ~/.ssh/known_hosts.bak
 
 # Setup Git HTTPS token authentication
 RUN { [[ -n "$OAUTH2_TOKEN" ]] && git config --global credential.helper '!f() { printf "%s\n" "username=oauth2" "password=$OAUTH2_TOKEN"; };f'; } || exit 0
@@ -113,6 +114,10 @@ RUN --mount=type=ssh,uid=$USER_ID --mount=type=bind,source=installer/bootstrap.b
     # Remove apt cache
     sudo rm -rf /var/lib/apt/lists/*
 
+# Restore known_hosts to one provided by the user
+RUN mv -f ~/.ssh/known_hosts.bak ~/.ssh/known_hosts
+
+# Remove Git HTTPS token authentication
 RUN { [[ -n "$OAUTH2_TOKEN" ]] && git config --global --unset credential.helper; } || exit 0
 
 # ----------------------------------------------------------------

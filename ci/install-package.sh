@@ -134,7 +134,7 @@ then
     echo -e "\e[35;1mSSH_KEY      = ${SSH_KEY_FINGERPRINT}\e[0m"
 
     DOCKER_SSH_AUTH_SOCK="/tmp/ssh_auth_sock"
-    DOCKER_MOUNT_KNOWN_HOSTS_ARGS=("-e" "SSH_AUTH_SOCK=${DOCKER_SSH_AUTH_SOCK}" "--mount" "type=bind,source=$SHARED_DIR/.ssh,target=/tmp/.ssh")
+    DOCKER_MOUNT_KNOWN_HOSTS_ARGS=("-e" "SSH_AUTH_SOCK=${DOCKER_SSH_AUTH_SOCK}" "--mount" "type=bind,source=${SHARED_DIR}/.ssh,target=/tmp/.ssh")
 
     # Used in the print statement to reproduce CI build locally
     ADDITIONAL_ARGS_LOCAL_INSTALL+=("--shared=/tmp/shared/${PACKAGE}" "--ssh")
@@ -191,6 +191,7 @@ fi
 # Docker container can show a header on start-up. We don't want to capture it
 docker run --detach --tty --name tue-env "${IMAGE_NAME}:${BRANCH_TAG}"
 DOCKER_HOME=$(docker exec tue-env bash -c 'echo "${HOME}"' | tr -d '\r')
+DOCKER_USER=$(docker exec tue-env bash -c 'echo "${USER}"' | tr -d '\r')
 docker stop tue-env  &> /dev/null || true
 docker rm tue-env &> /dev/null || true
 
@@ -212,13 +213,32 @@ docker exec -t tue-env bash -c 'sudo chown "${USER}":"${USER}" -R ~/.cache/pip'
 
 if [ "$USE_SSH" == "true" ]
 then
-    docker exec -t tue-env bash -c 'sudo chown "${USER}":"${USER}" -R /tmp/.ssh'
+    echo -e "\e[35;1msudo chown -R ${DOCKER_USER}:${DOCKER_USER} /tmp/.ssh\e[0m"
+    docker exec -t tue-env bash -c 'sudo chown -R "${USER}":"${USER}" /tmp/.ssh'
 
-    docker exec -t tue-env bash -c "[[ -f /tmp/.ssh/known_hosts ]] && mv ~/.ssh/known_hosts ~/.ssh/known_hosts_container"
-    docker exec -t tue-env bash -c 'sudo cp -r /tmp/.ssh/* ~/.ssh/ && sudo chown -R "${USER}":"${USER}" ~/.ssh && ls -aln ~/.ssh'
+    echo -e "\e[35;1mmv ~/.ssh/known_hosts ~/.ssh/known_hosts_container\e[0m"
+    docker exec -t tue-env bash -c "[[ ! -f /tmp/.ssh/known_hosts ]] || mv ~/.ssh/known_hosts ~/.ssh/known_hosts_container"
 
-    docker exec -t tue-env bash -c "[[ -f ~/.ssh/known_hosts && -f ~/.ssh/known_hosts_container ]] && ~/.tue/ci/ssh-merge-known_hosts.py ~/.ssh/known_hosts_container ~/.ssh/known_hosts --output ~/.ssh/known_hosts"
+    echo -e "\e[35;1msudo cp -r /tmp/.ssh/* ~/.ssh/\e[0m"
+    docker exec -t tue-env bash -c 'sudo cp -r /tmp/.ssh/* ~/.ssh/'
+
+    echo -e "\e[35;1msudo chown -R ${DOCKER_USER}:${DOCKER_USER} ~/.ssh\e[0m"
+    docker exec -t tue-env bash -c 'sudo chown -R "${USER}":"${USER}" ~/.ssh'
+
+    echo -e "\e[35;1mls -alF ~/.ssh\e[0m"
+    docker exec -t tue-env bash -c "ls -alF ~/.ssh"
+
+    echo -e "\e[35;1m~/.tue/ci/ssh-merge-known_hosts.py ~/.ssh/known_hosts_container ~/.ssh/known_hosts --output ~/.ssh/known_hosts\e[0m"
+    docker exec -t tue-env bash -c "[[ ! -f ~/.ssh/known_hosts || ! -f ~/.ssh/known_hosts_container ]] || ~/.tue/ci/ssh-merge-known_hosts.py ~/.ssh/known_hosts_container ~/.ssh/known_hosts --output ~/.ssh/known_hosts"
+
+    echo -e "\e[35;1meval \"\$(ssh-agent -s)\" && grep -slR \"PRIVATE\" ~/.ssh/ | xargs ssh-add\e[0m"
     docker exec -e DOCKER_SSH_AUTH_SOCK="$DOCKER_SSH_AUTH_SOCK" -t tue-env bash -c 'eval "$(ssh-agent -s)" && ln -sf "$SSH_AUTH_SOCK" "$DOCKER_SSH_AUTH_SOCK" && grep -slR "PRIVATE" ~/.ssh/ | xargs ssh-add'
+
+    echo -e "\e[35;1mecho -e 'Host *\n  StrictHostKeyChecking yes' >> ~/.ssh/config\e[0m"
+    docker exec -t tue-env bash -c "echo -e 'Host *\n  StrictHostKeyChecking yes' >> ~/.ssh/config"
+
+    echo -e "\e[35;1mActive SSH keys:\e[0m"
+    docker exec -t tue-env bash -c "ssh-add -l 2>/dev/null" | awk '{print $2}'
 fi
 
 # Use docker environment variables in all exec commands instead of script variables
