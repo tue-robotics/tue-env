@@ -1,6 +1,29 @@
 #! /usr/bin/env bash
 
 # ----------------------------------------------------------------------------------------------------
+#                                        TUE-ENV IMPLEMENTATION
+# ----------------------------------------------------------------------------------------------------
+
+function _tue-env-deactivate-current-env
+{
+    # Deactivate the old virtualenv if it exists
+    if [[ -n ${VIRTUAL_ENV} ]]
+    then
+        echo "[tue-env](deactivate) deactivating old virtualenv"
+        deactivate || { echo "[tue-env](deactivate) Failed to deactivate the old virtualenv"; return 1; }
+    fi
+
+    echo "[tue-env](deactivate) Unsetting all TUE_ENV* of the old environment: '${TUE_ENV}'"
+    for var in ${!TUE_ENV*}
+    do
+        unset "${var}"
+    done
+
+    return 0
+}
+
+
+# ----------------------------------------------------------------------------------------------------
 #                                              TUE-ENV
 # ----------------------------------------------------------------------------------------------------
 
@@ -190,6 +213,13 @@ options:
 
         [[ -f "${TUE_DIR}"/user/envs/"${tue_env}" ]] || { echo "[tue-env](rm) No such environment: '${tue_env}'"; return 1; }
 
+        if [[ "${tue_env}" == "${TUE_ENV}" ]]
+        then
+            echo "[tue-env](rm) The environment '${tue_env}' is currently active. Deactivating it first."
+            tue-env unset-default "${tue_env}"
+            _tue-env-deactivate-current-env || { echo "[tue-env](rm) Failed to deactivate the current environment, don't use this terminal anymore, open a new terminal"; return 1; }
+        fi
+
         local tue_env_dir
         tue_env_dir=$(cat "${TUE_DIR}"/user/envs/"${tue_env}")
         rm "${TUE_DIR}"/user/envs/"${tue_env}"
@@ -265,14 +295,7 @@ Environment directory '${tue_env_dir}' didn't exist (anymore)"""
 
         [[ "${persistent}" == "true" ]] && tue-env set-default "${tue_env}"
 
-        # Deactivate the old virtualenv if it exists
-        [[ -n ${VIRTUAL_ENV} ]] && echo "[tue-env](switch) deactivating old virtualenv" && deactivate
-
-        echo "[tue-env](switch) Unsetting all TUE_ENV* of the old environment: '${TUE_ENV}'"
-        for var in ${!TUE_ENV*}
-        do
-            unset "${var}"
-        done
+        _tue-env-deactivate-current-env || { echo "[tue-env](switch) Failed to deactivate the current environment, don't use this terminal anymore, open a new terminal"; return 1; }
 
         # Successful, so we can set the environment variables
         TUE_ENV=${tue_env}
