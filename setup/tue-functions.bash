@@ -1408,7 +1408,7 @@ source "$TUE_DIR"/setup/tue-data.bash
 #                                             TUE-ROBOCUP
 # ----------------------------------------------------------------------------------------------------
 
-export TUE_ROBOCUP_BRANCH="rwc2023"
+export TUE_ROBOCUP_BRANCH="rwc2024"
 
 function _tue-repos-do
 {
