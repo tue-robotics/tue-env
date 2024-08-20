@@ -59,6 +59,39 @@ def type_git(install_item: Mapping, allowed_keys: Optional[List[str]] = None) ->
     return " ".join(command)
 
 
+def type_apt_key_source(install_item: Mapping) -> str:
+    dist_exts = install_item.get("distribution-extensions")
+    key_file = install_item.get("key-file")
+    key_fingerprint = install_item.get("key-fingerprint")
+    key_url = install_item.get("key-url")
+    repo_components = install_item.get("repo-components", [])  # Optional field
+    repo_url = install_item.get("repo-url")
+    source_file = install_item.get("source-file")
+
+    args: List[str] = []
+
+    if not isinstance(dist_exts, list):
+        raise ValueError("distribution-extensions should be a list")
+    if len(dist_exts) < 1:
+        raise ValueError("At least one distribution extension should be specified")
+    for dist_ext in dist_exts:
+        args.append(f"--distribution-extension={dist_ext}")
+
+    args.append(f"--key-file={key_file}")
+    args.append(f"--key-fingerprint={key_fingerprint}")
+    args.append(f"--key-url={key_url}")
+
+    if not isinstance(repo_components, list):
+        raise ValueError("repo-components should be a list")
+    for repo_component in repo_components:
+        args.append(f"--repo-component={repo_component}")
+
+    args.append(f"--repo-url={repo_url}")
+    args.append(f"--source-file={source_file}")
+
+    return " ".join(args)
+
+
 def catkin_git(source: Mapping) -> str:
     """
     Function to generate installation command for catkin git targets from the extracted yaml
@@ -243,6 +276,12 @@ def install_yaml_parser(path: str, now: bool = False) -> Mapping[str, str]:
                     continue
 
                 command = f"tue-install-{install_type} {pkg_name}"
+
+            elif install_type in ["apt-key-source", "apt-key-source-now"]:
+                if now and "now" not in install_type:
+                    install_type += "-now"
+
+                command = f"tue-install-{install_type} {type_apt_key_source(install_item)}"
 
             else:
                 raise ValueError(f"Unknown install type: '{install_type}'")
