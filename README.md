@@ -349,6 +349,7 @@ Add an APT source including the key which it is signed with.
 The use of the following variables is prohibited in `install.bash`:
 
 - `TUE_APT_GET_UPDATED_FILE`
+- `TUE_ENV*`
 - `TUE_INSTALL_*`
 - `install_file`
 - `now`
