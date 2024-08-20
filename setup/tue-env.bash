@@ -1,6 +1,29 @@
 #! /usr/bin/env bash
 
 # ----------------------------------------------------------------------------------------------------
+#                                        TUE-ENV IMPLEMENTATION
+# ----------------------------------------------------------------------------------------------------
+
+function _tue-env-deactivate-current-env
+{
+    # Deactivate the old virtualenv if it exists
+    if [[ -n ${VIRTUAL_ENV} ]]
+    then
+        echo "[tue-env](deactivate) deactivating old virtualenv"
+        deactivate || { echo "[tue-env](deactivate) Failed to deactivate the old virtualenv"; return 1; }
+    fi
+
+    echo "[tue-env](deactivate) Unsetting all TUE_ENV* of the old environment: '${TUE_ENV}'"
+    for var in ${!TUE_ENV*}
+    do
+        unset "${var}"
+    done
+
+    return 0
+}
+
+
+# ----------------------------------------------------------------------------------------------------
 #                                              TUE-ENV
 # ----------------------------------------------------------------------------------------------------
 
@@ -190,6 +213,13 @@ options:
 
         [[ -f "${TUE_DIR}"/user/envs/"${tue_env}" ]] || { echo "[tue-env](rm) No such environment: '${tue_env}'"; return 1; }
 
+        if [[ "${tue_env}" == "${TUE_ENV}" ]]
+        then
+            echo "[tue-env](rm) The environment '${tue_env}' is currently active. Deactivating it first."
+            tue-env unset-default "${tue_env}"
+            _tue-env-deactivate-current-env || { echo "[tue-env](rm) Failed to deactivate the current environment, don't use this terminal anymore, open a new terminal"; return 1; }
+        fi
+
         local tue_env_dir
         tue_env_dir=$(cat "${TUE_DIR}"/user/envs/"${tue_env}")
         rm "${TUE_DIR}"/user/envs/"${tue_env}"
@@ -218,7 +248,8 @@ Environment directory '${tue_env_dir}' didn't exist (anymore)"""
 
     elif [[ ${cmd} == "switch" ]]
     then
-        local tue_env
+        local persistent tue_env
+        persistent="false"
         if [[ -z "$1" ]]
         then
             show_help="true"
@@ -230,6 +261,8 @@ Environment directory '${tue_env_dir}' didn't exist (anymore)"""
                         show_help="true"
                         break
                         ;;
+                    --persistent )
+                        persistent="true" ;;
                     --*)
                         echo "[tue-env](switch) Unknown option $i"
                         show_help="true"
@@ -260,7 +293,9 @@ Environment directory '${tue_env_dir}' didn't exist (anymore)"""
         tue_env_dir=$(cat "${TUE_DIR}"/user/envs/"${tue_env}")
         [[ -d "${tue_env_dir}" ]] || { echo "[tue-env](switch) Environment directory '${tue_env_dir}' (environment '${tue_env}') does not exist"; return 1; }
 
-        [[ -n ${VIRTUAL_ENV} ]] && echo "[tue-env](switch) deactivating old virtualenv" && deactivate
+        [[ "${persistent}" == "true" ]] && tue-env set-default "${tue_env}"
+
+        _tue-env-deactivate-current-env || { echo "[tue-env](switch) Failed to deactivate the current environment, don't use this terminal anymore, open a new terminal"; return 1; }
 
         # Successful, so we can set the environment variables
         TUE_ENV=${tue_env}
@@ -268,6 +303,7 @@ Environment directory '${tue_env_dir}' didn't exist (anymore)"""
         TUE_ENV_DIR=${tue_env_dir}
         export TUE_ENV_DIR
 
+        echo "[tue-env](switch) Loading the new '${TUE_ENV}' environment"
         # shellcheck disable=SC1091
         source "$TUE_DIR"/setup.bash
 
@@ -726,6 +762,9 @@ function _tue-env
             elif [[ ${cmd} == "remove" || ${cmd} == "rm" || ${cmd} == "remove-venv" || ${cmd} == "rm-venv" ]] && [[ "${COMP_CWORD}" -eq 3 ]]
             then
                 mapfile -t COMPREPLY < <(compgen -W "$(echo -e "'--purge '\n${help_options}")" -- "${cur}")
+            elif [[ ${cmd} == "switch" ]] && [[ "${COMP_CWORD}" -eq 3 ]]
+            then
+                mapfile -t COMPREPLY < <(compgen -W "$(echo -e "'--persistent '\n${help_options}")" -- "${cur}")
             elif [[ ${cmd} == "init-venv" ]] && [[ "${COMP_CWORD}" -eq 3 ]]
             then
                 mapfile -t COMPREPLY < <(compgen -W "$(echo -e "'--include-system-site-packages='\n${help_options}")" -- "${cur}")

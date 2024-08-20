@@ -1585,20 +1585,30 @@ function tue-install-ros
 
     tue-install-debug "Installing ros package: type: $install_type, source: $src"
 
-    [ -n "$TUE_ROS_DISTRO" ] || tue-install-error "Environment variable 'TUE_ROS_DISTRO' is not set."
-    [ -n "$TUE_ROS_VERSION" ] || tue-install-error "Environment variable 'TUE_ROS_VERSION' is not set."
+    if [[ ! -v TUE_ENV_ROS_DISTRO && -v TUE_ROS_DISTRO ]]
+    then
+        TUE_ENV_ROS_DISTRO=${TUE_ROS_DISTRO}
+        tue-install-warning "Change the config of your environment to use 'TUE_ENV_ROS_DISTRO' instead of 'TUE_ROS_DISTRO'"
+    fi
+    if [[ ! -v TUE_ENV_ROS_VERSION && -v TUE_ROS_VERSION ]]
+    then
+        TUE_ENV_ROS_VERSION=${TUE_ROS_VERSION}
+        tue-install-warning "Change the config of your environment to use 'TUE_ENV_ROS_VERSION' instead of 'TUE_ROS_VERSION'"
+    fi
+    [ -n "${TUE_ENV_ROS_DISTRO}" ] || tue-install-error "Environment variable 'TUE_ENV_ROS_DISTRO' is not set."
+    [ -n "${TUE_ENV_ROS_VERSION}" ] || tue-install-error "Environment variable 'TUE_ENV_ROS_VERSION' is not set."
 
     local ros_pkg_name
     ros_pkg_name=${TUE_INSTALL_CURRENT_TARGET#ros-}
     [[ ${ros_pkg_name} == *-* ]] && tue-install-error "A ROS package cannot contain dashes (${ros_pkg_name}), make sure the package is named '${ros_pkg_name//-/_}' and rename the target to 'ros-${ros_pkg_name//-/_}'"
 
     # First of all, make sure ROS itself is installed
-    tue-install-target ros"${TUE_ROS_VERSION}" || tue-install-error "Failed to install target 'ros${TUE_ROS_VERSION}'"
+    tue-install-target ros"${TUE_ENV_ROS_VERSION}" || tue-install-error "Failed to install target 'ros${TUE_ENV_ROS_VERSION}'"
 
     if [ "$install_type" == "system" ]
     then
-        tue-install-debug "tue-install-system ros-$TUE_ROS_DISTRO-$src"
-        tue-install-system ros-"$TUE_ROS_DISTRO"-"$src"
+        tue-install-debug "tue-install-system ros-${TUE_ENV_ROS_DISTRO}-${src}"
+        tue-install-system ros-"${TUE_ENV_ROS_DISTRO}"-"${src}"
         return 0
     fi
 
@@ -1679,7 +1689,7 @@ function tue-install-ros
             tue-install-error "'$ros_pkg_dir' should not exist or be a symlink, any other option is incorrect"
         fi
 
-        if [[ "$TUE_INSTALL_SKIP_ROS_DEPS" != "all" ]]
+        if [[ "${TUE_ENV_INSTALL_SKIP_ROS_DEPS}" != "all" ]]
         then
             local pkg_xml="$ros_pkg_dir"/package.xml
             if [ -f "$pkg_xml" ]
@@ -1763,7 +1773,8 @@ function tue-install-ros-remove-source
         tue-install-error "Repo directory path cannot be empty"
     fi
 
-    [[ -n "${TUE_ROS_VERSION}" ]] || tue-install-error "Environment variable 'TUE_ROS_VERSION' is not set."
+    [[ -v TUE_ENV_ROS_VERSION || -v TUE_ROS_VERSION ]] || { TUE_ENV_ROS_VERSION=${TUE_ROS_VERSION}; tue-install-warning "Change the config of your environment to use 'TUE_ENV_ROS_VERSION' instead of 'TUE_ROS_VERSION'"; }
+    [[ -n "${TUE_ENV_ROS_VERSION}" ]] || tue-install-error "Environment variable 'TUE_ENV_ROS_VERSION' is not set."
 
     local ros_pkg_name
     ros_pkg_name=${TUE_INSTALL_CURRENT_TARGET#ros-}
@@ -1777,15 +1788,15 @@ function tue-install-ros-remove-source
         # Clean the package from the workspace in colcon
         if [[ "${TUE_ENV_ROS_VERSION}" != "1" ]]
         then
-            tue-install-pipe /usr/bin/python3 -m colcon clean packages --log-base "${TUE_WS_DIR}"/log --base-paths "${TUE_WS_DIR}"/src --build-base "${TUE_WS_DIR}"/build --install-base "${TUE_WS_DIR}"/install --packages-select "${ros_pkg_name}" -y
+            tue-install-pipe /usr/bin/python3 -m colcon clean packages --log-base "${TUE_ENV_WS_DIR}"/log --base-paths "${TUE_ENV_WS_DIR}"/src --build-base "${TUE_ENV_WS_DIR}"/build --install-base "${TUE_ENV_WS_DIR}"/install --packages-select "${ros_pkg_name}" -y
         fi
 
         tue-install-pipe rm "${ros_pkg_dir}"
 
         # Clean the package from the workspace in catkin
-        if [[ "${TUE_ROS_VERSION}" == "1" ]]
+        if [[ "${TUE_ENV_ROS_VERSION}" == "1" ]]
         then
-            tue-install-pipe catkin clean --workspace "${TUE_WS_DIR}" --orphans
+            tue-install-pipe catkin clean --workspace "${TUE_ENV_WS_DIR}" --orphans
         fi
     else
         tue-install-debug "Source package was already removed"
@@ -1793,7 +1804,7 @@ function tue-install-ros-remove-source
 
     if [[ -n ${repos_dir} ]] && [[ -d ${repos_dir} ]]
     then
-        links=$(find "${TUE_WS_DIR}"/src -lname "${repos_dir}*")
+        links=$(find "${TUE_ENV_WS_DIR}"/src -lname "${repos_dir}*")
         if [[ -n ${repos_dir} ]] && [[ -z ${links} ]]
         then
             tue-install-debug "No symlinks left to the repo or a sub-folder of it, deleting it"
@@ -1861,19 +1872,19 @@ do
         --debug)
             DEBUG="true" ;;
         --no-ros-deps)
-            export TUE_INSTALL_SKIP_ROS_DEPS="all" ;;
+            export TUE_ENV_INSTALL_SKIP_ROS_DEPS="all" ;;
         --doc-depend)
-            [[ "$TUE_INSTALL_SKIP_ROS_DEPS" == "all" ]] && export TUE_INSTALL_SKIP_ROS_DEPS="normal"
-            export TUE_INSTALL_DOC_DEPEND="true"
+            [[ "${TUE_ENV_INSTALL_SKIP_ROS_DEPS}" == "all" ]] && export TUE_ENV_INSTALL_SKIP_ROS_DEPS="normal"
+            export TUE_ENV_INSTALL_DOC_DEPEND="true"
             ;;
         --no-doc-depend)
-            export TUE_INSTALL_DOC_DEPEND="false" ;;
+            export TUE_ENV_INSTALL_DOC_DEPEND="false" ;;
         --test-depend)
-            [[ "$TUE_INSTALL_SKIP_ROS_DEPS" == "all" ]] && export TUE_INSTALL_SKIP_ROS_DEPS="normal"
-            export TUE_INSTALL_TEST_DEPEND="true"
+            [[ "${TUE_ENV_INSTALL_SKIP_ROS_DEPS}" == "all" ]] && export TUE_ENV_INSTALL_SKIP_ROS_DEPS="normal"
+            export TUE_ENV_INSTALL_TEST_DEPEND="true"
             ;;
         --no-test-depend)
-            export TUE_INSTALL_TEST_DEPEND="false" ;;
+            export TUE_ENV_INSTALL_TEST_DEPEND="false" ;;
         --branch*)
             echo "Usage of --branch is deprecated, switch to --try-branch" ;;&
         --try-branch* | --branch*)
@@ -1899,7 +1910,7 @@ _function_test _git_https_or_ssh _git_url_to_repos_dir
 # Set the directory/file variables
 TUE_INSTALL_TARGETS_DIR=${TUE_ENV_TARGETS_DIR}
 TUE_APT_GET_UPDATED_FILE=/tmp/tue_get_apt_get_updated
-ROS_PACKAGE_INSTALL_DIR=${TUE_SYSTEM_DIR}/src
+ROS_PACKAGE_INSTALL_DIR=${TUE_ENV_WS_DIR}/src
 TUE_INSTALL_SCRIPTS_DIR=${TUE_DIR}/installer
 
 TUE_INSTALL_GENERAL_STATE_DIR=/tmp/tue-installer

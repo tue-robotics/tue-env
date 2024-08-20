@@ -9,7 +9,7 @@ from parse_install_yaml import installyaml_parser
 
 
 TUE_ENV_TARGETS_DIR = os.environ["TUE_ENV_TARGETS_DIR"]
-TUE_ROS_DISTRO = os.environ["TUE_ROS_DISTRO"]
+TUE_ENV_ROS_DISTRO = os.environ["TUE_ENV_ROS_DISTRO"]
 ARCHITECTURES = {"x86_64": "amd64", "aarch64": "arm64"}
 CONTROL_FILE_TEMPLATE = """
 Package: {package}
@@ -55,7 +55,7 @@ def generate_control_file(path: str) -> Mapping:
     package = list(parsed["name"])[0]
     package = package.replace("_", "-")
     if "ament_cmake" in build_type:
-        package = f"ros-{TUE_ROS_DISTRO}-{package}"
+        package = f"ros-{TUE_ENV_ROS_DISTRO}-{package}"
 
     control_file = CONTROL_FILE_TEMPLATE.format(
         package=package,
