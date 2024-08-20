@@ -1638,7 +1638,7 @@ function tue-install-ros-remove-source
         if [[ -n ${repos_dir} ]] && [[ -z ${links} ]]
         then
             tue-install-debug "No symlinks left to the repo or a sub-folder of it, deleting it"
-            tue-install-pipe rm -rf ${repos_dir}
+            tue-install-pipe rm -rf "${repos_dir}"
         else
             tue-install-debug "Keeping the repo as there still exist symlinks to it in the workspace"
         fi
@@ -1649,7 +1649,7 @@ function tue-install-ros-remove-source
     # Warn about the eol of removing the source
     local today_date eol_date
     today_date=$(date +%s)
-    eol_date=$(date -d ${eol} +%s)
+    eol_date=$(date -d "${eol}" +%s)
 
     if [[ ${today_date} -ge ${eol_date} ]]
     then

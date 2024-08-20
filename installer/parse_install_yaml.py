@@ -186,8 +186,7 @@ def install_yaml_parser(path: str, now: bool = False) -> Mapping[str, str]:
                     else:
                         raise ValueError(f"Unknown ROS install type: '{source_type}'")
                 elif install_type == "ros-remove-source":
-                    command_list = ["tue-install-ros-remove-source"]
-                    command_list.append(type_git(source, ["eol"]))
+                    command_list = ["tue-install-ros-remove-source", type_git(source, ["eol"])]
 
                     if "eol" not in source:
                         raise KeyError("EOL is a mandatory key for install type 'ros-remove-source'")
