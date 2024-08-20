@@ -7,24 +7,10 @@ function _function_test
     # shellcheck disable=SC2048
     for func in $*
     do
-        declare -f "$func" > /dev/null || { echo -e "\e[38;1mFunction '$func' missing, resource the setup\e[0m" && function_missing="true"; }
+        declare -f "${func}" > /dev/null || { tue-install-tee "\e[38;1mFunction '${func}' missing, resource the setup\e[0m" && function_missing="true"; }
     done
-    [[ "$function_missing" == "true" ]] && exit 1
+    [[ "${function_missing}" == "true" ]] && exit 1
 }
-
-_function_test _git_https_or_ssh _git_url_to_repos_dir
-
-TUE_INSTALL_DEPENDENCIES_DIR=$TUE_ENV_DIR/.env/dependencies
-TUE_INSTALL_DEPENDENCIES_ON_DIR=$TUE_ENV_DIR/.env/dependencies-on
-TUE_INSTALL_INSTALLED_DIR=$TUE_ENV_DIR/.env/installed
-
-mkdir -p "$TUE_INSTALL_DEPENDENCIES_DIR"
-mkdir -p "$TUE_INSTALL_DEPENDENCIES_ON_DIR"
-mkdir -p "$TUE_INSTALL_INSTALLED_DIR"
-
-TUE_INSTALL_TARGETS_DIR=$TUE_ENV_TARGETS_DIR
-
-TUE_APT_GET_UPDATED_FILE=/tmp/tue_get_apt_get_updated
 
 # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # #
 
@@ -973,11 +959,11 @@ function tue-install-system-now
             ((i=i+1))
         done
 
-        if [ ! -f "$TUE_APT_GET_UPDATED_FILE" ]
+        if [[ ! -f "${TUE_APT_GET_UPDATED_FILE}" ]]
         then
             # Update once every boot. Or delete the tmp file if you need an update before installing a pkg.
             tue-install-pipe sudo apt-get update || tue-install-error "An error occurred while updating apt-get."
-            touch $TUE_APT_GET_UPDATED_FILE
+            touch "${TUE_APT_GET_UPDATED_FILE}"
         fi
 
         # shellcheck disable=SC2086
@@ -992,7 +978,7 @@ function tue-install-apt-get-update
 {
     tue-install-debug "tue-install-apt-get-update"
     tue-install-debug "Requiring an update of apt-get before next 'apt-get install'"
-    rm -f $TUE_APT_GET_UPDATED_FILE
+    rm -f "${TUE_APT_GET_UPDATED_FILE}"
 }
 
 # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # #
@@ -1729,29 +1715,41 @@ do
     shift
 done
 
-
 # Create log file
 stamp=$(date_stamp)
 INSTALL_DETAILS_FILE=/tmp/tue-get-details-$stamp
 touch "$INSTALL_DETAILS_FILE"
 
-# Initialize
-ROS_PACKAGE_INSTALL_DIR=$TUE_SYSTEM_DIR/src
+# Check if the required functions are available
+_function_test _git_https_or_ssh _git_url_to_repos_dir
 
-TUE_INSTALL_SCRIPTS_DIR=$TUE_DIR/installer
+# Set the directory/file variables
+TUE_INSTALL_TARGETS_DIR=${TUE_ENV_TARGETS_DIR}
+TUE_APT_GET_UPDATED_FILE=/tmp/tue_get_apt_get_updated
+ROS_PACKAGE_INSTALL_DIR=${TUE_SYSTEM_DIR}/src
+TUE_INSTALL_SCRIPTS_DIR=${TUE_DIR}/installer
 
 TUE_INSTALL_GENERAL_STATE_DIR=/tmp/tue-installer
-if [ ! -d $TUE_INSTALL_GENERAL_STATE_DIR ]
+if [[ ! -d ${TUE_INSTALL_GENERAL_STATE_DIR} ]]
 then
-    tue-install-debug "mkdir $TUE_INSTALL_GENERAL_STATE_DIR"
-    mkdir "$TUE_INSTALL_GENERAL_STATE_DIR"
-    tue-install-debug "chmod a+rwx $TUE_INSTALL_GENERAL_STATE_DIR"
-    chmod a+rwx "$TUE_INSTALL_GENERAL_STATE_DIR"
+    tue-install-debug "mkdir ${TUE_INSTALL_GENERAL_STATE_DIR}"
+    mkdir "${TUE_INSTALL_GENERAL_STATE_DIR}" # No parents, as it should already exist
+    tue-install-debug "chmod a+rwx ${TUE_INSTALL_GENERAL_STATE_DIR}"
+    chmod a+rwx "${TUE_INSTALL_GENERAL_STATE_DIR}"
 fi
 
-TUE_INSTALL_STATE_DIR=$TUE_INSTALL_GENERAL_STATE_DIR/$stamp
-mkdir -p "$TUE_INSTALL_STATE_DIR"
+TUE_INSTALL_STATE_DIR=$TUE_INSTALL_GENERAL_STATE_DIR/${stamp}
+mkdir "${TUE_INSTALL_STATE_DIR}" # No parents, as it should already exist
 
+# Make sure the environment state directories exists
+TUE_INSTALL_DEPENDENCIES_DIR=${TUE_ENV_DIR}/.env/dependencies
+TUE_INSTALL_DEPENDENCIES_ON_DIR=${TUE_ENV_DIR}/.env/dependencies-on
+TUE_INSTALL_INSTALLED_DIR=${TUE_ENV_DIR}/.env/installed
+mkdir -p "${TUE_INSTALL_DEPENDENCIES_DIR}"
+mkdir -p "${TUE_INSTALL_DEPENDENCIES_ON_DIR}"
+mkdir -p "${TUE_INSTALL_INSTALLED_DIR}"
+
+# Initialize the installer variables
 TUE_INSTALL_GIT_PULL_Q=()
 
 TUE_INSTALL_SYSTEMS=
