@@ -873,18 +873,18 @@ function _remove_recursively
         return 1
     fi
 
-    local target tue_dependencies_dir tue_dependencies_on_dir error_code
-    target=$1
-    tue_dependencies_dir="$TUE_ENV_DIR"/.env/dependencies
-    tue_dependencies_on_dir="$TUE_ENV_DIR"/.env/dependencies-on
+    local error_code target tue_dependencies_dir tue_dependencies_on_dir
     error_code=0
+    target=$1
+    tue_dependencies_dir="${TUE_ENV_DIR}"/.env/dependencies
+    tue_dependencies_on_dir="${TUE_ENV_DIR}"/.env/dependencies-on
 
     # If packages depend on the target to be removed, just remove the installed status.
     if [ -f "$tue_dependencies_on_dir"/"$target" ]
     then
         if [[ -n $(cat "$tue_dependencies_on_dir"/"$target") ]]
         then
-            # depend-on is not empty, so removing the installed status
+            # depend-on is not empty, so only removing the installed status
             echo "[tue-get] Other targets still depend on $target, so ignoring it"
             return 0
         else
@@ -909,7 +909,7 @@ function _remove_recursively
                 while read -r line
                 do
                     [[ $line != "$target" ]] && echo "$line"
-                done <"$dep_dep_on_file" >"$tmp_file"
+                done < "${dep_dep_on_file}" > "${tmp_file}"
                 mv "$tmp_file" "$dep_dep_on_file"
                 echo "[tue-get] Removed '$target' from depend-on file of '$dep'"
             else
