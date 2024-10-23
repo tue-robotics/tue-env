@@ -1,0 +1,90 @@
+ci:
+  # autofix_commit_msg: |
+  #     [pre-commit.ci] auto fixes from pre-commit.com hooks
+  #
+  #     for more information, see https://pre-commit.ci
+  autofix_prs: false
+  autoupdate_branch: ""
+  autoupdate_commit_msg: '[pre-commit.ci] pre-commit autoupdate'
+  autoupdate_schedule: weekly
+  skip: []
+  submodules: false
+
+repos:
+  - repo: https://github.com/pre-commit/pre-commit-hooks
+    rev: v5.0.0
+    hooks:
+      - id: check-added-large-files
+      - id: check-ast
+      - id: check-builtin-literals
+      # - id: check-case-conflict
+      - id: check-docstring-first
+      - id: check-executables-have-shebangs
+      # - id: check-illegal-windows-names
+      - id: check-json
+      - id: check-merge-conflict
+      - id: check-shebang-scripts-are-executable
+        exclude: '(^setup\.bash$|^setup/tue-data.bash$|^setup/tue-env.bash$|^setup/tue-functions.bash$|^setup/tue-misc.bash$)'
+      - id: check-symlinks
+      - id: check-toml
+      - id: check-vcs-permalinks
+      - id: check-xml
+      - id: check-yaml
+      - id: debug-statements
+      - id: destroyed-symlinks
+      # - id: detect-aws-credentials
+      - id: detect-private-key
+      # - id: double-quote-string-fixer
+      - id: end-of-file-fixer
+      # - id: file-contents-sorter
+      #   files: []
+      - id: fix-byte-order-marker
+      - id: fix-encoding-pragma
+        args: [--remove]
+      # - id: forbid-new-submodules
+      # - id: forbid-submodules
+      - id: mixed-line-ending
+        args: ["--fix", "no"]
+      # - id: name-tests-test
+      #   args: [
+      #     "--pytest-test-first" # test_.*\.py
+      #     # "--pytest" # .*_test\.py
+      #     # "--unittest" # test.*\.py
+      #   ]
+      - id: no-commit-to-branch
+      - id: pretty-format-json
+      # - id: requirements-txt-fixer
+      # - id: sort-simple-yaml
+      #   files: []
+      - id: trailing-whitespace
+        args: [--markdown-linebreak-ext=md]
+
+  - repo: https://github.com/psf/black
+    rev: 24.10.0
+    hooks:
+      - id: black
+        args: [--check, --diff, --color]
+
+  - repo: https://github.com/adrienverge/yamllint.git
+    rev: v1.29.0
+    hooks:
+      - id: yamllint
+        args: [--strict]
+
+  - repo: https://github.com/DavidAnson/markdownlint-cli2
+    rev: v0.13.0
+    hooks:
+      - id: markdownlint-cli2
+        args: ["--fix", "--config", ".markdownlint.yaml"]
+        exclude: '^LICENSE.md$'
+
+  - repo: https://github.com/shellcheck-py/shellcheck-py
+    rev: v0.10.0.1
+    hooks:
+      - id: shellcheck
+        files: '\S\.(bash|sh)'
+
+  - repo: https://github.com/pre-commit-ci/pre-commit-ci-config
+    rev: v1.6.1
+    hooks:
+      - id: check-pre-commit-ci-config

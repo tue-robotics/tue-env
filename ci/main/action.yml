@@ -45,6 +45,7 @@ runs:
 
     - name: Install
       id: install
+      # yamllint disable rule:indentation
       run: |
         echo "::group::install-package.sh"
         GITHUB_REF=${GITHUB_REF#refs/heads/}
@@ -94,10 +95,12 @@ runs:
           "${SSH_ARGS[@]}" \
           "${DEBUG_ARGS[@]}"
         echo "::endgroup::"
+      # yamllint enable rule:indentation
       shell: bash
 
     - name: Build
       id: build
+      # yamllint disable rule:indentation
       run: |
         echo "::group::build-package.sh"
         DEBUG_ARGS=()
@@ -111,10 +114,12 @@ runs:
           --package=${{ inputs.package }} \
           "${DEBUG_ARGS[@]}"
         echo "::endgroup::"
+      # yamllint enable rule:indentation
       shell: bash
 
     - name: Test
       id: test
+      # yamllint disable rule:indentation
       run: |
         echo "::group::test-package.sh"
         DEBUG_ARGS=()
@@ -128,4 +133,5 @@ runs:
           --package=${{ inputs.package }} \
           "${DEBUG_ARGS[@]}"
         echo "::endgroup::"
+      # yamllint enable rule:indentation
       shell: bash
