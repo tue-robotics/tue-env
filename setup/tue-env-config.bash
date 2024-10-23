@@ -150,7 +150,7 @@ function tue-env-set
     echo -e "[tue-env](config) Environment '${tue_env}' has '${option}' set to '${value}'"
 }
 
-function _main
+function _tue-env-config-main
 {
     if [ -z "$1" ]
     then
@@ -190,4 +190,6 @@ function _main
     fi
 }
 
-_main "$@"
+_tue-env-config-main "$@"
+
+unset -f _tue-env-config-main
