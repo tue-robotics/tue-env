@@ -42,8 +42,23 @@ stages:
                 COMMIT_RANGE=$(python3 ./azure_commit_range.py)
                 BRANCH=${SYSTEM_PULLREQUEST_TARGETBRANCH:-${BUILD_SOURCEBRANCH#refs/heads/}}
                 DEFAULT_BRANCH=$(git remote show origin 2>/dev/null | grep HEAD | awk '{print $3}')
-                ALL=$(([ "$BUILD_REASON" == "Schedule" ] || (([ "$BUILD_REASON" == "BatchedCI" ] || [ "$BUILD_REASON" == "IndividualCI" ] || [ "$BUILD_REASON" == "Manual" ]) && [ "$BRANCH" == "$DEFAULT_BRANCH" ])) && echo "true")
-                source ./packages.sh --pullrequest=${SYSTEM_PULLREQUEST_PULLREQUESTNUMBER:-false} --branch=$SYSTEM_PULLREQUEST_TARGETBRANCH --commit-range=$COMMIT_RANGE --all=$ALL  # add all folders which need to be excluded as an argument
+                ALL=$( \
+                ( \
+                [ "$BUILD_REASON" == "Schedule" ] || \
+                ( \
+                ( \
+                [ "$BUILD_REASON" == "BatchedCI" ] || \
+                [ "$BUILD_REASON" == "IndividualCI" ] || \
+                [ "$BUILD_REASON" == "Manual" ] \
+                ) && \
+                [ "$BRANCH" == "${DEFAULT_BRANCH}" ] \
+                ) \
+                ) && echo "true")
+                source ./packages.sh \
+                --pullrequest=${SYSTEM_PULLREQUEST_PULLREQUESTNUMBER:-false} \
+                --branch=${SYSTEM_PULLREQUEST_TARGETBRANCH} \
+                --commit-range=${COMMIT_RANGE} \
+                --all=${ALL}  # add all folders which need to be excluded as an argument
                 echo "##vso[task.setVariable variable=json_string;isOutput=true]$PACKAGES_DICT"
 
   - stage: install_build_test
@@ -52,7 +67,9 @@ stages:
     ${{ else }}:
       displayName: 'Install, build & test:'
     dependsOn: package_selection
+    # yamllint disable rule:line-length
     condition: and(succeeded(), not(canceled()), ne(stageDependencies.package_selection.outputs['package_selection.matrix.json_string'], '{}'))
+    # yamllint enable rule:line-length
     jobs:
       - job: ""  # This lets the job name be just the name of the matrix key
         condition: and(succeeded(), not(canceled()))
@@ -108,6 +125,7 @@ stages:
               SSH_KNOWN_HOSTS: github.com  # Only when using SSH
             inputs:
               targetType: inline
+              # yamllint disable rule:indentation
               script: |
                 # START SSH ONLY
                 echo -e "\e[35;1mmkdir -p ${HOME}/.ssh\e[0m"
@@ -122,7 +140,15 @@ stages:
                   done
                 fi
                 # END SSH ONLY
-                bash install-package.sh --package=${PACKAGE} --branch=${BRANCH} --commit=${BUILD_SOURCEVERSION} --pullrequest=${SYSTEM_PULLREQUEST_PULLREQUESTNUMBER:-false} --image="ghcr.io/tue-robotics/tue-env-ros-noetic" --ssh --ssh-key="${HOME}"/.ssh/ci_ssh_key  # Last two arguments only when using SSH
+                bash install-package.sh \
+                --package=${PACKAGE} \
+                --branch=${BRANCH} \
+                --commit=${BUILD_SOURCEVERSION} \
+                --pullrequest=${SYSTEM_PULLREQUEST_PULLREQUESTNUMBER:-false} \
+                --image="ghcr.io/tue-robotics/tue-env-ros-noetic" \
+                --ssh \
+                --ssh-key="${HOME}"/.ssh/ci_ssh_key  # Last two arguments only when using SSH
+              # yamllint enable rule:indentation
             condition: and(succeeded(), not(canceled()))
           - task: Bash@3
             displayName: Build

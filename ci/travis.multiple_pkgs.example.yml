@@ -13,14 +13,18 @@ before_install:
   - wget https://raw.githubusercontent.com/tue-robotics/tue-env/master/ci/set-branch.sh
   # Determine packages modified in this commit
   - ALL=$([ "$TRAVIS_EVENT_TYPE" == "cron" ] && echo "true") || true
+  # yamllint disable rule:line-length
   - source packages.sh --pullrequest=$TRAVIS_PULL_REQUEST --branch=$TRAVIS_PULL_REQUEST_BRANCH --commit-range=$TRAVIS_COMMIT_RANGE --all=$ALL # add all folders which need to be excluded as an argument
+  # yamllint enable rule:line-length
   # Set BRANCH based on default branch
   - source set-branch.sh --branch=$TRAVIS_BRANCH
 
 env:
+  # yamllint disable rule:line-length
   # Run following in root of repo:
   # for item in $(ls | xargs ls -dl 2>/dev/null |  grep "^d" | grep -v "\." | awk '{print $NF}'); do echo "  - PACKAGE=$item"; done
   # Copy it below and remove unnecessary items
+  # yamllint disable rule:line-length
   - PACKAGE=package1
   - PACKAGE=package2
   - PACKAGE=package3

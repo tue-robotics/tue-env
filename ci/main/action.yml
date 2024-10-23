@@ -47,6 +47,7 @@ runs:
 
     - name: Install
       id: install
+      # yamllint disable rule:indentation
       run: |
         echo "::group::install-package.sh"
         start_time=$(date +%s)
@@ -102,10 +103,12 @@ runs:
         minutes=$((duration / 60))
         seconds=$((duration % 60))
         echo -e "\e[35;1mRunning 'Install' returned with code '${return_code}' after ${minutes} min ${seconds} sec\e[0m"
+      # yamllint enable rule:indentation
       shell: bash
 
     - name: Build
       id: build
+      # yamllint disable rule:indentation
       run: |
         echo "::group::build-package.sh"
         start_time=$(date +%s)
@@ -126,10 +129,12 @@ runs:
         minutes=$((duration / 60))
         seconds=$((duration % 60))
         echo -e "\e[35;1mRunning 'Build' returned with code '${return_code}' after ${minutes} min ${seconds} sec\e[0m"
+      # yamllint enable rule:indentation
       shell: bash
 
     - name: Test
       id: test
+      # yamllint disable rule:indentation
       run: |
         echo "::group::test-package.sh"
         start_time=$(date +%s)
@@ -150,6 +155,7 @@ runs:
         minutes=$((duration / 60))
         seconds=$((duration % 60))
         echo -e "\e[35;1mRunning 'Test' returned with code '${return_code}' after ${minutes} min ${seconds} sec\e[0m"
+      # yamllint enable rule:indentation
       shell: bash
 
     - name: Always save pip cache

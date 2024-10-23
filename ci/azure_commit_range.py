@@ -1,10 +1,5 @@
 #! /usr/bin/env python3
 
-import json
-import os
-import sys
-from urllib.request import urlopen
-
 """
 Script to determine the commit range of a build in azure pipelines.
 
@@ -14,6 +9,11 @@ newest_commit...oldest_commit
 
 If the range is just 1 commit, an empty string is printed.
 """
+
+import json
+import os
+import sys
+from urllib.request import urlopen
 
 TEAM_FOUNDATION_URI = os.getenv("SYSTEM_TEAMFOUNDATIONCOLLECTIONURI")
 TEAM_PROJECT = os.getenv("SYSTEM_TEAMPROJECT")
