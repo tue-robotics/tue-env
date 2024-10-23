@@ -17,7 +17,7 @@ def show_error(error: str) -> int:
 
 def type_git(install_item: Mapping, allowed_keys: Optional[List[str]] = None) -> str:
     """
-    Function to check the parsed yaml for install type git and generate the command string.
+    Function to check the parsed YAML for install type git and generate the command string.
 
     The structure of a git install type is:
     - type: git
@@ -25,7 +25,7 @@ def type_git(install_item: Mapping, allowed_keys: Optional[List[str]] = None) ->
       path: [LOCAL_CLONE_PATH]
       version: [BRANCH_COMMIT_TAG]
 
-    :param install_item: Extracted yaml component corresponding to install type git
+    :param install_item: Extracted YAML component corresponding to install type git
     :param allowed_keys: Additional keys to allow apart from the keys defined in install type git
     :return: Command string containing repository url and optional arguments target-dir and version
     """
@@ -94,7 +94,7 @@ def type_apt_key_source(install_item: Mapping) -> str:
 
 def catkin_git(source: Mapping) -> str:
     """
-    Function to generate installation command for catkin git targets from the extracted yaml
+    Function to generate installation command for catkin git targets from the extracted YAML
 
     The structure of a catkin git install type is:
     - type: catkin/ros
@@ -105,7 +105,7 @@ def catkin_git(source: Mapping) -> str:
         version: [BRANCH_COMMIT_TAG]
         sub-dir: [PACKAGE_SUB_DIRECTORY]
 
-    :param source: Extracted yaml component for the key 'source' corresponding to install type catkin/ros
+    :param source: Extracted YAML component for the key 'source' corresponding to install type catkin/ros
     :return: Command string containing arguments to the primary catkin target installation command
     """
 
@@ -117,28 +117,6 @@ def catkin_git(source: Mapping) -> str:
         command += f" --sub-dir={sub_dir}"
 
     return command
-
-
-def main() -> int:
-    if not 2 <= len(sys.argv) <= 3:
-        return show_error("Usage: parse_install_yaml install.yaml [--now]")
-
-    now = False
-    if len(sys.argv) == 3:
-        if sys.argv[2] == "--now":
-            now = True
-        else:
-            return show_error(f"Unknown option: {sys.argv[2]}")
-
-    try:
-        result = install_yaml_parser(sys.argv[1], now)
-    except Exception as e:
-        return show_error(str(e))
-
-    if result["commands"]:
-        print(result["commands"])
-
-    return 0
 
 
 def install_yaml_parser(path: str, now: bool = False) -> Mapping[str, str]:
@@ -202,7 +180,7 @@ def install_yaml_parser(path: str, now: bool = False) -> Mapping[str, str]:
                 # TODO(anyone): Remove the use of TUE_XXX, when migration to TUE_ENV_XXX is complete
                 try:
                     ros_release = environ["TUE_ENV_ROS_DISTRO"]
-                except KeyError as e:
+                except KeyError:
                     try:
                         ros_release = environ["TUE_ROS_DISTRO"]
                     except KeyError:
@@ -309,6 +287,28 @@ def install_yaml_parser(path: str, now: bool = False) -> Mapping[str, str]:
             commands_append(command)
 
     return {"system_packages": system_packages, "commands": " ".join(commands)}
+
+
+def main() -> int:
+    if not 2 <= len(sys.argv) <= 3:
+        return show_error("Usage: parse_install_yaml install.yaml [--now]")
+
+    now: bool = False
+    if len(sys.argv) == 3:
+        if sys.argv[2] == "--now":
+            now = True
+        else:
+            return show_error(f"Unknown option: {sys.argv[2]}")
+
+    try:
+        result = install_yaml_parser(sys.argv[1], now)
+    except Exception as e:
+        return show_error(str(e))
+
+    if result["commands"]:
+        print(result["commands"])
+
+    return 0
 
 
 if __name__ == "__main__":

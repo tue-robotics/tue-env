@@ -11,7 +11,7 @@ function _tue-check-env-vars
 }
 export -f _tue-check-env-vars
 
-function main
+function _tue-env-main
 {
     # -----------------------------------------
     # Set the TUE_DIR variable
@@ -108,4 +108,6 @@ function main
     fi
 }
 
-main "$@"
+_tue-env-main "$@"
+
+unset -f _tue-env-main
