@@ -295,7 +295,16 @@ Environment directory '${tue_env_dir}' didn't exist (anymore)"""
 
         [[ "${persistent}" == "true" ]] && tue-env set-default "${tue_env}"
 
-        _tue-env-deactivate-current-env || { echo "[tue-env](switch) Failed to deactivate the current environment, don't use this terminal anymore, open a new terminal"; return 1; }
+        if [[ -n "${TUE_ENV}" ]]
+        then
+            if [[ "${TUE_ENV}" == "${tue_env}" ]]
+            then
+                echo "[tue-env](switch) Already in the '${tue_env}' environment"
+                return 0
+            fi
+            echo "[tue-env](switch) Deactivating the current environment '${TUE_ENV}'"
+            _tue-env-deactivate-current-env || { echo "[tue-env](switch) Failed to deactivate the current environment, don't use this terminal anymore, open a new terminal"; return 1; }
+        fi
 
         # Successful, so we can set the environment variables
         TUE_ENV=${tue_env}
