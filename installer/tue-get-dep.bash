@@ -21,7 +21,7 @@ function _show_dep
     fi
 
     local indent_str
-    indent_str=$(perl -E 'say "--" x '$indent)
+    indent_str=$(perl -E 'say "--" x '"${indent}")
 
     if [ -n "$2" ]
     then
@@ -34,7 +34,7 @@ function _show_dep
     else
         if [ -n "$LEVEL" ]
         then
-            if [[ $indent > $LEVEL ]]
+            if [[ ${indent} -gt ${LEVEL} ]]
             then
                 return
             fi
