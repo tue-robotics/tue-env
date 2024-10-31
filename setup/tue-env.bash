@@ -78,9 +78,10 @@ function tue-env
     # Make sure the correct directories are there
     mkdir -p "$TUE_DIR"/user/envs
 
-    local create_venv targets_url tue_env tue_env_dir venv_include_system_site
+    local create_venv targets_url tue_env tue_env_dir venv_include_system_site venv_setuptools
     create_venv="true"
     venv_include_system_site="true"
+    venv_setuptools="false"
 
     if [[ ${cmd} == "init" ]]
     then
@@ -97,6 +98,8 @@ function tue-env
                         create_venv="${i#*=}" ;;
                     --virtualenv-include-system-site-packages=* )
                         venv_include_system_site="${i#*=}" ;;
+                    --virtualenv-install-setuptools=* )
+                        venv_setuptools="${i#*=}" ;;
                     --help | -h )
                         show_help="true"
                         break
@@ -125,7 +128,7 @@ function tue-env
 
         if [[ "${show_help}" == "true" ]]
         then
-            echo "Usage: tue-env init NAME [DIRECTORY] [--help|-h] [--targets-url=TARGETS GIT URL] [--create-virtualenv=false|TRUE] [--virtualenv-include-system-site-packages=false|TRUE]"
+            echo "Usage: tue-env init NAME [DIRECTORY] [--help|-h] [--targets-url=TARGETS_GIT_URL] [--create-virtualenv=false|TRUE] [--virtualenv-include-system-site-packages=false|TRUE] [--virtualenv-install-setuptools=FALSE|true]"
             return 1
         fi
 
@@ -157,7 +160,7 @@ function tue-env
 
         if [[ "${create_venv}" == "true" ]]
         then
-            tue-env init-venv "${tue_env}" --include-system-site-packages="${venv_include_system_site}"
+            tue-env init-venv "${tue_env}" --include-system-site-packages="${venv_include_system_site}" --install-setuptools="${venv_setuptools}"
         fi
 
     elif [[ ${cmd} == "remove" || ${cmd} == "rm" ]]
@@ -490,8 +493,9 @@ Environment directory '${tue_env_dir}' didn't exist (anymore)"""
 
     elif [[ ${cmd} == "init-venv" ]]
     then
-        local include_system_site tue_env
+        local include_system_site install_setuptools tue_env
         include_system_site="true"
+        install_setuptools="false"
         for i in "$@"
         do
             case $i in
@@ -501,6 +505,8 @@ Environment directory '${tue_env_dir}' didn't exist (anymore)"""
                     ;;
                 --include-system-site-packages=* )
                     include_system_site="${i#*=}" ;;
+                --install-setuptools=* )
+                    install_setuptools="${i#*=}" ;;
                 --* )
                     echo "[tue-env] Unknown option $i"
                     show_help="true"
@@ -522,7 +528,7 @@ Environment directory '${tue_env_dir}' didn't exist (anymore)"""
 
         if [[ ${show_help} == "true" ]]
         then
-            echo "Usage: tue-env init-venv [ENVIRONMENT] [--include-system-site-packages=false|true]"
+            echo "Usage: tue-env init-venv [ENVIRONMENT] [--include-system-site-packages=false|TRUE] [--install-setuptools=FALSE|true]"
             return 1
         fi
 
@@ -555,7 +561,12 @@ Environment directory '${tue_env_dir}' didn't exist (anymore)"""
         then
             system_site_args="--system-site-packages"
         fi
-        /usr/bin/python3 -m virtualenv "${venv_dir}" ${system_site_args:+${system_site_args} }--symlinks -q 2>/dev/null
+        local setuptools_args
+        if [[ "${install_setuptools}" != "true" ]]
+        then
+            setuptools_args="--no-setuptools"
+        fi
+        /usr/bin/python3 -m virtualenv "${venv_dir}" ${system_site_args:+${system_site_args} }${setuptools_args:+${setuptools_args} }--symlinks -q 2>/dev/null
         echo "[tue-env](init-venv) Initialized virtualenv of environment '${tue_env}'"
 
         if [ "${tue_env}" == "${TUE_ENV}" ]
