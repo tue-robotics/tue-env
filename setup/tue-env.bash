@@ -18,6 +18,11 @@ function _tue-env-deactivate-current-env
     do
         unset "${var}"
     done
+    for var in ${!ROS_*}
+    do
+        unset "${var}"
+    done
+    unset PYTHONPATH
 
     return 0
 }
