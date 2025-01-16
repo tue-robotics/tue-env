@@ -1,5 +1,7 @@
 #! /usr/bin/env bash
 
+trap "unset -f _tue-env-config-main" EXIT
+
 # Functions that configure an environment
 # All functions should be called tue-env-XXX. The functions should be in
 # this file for it to work and to be available in the auto complete
@@ -191,5 +193,3 @@ function _tue-env-config-main
 }
 
 _tue-env-config-main "$@"
-
-unset -f _tue-env-config-main
