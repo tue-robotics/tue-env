@@ -76,6 +76,10 @@ jobs:
       key: ${{ steps.artifacts.outputs.key }}
       tag: ${{ steps.script.outputs.tag }}
     steps:
+      - name: Print push-to-default-branch
+        run: echo "${{ toJSON(matrix.push-to-default-branch) }}"
+      - name: Print matrix
+        run: echo "${{ toJSON(matrix) }}"
       - name: Maximize build space
         if: ${{ matrix.maximize-build-space == true }}
         uses: easimon/maximize-build-space@master
