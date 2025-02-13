@@ -1395,7 +1395,7 @@ function _tue-install-pip-now
         for pkg in $git_pips_to_install
         do
             # shellcheck disable=SC2048,SC2086
-            tue-install-pipe python"${pv}" -m pip install ${user_arg} ${pkg} <<< yes || tue-install-error "An error occurred while installing pip${pv} git packages."
+            tue-install-pipe python"${pv}" -m pip install ${user_arg} ${pkg//^/ } <<< yes || tue-install-error "An error occurred while installing pip${pv} git packages."
         done
     fi
 }
