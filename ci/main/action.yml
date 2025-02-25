@@ -47,6 +47,7 @@ runs:
       id: install
       run: |
         echo "::group::install-package.sh"
+        start_time=$(date +%s)
         GITHUB_REF=${GITHUB_REF#refs/heads/}
         GITHUB_REF=${GITHUB_REF#refs/tags/}
         BRANCH=${GITHUB_BASE_REF:-${GITHUB_REF}}
@@ -93,13 +94,20 @@ runs:
           --pullrequest="${PULLREQUEST}" \
           "${SSH_ARGS[@]}" \
           "${DEBUG_ARGS[@]}"
+        return_code=$?
         echo "::endgroup::"
+        end_time=$(date +%s)
+        duration=$((end_time - start_time))
+        minutes=$((duration / 60))
+        seconds=$((duration % 60))
+        echo -e "\e[35;1mRunning 'Install' returned with code '${return_code}' after ${minutes} min ${seconds} sec\e[0m"
       shell: bash
 
     - name: Build
       id: build
       run: |
         echo "::group::build-package.sh"
+        start_time=$(date +%s)
         DEBUG_ARGS=()
         DEBUG=${RUNNER_DEBUG:+true}
         DEBUG=${DEBUG:-false}
@@ -110,13 +118,20 @@ runs:
         ${{ github.action_path }}/../build-package.sh \
           --package=${{ inputs.package }} \
           "${DEBUG_ARGS[@]}"
+        return_code=$?
         echo "::endgroup::"
+        end_time=$(date +%s)
+        duration=$((end_time - start_time))
+        minutes=$((duration / 60))
+        seconds=$((duration % 60))
+        echo -e "\e[35;1mRunning 'Build' returned with code '${return_code}' after ${minutes} min ${seconds} sec\e[0m"
       shell: bash
 
     - name: Test
       id: test
       run: |
         echo "::group::test-package.sh"
+        start_time=$(date +%s)
         DEBUG_ARGS=()
         DEBUG=${RUNNER_DEBUG:+true}
         DEBUG=${DEBUG:-false}
@@ -127,5 +142,11 @@ runs:
         ${{ github.action_path }}/../test-package.sh \
           --package=${{ inputs.package }} \
           "${DEBUG_ARGS[@]}"
+        return_code=$?
         echo "::endgroup::"
+        end_time=$(date +%s)
+        duration=$((end_time - start_time))
+        minutes=$((duration / 60))
+        seconds=$((duration % 60))
+        echo -e "\e[35;1mRunning 'Test' returned with code '${return_code}' after ${minutes} min ${seconds} sec\e[0m"
       shell: bash
