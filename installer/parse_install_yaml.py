@@ -65,6 +65,7 @@ def type_apt_key_source(install_item: Mapping) -> str:
     key_fingerprint = install_item.get("key-fingerprint")
     key_url = install_item.get("key-url")
     repo_components = install_item.get("repo-components", [])  # Optional field
+    repo_name = install_item.get("repo-name", "")  # Optional field
     repo_url = install_item.get("repo-url")
     source_file = install_item.get("source-file")
 
@@ -86,6 +87,8 @@ def type_apt_key_source(install_item: Mapping) -> str:
     for repo_component in repo_components:
         args.append(f"--repo-component={repo_component}")
 
+    if repo_name:
+        args.append(f"--repo-name={repo_name}")
     args.append(f"--repo-url={repo_url}")
     args.append(f"--source-file={source_file}")
 
