@@ -47,6 +47,12 @@ jobs:
             ros-version: 2
             platform: "amd64"
             base-image: "ubuntu:22.04"
+          - ros-distro: jazzy
+            ros-version: 2
+            platform: "amd64"
+            base-image: "ubuntu:24.04"
+            create-venv: true
+            docker-user-id: 1001
           - ros-distro: rolling
             ros-version: 2
             platform: "amd64"
