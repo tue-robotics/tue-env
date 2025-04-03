@@ -908,7 +908,7 @@ function tue-install-system
         tue-install-error "Invalid tue-install-system call: needs package as argument."
     fi
     tue-install-debug "Adding $1 to apt list"
-    TUE_INSTALL_SYSTEMS="$1 $TUE_INSTALL_SYSTEMS"
+    TUE_INSTALL_SYSTEMS="$1${TUE_INSTALL_SYSTEMS:+ ${TUE_INSTALL_SYSTEMS}}"
 }
 
 # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # #
@@ -923,7 +923,6 @@ function tue-install-system-now
     fi
 
     local pkgs_to_install dpkg_query
-    # shellcheck disable=SC2016
     dpkg_query=$(dpkg-query -W -f '${package} ${status}\n' 2>/dev/null)
     # shellcheck disable=SC2048
     for pkg in $*
@@ -999,7 +998,7 @@ function tue-install-ppa
         tue-install-error "Invalid tue-install-ppa call: needs to start with 'ppa:' or 'deb ' ($ppa)"
     fi
     tue-install-debug "Adding $ppa to PPA list"
-    TUE_INSTALL_PPA="${TUE_INSTALL_PPA} ${ppa// /^}"  # Replace space by ^ to support for-loops later
+    TUE_INSTALL_PPA="${TUE_INSTALL_PPA:+${TUE_INSTALL_PPA} }${ppa// /^}"  # Replace space by ^ to support for-loops later
 }
 
 # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # #
@@ -1095,7 +1094,7 @@ function tue-install-apt-key-source
     args="$*"
 
     tue-install-debug "Adding '${args}' to apt-key-source list"
-    TUE_INSTALL_APT_KEY_SOURCES="${TUE_INSTALL_APT_KEY_SOURCES} ${args// /^}"  # Replace space by ^ to support for-loops later
+    TUE_INSTALL_APT_KEY_SOURCES="${TUE_INSTALL_APT_KEY_SOURCES:+${TUE_INSTALL_APT_KEY_SOURCES} }${args// /^}"  # Replace space by ^ to support for-loops later
 }
 
 # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # #
@@ -1262,19 +1261,19 @@ function _tue-install-pip
     pv=$1
     shift
     tue-install-debug "tue-install-pip${pv} $*"
-    name="$*"
-    name="${name// /^}"
 
     if [ -z "$1" ]
     then
         tue-install-error "Invalid tue-install-pip${pv} call: needs package as argument."
     fi
 
-    tue-install-debug "Adding $name to pip${pv} list"
+    name="$*"
+    name="${name// /^}"
+
+    tue-install-debug "Adding ${name} to pip${pv} list"
     local list
     list=TUE_INSTALL_PIP"${pv}"S
-    # shellcheck disable=SC2140
-    declare -g "$list"="$name ${!list}"
+    declare -g "${list}"="${name}${!list:+ ${!list}}"
 }
 
 # Needed for backward compatibility
@@ -1463,7 +1462,7 @@ function tue-install-snap
         tue-install-error "Invalid tue-install-snap call: needs package as argument."
     fi
     tue-install-debug "Adding $1 to snap list"
-    TUE_INSTALL_SNAPS="$1 $TUE_INSTALL_SNAPS"
+    TUE_INSTALL_SNAPS="$1${TUE_INSTALL_SNAPS:+ ${TUE_INSTALL_SNAPS}}"
 }
 
 # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # #
@@ -1513,7 +1512,7 @@ function tue-install-gem
         tue-install-error "Invalid tue-install-gem call: needs package as argument."
     fi
     tue-install-debug "Adding $1 to gem list"
-    TUE_INSTALL_GEMS="$1 $TUE_INSTALL_GEMS"
+    TUE_INSTALL_GEMS="$1${TUE_INSTALL_GEMS:+ ${TUE_INSTALL_GEMS}}"
 }
 
 # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # #
@@ -2023,7 +2022,7 @@ if [[ -n "${TUE_INSTALL_APT_KEY_SOURCES}" ]]
 then
     TUE_INSTALL_CURRENT_TARGET="APT-KEY-SOURCE"
 
-    tue-install-debug "calling: tue-install-apt-key-sources-now${TUE_INSTALL_APT_KEY_SOURCES}"
+    tue-install-debug "calling: tue-install-apt-key-sources-now ${TUE_INSTALL_APT_KEY_SOURCES}"
     tue-install-apt-key-sources-now "${TUE_INSTALL_APT_KEY_SOURCES}"
 fi
 
