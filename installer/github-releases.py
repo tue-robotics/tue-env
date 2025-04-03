@@ -1,16 +1,18 @@
 #! /usr/bin/env python3
 
+from __future__ import annotations
+
 import sys
 import urllib.request
 import json
 import re
 import argparse
-import os
 import hashlib
 import time
+from pathlib import Path
 
 
-def get_release(url, filename, output) -> int:
+def get_release(url: str, filename: Path, output: Path) -> int:
     """Function to get a release
 
     :param url: URL of the release tag
@@ -33,34 +35,34 @@ def get_release(url, filename, output) -> int:
     return 0
 
 
-def download_url(url, root, filename=None, md5=None) -> None:
+def download_url(url, root: Path, filename: Path | None = None, md5=None) -> None:
     """Download a file from an url and place it in root.
 
     Args:
         url (str): URL to download file from
-        root (str): Directory to place downloaded file in
-        filename (str, optional): Name to save the file under. If None, use the basename of the URL
+        root (Path): Directory to place downloaded file in
+        filename (path, optional): Name to save the file under. If None, use the basename of the URL
         md5 (str, optional): MD5 checksum of the download. If None, do not check
     """
-    root = os.path.expanduser(root)
+    root = root.expanduser()
     if not filename:
-        filename = os.path.basename(url)
-    fpath = os.path.join(root, filename)
+        filename = url.name
+    fpath = root / filename
 
-    os.makedirs(root, exist_ok=True)
+    root.mkdir(parents=True, exist_ok=True)
 
     # check if file is already present locally
     if check_integrity(fpath, md5):
-        print("Using downloaded and verified file: " + fpath)
+        print(f"Using downloaded and verified file: {fpath}")
     else:  # download the file
         try:
-            print("Downloading " + url + " to " + fpath)
+            print(f"Downloading {url} to {fpath}")
             urllib.request.urlretrieve(url, fpath, reporthook=reporthook)
             print()
         except (urllib.error.URLError, IOError) as error:
             if url[:5] == "https":
                 url = url.replace("https:", "http:")
-                print("Failed download. Trying https -> http instead. Downloading " + url + " to " + fpath)
+                print(f"Failed download. Trying https -> http instead. Downloading {url} to {fpath}")
                 urllib.request.urlretrieve(url, fpath, reporthook=reporthook)
                 print()
             else:
@@ -86,10 +88,10 @@ def reporthook(count, block_size, total_size) -> None:
     sys.stdout.flush()
 
 
-def calculate_md5(fpath, chunk_size=1024 * 1024) -> str:
+def calculate_md5(fpath: Path, chunk_size=1024 * 1024) -> str:
     """Function to calculate md5 checksum"""
     md5 = hashlib.md5()
-    with open(fpath, "rb") as f:
+    with fpath.open("rb") as f:
         for chunk in iter(lambda: f.read(chunk_size), b""):
             md5.update(chunk)
     return md5.hexdigest()
@@ -100,9 +102,9 @@ def check_md5(fpath, md5, **kwargs) -> bool:
     return md5 == calculate_md5(fpath, **kwargs)
 
 
-def check_integrity(fpath, md5=None) -> bool:
+def check_integrity(fpath: Path, md5=None) -> bool:
     """Function to check if the given filepath has a file with the right checksum"""
-    if not os.path.isfile(fpath):
+    if not fpath.is_file():
         return False
     if md5 is None:
         return True
@@ -159,7 +161,7 @@ def main() -> int:
             print("With --get option either specify --latest or a specific tag using --tag")
             return 1
 
-        return get_release(url, args.filename, args.output)
+        return get_release(url, Path(args.filename), Path(args.output))
 
     # Create release
     if args.tag:
@@ -168,7 +170,7 @@ def main() -> int:
         print("With --create option, --tag is a required argument")
         return 1
 
-    return create_release(url, args.tag, args.filename, args.output)
+    return create_release(url, args.tag, Path(args.filename), Path(args.output))
 
 
 if __name__ == "__main__":

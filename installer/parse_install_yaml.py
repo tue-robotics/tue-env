@@ -2,6 +2,7 @@
 
 import sys
 from os import environ
+from pathlib import Path
 from typing import List, Mapping, Optional, Union
 
 import yaml
@@ -122,8 +123,8 @@ def catkin_git(source: Mapping) -> str:
     return command
 
 
-def install_yaml_parser(path: str, now: bool = False) -> Mapping[str, str]:
-    with open(path) as f:
+def install_yaml_parser(path: Path, now: bool = False) -> Mapping[str, str]:
+    with path.open() as f:
         try:
             install_items = yaml.load(f, yaml.CSafeLoader)
         except AttributeError:
@@ -244,7 +245,7 @@ def install_yaml_parser(path: str, now: bool = False) -> Mapping[str, str]:
                 "snap-now",
                 "gem-now",
             ]:
-                if now and "now" not in install_type:
+                if now and not install_type.endswith("-now"):
                     install_type += "-now"
 
                 try:
@@ -267,7 +268,7 @@ def install_yaml_parser(path: str, now: bool = False) -> Mapping[str, str]:
                 command = f"tue-install-{install_type} {pkg_name}"
 
             elif install_type in ["apt-key-source", "apt-key-source-now"]:
-                if now and "now" not in install_type:
+                if now and not install_type.endswith("-now"):
                     install_type += "-now"
 
                 command = f"tue-install-{install_type} {type_apt_key_source(install_item)}"
@@ -304,7 +305,8 @@ def main() -> int:
             return show_error(f"Unknown option: {sys.argv[2]}")
 
     try:
-        result = install_yaml_parser(sys.argv[1], now)
+        path = Path(sys.argv[1])
+        result = install_yaml_parser(path, now)
     except Exception as e:
         return show_error(str(e))
 

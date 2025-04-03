@@ -1,5 +1,6 @@
 #! /usr/bin/env python3
 
+from pathlib import Path
 from typing import Mapping
 import os
 import sys
@@ -13,11 +14,14 @@ def main() -> int:
         print("Usage: parse_package_xml PACKAGE.XML")
         return 1
 
-    print("\n".join(packagexml_parser(sys.argv[1])["deps"]))
+    path = Path(sys.argv[1])
+    result = packagexml_parser(path)
+
+    print("\n".join(result["deps"]))
     return 0
 
 
-def packagexml_parser(path: str) -> Mapping:
+def packagexml_parser(path: Path) -> Mapping:
     tree = ET.parse(path)
     doc = tree.getroot()
 

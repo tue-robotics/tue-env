@@ -25,27 +25,27 @@ import os
 import re
 import warnings
 import csv
+from pathlib import Path
 
 
 def get_distro_info(origin="Debian"):
-    try:
-        csvfile = open("/usr/share/distro-info/%s.csv" % origin.lower())
-    except FileNotFoundError:
+    path = Path(f"/usr/share/distro-info/{origin.lower()}.csv")
+    if not path.exists():
         # Unknown distro, fallback to Debian
-        csvfile = open("/usr/share/distro-info/debian.csv")
+        path = Path("/usr/share/distro-info/debian.csv")
 
-    reader = csv.DictReader(csvfile)
-    global RELEASE_CODENAME_LOOKUP, RELEASES_ORDER, TESTING_CODENAME
-    RELEASE_CODENAME_LOOKUP = {r["version"]: r["series"] for r in reader if r["version"]}
-    RELEASES_ORDER = list(RELEASE_CODENAME_LOOKUP.items())
-    RELEASES_ORDER.sort(key=lambda n: float(n[0]))
-    RELEASES_ORDER = list(list(zip(*RELEASES_ORDER))[1])
+    with path.open() as f:
+        reader = csv.DictReader(f)
+
+        global RELEASE_CODENAME_LOOKUP, RELEASES_ORDER, TESTING_CODENAME
+        RELEASE_CODENAME_LOOKUP = {r["version"]: r["series"] for r in reader if r["version"]}
+        RELEASES_ORDER = list(RELEASE_CODENAME_LOOKUP.items())
+        RELEASES_ORDER.sort(key=lambda n: float(n[0]))
+        RELEASES_ORDER = list(list(zip(*RELEASES_ORDER))[1])
 
     if origin.lower() == "debian":
         TESTING_CODENAME = "unknown.new.testing"
         RELEASES_ORDER.extend(["stable", "proposed-updates", "testing", "testing-proposed-updates", "unstable", "sid"])
-
-    csvfile.close()
 
 
 # Populate default distro info
@@ -121,14 +121,6 @@ def valid_lsb_versions(version, module):
             return ["2.0", "3.0", "3.1", "3.2", "4.0", "4.1"]
 
     return [version]
-
-
-try:
-    set  # introduced in 2.4
-except NameError:
-    import sets
-
-    set = sets.Set
 
 
 # This is Debian-specific at present
@@ -297,10 +289,10 @@ def guess_debian_release():
 
     distinfo["ID"] = "Debian"
     # Use /etc/dpkg/origins/default to fetch the distribution name
-    etc_dpkg_origins_default = os.environ.get("LSB_ETC_DPKG_ORIGINS_DEFAULT", "/etc/dpkg/origins/default")
-    if os.path.exists(etc_dpkg_origins_default):
+    etc_dpkg_origins_default = Path(os.environ.get("LSB_ETC_DPKG_ORIGINS_DEFAULT", "/etc/dpkg/origins/default"))
+    if etc_dpkg_origins_default.exists():
         try:
-            with open(etc_dpkg_origins_default) as dpkg_origins_file:
+            with etc_dpkg_origins_default.open() as dpkg_origins_file:
                 for line in dpkg_origins_file:
                     try:
                         (header, content) = line.split(": ", 1)
@@ -311,7 +303,7 @@ def guess_debian_release():
                     except ValueError:
                         pass
         except IOError as msg:
-            print("Unable to open " + etc_dpkg_origins_default + ":", str(msg), file=sys.stderr)
+            print(f"Unable to open {etc_dpkg_origins_default}:", str(msg), file=sys.stderr)
 
     # Populate RELEASES_ORDER for the correct distro
     get_distro_info(distinfo["ID"])
@@ -328,13 +320,13 @@ def guess_debian_release():
 
     distinfo["DESCRIPTION"] = "%(ID)s %(OS)s" % distinfo
 
-    etc_debian_version = os.environ.get("LSB_ETC_DEBIAN_VERSION", "/etc/debian_version")
-    if os.path.exists(etc_debian_version):
+    etc_debian_version = Path(os.environ.get("LSB_ETC_DEBIAN_VERSION", "/etc/debian_version"))
+    if etc_debian_version.exists():
         try:
-            with open(etc_debian_version) as debian_version:
+            with etc_debian_version.open() as debian_version:
                 release = debian_version.read().strip()
         except IOError as msg:
-            print("Unable to open " + etc_debian_version + ":", str(msg), file=sys.stderr)
+            print(f"Unable to open {etc_debian_version}:", str(msg), file=sys.stderr)
             release = "unknown"
 
         if not release[0:1].isalpha():
@@ -393,10 +385,10 @@ def guess_debian_release():
 # Whatever is guessed above can be overridden in /usr/lib/os-release by derivatives
 def get_os_release():
     distinfo = {}
-    os_release = os.environ.get("LSB_OS_RELEASE", "/usr/lib/os-release")
-    if os.path.exists(os_release):
+    os_release = Path(os.environ.get("LSB_OS_RELEASE", "/usr/lib/os-release"))
+    if os_release.exists():
         try:
-            with open(os_release) as os_release_file:
+            with os_release.open() as os_release_file:
                 for line in os_release_file:
                     line = line.strip()
                     if not line:
@@ -420,7 +412,7 @@ def get_os_release():
                         elif var == "PRETTY_NAME":
                             distinfo["DESCRIPTION"] = arg.strip()
         except IOError as msg:
-            print("Unable to open " + os_release + ":", str(msg), file=sys.stderr)
+            print(f"Unable to open {os_release}:", str(msg), file=sys.stderr)
 
     return distinfo
 

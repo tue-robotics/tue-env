@@ -3,12 +3,13 @@
 import platform
 import sys
 import os
+from pathlib import Path
 from typing import Mapping
 from parse_package_xml import packagexml_parser
-from parse_install_yaml import installyaml_parser
+from parse_install_yaml import install_yaml_parser
 
 
-TUE_ENV_TARGETS_DIR = os.environ["TUE_ENV_TARGETS_DIR"]
+TUE_ENV_TARGETS_DIR = Path(os.environ["TUE_ENV_TARGETS_DIR"])
 TUE_ENV_ROS_DISTRO = os.environ["TUE_ENV_ROS_DISTRO"]
 ARCHITECTURES = {"x86_64": "amd64", "aarch64": "arm64"}
 CONTROL_FILE_TEMPLATE = """
@@ -30,17 +31,17 @@ def main() -> int:
     return 0
 
 
-def generate_control_file(path: str) -> Mapping:
+def generate_control_file(path: Path) -> Mapping:
     parsed = packagexml_parser(path)["parser"]
 
     maintainer_string = ", ".join(f"{m} <{parsed['emails'][m]}>" for m in parsed["maintainer"])
 
     system_deps = []
     for dep in parsed["depend"]:
-        install_yaml = os.path.join(TUE_ENV_TARGETS_DIR, dep, "install.yaml")
-        if not os.path.exists(install_yaml):
-            install_yaml = os.path.join(TUE_ENV_TARGETS_DIR, f"ros-{dep}", "install.yaml")
-        system_deps += installyaml_parser(install_yaml)["system_packages"]
+        install_yaml = TUE_ENV_TARGETS_DIR / dep / "install.yaml"
+        if not install_yaml.is_file():
+            install_yaml = TUE_ENV_TARGETS_DIR / f"ros-{dep}" / "install.yaml"
+        system_deps += install_yaml_parser(install_yaml)["system_packages"]
 
     system_dep_string = ""
     if system_deps:
@@ -70,7 +71,7 @@ def generate_control_file(path: str) -> Mapping:
     return {"package": package, "version": version, "arch": arch, "control": control_file}
 
 
-def create_dirs(release_dir_path: str, package_xml_path: str, timestamp: str) -> None:
+def create_dirs(release_dir_path: Path, package_xml_path: Path, timestamp: str) -> None:
     cfdict = generate_control_file(package_xml_path)
 
     # timestamp = str(datetime.datetime.now()).replace("-", "")
@@ -82,11 +83,11 @@ def create_dirs(release_dir_path: str, package_xml_path: str, timestamp: str) ->
 
     package_release_dirname = f"{cfdict['package']}_{cfdict['version']}-{rev}_{cfdict['arch']}"
 
-    control_file_dir = os.path.join(release_dir_path, package_release_dirname, "DEBIAN")
-    control_file_path = os.path.join(control_file_dir, "control")
+    control_file_dir = release_dir_path / package_release_dirname / "DEBIAN"
+    control_file_path = control_file_dir / "control"
 
     os.makedirs(control_file_dir)
-    with open(control_file_path, "w") as f:
+    with control_file_path.open("w") as f:
         f.write(cfdict["control"])
 
     print(package_release_dirname)
