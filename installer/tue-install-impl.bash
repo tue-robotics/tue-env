@@ -923,7 +923,6 @@ function tue-install-system-now
     fi
 
     local pkgs_to_install dpkg_query
-    # shellcheck disable=SC2016
     dpkg_query=$(dpkg-query -W -f '${package} ${status}\n' 2>/dev/null)
     # shellcheck disable=SC2048
     for pkg in $*
