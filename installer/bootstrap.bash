@@ -109,26 +109,25 @@ function main
         esac
     done
 
+    declare -A ros2_distribution_map
+    ros2_distribution_map["20.04"]="galactic"
+    ros2_distribution_map["22.04"]="humble"
+    ros2_distribution_map["24.04"]="jazzy"
+
     case ${distrib_release} in
         "20.04")
             if [[ "${ros_version}" -eq 2 ]]
             then
                 tue_env_ros_version=2
-                if [[ "${ros_distro}" == "foxy" ]]
-                then
-                    tue_env_ros_distro="foxy"
-                elif [[ "${ros_distro}" == "galactic" ]]
-                then
-                    tue_env_ros_distro="galactic"
-                elif [[ "${ros_distro}" == "rolling" ]]
-                then
-                    tue_env_ros_distro="rolling"
+            if [[ "${ros_distro}" == "foxy" || "${ros_distro}" == "${ros2_distribution_map[${distrib_release}]}" || "${ros_distro}" == "rolling" ]]
+            then
+                tue_env_ros_distro="${ros_distro}"
                 elif [[ -n "${ros_distro}" ]]
                 then
                     echo "[tue-env](bootstrap) Error! ROS ${ros_distro} is unsupported with tue-env."
                     return 1
                 else
-                    tue_env_ros_distro="galactic"
+                    tue_env_ros_distro="${ros2_distribution_map[${distrib_release}]}"
                     echo "[tue-env](bootstrap) Using default ROS_DISTRO '${tue_env_ros_distro}' with ROS_VERSION '${tue_env_ros_version}'"
                 fi
             elif [[ "${ros_version}" -eq 1 ]]
@@ -145,7 +144,7 @@ function main
                 echo "[tue-env](bootstrap) Using default ROS_DISTRO '${tue_env_ros_distro}' with ROS_VERSION '${tue_env_ros_version}'"
             fi
             ;;
-        "22.04")
+        "22.04" | "24.04")
             if [[ -n "${ros_version}" ]] && [[ "${ros_version}" -ne 2 ]]
             then
                  echo "[tue-env](bootstrap) Error! Only ROS version 2 is supported with ubuntu 22.04 and newer"
@@ -153,41 +152,15 @@ function main
             fi
             tue_env_ros_version=2
 
-            if [[ "${ros_distro}" == "humble" ]]
+            if [[ "${ros_distro}" == "${ros2_distribution_map[${distrib_release}]}" || "${ros_distro}" == "rolling" ]]
             then
-                tue_env_ros_distro="humble"
-            elif [[ "${ros_distro}" == "rolling" ]]
-            then
-                tue_env_ros_distro="rolling"
+                tue_env_ros_distro="${ros_distro}"
             elif [[ -n "${ros_distro}" ]]
             then
                 echo "[tue-env](bootstrap) Error! ROS ${ros_distro} is unsupported with tue-env."
                 return 1
             else
-                tue_env_ros_distro="humble"
-                echo "[tue-env](bootstrap) Using default ROS_DISTRO '${tue_env_ros_distro}' with ROS_VERSION '${tue_env_ros_version}'"
-            fi
-            ;;
-        "24.04")
-            if [[ -n "${ros_version}" ]] && [[ "${ros_version}" -ne 2 ]]
-            then
-                 echo "[tue-env](bootstrap) Error! Only ROS version 2 is supported with ubuntu 22.04 and newer"
-                 return 1
-            fi
-            tue_env_ros_version=2
-
-            if [[ "${ros_distro}" == "jazzy" ]]
-            then
-                tue_env_ros_distro="jazzy"
-            elif [[ "${ros_distro}" == "rolling" ]]
-            then
-                tue_env_ros_distro="rolling"
-            elif [[ -n "${ros_distro}" ]]
-            then
-                echo "[tue-env](bootstrap) Error! ROS ${ros_distro} is unsupported with tue-env."
-                return 1
-            else
-                tue_env_ros_distro="jazzy"
+                tue_env_ros_distro="${ros2_distribution_map[${distrib_release}]}"
                 echo "[tue-env](bootstrap) Using default ROS_DISTRO '${tue_env_ros_distro}' with ROS_VERSION '${tue_env_ros_version}'"
             fi
             ;;
