@@ -44,10 +44,10 @@ function _show_dep
         then
             #get package version
             pkgdir="$(rospack find "${1//ros-}" 2> /dev/null)"
-            packagexml="${pkgdir}/package.xml"
-            if [ -f "$packagexml" ]
+            package_xml="${pkgdir}/package.xml"
+            if [ -f "${package_xml}" ]
             then
-                version=$(xmlstarlet sel -t -m '//version[1]' -v . -n <"$packagexml")
+                version=$(xmlstarlet sel -t -m '//version[1]' -v . -n <"${package_xml}")
             else
                 version=""
             fi

@@ -5,7 +5,7 @@ import sys
 import os
 from pathlib import Path
 from typing import Mapping
-from parse_package_xml import packagexml_parser
+from parse_package_xml import package_xml_parser
 from parse_install_yaml import install_yaml_parser
 
 
@@ -32,7 +32,7 @@ def main() -> int:
 
 
 def generate_control_file(path: Path) -> Mapping:
-    parsed = packagexml_parser(path)["parser"]
+    parsed = package_xml_parser(path)["parser"]
 
     maintainer_string = ", ".join(f"{m} <{parsed['emails'][m]}>" for m in parsed["maintainer"])
 

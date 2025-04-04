@@ -15,13 +15,13 @@ def main() -> int:
         return 1
 
     path = Path(sys.argv[1])
-    result = packagexml_parser(path)
+    result = package_xml_parser(path)
 
     print("\n".join(result["deps"]))
     return 0
 
 
-def packagexml_parser(path: Path) -> Mapping:
+def package_xml_parser(path: Path) -> Mapping:
     tree = ET.parse(path)
     doc = tree.getroot()
 
