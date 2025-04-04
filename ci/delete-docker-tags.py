@@ -66,7 +66,7 @@ class DockerHub(object):
         resp = self._session.get(url, auth=self._auth)
         if not resp.ok:
             content = json.dumps(resp.json(), indent=4)
-            print(f'Call to "{url}" resulted in error status {resp.status_code}:\n{content}')
+            print(f'Call to "{url}" resulted in error status {resp.status_code}:\n{content}', file=sys.stderr)
             return None
         return resp.json()
 
@@ -103,12 +103,13 @@ class DockerHub(object):
             content = json.dumps(resp.json(), indent=4)
             print(
                 f'Failed to delete tag: "{tag}" of image: "{namespace}/{image}", '
-                f"error status {resp.status_code}:\n{content}"
+                f"error status {resp.status_code}:\n{content}",
+                file=sys.stderr,
             )
         return resp.ok
 
 
-if __name__ == "__main__":
+def main():
     parser = argparse.ArgumentParser(
         prog="delete-docker-tags",
         description="Delete tags from a set of images in a single namespace",
@@ -131,19 +132,22 @@ if __name__ == "__main__":
 
     namespaces_found = hub.namespaces()
     if namespace not in namespaces_found:
-        print('No access to "{namespace}" organization')
-        sys.exit(1)
+        print('No access to "{namespace}" organization', file=sys.stderr)
+        return 1
 
     images_found = hub.image_names(namespace)
     for image in images:
         if image not in images_found:
-            print(f'Image: "{image}" not found. Available images: {images_found}')
+            print(f'Image: "{image}" not found. Available images: {images_found}', file=sys.stderr)
             continue
 
         tags_found = hub.tag_names(namespace, image)
         for tag in tags:
             if tag not in tags_found:
-                print(f'Tag: "{tag}" not found for image: "{namespace}/{image}". Available tags: {tags_found}')
+                print(
+                    f'Tag: "{tag}" not found for image: "{namespace}/{image}". Available tags: {tags_found}',
+                    file=sys.stderr,
+                )
                 continue
 
             print(f'Going to delete tag: "{tag}" of image: "{namespace}/{image}"')
@@ -153,4 +157,8 @@ if __name__ == "__main__":
             else:
                 error = True
 
-    sys.exit(error)
+    return int(error)
+
+
+if __name__ == "__main__":
+    sys.exit(main())

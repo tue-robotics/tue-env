@@ -75,7 +75,7 @@ def main() -> int:
         generator = SetupGenerator()
         generator.generate_setup_file()
     except Exception as e:
-        print(f"ERROR: Could not generate setup file: {repr(e)}\n{traceback.format_exc()}")
+        print(f"ERROR: Could not generate setup file: {repr(e)}\n{traceback.format_exc()}", file=sys.stderr)
         return 1
 
     return 0

@@ -4,6 +4,7 @@ from pathlib import Path
 from typing import Mapping
 import os
 import sys
+import traceback
 import xml.etree.ElementTree as ET
 
 from catkin_pkg.condition import evaluate_condition
@@ -14,8 +15,12 @@ def main() -> int:
         print("Usage: parse_package_xml PACKAGE.XML")
         return 1
 
-    path = Path(sys.argv[1])
-    result = package_xml_parser(path)
+    try:
+        path = Path(sys.argv[1])
+        result = package_xml_parser(path)
+    except Exception as e:
+        print(f"ERROR: Could not parse package.xml: {repr(e)}\n{traceback.format_exc()}")
+        return 1
 
     print("\n".join(result["deps"]))
     return 0

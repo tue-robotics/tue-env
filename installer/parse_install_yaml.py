@@ -1,6 +1,7 @@
 #! /usr/bin/env python3
 
 import sys
+import traceback
 from os import environ
 from pathlib import Path
 from typing import List, Mapping, Optional, Union
@@ -9,11 +10,6 @@ import yaml
 from lsb_release import get_distro_information
 
 ubuntu_release = get_distro_information()["CODENAME"]
-
-
-def show_error(error: str) -> int:
-    print(f"ERROR: {error}")
-    return 1
 
 
 def type_git(install_item: Mapping, allowed_keys: Optional[List[str]] = None) -> str:
@@ -295,20 +291,23 @@ def install_yaml_parser(path: Path, now: bool = False) -> Mapping[str, str]:
 
 def main() -> int:
     if not 2 <= len(sys.argv) <= 3:
-        return show_error("Usage: parse_install_yaml install.yaml [--now]")
+        print("Usage: parse_install_yaml install.yaml [--now]")
+        return 1
 
     now: bool = False
     if len(sys.argv) == 3:
         if sys.argv[2] == "--now":
             now = True
         else:
-            return show_error(f"Unknown option: {sys.argv[2]}")
+            print(f"Unknown option: {sys.argv[2]}")
+            return 1
 
     try:
         path = Path(sys.argv[1])
         result = install_yaml_parser(path, now)
     except Exception as e:
-        return show_error(str(e))
+        print(f"ERROR: Could not parse package.xml: {repr(e)}\n{traceback.format_exc()}")
+        return 1
 
     if result["commands"]:
         print(result["commands"])
