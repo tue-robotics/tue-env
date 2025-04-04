@@ -1,18 +1,15 @@
 #! /usr/bin/env python3
 
 import sys
+import traceback
 from os import environ
+from pathlib import Path
 from typing import List, Mapping, Optional, Union
 
 import yaml
 from lsb_release import get_distro_information
 
 ubuntu_release = get_distro_information()["CODENAME"]
-
-
-def show_error(error: str) -> int:
-    print(f"ERROR: {error}")
-    return 1
 
 
 def type_git(install_item: Mapping, allowed_keys: Optional[List[str]] = None) -> str:
@@ -60,20 +57,22 @@ def type_git(install_item: Mapping, allowed_keys: Optional[List[str]] = None) ->
 
 
 def type_apt_key_source(install_item: Mapping) -> str:
-    dist_exts = install_item.get("distribution-extensions")
+    dist_exts = install_item.get("distribution-extensions", [])  # Optional field
+    include_distribution = install_item.get("include-distribution", True)  # Optional field
     key_file = install_item.get("key-file")
     key_fingerprint = install_item.get("key-fingerprint")
     key_url = install_item.get("key-url")
     repo_components = install_item.get("repo-components", [])  # Optional field
+    repo_name = install_item.get("repo-name", "")  # Optional field
     repo_url = install_item.get("repo-url")
     source_file = install_item.get("source-file")
 
     args: List[str] = []
 
+    args.append(f"--include-distribution={str(include_distribution).lower()}")
+
     if not isinstance(dist_exts, list):
         raise ValueError("distribution-extensions should be a list")
-    if len(dist_exts) < 1:
-        raise ValueError("At least one distribution extension should be specified")
     for dist_ext in dist_exts:
         args.append(f"--distribution-extension={dist_ext}")
 
@@ -86,6 +85,8 @@ def type_apt_key_source(install_item: Mapping) -> str:
     for repo_component in repo_components:
         args.append(f"--repo-component={repo_component}")
 
+    if repo_name:
+        args.append(f"--repo-name={repo_name}")
     args.append(f"--repo-url={repo_url}")
     args.append(f"--source-file={source_file}")
 
@@ -119,8 +120,8 @@ def catkin_git(source: Mapping) -> str:
     return command
 
 
-def install_yaml_parser(path: str, now: bool = False) -> Mapping[str, str]:
-    with open(path) as f:
+def install_yaml_parser(path: Path, now: bool = False) -> Mapping[str, str]:
+    with path.open() as f:
         try:
             install_items = yaml.load(f, yaml.CSafeLoader)
         except AttributeError:
@@ -241,7 +242,7 @@ def install_yaml_parser(path: str, now: bool = False) -> Mapping[str, str]:
                 "snap-now",
                 "gem-now",
             ]:
-                if now and "now" not in install_type:
+                if now and not install_type.endswith("-now"):
                     install_type += "-now"
 
                 try:
@@ -264,7 +265,7 @@ def install_yaml_parser(path: str, now: bool = False) -> Mapping[str, str]:
                 command = f"tue-install-{install_type} {pkg_name}"
 
             elif install_type in ["apt-key-source", "apt-key-source-now"]:
-                if now and "now" not in install_type:
+                if now and not install_type.endswith("-now"):
                     install_type += "-now"
 
                 command = f"tue-install-{install_type} {type_apt_key_source(install_item)}"
@@ -291,19 +292,23 @@ def install_yaml_parser(path: str, now: bool = False) -> Mapping[str, str]:
 
 def main() -> int:
     if not 2 <= len(sys.argv) <= 3:
-        return show_error("Usage: parse_install_yaml install.yaml [--now]")
+        print("Usage: parse_install_yaml install.yaml [--now]")
+        return 1
 
     now: bool = False
     if len(sys.argv) == 3:
         if sys.argv[2] == "--now":
             now = True
         else:
-            return show_error(f"Unknown option: {sys.argv[2]}")
+            print(f"Unknown option: {sys.argv[2]}")
+            return 1
 
     try:
-        result = install_yaml_parser(sys.argv[1], now)
+        path = Path(sys.argv[1])
+        result = install_yaml_parser(path, now)
     except Exception as e:
-        return show_error(str(e))
+        print(f"ERROR: Could not parse package.xml: {repr(e)}\n{traceback.format_exc()}")
+        return 1
 
     if result["commands"]:
         print(result["commands"])

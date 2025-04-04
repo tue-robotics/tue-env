@@ -1,6 +1,6 @@
 #! /usr/bin/env python3
 
-import site
+import traceback
 from typing import List
 from pip._internal.req.constructors import install_req_from_line
 from pip._internal.utils.virtualenv import running_under_virtualenv
@@ -23,7 +23,7 @@ def main(req_strs: List[str]) -> int:
                 return_code = 1
 
     except Exception as e:
-        print(f"check-pip-pkg-installed-version.py:\n{e}")
+        print(f"check-pip-pkg-installed-version.py: {repr(e)}\n{traceback.format_exc()}")
         return 2
 
     print(" ".join(pkg_installed))

@@ -1091,7 +1091,7 @@ function tue-install-apt-key-source
         tue-install-error "Invalid tue-install-apt-key-source call: needs minimal 6 arguments"
     fi
     local args
-    args="$*"
+    args="--repo-name=${TUE_INSTALL_CURRENT_TARGET%-setup} $*"
 
     tue-install-debug "Adding '${args}' to apt-key-source list"
     TUE_INSTALL_APT_KEY_SOURCES="${TUE_INSTALL_APT_KEY_SOURCES:+${TUE_INSTALL_APT_KEY_SOURCES} }${args// /^}"  # Replace space by ^ to support for-loops later
@@ -1103,9 +1103,11 @@ function tue-install-apt-key-source-now
 {
     tue-install-debug "tue-install-apt-key-source-now $*"
 
-    local distribution_extensions key_file key_fingerprint key_url repo_url source_file
+    local distribution_extensions include_distribution key_file key_fingerprint key_url repo_name repo_url source_file
     distribution_extensions=()
+    include_distribution="true"
     repo_components=()
+    repo_name="${TUE_INSTALL_CURRENT_TARGET%-setup}"
     if [[ -n $1 ]]
     then
         for i in "$@"
@@ -1113,6 +1115,8 @@ function tue-install-apt-key-source-now
             case $i in
                 --distribution-extension=* )
                     distribution_extensions+=("${i#*=}") ;;
+                --include-distribution=* )
+                    include_distribution="${i#*=}" ;;
                 --key-file=* )
                     key_file="${i#*=}" ;;
                 --key-fingerprint=* )
@@ -1121,6 +1125,8 @@ function tue-install-apt-key-source-now
                     key_url="${i#*=}" ;;
                 --repo-component=* )
                     repo_components+=("${i#*=}") ;;
+                --repo-name=* )
+                    repo_name="${i#*=}" ;;
                 --repo-url=* )
                     repo_url="${i#*=}" ;;
                 --source-file=* )
@@ -1129,11 +1135,6 @@ function tue-install-apt-key-source-now
                     tue-install-error "Unknown input variable ${i}" ;;
             esac
         done
-    fi
-
-    if [[ ! ${#distribution_extensions[@]} ]]
-    then
-        tue-install-error "Invalid tue-install-apt-key-source-now call: needs at least 1 distribution-extension"
     fi
 
     if [[ -z "${key_file}" ]]
@@ -1161,8 +1162,16 @@ function tue-install-apt-key-source-now
         tue-install-error "Invalid tue-install-apt-key-source-now call: needs source-file"
     fi
 
-    local key_folder name
-    name=${TUE_INSTALL_CURRENT_TARGET%-setup}
+    if [[ ${#distribution_extensions[@]} -le 0 ]]
+    then
+        tue-install-debug "No distribution extensions provided. Adding empty string to the list"
+        distribution_extensions+=("")
+    elif [[ "${include_distribution}" == "false" ]]
+    then
+        tue-install-warning "'distribution-extensions' provided but 'include-distribution' is set to 'false'. No need to set this argument. This will be ignored"
+    fi
+
+    local key_folder
     key_folder=$(dirname "${key_file}")
 
     if [[ $(dirname "${source_file}") == "." ]]
@@ -1173,17 +1182,22 @@ function tue-install-apt-key-source-now
 
     local arch distribution
     arch=$(dpkg --print-architecture)
-    distribution=$(lsb_release -cs)
+
 
     local distribution_components
     distribution_components=()
-    for dist_ext in "${distribution_extensions[@]}"
-    do
-        distribution_components+=("${distribution}${dist_ext:+-${dist_ext}}")
-    done
+    if [[ "${include_distribution}" == "true" ]]
+    then
+        local distribution
+        distribution=$(lsb_release -cs)
+        for dist_ext in "${distribution_extensions[@]}"
+        do
+            distribution_components+=("${distribution}${dist_ext:+-${dist_ext}}")
+        done
+    fi
 
     local source_url
-    source_url="deb [arch=${arch} signed-by=${key_file}] ${repo_url} ${distribution_components[*]} ${repo_components[*]}"
+    source_url="deb [arch=${arch} signed-by=${key_file}] ${repo_url}${distribution_components:+ ${distribution_components[*]}}${repo_components:+ ${repo_components[*]}}"
 
     local apt_needs_to_be_updated key_needs_to_be_added source_needs_to_be_added
     key_needs_to_be_added=false
@@ -1199,36 +1213,36 @@ function tue-install-apt-key-source-now
         tue-install-debug "Keyring '${key_file}' doesn't match the fingerprint '${key_fingerprint}'."
         key_needs_to_be_added=true
     else
-        tue-install-debug "Not updating the existing GPG of the ${name} repository with fingerprint '${key_fingerprint}'"
+        tue-install-debug "Not updating the existing GPG of the ${repo_name} repository with fingerprint '${key_fingerprint}'"
     fi
 
     if [[ "${key_needs_to_be_added}" == "true" ]]
     then
         tue-install-debug "Making sure '${key_folder}' folder exists with the correct permissions."
         tue-install-pipe sudo install -m 0755 -d "${key_folder}" || tue-install-error "Could not create '${key_folder}' folder"
-        tue-install-debug "Downloading gpg key of ${name} repo with fingerprint '${key_fingerprint}'."
+        tue-install-debug "Downloading gpg key of ${repo_name} repo with fingerprint '${key_fingerprint}'."
         curl -fsSL "${key_url}" | sudo gpg --dearmor --yes -o "${key_file}"
-        tue-install-debug "Successfully added/updated ${name} repository GPG key"
+        tue-install-debug "Successfully added/updated ${repo_name} repository GPG key"
 
         apt_needs_to_be_updated=true
     fi
 
     if [[ ! -f "${source_file}" ]]
     then
-        tue-install-debug "Adding ${name} sources to apt-get"
+        tue-install-debug "Adding ${repo_name} sources to apt-get"
         source_needs_to_be_added=true
     elif [[ $(cat "${source_file}") != "${source_url}" ]]
     then
-        tue-install-debug "Updating ${name} sources to apt-get"
+        tue-install-debug "Updating ${repo_name} sources to apt-get"
         source_needs_to_be_added=true
     else
-        tue-install-debug "${name} sources already added to apt-get"
+        tue-install-debug "${repo_name} sources already added to apt-get"
     fi
 
     if [[ "${source_needs_to_be_added}" == "true" ]]
     then
         echo "${source_url}" | sudo tee "${source_file}" > /dev/null
-        tue-install-debug "Successfully added/updated ${name} source file in apt"
+        tue-install-debug "Successfully added/updated ${repo_name} source file in apt"
 
         apt_needs_to_be_updated=true
     fi
