@@ -1103,9 +1103,11 @@ function tue-install-apt-key-source-now
 {
     tue-install-debug "tue-install-apt-key-source-now $*"
 
-    local distribution_extensions key_file key_fingerprint key_url repo_name repo_url source_file
+    local distribution_extensions include_distribution key_file key_fingerprint key_url repo_name repo_url source_file
     distribution_extensions=()
+    include_distribution="true"
     repo_components=()
+    repo_name="${TUE_INSTALL_CURRENT_TARGET%-setup}"
     if [[ -n $1 ]]
     then
         for i in "$@"
@@ -1113,6 +1115,8 @@ function tue-install-apt-key-source-now
             case $i in
                 --distribution-extension=* )
                     distribution_extensions+=("${i#*=}") ;;
+                --include-distribution=* )
+                    include_distribution="${i#*=}" ;;
                 --key-file=* )
                     key_file="${i#*=}" ;;
                 --key-fingerprint=* )
@@ -1131,11 +1135,6 @@ function tue-install-apt-key-source-now
                     tue-install-error "Unknown input variable ${i}" ;;
             esac
         done
-    fi
-
-    if [[ ! ${#distribution_extensions[@]} ]]
-    then
-        tue-install-error "Invalid tue-install-apt-key-source-now call: needs at least 1 distribution-extension"
     fi
 
     if [[ -z "${key_file}" ]]
@@ -1163,7 +1162,14 @@ function tue-install-apt-key-source-now
         tue-install-error "Invalid tue-install-apt-key-source-now call: needs source-file"
     fi
 
-    [[ -z "${repo_name}" ]]  && repo_name="${TUE_INSTALL_CURRENT_TARGET%-setup}"
+    if [[ ${#distribution_extensions[@]} -le 0 ]]
+    then
+        tue-install-debug "No distribution extensions provided. Adding empty string to the list"
+        distribution_extensions+=("")
+    elif [[ "${include_distribution}" == "false" ]]
+    then
+        tue-install-warning "'distribution-extensions' provided but 'include-distribution' is set to 'false'. No need to set this argument. This will be ignored"
+    fi
 
     local key_folder
     key_folder=$(dirname "${key_file}")
@@ -1176,17 +1182,22 @@ function tue-install-apt-key-source-now
 
     local arch distribution
     arch=$(dpkg --print-architecture)
-    distribution=$(lsb_release -cs)
+
 
     local distribution_components
     distribution_components=()
-    for dist_ext in "${distribution_extensions[@]}"
-    do
-        distribution_components+=("${distribution}${dist_ext:+-${dist_ext}}")
-    done
+    if [[ "${include_distribution}" == "true" ]]
+    then
+        local distribution
+        distribution=$(lsb_release -cs)
+        for dist_ext in "${distribution_extensions[@]}"
+        do
+            distribution_components+=("${distribution}${dist_ext:+-${dist_ext}}")
+        done
+    fi
 
     local source_url
-    source_url="deb [arch=${arch} signed-by=${key_file}] ${repo_url} ${distribution_components[*]} ${repo_components[*]}"
+    source_url="deb [arch=${arch} signed-by=${key_file}] ${repo_url}${distribution_components:+ ${distribution_components[*]}}${repo_components:+ ${repo_components[*]}}"
 
     local apt_needs_to_be_updated key_needs_to_be_added source_needs_to_be_added
     key_needs_to_be_added=false

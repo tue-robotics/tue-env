@@ -57,7 +57,8 @@ def type_git(install_item: Mapping, allowed_keys: Optional[List[str]] = None) ->
 
 
 def type_apt_key_source(install_item: Mapping) -> str:
-    dist_exts = install_item.get("distribution-extensions")
+    dist_exts = install_item.get("distribution-extensions", [])  # Optional field
+    include_distribution = install_item.get("include-distribution", True)  # Optional field
     key_file = install_item.get("key-file")
     key_fingerprint = install_item.get("key-fingerprint")
     key_url = install_item.get("key-url")
@@ -68,10 +69,10 @@ def type_apt_key_source(install_item: Mapping) -> str:
 
     args: List[str] = []
 
+    args.append(f"--include-distribution={str(include_distribution).lower()}")
+
     if not isinstance(dist_exts, list):
         raise ValueError("distribution-extensions should be a list")
-    if len(dist_exts) < 1:
-        raise ValueError("At least one distribution extension should be specified")
     for dist_ext in dist_exts:
         args.append(f"--distribution-extension={dist_ext}")
 
