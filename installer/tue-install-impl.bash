@@ -1599,16 +1599,6 @@ function tue-install-ros
 
     tue-install-debug "Installing ros package: type: $install_type, source: $src"
 
-    if [[ ! -v TUE_ENV_ROS_DISTRO && -v TUE_ROS_DISTRO ]]
-    then
-        TUE_ENV_ROS_DISTRO=${TUE_ROS_DISTRO}
-        tue-install-warning "Change the config of your environment to use 'TUE_ENV_ROS_DISTRO' instead of 'TUE_ROS_DISTRO'"
-    fi
-    if [[ ! -v TUE_ENV_ROS_VERSION && -v TUE_ROS_VERSION ]]
-    then
-        TUE_ENV_ROS_VERSION=${TUE_ROS_VERSION}
-        tue-install-warning "Change the config of your environment to use 'TUE_ENV_ROS_VERSION' instead of 'TUE_ROS_VERSION'"
-    fi
     [ -n "${TUE_ENV_ROS_DISTRO}" ] || tue-install-error "Environment variable 'TUE_ENV_ROS_DISTRO' is not set."
     [ -n "${TUE_ENV_ROS_VERSION}" ] || tue-install-error "Environment variable 'TUE_ENV_ROS_VERSION' is not set."
 
@@ -1787,7 +1777,6 @@ function tue-install-ros-remove-source
         tue-install-error "Repo directory path cannot be empty"
     fi
 
-    [[ -v TUE_ENV_ROS_VERSION || -v TUE_ROS_VERSION ]] || { TUE_ENV_ROS_VERSION=${TUE_ROS_VERSION}; tue-install-warning "Change the config of your environment to use 'TUE_ENV_ROS_VERSION' instead of 'TUE_ROS_VERSION'"; }
     [[ -n "${TUE_ENV_ROS_VERSION}" ]] || tue-install-error "Environment variable 'TUE_ENV_ROS_VERSION' is not set."
 
     local ros_pkg_name

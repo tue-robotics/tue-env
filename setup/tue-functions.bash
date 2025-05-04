@@ -1,30 +1,13 @@
 #! /usr/bin/env bash
 
-# TODO(anyone): Remove the use of TUE_XXX, when migration to TUE_ENV_XXX is complete
-TUE_SYSTEM_DIR="${TUE_ENV_DIR}"/system  # This variable is deprecated and will be removed in a future version of the tool
-TUE_WS_DIR="${TUE_SYSTEM_DIR}"
-export TUE_SYSTEM_DIR
-export TUE_WS_DIR
-
 TUE_ENV_WS_DIR="${TUE_ENV_DIR}"/system
 export TUE_ENV_WS_DIR
-
-# TODO(anyone): Remove the use of TUE_XXX, when migration to TUE_ENV_XXX is complete
-if [[ -z "${TUE_REPOS_DIR}" ]]  # Only set this variable if there exists no default in user_setup.bash
-then
-    TUE_REPOS_DIR="${TUE_ENV_DIR}"/repos
-    export TUE_REPOS_DIR
-fi
 
 if [[ -z "${TUE_ENV_REPOS_DIR}" ]]  # Only set this variable if there exists no default in user_setup.bash
 then
     TUE_ENV_REPOS_DIR="${TUE_ENV_DIR}"/repos
     export TUE_ENV_REPOS_DIR
 fi
-
-# TODO(anyone): Remove the use of TUE_XXX, when migration to TUE_ENV_XXX is complete
-TUE_RELEASE_DIR="${TUE_ENV_WS_DIR}"/release
-export TUE_RELEASE_DIR
 
 TUE_ENV_RELEASE_DIR="${TUE_ENV_WS_DIR}"/release
 export TUE_ENV_RELEASE_DIR
@@ -348,17 +331,7 @@ function _git_https_or_ssh
     local input_url output_url test_var
     input_url=$1
 
-    # TODO(anyone): Remove the use of TUE_USE_SSH when migration to TUE_ENV_GIT_USE_SSH is complete
-    [[ -v TUE_USE_SSH ]] && { test_var="TUE_USE_SSH"; >&2 echo "Replace 'TUE_USE_SSH' in your environment config to 'TUE_ENV_GIT_USE_SSH'"; }
-
-    # TODO(anyone): Remove the use of TUE_XXX, when migration to TUE_ENV_XXX is complete
-    [[ -v TUE_GIT_USE_SSH ]] && { test_var="TUE_GIT_USE_SSH"; >&2 echo "Replace 'TUE_GIT_USE_SSH' in your environment config to 'TUE_ENV_GIT_USE_SSH'"; }
-
     [[ -v TUE_ENV_GIT_USE_SSH ]] && test_var="TUE_ENV_GIT_USE_SSH"
-
-    # TODO(anyone): Remove the use of TUE_XXX, when migration to TUE_ENV_XXX is complete
-    [[ "$input_url" == *"github"* ]] && [[ -v TUE_GITHUB_USE_SSH ]] && { test_var="TUE_GITHUB_USE_SSH"; >&2 echo "Replace 'TUE_GITHUB_USE_SSH' in your environment config to 'TUE_ENV_GITHUB_USE_SSH'"; }
-    [[ "$input_url" == *"gitlab"* ]] && [[ -v TUE_GITLAB_USE_SSH ]] && { test_var="TUE_GITLAB_USE_SSH"; >&2 echo "Replace 'TUE_GITLAB_USE_SSH' in your environment config to 'TUE_ENV_GITLAB_USE_SSH'"; }
 
     [[ "$input_url" == *"github"* ]] && [[ -v TUE_ENV_GITHUB_USE_SSH ]] && test_var="TUE_ENV_GITHUB_USE_SSH"
     [[ "$input_url" == *"gitlab"* ]] && [[ -v TUE_ENV_GITLAB_USE_SSH ]] && test_var="TUE_ENV_GITLAB_USE_SSH"
@@ -444,14 +417,6 @@ export -f tue-git-deep-fetch
 
 function tue-make
 {
-    # TODO(anyone): Remove the use of TUE_XXX, when migration to TUE_ENV_XXX is complete
-    [[ -v TUE_ENV_ROS_DISTRO  || -v TUE_ROS_DISTRO ]] || TUE_ENV_ROS_DISTRO=${TUE_ROS_DISTRO}
-    [[ -z "${TUE_ENV_ROS_DISTRO}" ]] && { echo -e "\e[31;1mError! tue-env variable TUE_ENV_ROS_DISTRO not set.\e[0m"; return 1; }
-
-    # TODO(anyone): Remove the use of TUE_XXX, when migration to TUE_ENV_XXX is complete
-    [[ -v TUE_ENV_ROS_VERSION  || -v TUE_ROS_VERSION ]] || TUE_ENV_ROS_VERSION=${TUE_ROS_VERSION}
-    [[ -z "${TUE_ENV_ROS_VERSION}" ]] && { echo -e "\e[31;1mError! TUE_ENV_ROS_VERSION is not set.\nSet TUE_ENV_ROS_VERSION before executing this function.\e[0m"; return 1; }
-
     [[ ! -d "${TUE_ENV_WS_DIR}" ]] && { echo -e "\e[31;1mError! The workspace '${TUE_ENV_WS_DIR}' does not exist. Run 'tue-get install ros${TUE_ENV_ROS_VERSION}' first.\e[0m"; return 1; }
 
     if [[ "${TUE_ENV_ROS_VERSION}" -eq 1 ]]
@@ -491,7 +456,7 @@ function tue-make
         fi
         return $?
     else
-        echo -e "\e[31;1mError! ROS_VERSION '${TUE_ROS_VERSION}' is not supported by tue-env.\e[0m"
+        echo -e "\e[31;1mError! ROS_VERSION '${TUE_ENV_ROS_VERSION}' is not supported by tue-env.\e[0m"
         return 1
     fi
 }
@@ -499,14 +464,6 @@ export -f tue-make
 
 function tue-make-test
 {
-    # TODO(anyone): Remove the use of TUE_XXX, when migration to TUE_ENV_XXX is complete
-    [[ -v TUE_ENV_ROS_DISTRO  || -v TUE_ROS_DISTRO ]] || TUE_ENV_ROS_DISTRO=${TUE_ROS_DISTRO}
-    [[ -z "${TUE_ENV_ROS_DISTRO}" ]] && { echo -e "\e[31;1mError! tue-env variable TUE_ENV_ROS_DISTRO not set.\e[0m"; return 1; }
-
-    # TODO(anyone): Remove the use of TUE_XXX, when migration to TUE_ENV_XXX is complete
-    [[ -v TUE_ENV_ROS_VERSION  || -v TUE_ROS_VERSION ]] || TUE_ENV_ROS_VERSION=${TUE_ROS_VERSION}
-    [[ -z "${TUE_ENV_ROS_VERSION}" ]] && { echo -e "\e[31;1mError! TUE_ENV_ROS_VERSION is not set.\nSet TUE_ENV_ROS_VERSION before executing this function.\e[0m"; return 1; }
-
     [[ ! -d "${TUE_ENV_WS_DIR}" ]] && { echo -e "\e[31;1mError! The workspace '${TUE_ENV_WS_DIR}' does not exist. Run 'tue-get install ros${TUE_ENV_ROS_VERSION}' first.\e[0m"; return 1; }
 
     if [[ "${TUE_ENV_ROS_VERSION}" -eq 1 ]]
@@ -562,14 +519,6 @@ export -f tue-make-test
 
 function tue-make-test-result
 {
-    # TODO(anyone): Remove the use of TUE_XXX, when migration to TUE_ENV_XXX is complete
-    [[ -v TUE_ENV_ROS_DISTRO  || -v TUE_ROS_DISTRO ]] || TUE_ENV_ROS_DISTRO=${TUE_ROS_DISTRO}
-    [[ -z "${TUE_ENV_ROS_DISTRO}" ]] && { echo -e "\e[31;1mError! tue-env variable TUE_ENV_ROS_DISTRO not set.\e[0m"; return 1; }
-
-    # TODO(anyone): Remove the use of TUE_XXX, when migration to TUE_ENV_XXX is complete
-    [[ -v TUE_ENV_ROS_VERSION  || -v TUE_ROS_VERSION ]] || TUE_ENV_ROS_VERSION=${TUE_ROS_VERSION}
-    [[ -z "${TUE_ENV_ROS_VERSION}" ]] && { echo -e "\e[31;1mError! TUE_ENV_ROS_VERSION is not set.\nSet TUE_ENV_ROS_VERSION before executing this function.\e[0m"; return 1; }
-
     [[ ! -d "${TUE_ENV_WS_DIR}" ]] && { echo -e "\e[31;1mError! The workspace '${TUE_ENV_WS_DIR}' does not exist. Run 'tue-get install ros${TUE_ENV_ROS_VERSION}' first.\e[0m"; return 1; }
 
     if [[ "${TUE_ENV_ROS_VERSION}" -eq 1 ]]
@@ -873,16 +822,16 @@ function _remove_recursively
         return 1
     fi
 
-    local error_code target tue_dependencies_dir tue_dependencies_on_dir
+    local error_code target tue_env_dependencies_dir tue_env_dependencies_on_dir
     error_code=0
     target=$1
-    tue_dependencies_dir="${TUE_ENV_DIR}"/.env/dependencies
-    tue_dependencies_on_dir="${TUE_ENV_DIR}"/.env/dependencies-on
+    tue_env_dependencies_dir=${TUE_ENV_DIR}/.env/dependencies
+    tue_env_dependencies_on_dir=${TUE_ENV_DIR}/.env/dependencies-on
 
     # If packages depend on the target to be removed, just remove the installed status.
-    if [ -f "$tue_dependencies_on_dir"/"$target" ]
+    if [[ -f "${tue_env_dependencies_on_dir}"/"${target}" ]]
     then
-        if [[ -n $(cat "$tue_dependencies_on_dir"/"$target") ]]
+        if [[ -n $(cat "${tue_env_dependencies_on_dir}"/"${target}") ]]
         then
             # depend-on is not empty, so only removing the installed status
             echo "[tue-get] Other targets still depend on $target, so ignoring it"
@@ -890,19 +839,19 @@ function _remove_recursively
         else
             # depend-on is empty, so remove it and continue to actual removing of the target
             echo "[tue-get] Deleting empty depend-on file of: $target"
-            rm -f "$tue_dependencies_on_dir"/"$target"
+            rm -f "${tue_env_dependencies_on_dir}"/"${target}"
         fi
     fi
 
     # If no packages depend on this target, remove it and its dependencies.
-    if [ -f "$tue_dependencies_dir"/"$target" ]
+    if [[ -f "${tue_env_dependencies_dir}"/"${target}" ]]
     then
         # Iterate over all dependencies of target, which is removed.
         while read -r dep
         do
             # Target is removed, so remove yourself from depend-on files of deps
             local dep_dep_on_file tmp_file
-            dep_dep_on_file="$tue_dependencies_on_dir"/"$dep"
+            dep_dep_on_file="${tue_env_dependencies_on_dir}"/"${dep}"
             tmp_file=/tmp/temp_depend_on
             if [ -f "$dep_dep_on_file" ]
             then
@@ -926,8 +875,8 @@ function _remove_recursively
                 error_code=1
             fi
 
-        done < "$tue_dependencies_dir"/"$target"
-        rm -f "$tue_dependencies_dir"/"$target"
+        done < "${tue_env_dependencies_dir}"/"${target}"
+        rm -f "${tue_env_dependencies_dir}"/"${target}"
     else
         echo "[tue-get] No dependencies file exist for target: $target"
     fi
@@ -970,9 +919,9 @@ function tue-get
         return 1
     fi
 
-    local tue_dep_dir tue_installed_dir
-    tue_dep_dir=$TUE_ENV_DIR/.env/dependencies
-    tue_installed_dir=$TUE_ENV_DIR/.env/installed
+    local tue_env_dep_dir tue_env_installed_dir
+    tue_env_dep_dir=${TUE_ENV_DIR}/.env/dependencies
+    tue_env_installed_dir=${TUE_ENV_DIR}/.env/installed
 
     local error_code
     error_code=0
@@ -1004,7 +953,7 @@ function tue-get
                 #Skip options
                 [[ $target = '--'* ]] && continue
 
-                if [ -z "$(find "$TUE_ENV_DIR"/.env/dependencies -maxdepth 1 -name "$target" -type f -printf "%P ")" ]
+                if [[ -z "$(find "${tue_env_dep_dir}" -maxdepth 1 -name "${target}" -type f -printf "%P ")" ]]
                 then
                     echo "[tue-get] Package '$target' is not installed."
                     error_code=1
@@ -1031,7 +980,7 @@ function tue-get
         for target in "$@"
         do
             local resolved_targets
-            resolved_targets="$(find "$tue_installed_dir" -maxdepth 1 -name "$target" -type f -printf "%P ")"
+            resolved_targets="$(find "${tue_env_installed_dir}" -maxdepth 1 -name "${target}" -type f -printf "%P ")"
             if [ -z "$resolved_targets" ]
             then
                 echo "[tue-get] Package '$target' is not installed."
@@ -1069,7 +1018,7 @@ function tue-get
                 error_code=1
                 echo "[tue-get] Problems during uninstalling $target"
             else
-                rm "$tue_installed_dir"/"$target"
+                rm "${tue_env_installed_dir}"/"${target}"
                 echo "[tue-get] Successfully uninstalled: ${target}"
             fi
         done
@@ -1093,9 +1042,9 @@ function tue-get
     then
         if [[ "$1" == "-a" ]]
         then
-            ls "$tue_dep_dir"
+            ls "${tue_env_dep_dir}"
         else
-            ls "$TUE_ENV_DIR"/.env/installed
+            ls "${tue_env_installed_dir}"
         fi
     elif [[ $cmd == "show" ]]
     then
@@ -1309,14 +1258,6 @@ function tue-checkout
 
 function tue-deb-generate
 {
-    # TODO(anyone): Remove the use of TUE_XXX, when migration to TUE_ENV_XXX is complete
-    [[ -v TUE_ENV_ROS_DISTRO  || -v TUE_ROS_DISTRO ]] || TUE_ENV_ROS_DISTRO=${TUE_ROS_DISTRO}
-    [[ -z "${TUE_ENV_ROS_DISTRO}" ]] && { echo -e "\e[31;1mError! tue-env variable TUE_ENV_ROS_DISTRO not set.\e[0m"; return 1; }
-
-    # TODO(anyone): Remove the use of TUE_XXX, when migration to TUE_ENV_XXX is complete
-    [[ -v TUE_ENV_ROS_VERSION  || -v TUE_ROS_VERSION ]] || TUE_ENV_ROS_VERSION=${TUE_ROS_VERSION}
-    [[ -z "${TUE_ENV_ROS_VERSION}" ]] && { echo -e "\e[31;1mError! TUE_ENV_ROS_VERSION is not set.\nSet TUE_ENV_ROS_VERSION before executing this function.\e[0m"; return 1; }
-
     [[ ! -d "${TUE_ENV_WS_DIR}" ]] && { echo -e "\e[31;1mError! The workspace '${TUE_ENV_WS_DIR}' does not exist. Run 'tue-get install ros${TUE_ENV_ROS_VERSION}' first.\e[0m"; return 1; }
 
     [[ "${TUE_ENV_ROS_DISTRO}" -ne 2 ]] && { echo -e "\e[31;1mError! This command is supported only with TUE_ENV_ROS_DISTRO=2.\e[0m"; return 1; }
@@ -1362,8 +1303,8 @@ function tue-deb-generate
     local timestamp
     timestamp="$(date +%Y%m%d%H%M%S)"
 
-    mkdir -p "${TUE_RELEASE_DIR}"
-    cd "${TUE_RELEASE_DIR}" || return 1
+    mkdir -p "${TUE_ENV_RELEASE_DIR}"
+    cd "${TUE_ENV_RELEASE_DIR}" || return 1
 
     for package in $packages_list
     do
@@ -1463,9 +1404,6 @@ function _tue-repos-do
     if [[ -n ${TUE_ENV_REPOS_DO_DIRS} ]]
     then
         repos_dirs=${TUE_ENV_REPOS_DO_DIRS}
-    elif [[ -n ${TUE_REPOS_DO_DIRS} ]]
-    then
-        repos_dirs=${TUE_REPOS_DO_DIRS}
     else
         repos_dirs=${TUE_ENV_REPOS_DIR}/github.com/tue-robotics
         echo -e "No 'TUE_ENV_REPOS_DO_DIRS' set, using: \e[1m${repos_dirs}\e[0m"
