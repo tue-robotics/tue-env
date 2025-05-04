@@ -254,6 +254,48 @@ Purged environment directory '${tue_env_dir}'"""
 Environment directory '${tue_env_dir}' didn't exist (anymore)"""
         fi
 
+    elif [[ ${cmd} == "deactivate" ]]
+    then
+        for i in "$@"
+        do
+            case $i in
+                --help | -h )
+                    show_help="true"
+                    break
+                    ;;
+                --*)
+                    echo "[tue-env](deactivate) Unknown option $i"
+                    show_help="true"
+                    ;;
+                * )
+                    echo "[tue-env](deactivate) Unknown input variable $i"
+                    show_help="true"
+                    ;;
+            esac
+        done
+
+        if [[ ${show_help} == "true" ]]
+        then
+            # shellcheck disable=SC1078,SC1079
+            echo """Usage: tue-env deactivate [options]
+
+    Possible options:
+                --help, -h     - Show this help message and exit
+"""
+            return 1
+        fi
+
+        if [[ -z "${TUE_ENV}" ]]
+        then
+            echo "[tue-env](deactivate) No environment is currently active"
+            return 1
+        fi
+
+        echo "[tue-env](deactivate) Deactivating the current environment '${TUE_ENV}'"
+        _tue-env-deactivate-current-env || { echo "[tue-env](deactivate) Failed to deactivate the current environment, don't use this terminal anymore, open a new terminal"; return 1; }
+
+        return 0
+
     elif [[ ${cmd} == "switch" ]]
     then
         local persistent tue_env
