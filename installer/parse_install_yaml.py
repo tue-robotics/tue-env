@@ -178,14 +178,7 @@ def install_yaml_parser(path: Path, now: bool = False) -> Mapping[str, str]:
                 return {"system_packages": system_packages, "commands": " ".join(commands)}
 
             elif install_type == "ros" or install_type == "ros-remove-source":
-                # TODO(anyone): Remove the use of TUE_XXX, when migration to TUE_ENV_XXX is complete
-                try:
-                    ros_release = environ["TUE_ENV_ROS_DISTRO"]
-                except KeyError:
-                    try:
-                        ros_release = environ["TUE_ROS_DISTRO"]
-                    except KeyError:
-                        raise KeyError("TUE_ENV_ROS_DISTRO and TUE_ROS_DISTRO not set in environment variables")
+                ros_release = environ["TUE_ENV_ROS_DISTRO"]
 
                 try:
                     source: Optional[Mapping[str, str]] = get_distro_item(install_item, "source", ros_release, "ROS")

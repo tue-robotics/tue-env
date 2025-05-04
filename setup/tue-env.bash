@@ -254,6 +254,48 @@ Purged environment directory '${tue_env_dir}'"""
 Environment directory '${tue_env_dir}' didn't exist (anymore)"""
         fi
 
+    elif [[ ${cmd} == "deactivate" ]]
+    then
+        for i in "$@"
+        do
+            case $i in
+                --help | -h )
+                    show_help="true"
+                    break
+                    ;;
+                --*)
+                    echo "[tue-env](deactivate) Unknown option $i"
+                    show_help="true"
+                    ;;
+                * )
+                    echo "[tue-env](deactivate) Unknown input variable $i"
+                    show_help="true"
+                    ;;
+            esac
+        done
+
+        if [[ ${show_help} == "true" ]]
+        then
+            # shellcheck disable=SC1078,SC1079
+            echo """Usage: tue-env deactivate [options]
+
+    Possible options:
+                --help, -h     - Show this help message and exit
+"""
+            return 1
+        fi
+
+        if [[ -z "${TUE_ENV}" ]]
+        then
+            echo "[tue-env](deactivate) No environment is currently active"
+            return 1
+        fi
+
+        echo "[tue-env](deactivate) Deactivating the current environment '${TUE_ENV}'"
+        _tue-env-deactivate-current-env || { echo "[tue-env](deactivate) Failed to deactivate the current environment, don't use this terminal anymore, open a new terminal"; return 1; }
+
+        return 0
+
     elif [[ ${cmd} == "switch" ]]
     then
         local persistent tue_env
@@ -292,7 +334,13 @@ Environment directory '${tue_env_dir}' didn't exist (anymore)"""
 
         if [[ ${show_help} == "true" ]]
         then
-            echo "Usage: tue-env switch ENVIRONMENT"
+            # shellcheck disable=SC1078,SC1079
+            echo """Usage: tue-env switch [options] ENVIRONMENT
+
+    Possible options:
+        --persistent   - Set the environment as default
+        --help, -h     - Show this help message and exit
+"""
             return 1
         fi
 
@@ -773,7 +821,7 @@ function _tue-env
 
     if [[ "${COMP_CWORD}" -eq 1 ]]
     then
-        mapfile -t COMPREPLY < <(compgen -W "$(echo -e "'init '\n'list '\n'switch '\n'current '\n'remove '\n'rm '\n'cd '\n'set-default '\n'unset-default '\n'config '\n'init-targets '\n'targets '\n'init-venv '\n'remove-venv '\n'rm-venv '\n${help_options}")" -- "${cur}")
+        mapfile -t COMPREPLY < <(compgen -W "$(echo -e "'init '\n'list '\n'deactivate '\n'switch '\n'current '\n'remove '\n'rm '\n'cd '\n'set-default '\n'unset-default '\n'config '\n'init-targets '\n'targets '\n'init-venv '\n'remove-venv '\n'rm-venv '\n${help_options}")" -- "${cur}")
     else
         local cmd
         cmd=${COMP_WORDS[1]}
@@ -807,6 +855,12 @@ function _tue-env
                 functions=$(grep 'function tue-env-' "${TUE_DIR}"/setup/tue-env-config.bash | awk '{print $2,"\n"}')
                 functions=${functions//tue-env-/}
                 mapfile -t COMPREPLY < <(compgen -W "$(echo -e "${functions}\n${help_options}")" -- "${cur}")
+            fi
+        elif [[ ${cmd} == "deactivate" ]]
+        then
+            if [[ "${COMP_CWORD}" -eq 2 ]]
+            then
+                mapfile -t COMPREPLY < <(compgen -W "$(echo -e "${help_options}")" -- "${cur}")
             fi
         elif [[ ${cmd} == "init" ]]
         then

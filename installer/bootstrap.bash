@@ -242,10 +242,6 @@ function main
     "--targets-url=${env_targets_url}"
 
     # Configure environment
-    # TODO(anyone): Remove the use of TUE_XXX, when migration to TUE_ENV_XXX is complete
-    tue-env config "${workspace}" set "TUE_ROS_DISTRO" "${tue_env_ros_distro}"
-    tue-env config "${workspace}" set "TUE_ROS_VERSION" "${tue_env_ros_version}"
-
     tue-env config "${workspace}" set "TUE_ENV_ROS_DISTRO" "${tue_env_ros_distro}"
     tue-env config "${workspace}" set "TUE_ENV_ROS_VERSION" "${tue_env_ros_version}"
 
