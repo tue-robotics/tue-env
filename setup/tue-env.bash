@@ -586,20 +586,20 @@ Environment directory '${tue_env_dir}' didn't exist (anymore)"""
         fi
 
         /usr/bin/python3 -c "import virtualenv" 2>/dev/null ||
-        { echo -e "[tue-env](init-venv) 'virtualenv' module is not found. Make sure you install it 'sudo apt-get install python3-virtualenv'"; return 1; }
+        { echo -e "[tue-env](init-venv) 'virtualenv' module is not found. Make sure you install it \"/usr/bin/python3 -m pip install --user 'virtualenv>=20.24.0'\""; return 1; }
 
         [[ -f "${TUE_DIR}"/user/envs/"${tue_env}" ]] || { echo "[tue-env](init-venv) No such environment: '${tue_env}'"; return 1; }
         local tue_env_dir
         tue_env_dir=$(cat "${TUE_DIR}"/user/envs/"${tue_env}")
         [[ -d "${tue_env_dir}" ]] || { echo "[tue-env](init-venv) Environment directory '${tue_env_dir}' (environment '${tue_env}') does not exist"; return 1; }
         local venv_dir
-        venv_dir=${tue_env_dir}/.venv/${tue_env}
+        venv_dir=${tue_env_dir}/.env/venv
 
         if [[ -d "${venv_dir}" ]]
         then
             local venv_dir_moved
             venv_dir_moved=${venv_dir}.$(date +%F_%R)
-            if [[ $(basename "${VIRTUAL_ENV}") == "${tue_env}" ]]
+            if [[ "${VIRTUAL_ENV_PROMPT}" == "${tue_env}" ]]
             then
                 echo "[tue-env](init-venv) deactivating currently active virtualenv of environment '${tue_env}'"
                 deactivate
@@ -619,7 +619,7 @@ Environment directory '${tue_env_dir}' didn't exist (anymore)"""
         then
             setuptools_args="--no-setuptools"
         fi
-        /usr/bin/python3 -m virtualenv "${venv_dir}" ${system_site_args:+${system_site_args} }${setuptools_args:+${setuptools_args} }--symlinks -q 2>/dev/null
+        /usr/bin/python3 -m virtualenv "${venv_dir}" ${system_site_args:+${system_site_args} }${setuptools_args:+${setuptools_args} }--symlinks --prompt "${tue_env}" -q 2>/dev/null
         echo "[tue-env](init-venv) Initialized virtualenv of environment '${tue_env}'"
 
         if [ "${tue_env}" == "${TUE_ENV}" ]
@@ -628,7 +628,7 @@ Environment directory '${tue_env_dir}' didn't exist (anymore)"""
             local tue_env_dir
             tue_env_dir=$(cat "${TUE_DIR}"/user/envs/"${tue_env}")
             # shellcheck disable=SC1090
-            source "${tue_env_dir}"/.venv/"${tue_env}"/bin/activate
+            source "${tue_env_dir}"/.env/venv/bin/activate
             echo "[tue-env](init-venv) Activated new virtualenv of currently active environment '${tue_env}'"
         fi
 
@@ -675,11 +675,11 @@ Environment directory '${tue_env_dir}' didn't exist (anymore)"""
         tue_env_dir=$(cat "${TUE_DIR}"/user/envs/"${tue_env}")
         [[ -d "${tue_env_dir}" ]] || { echo "[tue-env](rm-venv) Environment directory '${tue_env_dir}' (environment '${tue_env}') does not exist"; return 1; }
         local venv_dir
-        venv_dir=${tue_env_dir}/.venv/${tue_env}
+        venv_dir=${tue_env_dir}/.env/venv
 
         if [[ -d "${venv_dir}" ]]
         then
-            if [[ $(basename "${VIRTUAL_ENV}") == "${tue_env}" ]]
+            if [[ "${VIRTUAL_ENV_PROMPT}" == "${tue_env}" ]]
             then
                 echo "[tue-env](rm-venv) deactivating currently active virtualenv of environment '${tue_env}'"
                 deactivate

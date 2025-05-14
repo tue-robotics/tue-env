@@ -81,10 +81,10 @@ function _tue-env-main
 
     # -----------------------------------------
     # Load the python virtual environment if it exists
-    if [[ -d "${TUE_ENV_DIR}"/.venv/"${TUE_ENV}" ]]
+    if [[ -d "${TUE_ENV_DIR}"/.env/venv/ ]]
     then
         # shellcheck disable=SC1090
-        source "${TUE_ENV_DIR}"/.venv/"${TUE_ENV}"/bin/activate
+        source "${TUE_ENV_DIR}"/.env/venv/bin/activate
     fi
 
     # -----------------------------------------
