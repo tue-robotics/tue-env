@@ -35,6 +35,24 @@ function installed_or_install
     return 0
 }
 
+function python_install_desired_version
+{
+    # python_install_desired_version package [version_requirement]
+    if [[ -z "$1" ]]
+    then
+        echo "[tue-env](bootstrap) Error! No python package name provided to check for installation."
+        return 1
+    fi
+    local package version_requirement
+    package=$1
+    [[ -n "$2" ]] && version_requirement=$2
+    local installed_version
+    installed_version=$(/usr/bin/python3 -c "import pkg_resources; print(pkg_resources.get_distribution('${package}').version)" 2>/dev/null)
+    /usr/bin/python3 -c "import sys; from packaging.specifiers import SpecifierSet; from packaging.version import Version; sys.exit(Version('${installed_version}') not in SpecifierSet('${version_requirement}'))" 2> /dev/null && echo "${package}${version_requirement}: ${installed_version}" && return 0
+    /usr/bin/python3 -m pip install "${package}${version_requirement}" || { echo "[tue-env](bootstrap) Error! Could not install '${package}${version_requirement}."; return 1; }
+    return 0
+}
+
 function file_exist_or_install
 {
     if [[ -z "$1" ]]
@@ -70,6 +88,7 @@ function main
     installed_or_install python3
     # Make sure python3-virtualenv is installed
     installed_or_install virtualenv python3-virtualenv
+    python_install_desired_version virtualenv ">=20.24.0"  # Prefer apt over pip
 
     # Check if OS is Ubuntu
     local distrib_id distrib_release
