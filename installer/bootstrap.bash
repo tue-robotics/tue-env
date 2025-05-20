@@ -52,7 +52,7 @@ function python_install_desired_version
     # Make sure pip is installed
     installed_or_install pip python3-pip
     # Install the package
-    /usr/bin/python3 -m pip install "${package}${version_requirement}" || { echo "[tue-env](bootstrap) Error! Could not install '${package}${version_requirement}."; return 1; }
+    PIP_BREAK_SYSTEM_PACKAGES=1 /usr/bin/python3 -m pip install --user "${package}${version_requirement}" || { echo "[tue-env](bootstrap) Error! Could not install '${package}${version_requirement}."; return 1; }
     return 0
 }
 
