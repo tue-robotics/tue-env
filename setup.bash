@@ -81,8 +81,13 @@ function _tue-env-main
 
     # -----------------------------------------
     # Load the python virtual environment if it exists
-    if [[ -d "${TUE_ENV_DIR}"/.venv/"${TUE_ENV}" ]]
+    if [[ -d "${TUE_ENV_DIR}"/.env/venv/ ]]
     then
+        # shellcheck disable=SC1091
+        source "${TUE_ENV_DIR}"/.env/venv/bin/activate
+    elif [[ -d "${TUE_ENV_DIR}"/.venv/"${TUE_ENV}" ]]
+    then
+        echo -e "\e[33;1m[tue] virtual environment location '${TUE_ENV_DIR}/.venv/${TUE_ENV}' is deprecated. Please create a new environment using 'tue-env init-venv ${TUE_ENV}'.\e[0m"
         # shellcheck disable=SC1090
         source "${TUE_ENV_DIR}"/.venv/"${TUE_ENV}"/bin/activate
     fi
