@@ -49,6 +49,9 @@ function python_install_desired_version
     local installed_version
     installed_version=$(/usr/bin/python3 -c "import pkg_resources; print(pkg_resources.get_distribution('${package}').version)" 2>/dev/null)
     /usr/bin/python3 -c "import sys; from packaging.specifiers import SpecifierSet; from packaging.version import Version; sys.exit(Version('${installed_version}') not in SpecifierSet('${version_requirement}'))" 2> /dev/null && echo "${package}${version_requirement}: ${installed_version}" && return 0
+    # Make sure pip is installed
+    installed_or_install pip python3-pip
+    # Install the package
     /usr/bin/python3 -m pip install "${package}${version_requirement}" || { echo "[tue-env](bootstrap) Error! Could not install '${package}${version_requirement}."; return 1; }
     return 0
 }
