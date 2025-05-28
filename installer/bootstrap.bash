@@ -46,6 +46,10 @@ function python_install_desired_version
     local package version_requirement
     package=$1
     [[ -n "$2" ]] && version_requirement=$2
+
+    # First check if the package is already installed via apt
+    installed_or_install "${package}" "python3-${package}"  || return 1
+
     local installed_version
     installed_version=$(/usr/bin/python3 -c "import pkg_resources; print(pkg_resources.get_distribution('${package}').version)" 2>/dev/null)
     /usr/bin/python3 -c "import sys; from packaging.specifiers import SpecifierSet; from packaging.version import Version; sys.exit(Version('${installed_version}') not in SpecifierSet('${version_requirement}'))" 2> /dev/null && echo "${package}${version_requirement}: ${installed_version}" && return 0
@@ -90,8 +94,7 @@ function main
     # Make sure python3 is installed
     installed_or_install python3
     # Make sure python3-virtualenv is installed
-    installed_or_install virtualenv python3-virtualenv
-    python_install_desired_version virtualenv ">=20.24.0"  # Prefer apt over pip
+    python_install_desired_version virtualenv ">=20.24.0"
 
     # Check if OS is Ubuntu
     local distrib_id distrib_release
