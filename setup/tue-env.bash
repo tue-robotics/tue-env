@@ -588,7 +588,7 @@ Environment directory '${tue_env_dir}' didn't exist (anymore)"""
         local installed_version pkg_name version_requirement
         pkg_name="virtualenv"
         version_requirement=">=20.24.0"
-        installed_version=$(/usr/bin/python3 -c "import pkg_resources; print(pkg_resources.get_distribution('${pkg_name}').version)" 2>/dev/null)
+        installed_version=$(/usr/bin/python3 -c "import importlib.metadata; print(importlib.metadata.version('${pkg_name}'))" 2>/dev/null)
         /usr/bin/python3 -c "import sys; from packaging.specifiers import SpecifierSet; from packaging.version import Version; sys.exit(Version('${installed_version}') not in SpecifierSet('${version_requirement}'))" 2> /dev/null ||
         { echo -e "[tue-env](init-venv) '${pkg_name}(${installed_version})' doesn't match the required version '${version_requirement}'. Make sure you install it \"/usr/bin/python3 -m pip install --user '${pkg_name}${version_requirement}'\""; return 1; }
 

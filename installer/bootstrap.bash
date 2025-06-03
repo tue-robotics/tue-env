@@ -35,6 +35,29 @@ function installed_or_install
     return 0
 }
 
+function check_python_package_installed
+{
+    # Check whether a python package is installed using importlib and pkgutil.
+    # Printing the package version if installed}
+    if [[ -z "$1" ]]
+    then
+        echo "[tue-env](bootstrap) Error! No python package name provided to check for installation."
+        return 1
+    fi
+    local package
+    package=$1
+    local installed_version
+    installed_version=$(/usr/bin/python3 -c "import importlib.metadata; print(importlib.metadata.version('${package}'))" 2>/dev/null)
+    if [[ -n "${installed_version}" ]]
+    then
+        echo "${installed_version}"
+        return 0
+    else
+        echo "[tue-env](bootstrap) Python package '${package}' is not installed." >&2
+        return 1
+    fi
+}
+
 function python_install_desired_version
 {
     # python_install_desired_version package [version_requirement]
@@ -47,11 +70,10 @@ function python_install_desired_version
     package=$1
     [[ -n "$2" ]] && version_requirement=$2
 
-    # First check if the package is already installed via apt
-    installed_or_install "${package}" "python3-${package}" || return 1
+    # First check if the package is already installed, otherwise try to install it via apt
+    installed_version=$(check_python_package_installed "${package}") || { installed_or_install "${package}" "python3-${package}" || return 1; }
 
-    local installed_version
-    installed_version=$(/usr/bin/python3 -c "import pkg_resources; print(pkg_resources.get_distribution('${package}').version)" 2>/dev/null)
+    installed_version=$(check_python_package_installed "${package}")
     if [[ -n "${installed_version}" && -n "${version_requirement}" ]]
     then
         # If a version requirement is specified, check if the installed version satisfies it
