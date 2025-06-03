@@ -52,7 +52,17 @@ function python_install_desired_version
 
     local installed_version
     installed_version=$(/usr/bin/python3 -c "import pkg_resources; print(pkg_resources.get_distribution('${package}').version)" 2>/dev/null)
-    /usr/bin/python3 -c "import sys; from packaging.specifiers import SpecifierSet; from packaging.version import Version; sys.exit(Version('${installed_version}') not in SpecifierSet('${version_requirement}'))" 2> /dev/null && echo "${package}${version_requirement}: ${installed_version}" && return 0
+    if [[ -n "${installed_version}" && -n "${version_requirement}" ]]
+    then
+        # If a version requirement is specified, check if the installed version satisfies it
+        /usr/bin/python3 -c "import sys; from packaging.specifiers import SpecifierSet; from packaging.version import Version; sys.exit(Version('${installed_version}') not in SpecifierSet('${version_requirement}'))" 2> /dev/null && echo "${package}${version_requirement}: ${installed_version}" && return 0
+    elif [[ -n "${installed_version}" ]]
+    then
+        # If no version requirement is specified, just return the installed version
+        echo "${package}: ${installed_version}"
+        return 0
+    fi
+
     # Make sure pip is installed
     installed_or_install pip python3-pip
     # Install the package
