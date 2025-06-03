@@ -637,7 +637,9 @@ Environment directory '${tue_env_dir}' didn't exist (anymore)"""
         then
             setuptools_args="--no-setuptools"
         fi
-        /usr/bin/python3 -m virtualenv "${venv_dir}" ${system_site_args:+${system_site_args} }${setuptools_args:+${setuptools_args} }--symlinks --prompt "${tue_env}" -q 2>/dev/null
+        /usr/bin/python3 -m virtualenv "${venv_dir}" ${system_site_args:+${system_site_args} }${setuptools_args:+${setuptools_args} }--symlinks --prompt "${tue_env}" -q 2>/dev/null ||
+        { echo "[tue-env](init-venv) Failed to initialize virtual environment '${venv_dir}' for environment '${tue_env}'"; return 1; }
+
         echo "[tue-env](init-venv) Initialized virtualenv of environment '${tue_env}'"
 
         if [ "${tue_env}" == "${TUE_ENV}" ]
