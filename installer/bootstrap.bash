@@ -125,6 +125,8 @@ function main
     file_exist_or_install /usr/share/distro-info/ubuntu.csv distro-info-data
     # Make sure python3 is installed
     installed_or_install python3
+    # Make sure python3-packaging is installed
+    python_install_desired_version packaging
     # Make sure python3-virtualenv is installed
     python_install_desired_version virtualenv ">=20.24.0"
 
