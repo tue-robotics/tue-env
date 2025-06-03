@@ -160,12 +160,12 @@ function tue-env
 
         if [[ -n "${targets_url}" ]]
         then
-            tue-env init-targets "${tue_env}" "${targets_url}"
+            tue-env init-targets "${tue_env}" "${targets_url}" || return 1
         fi
 
         if [[ "${create_venv}" == "true" ]]
         then
-            tue-env init-venv "${tue_env}" --include-system-site-packages="${venv_include_system_site}" --install-setuptools="${venv_setuptools}"
+            tue-env init-venv "${tue_env}" --include-system-site-packages="${venv_include_system_site}" --install-setuptools="${venv_setuptools}" || return 1
         fi
 
     elif [[ ${cmd} == "remove" || ${cmd} == "rm" ]]
@@ -224,7 +224,7 @@ options:
         if [[ "${tue_env}" == "${TUE_ENV}" ]]
         then
             echo "[tue-env](rm) The environment '${tue_env}' is currently active. Deactivating it first."
-            tue-env unset-default "${tue_env}"
+            tue-env unset-default "${tue_env}" || return 1
             _tue-env-deactivate-current-env || { echo "[tue-env](rm) Failed to deactivate the current environment, don't use this terminal anymore, open a new terminal"; return 1; }
         fi
 
@@ -349,7 +349,7 @@ Environment directory '${tue_env_dir}' didn't exist (anymore)"""
         tue_env_dir=$(cat "${TUE_DIR}"/user/envs/"${tue_env}")
         [[ -d "${tue_env_dir}" ]] || { echo "[tue-env](switch) Environment directory '${tue_env_dir}' (environment '${tue_env}') does not exist"; return 1; }
 
-        [[ "${persistent}" == "true" ]] && tue-env set-default "${tue_env}"
+        [[ "${persistent}" == "true" ]] && { tue-env set-default "${tue_env}" || return 1; }
 
         if [[ -n "${TUE_ENV}" ]]
         then
