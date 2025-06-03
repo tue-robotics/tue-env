@@ -35,6 +35,29 @@ function installed_or_install
     return 0
 }
 
+function check_python_package_installed
+{
+    # Check whether a python package is installed using importlib and pkgutil.
+    # Printing the package version if installed}
+    if [[ -z "$1" ]]
+    then
+        echo "[tue-env](bootstrap) Error! No python package name provided to check for installation."
+        return 1
+    fi
+    local package
+    package=$1
+    local installed_version
+    installed_version=$(/usr/bin/python3 -c "import importlib.metadata; print(importlib.metadata.version('${package}'))" 2>/dev/null)
+    if [[ -n "${installed_version}" ]]
+    then
+        echo "${installed_version}"
+        return 0
+    else
+        echo "[tue-env](bootstrap) Python package '${package}' is not installed." >&2
+        return 1
+    fi
+}
+
 function python_install_desired_version
 {
     # python_install_desired_version package [version_requirement]
@@ -47,12 +70,21 @@ function python_install_desired_version
     package=$1
     [[ -n "$2" ]] && version_requirement=$2
 
-    # First check if the package is already installed via apt
-    installed_or_install "${package}" "python3-${package}"  || return 1
+    # First check if the package is already installed, otherwise try to install it via apt
+    installed_version=$(check_python_package_installed "${package}") || { installed_or_install "${package}" "python3-${package}" || return 1; }
 
-    local installed_version
-    installed_version=$(/usr/bin/python3 -c "import pkg_resources; print(pkg_resources.get_distribution('${package}').version)" 2>/dev/null)
-    /usr/bin/python3 -c "import sys; from packaging.specifiers import SpecifierSet; from packaging.version import Version; sys.exit(Version('${installed_version}') not in SpecifierSet('${version_requirement}'))" 2> /dev/null && echo "${package}${version_requirement}: ${installed_version}" && return 0
+    installed_version=$(check_python_package_installed "${package}")
+    if [[ -n "${installed_version}" && -n "${version_requirement}" ]]
+    then
+        # If a version requirement is specified, check if the installed version satisfies it
+        /usr/bin/python3 -c "import sys; from packaging.specifiers import SpecifierSet; from packaging.version import Version; sys.exit(Version('${installed_version}') not in SpecifierSet('${version_requirement}'))" 2> /dev/null && echo "${package}${version_requirement}: ${installed_version}" && return 0
+    elif [[ -n "${installed_version}" ]]
+    then
+        # If no version requirement is specified, just return the installed version
+        echo "${package}: ${installed_version}"
+        return 0
+    fi
+
     # Make sure pip is installed
     installed_or_install pip python3-pip
     # Install the package
@@ -93,6 +125,8 @@ function main
     file_exist_or_install /usr/share/distro-info/ubuntu.csv distro-info-data
     # Make sure python3 is installed
     installed_or_install python3
+    # Make sure python3-packaging is installed
+    python_install_desired_version packaging
     # Make sure python3-virtualenv is installed
     python_install_desired_version virtualenv ">=20.24.0"
 

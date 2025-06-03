@@ -160,12 +160,12 @@ function tue-env
 
         if [[ -n "${targets_url}" ]]
         then
-            tue-env init-targets "${tue_env}" "${targets_url}"
+            tue-env init-targets "${tue_env}" "${targets_url}" || return 1
         fi
 
         if [[ "${create_venv}" == "true" ]]
         then
-            tue-env init-venv "${tue_env}" --include-system-site-packages="${venv_include_system_site}" --install-setuptools="${venv_setuptools}"
+            tue-env init-venv "${tue_env}" --include-system-site-packages="${venv_include_system_site}" --install-setuptools="${venv_setuptools}" || return 1
         fi
 
     elif [[ ${cmd} == "remove" || ${cmd} == "rm" ]]
@@ -224,7 +224,7 @@ options:
         if [[ "${tue_env}" == "${TUE_ENV}" ]]
         then
             echo "[tue-env](rm) The environment '${tue_env}' is currently active. Deactivating it first."
-            tue-env unset-default "${tue_env}"
+            tue-env unset-default "${tue_env}" || return 1
             _tue-env-deactivate-current-env || { echo "[tue-env](rm) Failed to deactivate the current environment, don't use this terminal anymore, open a new terminal"; return 1; }
         fi
 
@@ -349,7 +349,7 @@ Environment directory '${tue_env_dir}' didn't exist (anymore)"""
         tue_env_dir=$(cat "${TUE_DIR}"/user/envs/"${tue_env}")
         [[ -d "${tue_env_dir}" ]] || { echo "[tue-env](switch) Environment directory '${tue_env_dir}' (environment '${tue_env}') does not exist"; return 1; }
 
-        [[ "${persistent}" == "true" ]] && tue-env set-default "${tue_env}"
+        [[ "${persistent}" == "true" ]] && { tue-env set-default "${tue_env}" || return 1; }
 
         if [[ -n "${TUE_ENV}" ]]
         then
@@ -585,8 +585,12 @@ Environment directory '${tue_env_dir}' didn't exist (anymore)"""
             return 1
         fi
 
-        /usr/bin/python3 -c "import virtualenv" 2>/dev/null ||
-        { echo -e "[tue-env](init-venv) 'virtualenv' module is not found. Make sure you install it \"/usr/bin/python3 -m pip install --user 'virtualenv>=20.24.0'\""; return 1; }
+        local installed_version pkg_name version_requirement
+        pkg_name="virtualenv"
+        version_requirement=">=20.24.0"
+        installed_version=$(/usr/bin/python3 -c "import importlib.metadata; print(importlib.metadata.version('${pkg_name}'))" 2>/dev/null)
+        /usr/bin/python3 -c "import sys; from packaging.specifiers import SpecifierSet; from packaging.version import Version; sys.exit(Version('${installed_version}') not in SpecifierSet('${version_requirement}'))" 2> /dev/null ||
+        { echo -e "[tue-env](init-venv) '${pkg_name}(${installed_version})' doesn't match the required version '${version_requirement}'. Make sure you install it \"/usr/bin/python3 -m pip install --user '${pkg_name}${version_requirement}'\""; return 1; }
 
         [[ -f "${TUE_DIR}"/user/envs/"${tue_env}" ]] || { echo "[tue-env](init-venv) No such environment: '${tue_env}'"; return 1; }
         local tue_env_dir
@@ -633,7 +637,9 @@ Environment directory '${tue_env_dir}' didn't exist (anymore)"""
         then
             setuptools_args="--no-setuptools"
         fi
-        /usr/bin/python3 -m virtualenv "${venv_dir}" ${system_site_args:+${system_site_args} }${setuptools_args:+${setuptools_args} }--symlinks --prompt "${tue_env}" -q 2>/dev/null
+        /usr/bin/python3 -m virtualenv "${venv_dir}" ${system_site_args:+${system_site_args} }${setuptools_args:+${setuptools_args} }--symlinks --prompt "${tue_env}" -q 2>/dev/null ||
+        { echo "[tue-env](init-venv) Failed to initialize virtual environment '${venv_dir}' for environment '${tue_env}'"; return 1; }
+
         echo "[tue-env](init-venv) Initialized virtualenv of environment '${tue_env}'"
 
         if [ "${tue_env}" == "${TUE_ENV}" ]
