@@ -48,7 +48,7 @@ function python_install_desired_version
     [[ -n "$2" ]] && version_requirement=$2
 
     # First check if the package is already installed via apt
-    installed_or_install "${package}" "python3-${package}"  || return 1
+    installed_or_install "${package}" "python3-${package}" || return 1
 
     local installed_version
     installed_version=$(/usr/bin/python3 -c "import pkg_resources; print(pkg_resources.get_distribution('${package}').version)" 2>/dev/null)
