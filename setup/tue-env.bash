@@ -224,8 +224,14 @@ options:
         if [[ "${tue_env}" == "${TUE_ENV}" ]]
         then
             echo "[tue-env](rm) The environment '${tue_env}' is currently active. Deactivating it first."
-            tue-env unset-default "${tue_env}" || return 1
             _tue-env-deactivate-current-env || { echo "[tue-env](rm) Failed to deactivate the current environment, don't use this terminal anymore, open a new terminal"; return 1; }
+        fi
+
+        # Unset the default environment if it is the one being removed
+        if [[ -f "${TUE_DIR}"/user/config/default_env ]] && [[ "$(cat "${TUE_DIR}"/user/config/default_env)" == "${tue_env}" ]]
+        then
+            echo "[tue-env](rm) Unsetting the default environment '${tue_env}'"
+            tue-env unset-default || return 1
         fi
 
         local tue_env_dir
