@@ -72,6 +72,7 @@ RUN cp ~/.ssh/known_hosts ~/.ssh/known_hosts.bak
 RUN { [[ -n "$OAUTH2_TOKEN" ]] && git config --global credential.helper '!f() { printf "%s\n" "username=oauth2" "password=$OAUTH2_TOKEN"; };f'; } || exit 0
 
 # Setup tue-env and install target ros
+# hadolint ignore=DL3004,SC1091
 RUN --mount=type=ssh,uid=$USER_ID --mount=type=bind,source=installer/bootstrap.bash,target=bootstrap.bash \
     # Remove interactive check from bashrc, otherwise bashrc refuses to execute
     sed -e s/return//g -i ~/.bashrc && \
@@ -110,10 +111,10 @@ RUN --mount=type=ssh,uid=$USER_ID --mount=type=bind,source=installer/bootstrap.b
     echo -e "\e[35mgit -C ~/.tue branch\e[0m" && \
     git -C ~/.tue branch && \
     # Remove docker-clean. APT will be able to autocomplete packages now
-    rm /etc/apt/apt.conf.d/docker-clean && \
+    sudo rm /etc/apt/apt.conf.d/docker-clean && \
     # Remove apt cache
-    apt-get clean && \
-    rm -rf /var/lib/apt/lists/*
+    sudo apt-get clean && \
+    sudo rm -rf /var/lib/apt/lists/*
 
 # Restore known_hosts to one provided by the user
 RUN mv -f ~/.ssh/known_hosts.bak ~/.ssh/known_hosts
