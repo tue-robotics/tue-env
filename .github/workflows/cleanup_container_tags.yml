@@ -30,7 +30,7 @@ jobs:
         run: |
           TAG=$(echo "${{ github.event.ref }}" | tr '[:upper:]' '[:lower:]' | sed -e 's:/:_:g')
           echo -e "\e[35m\e[tag=${TAG} >> \$GITHUB_OUTPUT\e[0m"
-          echo "tag=${TAG}" >> ${GITHUB_OUTPUT}
+          echo "tag=${TAG}" >> "${GITHUB_OUTPUT}"
       - name: Delete tags
         uses: vlaurin/action-ghcr-prune@v0.6.0
         with:

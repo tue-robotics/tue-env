@@ -11,6 +11,30 @@ env:
   REGISTRY: ghcr.io
 
 jobs:
+  linting_actionlint:
+    name: Actionlint
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - name: Download actionlint
+        id: get_actionlint
+        run: bash <(curl https://raw.githubusercontent.com/rhysd/actionlint/main/scripts/download-actionlint.bash)
+      - name: Check workflow files
+        run: |
+          curl -sSL https://raw.githubusercontent.com/rhysd/actionlint/main/.github/actionlint-matcher.json -o /tmp/actionlint-matcher.json
+          echo "::add-matcher::/tmp/actionlint-matcher.json"
+          ${{ steps.get_actionlint.outputs.executable }} -color -verbose
+  linting_hadolint:
+    name: Hadolint
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - name: Hadolint
+        uses: hadolint/hadolint-action@v3.1.0
+        with:
+          dockerfile: "*.Dockerfile"
+          recursive: true
+          verbose: true
   linting_python_black:
     name: Black Linting
     runs-on: ubuntu-latest
@@ -29,12 +53,12 @@ jobs:
         run: |
           shopt -s globstar
           shellcheck --version
-          shellcheck **/*.bash **/*.sh
+          shellcheck -- **/*.bash **/*.sh
 
   docker_generation_tue_env:
     name: Docker Generation tue-env
     runs-on: ubuntu-latest
-    needs: [linting_python_black, linting_shellcheck]
+    needs: [linting_actionlint, linting_hadolint, linting_python_black, linting_shellcheck]
     strategy:
       fail-fast: false
       matrix:
@@ -112,7 +136,7 @@ jobs:
           PULLREQUEST=${{ github.event.number }}
           PULLREQUEST=${PULLREQUEST:-false}
           # shellcheck disable=SC1083,SC2296
-          PUSH_IMAGE=${{ matrix.push-image }}
+          # PUSH_IMAGE=\$\{\{ matrix.push-image \}\}
           [[ ${PULLREQUEST} != "false" ]] && PUSH_IMAGE="false"
           PUSH_IMAGE=${PUSH_IMAGE:-true}
           # shellcheck disable=SC1083,SC2296
@@ -154,10 +178,10 @@ jobs:
           CREATE_VENV=${{ matrix.create-venv }}
           CREATE_VENV=${CREATE_VENV:-false}
           # shellcheck disable=SC1083,SC2296
-          VENV_INCLUDE_SYSTEM_SITE=${{ matrix.venv-include-system-site }}
+          # VENV_INCLUDE_SYSTEM_SITE=\$\{\{ matrix.venv-include-system-site \}\}
           VENV_INCLUDE_SYSTEM_SITE=${VENV_INCLUDE_SYSTEM_SITE:-true}
           # shellcheck disable=SC1083,SC2296
-          DOCKER_USER=${{ matrix.docker-user }}
+          # DOCKER_USER=\$\{\{ matrix.docker-user \}\}
           DOCKER_USER=${DOCKER_USER:-docker}
           # shellcheck disable=SC1083,SC2296
           DOCKER_USER_ID=${{ matrix.docker-user-id }}
@@ -191,9 +215,9 @@ jobs:
         run: |
           MATRIX_OUTPUT_KEY=image
           echo "${{ steps.script.outputs.image }}" > "${MATRIX_OUTPUT_KEY}"
-          sha256sum "${MATRIX_OUTPUT_KEY}" | cut -d " " -f 1 | xargs -I{} echo "artifact={}" >> $GITHUB_OUTPUT
+          sha256sum "${MATRIX_OUTPUT_KEY}" | cut -d " " -f 1 | xargs -I{} echo "artifact={}" >> "${GITHUB_OUTPUT}"
           echo -e "\e[35;1mkey=${MATRIX_OUTPUT_KEY} >> \${GITHUB_OUTPUT}\e[0m"
-          echo "key=${MATRIX_OUTPUT_KEY}" >> $GITHUB_OUTPUT
+          echo "key=${MATRIX_OUTPUT_KEY}" >> "${GITHUB_OUTPUT}"
       - name: Write image name
         if: github.event_name != 'pull_request'
         uses: actions/upload-artifact@v4
@@ -221,7 +245,7 @@ jobs:
         run: |
           result="$(find . -name ${{ needs.docker_generation_tue_env.outputs.key }} -exec cat {} \; | jq --slurp --raw-input 'split("\n")[:-1] | .[] | split(":") | {(.[0]) : [(.[1])]}' | jq -cs '[.[] | to_entries] | flatten | reduce .[] as $dot ({}; .[$dot.key] += $dot.value) | { ${{ needs.docker_generation_tue_env.outputs.key }} : . }' )"
           echo -e "\e[35;1mresult=${result} >> \${GITHUB_OUTPUT}\e[0m"
-          echo "result=${result}" >> $GITHUB_OUTPUT
+          echo "result=${result}" >> "${GITHUB_OUTPUT}"
       - name: Generate new manifest files
         run: |
           ci/docker-manifest-generator.sh \
