@@ -16,8 +16,14 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
-      - name: Actionlint
-        uses: reviewdog/action-actionlint@v1
+      - name: Download actionlint
+        id: get_actionlint
+        run: bash <(curl https://raw.githubusercontent.com/rhysd/actionlint/main/scripts/download-actionlint.bash)
+      - name: Check workflow files
+        run: |
+          curl -sSL https://raw.githubusercontent.com/rhysd/actionlint/main/.github/actionlint-matcher.json -o /tmp/actionlint-matcher.json
+          echo "::add-matcher::/tmp/actionlint-matcher.json"
+          ${{ steps.get_actionlint.outputs.executable }} -color -verbose
   linting_hadolint:
     name: Hadolint
     runs-on: ubuntu-latest
