@@ -5,12 +5,12 @@
 
 # Set default base image to Ubuntu 24.04
 ARG BASE_IMAGE=ubuntu:24.04
-FROM $BASE_IMAGE as base
 
 # ----------------------------------------------------------------
 #                           STAGE 1
 # ----------------------------------------------------------------
-FROM base as builder
+# hadolint ignore=DL3006
+FROM ${BASE_IMAGE} AS builder
 
 # Build time arguments
 # BRANCH is the target branch if in PULL_REQUEST mode else it is the test branch
@@ -31,44 +31,45 @@ ARG OAUTH2_TOKEN
 ARG DOCKER_USER=docker
 ARG DOCKER_USER_ID=1000
 
-# Inform scripts that no questions should be asked and set some environment
-# variables to prevent warnings and errors
 ENV DEBIAN_FRONTEND=noninteractive \
     LANG=C.UTF-8 \
     DOCKER=true \
-    USER=$DOCKER_USER \
-    USER_ID=$DOCKER_USER_ID \
+    USER=${DOCKER_USER} \
+    USER_ID=${DOCKER_USER_ID} \
     TERM=xterm-256color
 
 # Set default shell to be bash
-SHELL ["/bin/bash", "-c"]
+SHELL ["/bin/bash", "-o", "pipefail", "-c"]
 
 # Install commands used in our scripts and standard present on a clean ubuntu
 # installation and setup a user with sudo priviledges
+# hadolint ignore=DL3008
 RUN apt-get update -qq && \
     echo "resolvconf resolvconf/linkify-resolvconf boolean false" | debconf-set-selections && \
     apt-get install -qq --assume-yes --no-install-recommends apt-transport-https apt-utils bash-completion ca-certificates curl dbus debconf-utils dialog git keyboard-configuration lsb-release iproute2 iputils-ping mesa-utils net-tools openssh-client psmisc resolvconf sudo tzdata wget > /dev/null && \
     # Add defined user
-    adduser -u $USER_ID --disabled-password --gecos "" $USER && \
+    adduser -u "${USER_ID}" --disabled-password --gecos "" "${USER}" && \
     groupadd -g 109 render && \
-    usermod -aG sudo $USER && \
-    usermod -aG adm $USER && \
-    usermod -aG dialout $USER && \
-    usermod -aG video $USER && \
-    usermod -aG audio $USER && \
-    usermod -aG render $USER && \
-    echo "%sudo ALL=(ALL) NOPASSWD:ALL" >> /etc/sudoers.d/"$USER"
+    usermod -aG sudo "${USER}" && \
+    usermod -aG adm "${USER}" && \
+    usermod -aG dialout "${USER}" && \
+    usermod -aG video "${USER}" && \
+    usermod -aG audio "${USER}" && \
+    usermod -aG render "${USER}" && \
+    echo "%sudo ALL=(ALL) NOPASSWD:ALL" >> /etc/sudoers.d/"${USER}"
 
 # Setup the current user and its home directory
-USER "$USER"
-WORKDIR /home/"$USER"
+USER "${USER}"
+WORKDIR /home/"${USER}"
 
+# hadolint ignore=SC2174
 RUN mkdir -p -m 0700 ~/.ssh
-ADD ./known_hosts ./.ssh/known_hosts
-RUN sudo chown $USER_ID:$USER_ID ~/.ssh/known_hosts && sudo chmod 644 ~/.ssh/known_hosts
+COPY ./known_hosts ./.ssh/known_hosts
+RUN chown "${USER_ID}":"${USER_ID}" ~/.ssh/known_hosts && chmod 644 ~/.ssh/known_hosts
 RUN cp ~/.ssh/known_hosts ~/.ssh/known_hosts.bak
 
 # Setup Git HTTPS token authentication
+# hadolint ignore=SC2016
 RUN { [[ -n "$OAUTH2_TOKEN" ]] && git config --global credential.helper '!f() { printf "%s\n" "username=oauth2" "password=$OAUTH2_TOKEN"; };f'; } || exit 0
 
 # Setup tue-env and install target ros
@@ -110,9 +111,10 @@ RUN --mount=type=ssh,uid=$USER_ID --mount=type=bind,source=installer/bootstrap.b
     echo -e "\e[35mgit -C ~/.tue branch\e[0m" && \
     git -C ~/.tue branch && \
     # Remove docker-clean. APT will be able to autocomplete packages now
-    sudo rm /etc/apt/apt.conf.d/docker-clean && \
+    rm /etc/apt/apt.conf.d/docker-clean && \
     # Remove apt cache
-    sudo rm -rf /var/lib/apt/lists/*
+    apt-get clean && \
+    rm -rf /var/lib/apt/lists/*
 
 # Restore known_hosts to one provided by the user
 RUN mv -f ~/.ssh/known_hosts.bak ~/.ssh/known_hosts
@@ -123,7 +125,8 @@ RUN { [[ -n "$OAUTH2_TOKEN" ]] && git config --global --unset credential.helper;
 # ----------------------------------------------------------------
 #                           STAGE 2
 # ----------------------------------------------------------------
-FROM base
+# hadolint ignore=DL3006
+FROM ${BASE_IMAGE} as final
 
 ARG DOCKER_USER=docker
 ARG DOCKER_USER_ID=1000
@@ -131,9 +134,14 @@ ARG DOCKER_USER_ID=1000
 ENV DEBIAN_FRONTEND=noninteractive \
     LANG=C.UTF-8 \
     DOCKER=true \
-    USER=$DOCKER_USER \
-    USER_ID=$DOCKER_USER_ID \
+    USER=${DOCKER_USER} \
+    USER_ID=${DOCKER_USER_ID} \
     TERM=xterm-256color
-USER "$USER"
-WORKDIR /home/"$USER"
+
+SHELL ["/bin/bash", "-c"]
+
+# Setup the current user and its home directory
+USER "${USER}"
+WORKDIR /home/"${USER}"
+
 COPY --from=builder / /
