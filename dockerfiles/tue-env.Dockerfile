@@ -64,8 +64,7 @@ WORKDIR /home/"${USER}"
 
 # hadolint ignore=SC2174
 RUN mkdir -p -m 0700 ~/.ssh
-COPY ./known_hosts ./.ssh/known_hosts
-RUN chown "${USER_ID}":"${USER_ID}" ~/.ssh/known_hosts && chmod 644 ~/.ssh/known_hosts
+COPY --chown=${USER_ID}:${USER_ID} --chmod=644 ./known_hosts ./.ssh/known_hosts
 RUN cp ~/.ssh/known_hosts ~/.ssh/known_hosts.bak
 
 # Setup Git HTTPS token authentication
