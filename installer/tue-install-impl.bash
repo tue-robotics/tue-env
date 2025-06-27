@@ -21,13 +21,6 @@ function date_stamp
 
 # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # #
 
-function version_gt()
-{
-    test "$(printf '%s\n' "$@" | sort -V | head -n 1)" != "$1";
-}
-
-# # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # #
-
 function tue-install-error
 {
     echo -e "\e[31m
@@ -1323,7 +1316,7 @@ function _tue-install-pip-now
     local pip_version desired_pip_version
     pip_version=$(python"${pv}" -m pip --version | awk '{print $2}')
     desired_pip_version="24"
-    if version_gt "$desired_pip_version" "$pip_version"
+    if dpkg --compare-versions "${desired_pip_version}" ge "${pip_version}"
     then
         tue-install-debug "pip${pv} not yet version >=$desired_pip_version, but $pip_version"
         tue-install-pipe python"${pv}" -m pip install ${user_arg} --upgrade pip
