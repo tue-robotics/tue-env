@@ -433,7 +433,7 @@ function tue-make
             return $?
             ;;
         '')
-            /usr/bin/python3 "$(command -v catkin)" config --init --mkdirs --workspace "${TUE_ENV_WS_DIR}" --extend /opt/ros/"${TUE_ENV_ROS_DISTRO}" -DCMAKE_BUILD_TYPE=RelWithDebInfo -DCATKIN_ENABLE_TESTING=OFF
+            /usr/bin/python3 "$(command -v catkin)" config --init --mkdirs --workspace "${TUE_ENV_WS_DIR}" --extend /opt/ros/"${TUE_ENV_ROS_DISTRO}" -DCMAKE_POLICY_VERSION_MINIMUM=3.5 -DCMAKE_BUILD_TYPE=RelWithDebInfo -DCATKIN_ENABLE_TESTING=OFF
             /usr/bin/python3 "$(command -v catkin)" build --workspace "${TUE_ENV_WS_DIR}" "$@"
             touch "${TUE_ENV_WS_DIR}"/devel/.catkin # hack to allow overlaying to this ws while being empty
             ;;
