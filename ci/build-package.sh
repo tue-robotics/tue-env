@@ -58,8 +58,8 @@ then
     then
         ADDITIONAL_ARGS_CATKIN+=("--verbose")
     fi
-    echo -e "\e[35;1mCompile the package (catkin build ${ADDITIONAL_ARGS_CATKIN[*]} -DCMAKE_BUILD_TYPE=RelWithDebInfo -DCATKIN_ENABLE_TESTING=OFF)\e[0m"
-    docker exec -t tue-env bash -c 'source ~/.bashrc; cd "${TUE_ENV_WS_DIR}"/src/"${PACKAGE}" && /usr/bin/python3 "$(command -v catkin)" build --this --no-status '"${ADDITIONAL_ARGS_CATKIN[*]}"' -DCMAKE_BUILD_TYPE=RelWithDebInfo -DCATKIN_ENABLE_TESTING=OFF'
+    echo -e "\e[35;1mCompile the package (tue-make ${ADDITIONAL_ARGS_CATKIN[*]} -DCMAKE_BUILD_TYPE=RelWithDebInfo -DCATKIN_ENABLE_TESTING=OFF)\e[0m"
+    docker exec -t tue-env bash -c 'source ~/.bashrc; cd "${TUE_ENV_WS_DIR}"/src/"${PACKAGE}" && tue-make --this --no-status '"${ADDITIONAL_ARGS_CATKIN[*]}"' -DCMAKE_BUILD_TYPE=RelWithDebInfo -DCATKIN_ENABLE_TESTING=OFF'
 else
     ADDITIONAL_ARGS_COLCON=()
     if [[ ${DEBUG} == "true" ]]
