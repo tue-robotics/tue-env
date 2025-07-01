@@ -58,8 +58,8 @@ then
         CATKIN_ADDITIONAL_ARGS+=("--verbose")
     fi
     # Build test targets
-    echo -e "\e[35;1mBuild test targets of this package (catkin build --this --no-deps ${CATKIN_ADDITIONAL_ARGS[*]} -DCATKIN_ENABLE_TESTING=ON)\e[0m"
-    docker exec -t tue-env bash -c 'source ~/.bashrc; cd "${TUE_ENV_WS_DIR}"/src/"${PACKAGE}" && /usr/bin/python3 "$(command -v catkin)" build --this --no-status --no-deps '"${CATKIN_ADDITIONAL_ARGS[*]}"' -DCATKIN_ENABLE_TESTING=ON'
+    echo -e "\e[35;1mBuild test targets of this package (tue-make --this --no-deps ${CATKIN_ADDITIONAL_ARGS[*]} -DCATKIN_ENABLE_TESTING=ON)\e[0m"
+    docker exec -t tue-env bash -c 'source ~/.bashrc; cd "${TUE_ENV_WS_DIR}"/src/"${PACKAGE}" && tue-make --this --no-status --no-deps '"${CATKIN_ADDITIONAL_ARGS[*]}"' -DCATKIN_ENABLE_TESTING=ON'
 
     # Run unit tests
     echo -e "\e[35;1mRun tests on this package (catkin test --this --no-deps ${CATKIN_ADDITIONAL_ARGS[*]} -DCATKIN_ENABLE_TESTING=ON)\e[0m"
