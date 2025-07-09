@@ -16,28 +16,187 @@ function conditional_apt_update
     return 0
 }
 
+function check_available_version
+{
+    # check_available_version package
+    if [[ -z "$1" ]]
+    then
+        echo "[tue-env](bootstrap) Error! No package name provided to check for available version." >&2
+        return 1
+    fi
+    local package
+    package=$1
+
+    # Get the apt-cache policy output
+    local output
+    output=$(apt-cache policy "${package}" 2>/dev/null)
+
+    # Extract the candidate version
+    local candidate_version
+    candidate_version=$(echo "${output}" | awk '/Candidate:/ {print $2}')
+
+    if [[ -z "${candidate_version}" || "${candidate_version}" == "(none)" ]]
+    then
+      echo "[tue-env](bootstrap) No candidate version found for package '${package}'" >&2
+      return 1
+    fi
+
+    # Extract major.minor.patch part (e.g., 1.2.3 or 1.2)
+    local parsed_version
+    parsed_version=$(echo "${candidate_version}" | grep -oE '[0-9]+\.[0-9]+(\.[0-9]+)?' | head -n1)
+
+    echo "${parsed_version}"
+    return 0
+}
+
+function check_installed_version
+{
+    # check_installed_version package
+    if [[ -z "$1" ]]
+    then
+        echo "[tue-env](bootstrap) Error! No package name provided to check for installed version." >&2
+        return 1
+    fi
+    local package
+    package=$1
+
+    # Extract the raw version
+    local raw_version
+    raw_version=$(dpkg-query -f '${version}' -W "${package}" 2>/dev/null) || { echo "[tue-env](bootstrap) Error! Could not query installed version for package '${package}'." >&2; return 1; }
+    if [[ -z "${raw_version}" ]]
+    then
+        echo "[tue-env](bootstrap) No installed version found for package '${package}'" >&2
+        return 1
+    fi
+
+    # Extract major.minor.patch part (e.g., 1.2.3 or 1.2)
+    local parsed_version
+    parsed_version=$(echo "${raw_version}" | grep -oE '[0-9]+\.[0-9]+(\.[0-9]+)?' | head -n1)
+
+    echo "${parsed_version}"
+    return 0
+}
+
+
+function compare_version
+{
+    # compare_version version requirement
+    # Example usage: compare_version 1.2.3 ">=1.2.0"
+    if [[ -z "$2" ]]
+    then
+        echo "[tue-env](bootstrap) Error! Version and requirement must be provided." >&2
+        return 1
+    fi
+
+    local version requirement dpkg_op req_version
+
+    version=$1
+    requirement=$2
+
+    # Check if the version is a valid semantic version
+    if ! [[ "${version}" =~ ^[0-9]+\.[0-9]+(\.[0-9]+)?$ ]]
+    then
+        echo "[tue-env](bootstrap) Error! Invalid version format: ${version}" >&2
+        return 1
+    fi
+
+    # Parse requirement
+    operator="${requirement%%[0-9]*}" # Extracts comparison operator
+    req_version="${requirement#"${operator}"}" # Extracts required version
+
+    # Map operators for dpkg
+    case "${operator}" in
+        '>=')
+            dpkg_op="ge" ;;
+        '<=')
+            dpkg_op="le" ;;
+        '>')
+            dpkg_op="gt" ;;
+        '<')
+            dpkg_op="lt" ;;
+        '=')
+            dpkg_op="eq" ;;
+        '==')
+            dpkg_op="eq" ;;
+        '!=')
+            dpkg_op="ne" ;;
+        * )
+            echo "[tue-env](bootstrap) Error! Unknown operator ${operator}" >&2; return 1 ;;
+    esac
+
+# Compare using dpkg --compare-versions
+if dpkg --compare-versions "${version}" "${dpkg_op}" "${req_version}"
+then
+    return 0
+else
+    return 1
+fi
+}
+
 function installed_or_install
 {
-    # installed_or_install executable [package]
+    # installed_or_install executable [package] [--version=VERSION]
     # Provide package name if it differs from executable name
     if [[ -z "$1" ]]
     then
         echo "[tue-env](bootstrap) Error! No package name provided to check for installation." >&2
         return 1
     fi
-    local executable package
-    executable=$1
-    package=$1
-    [[ -n "$2" ]] && package=$2
-    hash "${executable}" 2> /dev/null && return 0
-    conditional_apt_update || { echo "[tue-env](bootstrap)Error! Could not update apt-get."; return 1; }
-    sudo apt-get install --assume-yes -qq "${package}" || { echo "[tue-env](bootstrap) Error! Could not install ${package}."; return 1; }
+    local executable package version_requirement
+
+    if [[ -n $1 ]]
+    then
+        for i in "$@"
+        do
+            case $i in
+                --version=* )
+                    version_requirement="${i#*=}" ;;
+                * )
+                    if [[ -z ${executable} ]]
+                    then
+                        executable=${i}
+                        package=${i}
+                    elif [[ ${executable} == "${package}" ]]
+                    then
+                        package=${i}
+                    else
+                        echo "[tue-env](bootstrap) Error! No Unknown input variable ${i}" >&2; return 1
+                    fi
+                    ;;
+            esac
+        done
+    fi
+
+    if [[ -n "${version_requirement}" ]]
+    then
+        local installed_version
+        installed_version=$(check_installed_version "${package}")
+        if [[ -n "${installed_version}" ]] && compare_version "${installed_version}" "${version_requirement}"
+        then
+            echo "[tue-env](bootstrap) ${package} is already installed with version ${installed_version}."
+            return 0
+        else
+            conditional_apt_update || { echo "[tue-env](bootstrap) Error! Could not update apt-get." >&2; return 1; }
+            local available_version
+            available_version=$(check_available_version "${package}") || { echo "[tue-env](bootstrap) Error! Could not check available version for ${package}." >&2; return 1; }
+            if ! compare_version "${available_version}" "${version_requirement}"
+            then
+                echo "[tue-env](bootstrap) Error! Available version ${available_version} does not satisfy requirement ${version_requirement} for package ${package}." >&2
+                return 1
+            fi
+        fi
+    else
+        hash "${executable}" 2> /dev/null && echo "[tue-env](bootstrap) ${package} is already installed." && return 0
+    fi
+
+    conditional_apt_update || { echo "[tue-env](bootstrap) Error! Could not update apt-get." >&2; return 1; }
+    sudo apt-get install --assume-yes -qq "${package}" || { echo "[tue-env](bootstrap) Error! Could not install ${package}." >&2; return 1; }
     return 0
 }
 
 function check_python_package_installed
 {
-    # Check whether a python package is installed using importlib and pkgutil.
+    # Check whether a python package is installed using importlib.
     # Printing the package version if installed}
     if [[ -z "$1" ]]
     then
@@ -63,21 +222,26 @@ function python_install_desired_version
     # python_install_desired_version package [version_requirement]
     if [[ -z "$1" ]]
     then
-        echo "[tue-env](bootstrap) Error! No python package name provided to check for installation."
+        echo "[tue-env](bootstrap) Error! No python package name provided to check for installation." >&2
         return 1
     fi
     local package version_requirement
     package=$1
     [[ -n "$2" ]] && version_requirement=$2
 
-    # First check if the package is already installed, otherwise try to install it via apt
-    installed_version=$(check_python_package_installed "${package}") || { installed_or_install "${package}" "python3-${package}" || return 1; }
-
+    # First check if the package is already installed, otherwise try to install it via apt, only when it satisfies the version requirement
+    local installed_version
     installed_version=$(check_python_package_installed "${package}")
+
     if [[ -n "${installed_version}" && -n "${version_requirement}" ]]
     then
         # If a version requirement is specified, check if the installed version satisfies it
-        /usr/bin/python3 -c "import sys; from packaging.specifiers import SpecifierSet; from packaging.version import Version; sys.exit(Version('${installed_version}') not in SpecifierSet('${version_requirement}'))" 2> /dev/null && echo "${package}${version_requirement}: ${installed_version}" && return 0
+        if compare_version "${installed_version}" "${version_requirement}"
+        then
+            echo "${package}${version_requirement}: ${installed_version}"
+            return 0
+        fi
+        # Check if an available version satisfies the requirement
     elif [[ -n "${installed_version}" ]]
     then
         # If no version requirement is specified, just return the installed version
@@ -85,6 +249,10 @@ function python_install_desired_version
         return 0
     fi
 
+    # If we reach here, the package is not installed or does not satisfy the version requirement
+    installed_or_install "${package}" "python3-${package}" --version="${version_requirement}" && return 0
+
+    # If the package is not available via apt, try to install it via pip
     # Make sure pip is installed
     installed_or_install pip python3-pip
     # Install the package
@@ -125,8 +293,6 @@ function main
     file_exist_or_install /usr/share/distro-info/ubuntu.csv distro-info-data
     # Make sure python3 is installed
     installed_or_install python3
-    # Make sure python3-packaging is installed
-    python_install_desired_version packaging
     # Make sure python3-virtualenv is installed
     python_install_desired_version virtualenv ">=20.24.0"
 
