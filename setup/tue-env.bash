@@ -27,6 +27,61 @@ function _tue-env-deactivate-current-env
     return 0
 }
 
+function _tue-env-compare-version
+{
+    # _tue-env-compare-version version requirement
+    # Example usage: _tue-env-compare-version 1.2.3 ">=1.2.0"
+    if [[ -z "$2" ]]
+    then
+        echo "[tue-env](compare-version) Version and requirement must be provided." >&2
+        return 1
+    fi
+
+    local version requirement dpkg_op req_version
+
+    version=$1
+    requirement=$2
+
+    # Check if the version is a valid semantic version
+    if ! [[ "${version}" =~ ^[0-9]+\.[0-9]+(\.[0-9]+)?$ ]]
+    then
+        echo "[tue-env](compare-version) Invalid version format: ${version}" >&2
+        return 1
+    fi
+
+    # Parse requirement
+    operator="${requirement%%[0-9]*}" # Extracts comparison operator
+    req_version="${requirement#"${operator}"}" # Extracts required version
+
+    # Map operators for dpkg
+    case "${operator}" in
+        '>=')
+            dpkg_op="ge" ;;
+        '<=')
+            dpkg_op="le" ;;
+        '>')
+            dpkg_op="gt" ;;
+        '<')
+            dpkg_op="lt" ;;
+        '=')
+            dpkg_op="eq" ;;
+        '==')
+            dpkg_op="eq" ;;
+        '!=')
+            dpkg_op="ne" ;;
+        * )
+            echo "[tue-env](compare-version) Unknown operator ${operator}" >&2; return 1 ;;
+    esac
+
+# Compare using dpkg --compare-versions
+if dpkg --compare-versions "${version}" "${dpkg_op}" "${req_version}"
+then
+    return 0
+else
+    return 1
+fi
+}
+
 
 # ----------------------------------------------------------------------------------------------------
 #                                              TUE-ENV
@@ -591,12 +646,21 @@ Environment directory '${tue_env_dir}' didn't exist (anymore)"""
             return 1
         fi
 
-        local installed_version pkg_name version_requirement
+        local installed_version parsed_version pkg_name version_requirement
         pkg_name="virtualenv"
         version_requirement=">=20.24.0"
         installed_version=$(/usr/bin/python3 -c "import importlib.metadata; print(importlib.metadata.version('${pkg_name}'))" 2>/dev/null)
-        /usr/bin/python3 -c "import sys; from packaging.specifiers import SpecifierSet; from packaging.version import Version; sys.exit(Version('${installed_version}') not in SpecifierSet('${version_requirement}'))" 2> /dev/null ||
-        { echo -e "[tue-env](init-venv) '${pkg_name}(${installed_version})' doesn't match the required version '${version_requirement}'. Make sure you install it \"/usr/bin/python3 -m pip install --user '${pkg_name}${version_requirement}'\""; return 1; }
+        parsed_version=$(echo "${installed_version}" | grep -oE '[0-9]+\.[0-9]+(\.[0-9]+)?' | head -n1)
+        if ! _tue-env-compare-version "${parsed_version}" "${version_requirement}"
+        then
+            /usr/bin/python3 -Ic "import ${pkg_name}" && \
+            { echo -e "[tue-env](init-venv) '${pkg_name}(${installed_version})' does not match the required version '${version_requirement}' and is installed via APT." \
+            "To prevent any conflicts, first uninstall it: \"sudo apt-get remove python3-${pkg_name}\"" \
+            "Make sure you install it \"/usr/bin/python3 -m pip install --user '${pkg_name}${version_requirement}'\""; return 1; }
+
+            { echo -e "[tue-env](init-venv) '${pkg_name}(${installed_version})' doesn't match the required version '${version_requirement}'. " \
+            "Make sure you install it \"/usr/bin/python3 -m pip install --user '${pkg_name}${version_requirement}'\""; return 1; }
+        fi
 
         [[ -f "${TUE_DIR}"/user/envs/"${tue_env}" ]] || { echo "[tue-env](init-venv) No such environment: '${tue_env}'"; return 1; }
         local tue_env_dir
