@@ -22,7 +22,7 @@ function installed_or_install
     # Provide package name if it differs from executable name
     if [[ -z "$1" ]]
     then
-        echo "[tue-env](bootstrap) Error! No package name provided to check for installation."
+        echo "[tue-env](bootstrap) Error! No package name provided to check for installation." >&2
         return 1
     fi
     local executable package
@@ -88,7 +88,7 @@ function python_install_desired_version
     # Make sure pip is installed
     installed_or_install pip python3-pip
     # Install the package
-    PIP_BREAK_SYSTEM_PACKAGES=1 /usr/bin/python3 -m pip install --user "${package}${version_requirement}" || { echo "[tue-env](bootstrap) Error! Could not install '${package}${version_requirement}."; return 1; }
+    PIP_BREAK_SYSTEM_PACKAGES=1 /usr/bin/python3 -m pip install --user "${package}${version_requirement}" || { echo "[tue-env](bootstrap) Error! Could not install '${package}${version_requirement}'." >&2; return 1; }
     return 0
 }
 
@@ -96,12 +96,12 @@ function file_exist_or_install
 {
     if [[ -z "$1" ]]
     then
-        echo "[tue-env](bootstrap) Error! No file name provided to check for installation."
+        echo "[tue-env](bootstrap) Error! No file name provided to check for installation." >&2
         return 1
     fi
     if [[ -z "$2" ]]
     then
-        echo "[tue-env](bootstrap) Error! No package name provided to install in case needed."
+        echo "[tue-env](bootstrap) Error! No package name provided to install in case needed." >&2
         return 1
     fi
     local file_name package
@@ -137,7 +137,7 @@ function main
 
     if [[ "${distrib_id}" != "Ubuntu" ]]
     then
-        echo "[tue-env](bootstrap) Unsupported OS ${distrib_id}. Use Ubuntu."
+        echo "[tue-env](bootstrap) Unsupported OS ${distrib_id}. Use Ubuntu." >&2
         return 1
     fi
 
@@ -162,7 +162,7 @@ function main
             --virtualenv-include-system-site-packages=* )
                 venv_include_system_site="${i#*=}" ;;
             * )
-                echo "[tue-env](bootstrap) Error! Unknown argument '${i}' provided to bootstrap script."
+                echo "[tue-env](bootstrap) Error! Unknown argument '${i}' provided to bootstrap script." >&2
                 return 1
                 ;;
         esac
@@ -183,7 +183,7 @@ function main
                 tue_env_ros_distro="${ros_distro}"
                 elif [[ -n "${ros_distro}" ]]
                 then
-                    echo "[tue-env](bootstrap) Error! ROS ${ros_distro} is unsupported with tue-env."
+                    echo "[tue-env](bootstrap) Error! ROS ${ros_distro} is unsupported with tue-env." >&2
                     return 1
                 else
                     tue_env_ros_distro="${ros2_distribution_map[${distrib_release}]}"
@@ -195,7 +195,7 @@ function main
                 tue_env_ros_version=1
             elif [[ -n "${ros_version}" ]]
             then
-                echo "[tue-env](bootstrap) Error! ROS ${ros_version} is unsupported with tue-env."
+                echo "[tue-env](bootstrap) Error! ROS ${ros_version} is unsupported with tue-env." >&2
                 return 1
             else
                 tue_env_ros_distro="noetic"
@@ -206,7 +206,7 @@ function main
         "22.04" | "24.04")
             if [[ -n "${ros_version}" ]] && [[ "${ros_version}" -ne 2 ]]
             then
-                 echo "[tue-env](bootstrap) Error! Only ROS version 2 is supported with ubuntu 22.04 and newer"
+                 echo "[tue-env](bootstrap) Error! Only ROS version 2 is supported with ubuntu 22.04 and newer" >&2
                  return 1
             fi
             tue_env_ros_version=2
@@ -216,7 +216,7 @@ function main
                 tue_env_ros_distro="${ros_distro}"
             elif [[ -n "${ros_distro}" ]]
             then
-                echo "[tue-env](bootstrap) Error! ROS ${ros_distro} is unsupported with tue-env."
+                echo "[tue-env](bootstrap) Error! ROS ${ros_distro} is unsupported with tue-env." >&2
                 return 1
             else
                 tue_env_ros_distro="${ros2_distribution_map[${distrib_release}]}"
@@ -224,7 +224,7 @@ function main
             fi
             ;;
         *)
-            echo "[tue-env](bootstrap) Ubuntu ${distrib_release} is unsupported. Please use one of Ubuntu 20.04, 22.04 or 24.04."
+            echo "[tue-env](bootstrap) Ubuntu ${distrib_release} is unsupported. Please use one of Ubuntu 20.04, 22.04 or 24.04." >&2
             return 1
             ;;
     esac
@@ -269,15 +269,15 @@ function main
                 fi
                 git -C "${env_dir}" reset --hard "${COMMIT}"
             else
-                echo "[tue-env](bootstrap) Error! CI branch or commit is unset"
+                echo "[tue-env](bootstrap) Error! CI branch or commit is unset" >&2
                 return 1
             fi
         else
             echo "[tue-env](bootstrap) Testing Pull Request"
-            [[ -z "${REF_NAME}" ]] && { echo "[tue-env](bootstrap) Error! Environment variable REF_NAME is not set."; return 1; }
+            [[ -z "${REF_NAME}" ]] && { echo "[tue-env](bootstrap) Error! Environment variable REF_NAME is not set." >&2; return 1; }
 
             git clone -q --depth=10 "${env_url}" "${env_dir}"
-            git -C "${env_dir}" fetch origin "${REF_NAME}"/"${PULL_REQUEST}"/merge:PULLREQUEST || { echo "[tue-env](bootstrap) Error! Could not fetch refs"; return 1; }
+            git -C "${env_dir}" fetch origin "${REF_NAME}"/"${PULL_REQUEST}"/merge:PULLREQUEST || { echo "[tue-env](bootstrap) Error! Could not fetch refs" >&2; return 1; }
             git -C "${env_dir}" checkout PULLREQUEST
         fi
     else
@@ -321,4 +321,4 @@ source ${env_dir}/setup.bash" >> ~/.bashrc
     source "${env_dir}"/setup.bash
 }
 
-main "$@" || echo "[tue-env](bootstrap) Error! Could not install tue-env."
+main "$@" || echo "[tue-env](bootstrap) Error! Could not install tue-env." >&2
