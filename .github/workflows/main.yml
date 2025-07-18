@@ -129,6 +129,7 @@ jobs:
         id: script
         run: |
           #! /usr/bin/env bash
+          export GITHUB_TOKEN=${{ secrets.GITHUB_TOKEN }}
           GITHUB_REF=${GITHUB_REF#refs/heads/}
           GITHUB_REF=${GITHUB_REF#refs/tags/}
           BRANCH=${GITHUB_BASE_REF:-${GITHUB_REF}}

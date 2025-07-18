@@ -572,7 +572,7 @@ function _tue-make
     cur=${COMP_WORDS[COMP_CWORD]}
 
     local options
-    [[ "${TUE_ENV_ROS_VERSION}" -eq 2 ]] && options="${options} --packages-select"
+    [[ "${TUE_ENV_ROS_VERSION}" -eq 2 ]] && options="${options} --packages-select --packages-up-to"
     mapfile -t COMPREPLY < <(compgen -W "$(_list_sub_dirs "${TUE_ENV_WS_DIR}"/src) ${options}" -- "${cur}")
 }
 
