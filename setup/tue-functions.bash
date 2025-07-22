@@ -429,6 +429,12 @@ function tue-make
         fi
         case $build_tool in
         'catkin build')
+            active_profile=$(yq '.active' "${TUE_ENV_WS_DIR}"/.catkin_tools/profiles/profiles.yaml | awk '{print $2}')
+            CMAKE_ARGS=$(yq '.cmake_args[]' "${TUE_ENV_WS_DIR}"/.catkin_tools/profiles/"${active_profile:-default}"/config.yaml)
+            if [[ "${CMAKE_ARGS}" != *"-DCMAKE_POLICY_VERSION_MINIMUM=3.5"* ]]
+            then
+                /usr/bin/python3 "$(command -v catkin)" config --workspace "${TUE_ENV_WS_DIR}" -a --cmake-args -DCMAKE_POLICY_VERSION_MINIMUM=3.5
+            fi
             /usr/bin/python3 "$(command -v catkin)" build --workspace "${TUE_ENV_WS_DIR}" "$@"
             return $?
             ;;
