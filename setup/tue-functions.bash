@@ -429,11 +429,17 @@ function tue-make
         fi
         case $build_tool in
         'catkin build')
+            active_profile=$(yq '.active' "${TUE_ENV_WS_DIR}"/.catkin_tools/profiles/profiles.yaml | awk '{print $2}')
+            CMAKE_ARGS=$(yq '.cmake_args[]' "${TUE_ENV_WS_DIR}"/.catkin_tools/profiles/"${active_profile:-default}"/config.yaml)
+            if [[ "${CMAKE_ARGS}" != *"-DCMAKE_POLICY_VERSION_MINIMUM=3.5"* ]]
+            then
+                /usr/bin/python3 "$(command -v catkin)" config --workspace "${TUE_ENV_WS_DIR}" -a --cmake-args -DCMAKE_POLICY_VERSION_MINIMUM=3.5
+            fi
             /usr/bin/python3 "$(command -v catkin)" build --workspace "${TUE_ENV_WS_DIR}" "$@"
             return $?
             ;;
         '')
-            /usr/bin/python3 "$(command -v catkin)" config --init --mkdirs --workspace "${TUE_ENV_WS_DIR}" --extend /opt/ros/"${TUE_ENV_ROS_DISTRO}" -DCMAKE_BUILD_TYPE=RelWithDebInfo -DCATKIN_ENABLE_TESTING=OFF
+            /usr/bin/python3 "$(command -v catkin)" config --init --mkdirs --workspace "${TUE_ENV_WS_DIR}" --extend /opt/ros/"${TUE_ENV_ROS_DISTRO}" -DCMAKE_POLICY_VERSION_MINIMUM=3.5 -DCMAKE_BUILD_TYPE=RelWithDebInfo -DCATKIN_ENABLE_TESTING=OFF
             /usr/bin/python3 "$(command -v catkin)" build --workspace "${TUE_ENV_WS_DIR}" "$@"
             touch "${TUE_ENV_WS_DIR}"/devel/.catkin # hack to allow overlaying to this ws while being empty
             ;;
