@@ -55,6 +55,9 @@ do
         --oauth2_token=* )
             CI_OAUTH2_TOKEN="${i#*=}" ;;
 
+        --gh-token=* )
+            CI_GH_TOKEN="${i#*=}" ;;
+
         --ref-name=* )
         # Variable to set the ref name of a git PR/MR: The value is pull for GitHub, BitBucket and merge for GitLab
             CI_REF_NAME="${i#*=}" ;;
@@ -212,6 +215,11 @@ fi
 if [[ -n "${CI_OAUTH2_TOKEN}" ]]
 then
     CI_DOCKER_BUILD_ARGS+=("--build-arg=OAUTH2_TOKEN=${CI_OAUTH2_TOKEN}")
+fi
+
+if [[ -n "${CI_GH_TOKEN}" ]]
+then
+    CI_DOCKER_BUILD_ARGS+=("--build-arg=GITHUB_TOKEN=${CI_GH_TOKEN}")
 fi
 
 # Check if the specified or default Dockerfile exists
