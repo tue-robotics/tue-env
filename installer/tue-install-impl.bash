@@ -29,7 +29,7 @@ Error while installing target '$TUE_INSTALL_CURRENT_TARGET':
     $1
 
 Logfile: $INSTALL_DETAILS_FILE
-\e[0m" | tee --append "$INSTALL_DETAILS_FILE"
+\e[0m" | tee --append "$INSTALL_DETAILS_FILE" >&2
     exit 1
 }
 
@@ -37,7 +37,7 @@ Logfile: $INSTALL_DETAILS_FILE
 
 function tue-install-warning
 {
-    echo -e "\e[33;1m[$TUE_INSTALL_CURRENT_TARGET] WARNING: $*\e[0m" | tee --append "$INSTALL_DETAILS_FILE"
+    echo -e "\e[33;1m[$TUE_INSTALL_CURRENT_TARGET] WARNING: $*\e[0m" | tee --append "$INSTALL_DETAILS_FILE" >&2
     TUE_INSTALL_WARNINGS="    [$TUE_INSTALL_CURRENT_TARGET] $*\n${TUE_INSTALL_WARNINGS}"
 }
 
@@ -2007,7 +2007,7 @@ fi
 # Display warnings
 if [ -n "$TUE_INSTALL_WARNINGS" ]
 then
-    echo -e "\e[33;1m\nOverview of warnings:\n\n$TUE_INSTALL_WARNINGS\e[0m"
+    echo -e "\e[33;1m\nOverview of warnings:\n\n$TUE_INSTALL_WARNINGS\e[0m" >&2
 fi
 
 
