@@ -1997,20 +1997,6 @@ do
     fi
 done
 
-
-# Display infos
-if [ -n "$TUE_INSTALL_INFOS" ]
-then
-    echo -e "\e[0;36m\nSome information you may have missed:\n\n$TUE_INSTALL_INFOS\e[0m"
-fi
-
-# Display warnings
-if [ -n "$TUE_INSTALL_WARNINGS" ]
-then
-    echo -e "\e[33;1m\nOverview of warnings:\n\n$TUE_INSTALL_WARNINGS\e[0m" >&2
-fi
-
-
 # Remove temp directories
 rm -rf "$TUE_INSTALL_STATE_DIR"
 
@@ -2073,6 +2059,18 @@ then
 fi
 
 TUE_INSTALL_CURRENT_TARGET="main-loop"
+
+# Display infos
+if [[ -n "${TUE_INSTALL_INFOS}" ]]
+then
+    echo -e "\e[0;36m\nSome information you may have missed:\n\n${TUE_INSTALL_INFOS}\e[0m"
+fi
+
+# Display warnings
+if [[ -n "${TUE_INSTALL_WARNINGS}" ]]
+then
+    echo -e "\e[33;1m\nOverview of warnings:\n\n${TUE_INSTALL_WARNINGS}\e[0m" >&2
+fi
 
 tue-install-echo "Installer completed successfully"
 
