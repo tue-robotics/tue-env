@@ -47,6 +47,9 @@ do
         --ref-name=* )
             REF_NAME="${i#*=}" ;;
 
+        --gh-token=* )
+            GH_TOKEN="${i#*=}" ;;
+
         --debug )
             DEBUG=true ;;
 
@@ -82,6 +85,7 @@ echo -e "\e[35;1mDEBUG        = ${DEBUG}\e[0m"
 ADDITIONAL_ARGS_LOCAL_INSTALL=()
 ADDITIONAL_ARGS_LOCAL_BUILD=()
 ADDITIONAL_ARGS_LOCAL_TEST=()
+DOCKER_ARGS=()
 
 if [ "$USE_SSH" == "true" ]
 then
@@ -134,10 +138,15 @@ then
     echo -e "\e[35;1mSSH_KEY      = ${SSH_KEY_FINGERPRINT}\e[0m"
 
     DOCKER_SSH_AUTH_SOCK="/tmp/ssh_auth_sock"
-    DOCKER_MOUNT_KNOWN_HOSTS_ARGS=("-e" "SSH_AUTH_SOCK=${DOCKER_SSH_AUTH_SOCK}" "--mount" "type=bind,source=${SHARED_DIR}/.ssh,target=/tmp/.ssh")
+    DOCKER_ARGS=("-e" "SSH_AUTH_SOCK=${DOCKER_SSH_AUTH_SOCK}" "--mount" "type=bind,source=${SHARED_DIR}/.ssh,target=/tmp/.ssh")
 
     # Used in the print statement to reproduce CI build locally
     ADDITIONAL_ARGS_LOCAL_INSTALL+=("--shared=/tmp/shared/${PACKAGE}" "--ssh")
+fi
+
+if [[ -n "${GH_TOKEN}" ]]
+then
+    DOCKER_ARGS+=("-e" "GITHUB_TOKEN=${GH_TOKEN}")
 fi
 
 ADDITIONAL_ARGS_TUE_GET=()
@@ -203,7 +212,7 @@ mkdir -p "$HOME"/.cache/pip
 
 # Run the docker image along with setting new environment variables
 # shellcheck disable=SC2086
-docker run --detach --interactive --tty -e CI="true" -e PACKAGE="${PACKAGE}" -e BRANCH="${BRANCH}" -e COMMIT="${COMMIT}" -e PULL_REQUEST="${PULL_REQUEST}" -e REF_NAME="${REF_NAME}" --name tue-env --mount type=bind,source=${HOME}/.ccache,target=${DOCKER_HOME}/.ccache --mount type=bind,source=${HOME}/.cache/pip,target=${DOCKER_HOME}/.cache/pip "${DOCKER_MOUNT_KNOWN_HOSTS_ARGS[@]}" "${IMAGE_NAME}:${BRANCH_TAG}"
+docker run --detach --interactive --tty -e CI="true" -e PACKAGE="${PACKAGE}" -e BRANCH="${BRANCH}" -e COMMIT="${COMMIT}" -e PULL_REQUEST="${PULL_REQUEST}" -e REF_NAME="${REF_NAME}" --name tue-env --mount type=bind,source=${HOME}/.ccache,target=${DOCKER_HOME}/.ccache --mount type=bind,source=${HOME}/.cache/pip,target=${DOCKER_HOME}/.cache/pip "${DOCKER_ARGS[@]}" "${IMAGE_NAME}:${BRANCH_TAG}"
 
 # Own the ~/.ccache folder for permissions
 docker exec -t tue-env bash -c 'sudo chown "${USER}":"${USER}" -R ~/.ccache'

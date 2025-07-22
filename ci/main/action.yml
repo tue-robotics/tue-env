@@ -48,7 +48,6 @@ runs:
       run: |
         echo "::group::install-package.sh"
         start_time=$(date +%s)
-        export GITHUB_TOKEN=${{ secrets.GITHUB_TOKEN }}
         GITHUB_REF=${GITHUB_REF#refs/heads/}
         GITHUB_REF=${GITHUB_REF#refs/tags/}
         BRANCH=${GITHUB_BASE_REF:-${GITHUB_REF}}
@@ -93,6 +92,7 @@ runs:
           --branch="${BRANCH}" \
           --commit="${GITHUB_SHA}" \
           --pullrequest="${PULLREQUEST}" \
+          --gh-token="${{ github.token }}" \
           "${SSH_ARGS[@]}" \
           "${DEBUG_ARGS[@]}"
         return_code=$?
