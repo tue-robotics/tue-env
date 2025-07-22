@@ -199,6 +199,7 @@ jobs:
               --base_image="${{ matrix.base-image }}" \
               --docker_file="dockerfiles/tue-env.Dockerfile" \
               --oauth2_token="${{ secrets.OAUTH2_TOKEN }}" \
+              --gh-token="${{ github.token }}" \
               --platforms="${{ matrix.platform }}" \
               --create-virtualenv="${CREATE_VENV}" \
               --virtualenv-include-system-site-packages="${VENV_INCLUDE_SYSTEM_SITE}" \

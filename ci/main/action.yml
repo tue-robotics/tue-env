@@ -92,6 +92,7 @@ runs:
           --branch="${BRANCH}" \
           --commit="${GITHUB_SHA}" \
           --pullrequest="${PULLREQUEST}" \
+          --gh-token="${{ github.token }}" \
           "${SSH_ARGS[@]}" \
           "${DEBUG_ARGS[@]}"
         return_code=$?
