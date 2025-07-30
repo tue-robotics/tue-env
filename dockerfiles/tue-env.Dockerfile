@@ -46,7 +46,9 @@ SHELL ["/bin/bash", "-o", "pipefail", "-c"]
 # Install commands used in our scripts and standard present on a clean ubuntu
 # installation and setup a user with sudo priviledges
 # hadolint ignore=DL3008
-RUN apt-get update -qq && \
+RUN --mount=type=cache,target=/var/cache/apt,sharing=locked \
+    --mount=type=cache,target=/var/lib/apt,sharing=locked \
+    apt-get update -qq && \
     echo "resolvconf resolvconf/linkify-resolvconf boolean false" | debconf-set-selections && \
     apt-get install -qq --assume-yes --no-install-recommends apt-transport-https apt-utils bash-completion ca-certificates curl dbus debconf-utils dialog git keyboard-configuration lsb-release iproute2 iputils-ping mesa-utils net-tools openssh-client psmisc resolvconf sudo tzdata wget > /dev/null && \
     # Add defined user
@@ -75,7 +77,9 @@ RUN { [[ -n "$OAUTH2_TOKEN" ]] && git config --global credential.helper '!f() { 
 
 # Setup tue-env and install target ros
 # hadolint ignore=DL3004,SC1091
-RUN --mount=type=ssh,uid=$USER_ID --mount=type=bind,source=installer/bootstrap.bash,target=bootstrap.bash \
+RUN --mount=type=cache,target=/var/cache/apt,sharing=locked \
+    --mount=type=cache,target=/var/lib/apt,sharing=locked \
+    --mount=type=ssh,uid=$USER_ID --mount=type=bind,source=installer/bootstrap.bash,target=bootstrap.bash \
     # Remove interactive check from bashrc, otherwise bashrc refuses to execute
     sed -e s/return//g -i ~/.bashrc && \
     # Set the CI args in the container as docker currently provides no method to
@@ -113,10 +117,7 @@ RUN --mount=type=ssh,uid=$USER_ID --mount=type=bind,source=installer/bootstrap.b
     echo -e "\e[35mgit -C ~/.tue branch\e[0m" && \
     git -C ~/.tue branch && \
     # Remove docker-clean. APT will be able to autocomplete packages now
-    sudo rm /etc/apt/apt.conf.d/docker-clean && \
-    # Remove apt cache
-    sudo apt-get clean && \
-    sudo rm -rf /var/lib/apt/lists/*
+    sudo rm /etc/apt/apt.conf.d/docker-clean
 
 # Restore known_hosts to one provided by the user
 RUN mv -f ~/.ssh/known_hosts.bak ~/.ssh/known_hosts
