@@ -853,7 +853,7 @@ Environment directory '${tue_env_dir}' didn't exist (anymore)"""
 
     elif [[ ${cmd} == "cd" ]]
     then
-        local tue_env
+        local tue_env rel_path
         for i in "$@"
         do
             case $i in
@@ -870,8 +870,7 @@ Environment directory '${tue_env_dir}' didn't exist (anymore)"""
                     then
                         tue_env=$i
                     else
-                        echo "[tue-env](cd) Unknown input variable $i"
-                        show_help="true"
+                        rel_path=$i
                     fi
                     ;;
             esac
@@ -889,7 +888,21 @@ Environment directory '${tue_env_dir}' didn't exist (anymore)"""
         [[ -f "${TUE_DIR}"/user/envs/"${tue_env}" ]] || { echo "[tue-env](cd) No such environment: '${tue_env}'"; return 1; }
         local tue_env_dir
         tue_env_dir=$(cat "${TUE_DIR}"/user/envs/"${tue_env}")
-        cd "${tue_env_dir}" || { echo "[tue-env](cd) Environment directory '${tue_env_dir}' (environment '${tue_env}') does not exist"; return 1; }
+
+        if [[ -n "${rel_path}" ]]
+        then
+            # Validate rel_path to prevent directory traversal
+            if [[ "${rel_path}" == *".."* ]] || [[ "${rel_path}" == /* ]]; then
+                echo "[tue-env](cd) Invalid relative path: '${rel_path}'. Directory traversal is not allowed."
+                return 1
+            fi
+            local full_path
+            full_path="${tue_env_dir}/${rel_path}"
+            cd "${full_path}" 2> /dev/null || { echo "[tue-env](cd) Directory '${rel_path}' relative to '${tue_env_dir}' does not exist in environment '${tue_env}'"; return 1; }
+            return 0
+        fi
+
+        cd "${tue_env_dir}" 2> /dev/null || { echo "[tue-env](cd) Environment directory '${tue_env_dir}' (environment '${tue_env}') does not exist"; return 1; }
 
     elif [[ ${cmd} == "list" ]]
     then
@@ -935,13 +948,47 @@ function _tue-env
     else
         local cmd
         cmd=${COMP_WORDS[1]}
-        if [[ ${cmd} == "switch" ]] || [[ ${cmd} == "remove" || ${cmd} == "rm" ]] || [[ ${cmd} == "cd" ]] || [[ ${cmd} == "set-default" ]] || [[ ${cmd} == "init-targets" ]] || [[ ${cmd} == "targets" ]] || [[ ${cmd} == "init-venv" ]] || [[ ${cmd} == "remove-venv" || ${cmd} == "rm-venv" ]]
+        if [[ ${cmd} == "rm" ]] || [[ ${cmd} == "rm-venv" ]] || [[ ${cmd} == "cd" ]] || [[ ${cmd} == "config" ]] || [[ ${cmd} == "init-targets" ]] || [[ ${cmd} == "init-venv" ]] || [[ ${cmd} == "remove" ]] || [[ ${cmd} == "remove-venv" ]] || [[ ${cmd} == "set-default" ]] || [[ ${cmd} == "targets" ]] || [[ ${cmd} == "switch" ]]
         then
             if [[ "${COMP_CWORD}" -eq 2 ]]
             then
                 [[ ! -d "${TUE_DIR}"/user/envs ]] && return 1
                 mapfile -t COMPREPLY < <(compgen -W "$(echo -e "$(find "${TUE_DIR}"/user/envs -mindepth 1 -maxdepth 1 -type f -not -name ".*" -printf "%f\n" | sed "s/.*/'& '/g")")" -- "${cur}")
+            elif [[ ${cmd} == "config" ]] && [[ "${COMP_CWORD}" -eq 3 ]]
+            then
+                local functions
+                functions=$(grep 'function tue-env-' "${TUE_DIR}"/setup/tue-env-config.bash | awk '{print $2,"\n"}')
+                functions=${functions//tue-env-/}
+                mapfile -t COMPREPLY < <(compgen -W "$(echo -e "${functions}\n${help_options}")" -- "${cur}")
+            elif [[ ${cmd} == "cd" ]] && [[ "${COMP_CWORD}" -eq 3 ]]
+            then
+                local tue_env
+                tue_env=${COMP_WORDS[2]}
+                [[ ! -f "${TUE_DIR}"/user/envs/"${tue_env}" ]] && return 1
 
+                local tue_env_dir
+                tue_env_dir=$(cat "${TUE_DIR}"/user/envs/"${tue_env}")
+                [[ ! -d "${tue_env_dir}" ]] && return 1
+
+                local full_prefix partial_path
+                partial_path="${cur}"
+                full_prefix="${tue_env_dir}/${partial_path}"
+
+                # Generate completions relative to the env path
+                mapfile -t COMPREPLY < <(compgen -o nospace -d -S / -- "${full_prefix}")
+
+                # Strip the tue_env_dir prefix from suggestions to keep them relative
+                for i in "${!COMPREPLY[@]}"
+                do
+                    COMPREPLY[i]="${COMPREPLY[$i]#${tue_env_dir}/}"
+                done
+
+                # Add help options if they match the current input
+                local help_completions
+                mapfile -t help_completions < <(compgen -W "$(echo -e "${help_options}")" -- "${cur}")
+
+                # Append help completions to COMPREPLY
+                COMPREPLY+=("${help_completions[@]}")
             elif [[ ${cmd} == "remove" || ${cmd} == "rm" || ${cmd} == "remove-venv" || ${cmd} == "rm-venv" ]] && [[ "${COMP_CWORD}" -eq 3 ]]
             then
                 mapfile -t COMPREPLY < <(compgen -W "$(echo -e "'--purge '\n${help_options}")" -- "${cur}")
@@ -951,20 +998,6 @@ function _tue-env
             elif [[ ${cmd} == "init-venv" ]] && [[ "${COMP_CWORD}" -eq 3 ]]
             then
                 mapfile -t COMPREPLY < <(compgen -W "$(echo -e "'--include-system-site-packages='\n${help_options}")" -- "${cur}")
-            fi
-        elif [[ ${cmd} == "config" ]]
-        then
-            if [[ "${COMP_CWORD}" -eq 2 ]]
-            then
-                [[ ! -d "${TUE_DIR}"/user/envs ]] && return 1
-                mapfile -t COMPREPLY < <(compgen -W "$(echo -e "$(find "${TUE_DIR}"/user/envs -mindepth 1 -maxdepth 1 -type f -not -name ".*" -printf "%f\n" | sed "s/.*/'& '/g")")" -- "${cur}")
-            fi
-            if [[ "${COMP_CWORD}" -eq 3 ]]
-            then
-                local functions
-                functions=$(grep 'function tue-env-' "${TUE_DIR}"/setup/tue-env-config.bash | awk '{print $2,"\n"}')
-                functions=${functions//tue-env-/}
-                mapfile -t COMPREPLY < <(compgen -W "$(echo -e "${functions}\n${help_options}")" -- "${cur}")
             fi
         elif [[ ${cmd} == "deactivate" ]]
         then
