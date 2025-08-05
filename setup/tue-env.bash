@@ -891,6 +891,11 @@ Environment directory '${tue_env_dir}' didn't exist (anymore)"""
 
         if [[ -n "${rel_path}" ]]
         then
+            # Validate rel_path to prevent directory traversal
+            if [[ "${rel_path}" == *".."* ]] || [[ "${rel_path}" == /* ]]; then
+                echo "[tue-env](cd) Invalid relative path: '${rel_path}'. Directory traversal is not allowed."
+                return 1
+            fi
             local full_path
             full_path="${tue_env_dir}/${rel_path}"
             cd "${full_path}" 2> /dev/null || { echo "[tue-env](cd) Directory '${rel_path}' relative to '${tue_env_dir}' does not exist in environment '${tue_env}'"; return 1; }
