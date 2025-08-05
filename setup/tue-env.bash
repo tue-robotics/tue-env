@@ -935,13 +935,18 @@ function _tue-env
     else
         local cmd
         cmd=${COMP_WORDS[1]}
-        if [[ ${cmd} == "switch" ]] || [[ ${cmd} == "remove" || ${cmd} == "rm" ]] || [[ ${cmd} == "cd" ]] || [[ ${cmd} == "set-default" ]] || [[ ${cmd} == "init-targets" ]] || [[ ${cmd} == "targets" ]] || [[ ${cmd} == "init-venv" ]] || [[ ${cmd} == "remove-venv" || ${cmd} == "rm-venv" ]]
+        if [[ ${cmd} == "rm" ]] || [[ ${cmd} == "rm-venv" ]] || [[ ${cmd} == "cd" ]] || [[ ${cmd} == "config" ]] || [[ ${cmd} == "init-targets" ]] || [[ ${cmd} == "init-venv" ]] || [[ ${cmd} == "remove" ]] || [[ ${cmd} == "remove-venv" ]] || [[ ${cmd} == "set-default" ]] || [[ ${cmd} == "targets" ]] || [[ ${cmd} == "switch" ]]
         then
             if [[ "${COMP_CWORD}" -eq 2 ]]
             then
                 [[ ! -d "${TUE_DIR}"/user/envs ]] && return 1
                 mapfile -t COMPREPLY < <(compgen -W "$(echo -e "$(find "${TUE_DIR}"/user/envs -mindepth 1 -maxdepth 1 -type f -not -name ".*" -printf "%f\n" | sed "s/.*/'& '/g")")" -- "${cur}")
-
+            elif [[ ${cmd} == "config" ]] && [[ "${COMP_CWORD}" -eq 3 ]]
+            then
+                local functions
+                functions=$(grep 'function tue-env-' "${TUE_DIR}"/setup/tue-env-config.bash | awk '{print $2,"\n"}')
+                functions=${functions//tue-env-/}
+                mapfile -t COMPREPLY < <(compgen -W "$(echo -e "${functions}\n${help_options}")" -- "${cur}")
             elif [[ ${cmd} == "remove" || ${cmd} == "rm" || ${cmd} == "remove-venv" || ${cmd} == "rm-venv" ]] && [[ "${COMP_CWORD}" -eq 3 ]]
             then
                 mapfile -t COMPREPLY < <(compgen -W "$(echo -e "'--purge '\n${help_options}")" -- "${cur}")
@@ -951,20 +956,6 @@ function _tue-env
             elif [[ ${cmd} == "init-venv" ]] && [[ "${COMP_CWORD}" -eq 3 ]]
             then
                 mapfile -t COMPREPLY < <(compgen -W "$(echo -e "'--include-system-site-packages='\n${help_options}")" -- "${cur}")
-            fi
-        elif [[ ${cmd} == "config" ]]
-        then
-            if [[ "${COMP_CWORD}" -eq 2 ]]
-            then
-                [[ ! -d "${TUE_DIR}"/user/envs ]] && return 1
-                mapfile -t COMPREPLY < <(compgen -W "$(echo -e "$(find "${TUE_DIR}"/user/envs -mindepth 1 -maxdepth 1 -type f -not -name ".*" -printf "%f\n" | sed "s/.*/'& '/g")")" -- "${cur}")
-            fi
-            if [[ "${COMP_CWORD}" -eq 3 ]]
-            then
-                local functions
-                functions=$(grep 'function tue-env-' "${TUE_DIR}"/setup/tue-env-config.bash | awk '{print $2,"\n"}')
-                functions=${functions//tue-env-/}
-                mapfile -t COMPREPLY < <(compgen -W "$(echo -e "${functions}\n${help_options}")" -- "${cur}")
             fi
         elif [[ ${cmd} == "deactivate" ]]
         then
