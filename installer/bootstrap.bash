@@ -409,7 +409,7 @@ function main
     then
         local files date_now
         files=$(find "${env_dir}"/user/envs -maxdepth 1 -type f)
-        date_now=$(date +%F_%R)
+        date_now=$(date +%F_%H%M%S)
         for env in ${files}
         do
             mv -f "$(cat "${env}")" "$(cat "${env}")"."${date_now}"

@@ -941,7 +941,7 @@ function tue-get
     then
         echo "[tue-get] Creating btrfs snapshot"
         sudo mkdir -p /snap/root
-        sudo btrfs subvolume snapshot / /snap/root/"$(date +%Y-%m-%d_%H:%M:%S)"
+        sudo btrfs subvolume snapshot / /snap/root/"$(date +%F_%H%M%S)"
     fi
 
     if [[ "$cmd" =~ ^(install|remove)$ && -z "$1" ]]
