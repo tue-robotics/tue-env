@@ -216,7 +216,9 @@ jobs:
         run: |
           MATRIX_OUTPUT_KEY=image
           echo "${{ steps.script.outputs.image }}" > "${MATRIX_OUTPUT_KEY}"
-          sha256sum "${MATRIX_OUTPUT_KEY}" | cut -d " " -f 1 | xargs -I{} echo "artifact={}" >> "${GITHUB_OUTPUT}"
+          ARTIFACT=$(sha256sum "${MATRIX_OUTPUT_KEY}" | cut -d " " -f 1 | xargs -I{} echo "artifact={}")
+          echo -e "\e[35;1m${ARTIFACT} >> \${GITHUB_OUTPUT}\e[0m"
+          echo "${ARTIFACT}" >> "${GITHUB_OUTPUT}"
           echo -e "\e[35;1mkey=${MATRIX_OUTPUT_KEY} >> \${GITHUB_OUTPUT}\e[0m"
           echo "key=${MATRIX_OUTPUT_KEY}" >> "${GITHUB_OUTPUT}"
       - name: Write image name
