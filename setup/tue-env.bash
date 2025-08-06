@@ -298,7 +298,7 @@ options:
             if [[ ${purge} == "false" ]]
             then
                 local tue_env_dir_moved
-                tue_env_dir_moved=${tue_env_dir}.$(date +%F_%R)
+                tue_env_dir_moved=${tue_env_dir}.$(date +%F_%H%M%S)
                 mv "${tue_env_dir}" "${tue_env_dir_moved}"
                 # shellcheck disable=SC1078,SC1079
                 echo """[tue-env] Removed environment '${tue_env}'
@@ -556,7 +556,7 @@ Environment directory '${tue_env_dir}' didn't exist (anymore)"""
         if [ -d "$tue_env_targets_dir" ]
         then
             local targets_dir_moved
-            targets_dir_moved=$tue_env_targets_dir.$(date +%F_%R)
+            targets_dir_moved=$tue_env_targets_dir.$(date +%F_%H%M%S)
             mv -f "$tue_env_targets_dir" "$targets_dir_moved"
             echo "[tue-env] Moved old targets of environment '${tue_env}' to ${targets_dir_moved}"
         fi
@@ -673,7 +673,7 @@ Environment directory '${tue_env_dir}' didn't exist (anymore)"""
         if [[ -d "${venv_dir}" ]]
         then
             local venv_dir_moved
-            venv_dir_moved=${venv_dir}.$(date +%F_%R)
+            venv_dir_moved=${venv_dir}.$(date +%F_%H%M%S)
             if [[ "${VIRTUAL_ENV_PROMPT}" == "${tue_env}" ]]
             then
                 echo "[tue-env](init-venv) deactivating currently active virtualenv of environment '${tue_env}'"
@@ -686,7 +686,7 @@ Environment directory '${tue_env_dir}' didn't exist (anymore)"""
         if [[ -d "${venv_dir_deprecated}" ]]
         then
             local venv_dir_deprecated_moved
-            venv_dir_deprecated_moved=${venv_dir_deprecated}.$(date +%F_%R)
+            venv_dir_deprecated_moved=${venv_dir_deprecated}.$(date +%F_%H%M%S)
             if [[ $(basename "${VIRTUAL_ENV}") == "${tue_env}" ]]
             then
                 echo "[tue-env](init-venv) deactivating currently active virtualenv of environment '${tue_env}'"
@@ -783,7 +783,7 @@ Environment directory '${tue_env_dir}' didn't exist (anymore)"""
                 return 0
             else
                 local venv_dir_moved
-                venv_dir_moved=${venv_dir}.$(date +%F_%R)
+                venv_dir_moved=${venv_dir}.$(date +%F_%H%M%S)
                 mv -f "${venv_dir}" "${venv_dir_moved}"
                 echo "[tue-env](rm-venv) Moved old virtualenv of environment '${tue_env}' to ${venv_dir_moved}"
             fi
@@ -801,7 +801,7 @@ Environment directory '${tue_env_dir}' didn't exist (anymore)"""
                 return 0
             else
                 local venv_dir_deprecated_moved
-                venv_dir_deprecated_moved=${venv_dir_deprecated}.$(date +%F_%R)
+                venv_dir_deprecated_moved=${venv_dir_deprecated}.$(date +%F_%H%M%S)
                 mv -f "${venv_dir_deprecated}" "${venv_dir_deprecated_moved}"
                 echo "[tue-env](rm-venv) Moved old virtualenv of environment '${tue_env}' to ${venv_dir_deprecated_moved}"
             fi
