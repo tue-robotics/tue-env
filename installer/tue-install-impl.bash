@@ -798,7 +798,7 @@ function tue-install-add-text
     local target_file
     target_file=$2
     # shellcheck disable=SC2088
-    if [[ "$target_file" != "/"* ]] && [[ "$source_file" != "~/"* ]]
+    if [[ "${target_file}" != "/"* ]] && [[ "${target_file}" != "~/"* ]]
     then
         tue-install-error "tue-install-add-text: target file needs to be absolute or relative to the home directory"
     fi
