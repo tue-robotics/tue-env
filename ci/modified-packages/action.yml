@@ -18,15 +18,28 @@ runs:
   steps:
     - name: Modified packages
       id: packages
+      # yamllint disable rule:indentation
       run: |
         PULLREQUEST=${{ github.event.number }}
         PULLREQUEST=${PULLREQUEST:-false}
         BRANCH=${GITHUB_BASE_REF:-${GITHUB_REF_NAME}}
         DEFAULT_BRANCH=${{ github.event.repository.default_branch }}
-        if [[ "${GITHUB_EVENT_NAME}" == "schedule" ]] || ([[ "${GITHUB_EVENT_NAME}" == "push" ]] || [[ "${GITHUB_EVENT_NAME}" == "workflow_dispatch" ]] && [[ "${BRANCH}" == "${DEFAULT_BRANCH}" ]])
+        if \
+        [[ "${GITHUB_EVENT_NAME}" == "schedule" ]] || \
+        ( \
+        [[ "${GITHUB_EVENT_NAME}" == "push" ]] || \
+        [[ "${GITHUB_EVENT_NAME}" == "workflow_dispatch" ]] && \
+        [[ "${BRANCH}" == "${DEFAULT_BRANCH}" ]] \
+        )
         then
             ALL=true
         fi
-        source ${{ github.action_path }}/../packages.sh --pullrequest=${PULLREQUEST} --branch=${GITHUB_BASE_REF} --commit-range=${{ inputs.commit-range }} --all=${ALL} ${{ inputs.ignored-packages }}
-        echo "packages=${PACKAGES_LIST}" >> $GITHUB_OUTPUT
+        source ${{ github.action_path }}/../packages.sh \
+        --pullrequest=${PULLREQUEST} \
+        --branch=${GITHUB_BASE_REF} \
+        --commit-range=${{ inputs.commit-range }} \
+        --all=${ALL} \
+        ${{ inputs.ignored-packages }}
+        echo "packages=${PACKAGES_LIST}" >> ${GITHUB_OUTPUT}
+      # yamllint enable rule:indentation
       shell: bash --noprofile --norc -o pipefail {0}

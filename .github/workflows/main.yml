@@ -150,6 +150,8 @@ jobs:
       - name: Script
         if: steps.skip_check.outputs.skip == 'false'
         id: script
+        # yamllint disable rule:indentation
+        # yamllint disable rule:line-length
         run: |
           #! /usr/bin/env bash
           BRANCH=${GITHUB_BASE_REF:-${GITHUB_REF_NAME}}
@@ -231,6 +233,8 @@ jobs:
           echo "image=${TARGET_IMAGE}" >> "${GITHUB_OUTPUT}"
           echo -e "\e[35;1mtag=${IMAGE_TAG} >> \${GITHUB_OUTPUT}\e[0m"
           echo "tag=${IMAGE_TAG}" >> "${GITHUB_OUTPUT}"
+        # yamllint enable rule:line-length
+        # yamllint enable rule:indentation
       - name: Generate artifacts
         id: artifacts
         if: steps.skip_check.outputs.skip == 'false' && github.event_name != 'pull_request'
@@ -266,12 +270,16 @@ jobs:
       - uses: actions/download-artifact@v5
       - name: Read matrix output
         id: read
+        # yamllint disable rule:line-length
         run: |
           result="$(find . -name ${{ needs.docker_generation_tue_env.outputs.key }} -exec cat {} \; | jq --slurp --raw-input 'split("\n")[:-1] | .[] | split(":") | {(.[0]) : [(.[1])]}' | jq -cs '[.[] | to_entries] | flatten | reduce .[] as $dot ({}; .[$dot.key] += $dot.value) | { ${{ needs.docker_generation_tue_env.outputs.key }} : . }' )"
           echo -e "\e[35;1mresult=${result} >> \${GITHUB_OUTPUT}\e[0m"
           echo "result=${result}" >> "${GITHUB_OUTPUT}"
+        # yamllint enable rule:line-length
       - name: Generate new manifest files
+        # yamllint disable rule:indentation
         run: |
           ci/docker-manifest-generator.sh \
             --images-json='${{ toJSON(steps.read.outputs.result) }}' \
             --tag="${{ needs.docker_generation_tue_env.outputs.tag }}"
+        # yamllint enable rule:indentation

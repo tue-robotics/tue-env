@@ -15,7 +15,9 @@ before_install:
   - source set-branch.sh --branch=$TRAVIS_BRANCH
 
 install:
-  - bash install-package.sh --package=$PACKAGE --branch=$BRANCH --commit=$TRAVIS_COMMIT --pullrequest=$TRAVIS_PULL_REQUEST
+  # yamllint disable rule:line-length
+  - bash install-package.sh --package=${PACKAGE} --branch=$BRANCH --commit=$TRAVIS_COMMIT --pullrequest=$TRAVIS_PULL_REQUEST
+  # yamllint enable rule:line-length
 
 before_script:
   - bash build-package.sh --package=$PACKAGE
