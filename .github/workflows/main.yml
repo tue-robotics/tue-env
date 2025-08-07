@@ -138,9 +138,9 @@ jobs:
       - name: Expose GitHub Runtime
         if: steps.skip_check.outputs.skip == 'false'
         uses: crazy-max/ghaction-github-runtime@v3
-      - name: Set up QEMU
-        if: steps.skip_check.outputs.skip == 'false' && matrix.setup_qemu == true
-        uses: docker/setup-qemu-action@v3
+#      - name: Set up QEMU
+#        if: steps.skip_check.outputs.skip == 'false' && matrix.setup_qemu == true
+#        uses: docker/setup-qemu-action@v3
       - name: Setup docker buildx
         if: steps.skip_check.outputs.skip == 'false'
         uses: docker/setup-buildx-action@v3
