@@ -804,6 +804,7 @@ function tue-install-add-text
     then
         tue-install-error "tue-install-add-text: target file needs to be absolute or relative to the home directory"
     fi
+    target_file="${target_file/#\~/${HOME}}"
 
     local root_required
     root_required=true
