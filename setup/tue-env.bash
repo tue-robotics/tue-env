@@ -22,6 +22,8 @@ function _tue-env-deactivate-current-env
     do
         unset "${var}"
     done
+    unset AMENT_PREFIX_PATH
+    unset COLCON_PREFIX_PATH
     unset PYTHONPATH
 
     return 0
