@@ -117,14 +117,14 @@ jobs:
           echo -e "\e[35;1mskip=${SKIP} >> \${GITHUB_OUTPUT}\e[0m"
           echo "skip=${SKIP}" >> "${GITHUB_OUTPUT}"
       - name: Maximize build space
-        if: steps.skip_check.outputs.skip == 'false' && matrix.maximize-build-space == 'true'
+        if: steps.skip_check.outputs.skip == 'false' && matrix.maximize-build-space == true
         uses: easimon/maximize-build-space@master
         with:
           build-mount-path: /var/lib/docker/
           root-reserve-mb: 2048
           temp-reserve-mb: 512
       - name: Restart docker
-        if: steps.skip_check.outputs.skip == 'false' && matrix.maximize-build-space == 'true'
+        if: steps.skip_check.outputs.skip == 'false' && matrix.maximize-build-space == true
         run: sudo service docker restart
       - uses: actions/checkout@v4
         if: steps.skip_check.outputs.skip == 'false'
