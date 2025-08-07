@@ -624,7 +624,7 @@ function tue-install-cp
 {
     tue-install-debug "tue-install-cp $*"
 
-    if [ -z "$2" ]
+    if [[ -z "$2" ]]
     then
         tue-install-error "Invalid tue-install-cp call: needs two arguments (source and target). The source must be relative to the installer target directory
 Command: tue-install-cp $*"
@@ -639,13 +639,15 @@ Command: tue-install-cp $*"
         root_required=false
     fi
 
-    local cp_target cp_target_parent_dir
+    local cp_target cp_target_dir_file cp_target_parent_dir
+    cp_target_dir_file="$2"
+    cp_target_dir_file="${cp_target_dir_file/#\~/${HOME}}"
 
-    if [ -d "$2" ]
+    if [[ -d "${cp_target_dir_file}" ]]
     then
         cp_target_parent_dir="${2%%/}"
     else
-        cp_target_parent_dir="$(dirname "$2")"
+        cp_target_parent_dir="$(dirname "${cp_target_dir_file}")"
     fi
 
     for file in $source_files
@@ -655,11 +657,11 @@ Command: tue-install-cp $*"
             tue-install-error "Invalid tue-install-cp call: file '$file' does not exist."
         fi
 
-        if [ -d "$2" ]
+        if [[ -d "${cp_target_dir_file}" ]]
         then
             cp_target="$cp_target_parent_dir"/$(basename "$file")
         else
-            cp_target="$2"
+            cp_target="${cp_target_dir_file}"
         fi
 
         if ! cmp --quiet "$file" "$cp_target"
@@ -798,10 +800,11 @@ function tue-install-add-text
     local target_file
     target_file=$2
     # shellcheck disable=SC2088
-    if [[ "$target_file" != "/"* ]] && [[ "$source_file" != "~/"* ]]
+    if [[ "${target_file}" != "/"* ]] && [[ "${target_file}" != "~/"* ]]
     then
         tue-install-error "tue-install-add-text: target file needs to be absolute or relative to the home directory"
     fi
+    target_file="${target_file/#\~/${HOME}}"
 
     local root_required
     root_required=true
