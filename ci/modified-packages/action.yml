@@ -21,9 +21,7 @@ runs:
       run: |
         PULLREQUEST=${{ github.event.number }}
         PULLREQUEST=${PULLREQUEST:-false}
-        GITHUB_REF=${GITHUB_REF#refs/heads/}
-        GITHUB_REF=${GITHUB_REF#refs/tags/}
-        BRANCH=${GITHUB_BASE_REF:-${GITHUB_REF}}
+        BRANCH=${GITHUB_BASE_REF:-${GITHUB_REF_NAME}}
         DEFAULT_BRANCH=${{ github.event.repository.default_branch }}
         if [[ "${GITHUB_EVENT_NAME}" == "schedule" ]] || ([[ "${GITHUB_EVENT_NAME}" == "push" ]] || [[ "${GITHUB_EVENT_NAME}" == "workflow_dispatch" ]] && [[ "${BRANCH}" == "${DEFAULT_BRANCH}" ]])
         then

@@ -152,9 +152,7 @@ jobs:
         id: script
         run: |
           #! /usr/bin/env bash
-          GITHUB_REF=${GITHUB_REF#refs/heads/}
-          GITHUB_REF=${GITHUB_REF#refs/tags/}
-          BRANCH=${GITHUB_BASE_REF:-${GITHUB_REF}}
+          BRANCH=${GITHUB_BASE_REF:-${GITHUB_REF_NAME}}
           # shellcheck disable=SC1083,SC2296
           PULLREQUEST=${{ github.event.number }}
           PULLREQUEST=${PULLREQUEST:-false}
