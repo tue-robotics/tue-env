@@ -138,12 +138,12 @@ jobs:
       - name: Expose GitHub Runtime
         if: steps.skip_check.outputs.skip == 'false'
         uses: crazy-max/ghaction-github-runtime@v3
-      # Comment out when generating arm64
-      #- name: Install QEMU
-      #  if: steps.skip_check.outputs.skip == 'false'
-      #  run: |
-      #    sudo apt update -qq
-      #    sudo apt install -qq -y qemu qemu-user-static
+      - name: Set up QEMU
+        if: steps.skip_check.outputs.skip == 'false' && matrix.setup_qemu == true
+        uses: docker/setup-qemu-action@v3
+      - name: Setup docker buildx
+        if: steps.skip_check.outputs.skip == 'false'
+        uses: docker/setup-buildx-action@v3
       - name: Docker info
         if: steps.skip_check.outputs.skip == 'false'
         run: docker info
