@@ -140,6 +140,37 @@ echo -e "\e[35;1mCI_DOCKER_PUSH_IMAGE  = ${CI_DOCKER_PUSH_IMAGE}\e[0m"
 echo -e "\e[35;1mCI_DOCKER_SSH         = ${CI_DOCKER_SSH}\e[0m"
 
 
+if [[ "${CI_DOCKER_SSH}" == "true" ]]
+then
+    ADDITIONAL_ARGS_LOCAL_BUILD="${ADDITIONAL_ARGS_LOCAL_BUILD} --ssh --ssh-key=YOUR_KEY_FILE"
+fi
+
+if [[ -n "${CI_OAUTH2_TOKEN}" ]]
+then
+    ADDITIONAL_ARGS_LOCAL_BUILD="${ADDITIONAL_ARGS_LOCAL_BUILD} --oauth2_token=YOUR_OAUTH2_KEY"
+fi
+
+# Command to reproduce locally
+# shellcheck disable=SC2016
+echo -e "\e[35;1m
+This build can be reproduced locally using the following commands:
+
+\`\`\`
+tue-get install docker
+cd "'${TUE_DIR}'"
+git checkout ${CI_COMMIT}
+
+docker buildx rm multiarch-builder
+docker context rm multiarch-environment
+
+"'${TUE_DIR}'"/ci/build-docker-image.sh --image=${CI_DOCKER_IMAGE_NAME} --branch=${CI_BRANCH} --pull_request=${CI_PULL_REQUEST} --commit=${CI_COMMIT} --registry=${CI_DOCKER_REGISTRY} --ref-name=${CI_REF_NAME} --platforms=${CI_DOCKER_PLATFORMS} --push_image=false --ros_version=${CI_ROS_VERSION} --ros_distro=${CI_ROS_DISTRO} --targets_repo=${CI_TARGETS_REPO} --base_image=${CI_DOCKER_BASE_IMAGE} --docker_file=${CI_DOCKER_FILE}${ADDITIONAL_ARGS_LOCAL_BUILD}
+\`\`\`
+
+This command never pushes the docker image to the registry. You will need to alter the '--push_image' argument for that. This also requires you are logged in to the correct docker registry or provide the related arguments(--docker_login, --user and --password), so this script will login.
+To access a private repository you need to provide a SSH key ('--ssh --ssh-key=YOUR_SSH_KEY_FILE') or an OAUTH2 token ('--oauth2_token=YOUR_OAUTH2_TOKEN').
+
+\e[0m"
+
 # Declare arrays for storing the constructed docker build arguments
 CI_DOCKER_BUILD_ARGS=()
 CI_DOCKER_BUILDX_ARGS=()
@@ -235,6 +266,13 @@ then
 fi
 
 # Construction of Docker buildx arguments begins here
+if [[ "${GITHUB_ACTIONS}" == "true" ]]
+then
+    echo -e "\e[35;1mRunning on GitHub Actions, using the specific GHA cache\e[0m"
+    CI_DOCKER_BUILDX_ARGS+=("--cache-from=type=gha")
+    CI_DOCKER_BUILDX_ARGS+=("--cache-to=type=gha,mode=min,compression=zstd")
+fi
+
 if [[ -n "$CI_DOCKER_PLATFORMS" ]]
 then
     CI_DOCKER_BUILDX_ARGS+=("--platform=linux/${CI_DOCKER_PLATFORMS}")
