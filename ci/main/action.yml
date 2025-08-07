@@ -50,9 +50,7 @@ runs:
       run: |
         echo "::group::install-package.sh"
         start_time=$(date +%s)
-        GITHUB_REF=${GITHUB_REF#refs/heads/}
-        GITHUB_REF=${GITHUB_REF#refs/tags/}
-        BRANCH=${GITHUB_BASE_REF:-${GITHUB_REF}}
+        BRANCH=${GITHUB_BASE_REF:-${GITHUB_REF_NAME}}
         DEFAULT_BRANCH=${{ github.event.repository.default_branch }}
         if [[ "$BRANCH" == "$DEFAULT_BRANCH" ]]
         then
