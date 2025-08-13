@@ -27,11 +27,11 @@ runs:
       with:
         path: |
           ~/.ccache
-        key: ${{ runner.os }}-ccache-${{ github.event.repository.name }}-${{ inputs.package }}-${{ github.sha }}
+        key: ${{ inputs.image }}-ccache-${{ github.event.repository.name }}-${{ inputs.package }}-${{ github.sha }}
         restore-keys: |
-          ${{ runner.os }}-ccache-${{ github.event.repository.name }}-${{ inputs.package }}-
-          ${{ runner.os }}-ccache-${{ github.event.repository.name }}-
-          ${{ runner.os }}-ccache-
+          ${{ inputs.image }}-ccache-${{ github.event.repository.name }}-${{ inputs.package }}-
+          ${{ inputs.image }}-ccache-${{ github.event.repository.name }}-
+          ${{ inputs.image }}-ccache-
 
     - name: Cache pip
       id: cache-pip-restore
@@ -39,11 +39,11 @@ runs:
       with:
         path: |
           ~/.cache/pip
-        key: ${{ runner.os }}-pip-${{ github.event.repository.name }}-${{ inputs.package }}-${{ github.sha }}
+        key: ${{ inputs.image }}-pip-${{ github.event.repository.name }}-${{ inputs.package }}-${{ github.sha }}
         restore-keys: |
-          ${{ runner.os }}-pip-${{ github.event.repository.name }}-${{ inputs.package }}-
-          ${{ runner.os }}-pip-${{ github.event.repository.name }}-
-          ${{ runner.os }}-pip-
+          ${{ inputs.image }}-pip-${{ github.event.repository.name }}-${{ inputs.package }}-
+          ${{ inputs.image }}-pip-${{ github.event.repository.name }}-
+          ${{ inputs.image }}-pip-
 
     - name: Install
       id: install
