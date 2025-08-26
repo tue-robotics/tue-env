@@ -670,9 +670,11 @@ Command: tue-install-cp $*"
             if "$root_required"
             then
                 tue-install-debug "Using elevated privileges (sudo) to copy ${file} to ${cp_target}"
-                tue-install-pipe sudo mkdir --parents --verbose "$cp_target_parent_dir" && tue-install-pipe sudo cp --verbose "$file" "$cp_target"
+                tue-install-pipe sudo mkdir --parents --verbose "${cp_target_parent_dir}" || tue-install-error "(Privileged) Could not create directory ${cp_target_parent_dir}"
+                tue-install-pipe sudo cp --verbose "${file}" "${cp_target}"  || tue-install-error "(Privileged) Could not copy ${file} to ${cp_target}"
             else
-                tue-install-pipe mkdir --parents --verbose "$cp_target_parent_dir" && tue-install-pipe cp --verbose "$file" "$cp_target"
+                tue-install-pipe mkdir --parents --verbose "$cp_target_parent_dir" || tue-install-error "Could not create directory ${cp_target_parent_dir}"
+                tue-install-pipe cp --verbose "${file}" "${cp_target}" || tue-install-error "Could not copy ${file} to ${cp_target}"
             fi
         else
             tue-install-debug "File $file and $cp_target are the same, no action needed"
