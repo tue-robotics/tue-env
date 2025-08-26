@@ -632,16 +632,16 @@ Command: tue-install-cp $*"
 
     local source_files="$TUE_INSTALL_CURRENT_TARGET_DIR"/"$1"
 
-    # Check if user is allowed to write on target destination
-    local root_required=true
-    if namei -l "$2" | grep -q "$(whoami)"
-    then
-        root_required=false
-    fi
-
     local cp_target cp_target_dir_file cp_target_parent_dir
     cp_target_dir_file="$2"
     cp_target_dir_file="${cp_target_dir_file/#\~/${HOME}}"
+
+    # Check if user is allowed to write on target destination
+    local root_required=true
+    if namei -l "${cp_target_dir_file}" | grep -q "$(whoami)"
+    then
+        root_required=false
+    fi
 
     if [[ -d "${cp_target_dir_file}" ]]
     then
@@ -670,9 +670,11 @@ Command: tue-install-cp $*"
             if "$root_required"
             then
                 tue-install-debug "Using elevated privileges (sudo) to copy ${file} to ${cp_target}"
-                tue-install-pipe sudo mkdir --parents --verbose "$cp_target_parent_dir" && tue-install-pipe sudo cp --verbose "$file" "$cp_target"
+                tue-install-pipe sudo mkdir --parents --verbose "${cp_target_parent_dir}" || tue-install-error "(Privileged) Could not create directory ${cp_target_parent_dir}"
+                tue-install-pipe sudo cp --verbose "${file}" "${cp_target}"  || tue-install-error "(Privileged) Could not copy ${file} to ${cp_target}"
             else
-                tue-install-pipe mkdir --parents --verbose "$cp_target_parent_dir" && tue-install-pipe cp --verbose "$file" "$cp_target"
+                tue-install-pipe mkdir --parents --verbose "$cp_target_parent_dir" || tue-install-error "Could not create directory ${cp_target_parent_dir}"
+                tue-install-pipe cp --verbose "${file}" "${cp_target}" || tue-install-error "Could not copy ${file} to ${cp_target}"
             fi
         else
             tue-install-debug "File $file and $cp_target are the same, no action needed"
