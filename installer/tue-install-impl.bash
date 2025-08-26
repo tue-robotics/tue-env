@@ -632,16 +632,16 @@ Command: tue-install-cp $*"
 
     local source_files="$TUE_INSTALL_CURRENT_TARGET_DIR"/"$1"
 
-    # Check if user is allowed to write on target destination
-    local root_required=true
-    if namei -l "$2" | grep -q "$(whoami)"
-    then
-        root_required=false
-    fi
-
     local cp_target cp_target_dir_file cp_target_parent_dir
     cp_target_dir_file="$2"
     cp_target_dir_file="${cp_target_dir_file/#\~/${HOME}}"
+
+    # Check if user is allowed to write on target destination
+    local root_required=true
+    if namei -l "${cp_target_dir_file}" | grep -q "$(whoami)"
+    then
+        root_required=false
+    fi
 
     if [[ -d "${cp_target_dir_file}" ]]
     then
