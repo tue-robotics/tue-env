@@ -30,7 +30,7 @@ jobs:
     steps:
       - uses: actions/checkout@v5
       - name: Hadolint
-        uses: hadolint/hadolint-action@v3.2.0
+        uses: hadolint/hadolint-action@v3.3.0
         with:
           dockerfile: "*.Dockerfile"
           recursive: true
