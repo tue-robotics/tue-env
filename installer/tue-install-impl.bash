@@ -1182,7 +1182,6 @@ function tue-install-apt-key-source-now
     local arch distribution
     arch=$(dpkg --print-architecture)
 
-
     local distribution_components
     distribution_components=()
     if [[ "${include_distribution}" == "true" ]]
@@ -1581,7 +1580,17 @@ function tue-install-dpkg
     then
         tue-install-error "Invalid tue-install-dpkg call: needs package as argument."
     fi
-    tue-install-pipe sudo dpkg --install "$1"
+    local dpkg_file
+    dpkg_file="$1"
+    if [[ ! -f "${dpkg_file}" ]]
+    then
+        tue-install-error "Invalid tue-install-dpkg call: file '${dpkg_file}' does not exist."
+    fi
+    if ! dpkg-deb --info "${dpkg_file}" 1> /dev/null
+    then
+        tue-install-error "Invalid tue-install-dpkg call: file '${dpkg_file}' is not a valid debian package."
+    fi
+    tue-install-pipe sudo dpkg --install "${dpkg_file}"
     tue-install-pipe sudo apt-get --fix-broken --assume-yes -q install || tue-install-error "An error occurred while fixing dpkg install"
 }
 
