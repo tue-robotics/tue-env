@@ -1618,6 +1618,11 @@ function tue-install-ros
 
     if [ "$install_type" == "system" ]
     then
+        if [[ ${src} =~ "_" ]]
+        then
+            tue-install-warning "ROS debian packages use dashes instead of underscores. Replacing '_' by '-' in debian package name '${src}'"
+            src=${src//_/-}
+        fi
         tue-install-debug "tue-install-system ros-${TUE_ENV_ROS_DISTRO}-${src}"
         tue-install-system ros-"${TUE_ENV_ROS_DISTRO}"-"${src}"
         return 0
