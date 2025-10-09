@@ -568,6 +568,7 @@ function tue-install-git
     local version_cache_file="${TUE_ENV_DIR}/.env/version_cache/${target_dir}"
     if [ -n "$version" ]
     then
+        tue-install-debug "Writing version '${version}' to version cache file '${version_cache_file}'"
         mkdir -p "$(dirname "$version_cache_file")"
         echo "$version" > "$version_cache_file"
         _try_branch_res=""
