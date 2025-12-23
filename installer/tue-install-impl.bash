@@ -912,6 +912,30 @@ function tue-install-system
 
 # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # #
 
+function tue-install-apt-wait-for-lock
+{
+    tue-install-debug
+    # Wait for apt-lock first (https://askubuntu.com/a/375031)
+    local i j
+    i=0
+    tput sc
+    while sudo fuser /var/{lib/{dpkg,apt/lists},cache/apt/archives}/{lock,lock-frontend} >/dev/null 2>&1
+    do
+        case $((i % 4)) in
+            0 ) j="-" ;;
+            1 ) j="\\" ;;
+            2 ) j="|" ;;
+            3 ) j="/" ;;
+        esac
+        tput rc
+        echo -en "\r[$j] Waiting for other software managers to finish..."
+        sleep 0.5
+        ((i=i+1))
+    done
+}
+
+# # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # #
+
 function tue-install-system-now
 {
     tue-install-debug "tue-install-system-now $*"
@@ -940,30 +964,15 @@ function tue-install-system-now
     then
         tue-install-echo "Going to run the following command:\n\nsudo apt-get install --assume-yes -q $pkgs_to_install\n"
 
-        # Wait for apt-lock first (https://askubuntu.com/a/375031)
-        i=0
-        tput sc
-        while sudo fuser /var/{lib/{dpkg,apt/lists},cache/apt/archives}/{lock,lock-frontend} >/dev/null 2>&1
-        do
-            case $((i % 4)) in
-                0 ) j="-" ;;
-                1 ) j="\\" ;;
-                2 ) j="|" ;;
-                3 ) j="/" ;;
-            esac
-            tput rc
-            echo -en "\r[$j] Waiting for other software managers to finish..."
-            sleep 0.5
-            ((i=i+1))
-        done
-
         if [[ ! -f "${TUE_APT_GET_UPDATED_FILE}" ]]
         then
             # Update once every boot. Or delete the tmp file if you need an update before installing a pkg.
+            tue-install-apt-wait-for-lock
             tue-install-pipe sudo apt-get update || tue-install-error "An error occurred while updating apt-get."
             touch "${TUE_APT_GET_UPDATED_FILE}"
         fi
 
+        tue-install-apt-wait-for-lock
         # shellcheck disable=SC2086
         tue-install-pipe sudo apt-get install --assume-yes -q $pkgs_to_install || tue-install-error "An error occurred while installing system packages."
         tue-install-debug "Installed $pkgs_to_install ($?)"
@@ -1591,7 +1600,9 @@ function tue-install-dpkg
     then
         tue-install-error "Invalid tue-install-dpkg call: file '${dpkg_file}' is not a valid debian package."
     fi
+    tue-install-apt-wait-for-lock
     tue-install-pipe sudo dpkg --install "${dpkg_file}"
+    tue-install-apt-wait-for-lock
     tue-install-pipe sudo apt-get --fix-broken --assume-yes -q install || tue-install-error "An error occurred while fixing dpkg install"
 }
 
