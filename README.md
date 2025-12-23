@@ -391,6 +391,7 @@ generally used methods of installing packages:
 |----------------------------------|------------------------------------------------------------------------------------------------------------|
 | `tue-install-add-text`           | To add/replace text in a file with `sudo` taken into account                                               |
 | `tue-install-apt-get-update`     | Make sure that during next `tue-install-system-now` call `apt-get` is updated                              |
+| `tue-install-apt-wait-for-lock`  | Wait till all `apt` and `dpkg` locks are relased                                                           |
 | `tue-install-cp`                 | Analogous to `cp` but takes `sudo` into account and the source should be relative to target                |
 | `tue-install-ln`                 | Analogous to `ln -s` but takes `sudo` into account and the source should be relative to target or absolute |
 | `tue-install-dpkg`               | To install a debian dpkg file                                                                              |
