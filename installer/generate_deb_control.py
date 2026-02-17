@@ -8,7 +8,6 @@ from typing import Mapping
 from parse_package_xml import package_xml_parser
 from parse_install_yaml import install_yaml_parser
 
-
 TUE_ENV_TARGETS_DIR = Path(os.environ["TUE_ENV_TARGETS_DIR"])
 TUE_ENV_ROS_DISTRO = os.environ["TUE_ENV_ROS_DISTRO"]
 ARCHITECTURES = {"x86_64": "amd64", "aarch64": "arm64"}
