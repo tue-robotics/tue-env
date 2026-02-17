@@ -295,7 +295,7 @@ def guess_debian_release():
             with etc_dpkg_origins_default.open() as dpkg_origins_file:
                 for line in dpkg_origins_file:
                     try:
-                        (header, content) = line.split(": ", 1)
+                        header, content = line.split(": ", 1)
                         header = header.lower()
                         content = content.strip()
                         if header == "vendor":
