@@ -1174,7 +1174,8 @@ function tue-install-apt-key-source-now
     if [[ ${#distribution_extensions[@]} -le 0 ]]
     then
         tue-install-debug "No distribution extensions provided. Adding empty string to the list"
-        distribution_extensions+=("")
+        # shellcheck disable=SC2016
+        distribution_extensions+=('${DIST}')
     elif [[ "${include_distribution}" == "false" ]]
     then
         tue-install-warning "'distribution-extensions' provided but 'include-distribution' is set to 'false'. No need to set this argument. This will be ignored"
@@ -1189,23 +1190,22 @@ function tue-install-apt-key-source-now
         source_file="/etc/apt/sources.list.d/${source_file}"
     fi
 
-    local arch distribution
+    local arch DIST
     arch=$(dpkg --print-architecture)
+    DIST=$(lsb_release -cs)
 
     local distribution_components
     distribution_components=()
     if [[ "${include_distribution}" == "true" ]]
     then
-        local distribution
-        distribution=$(lsb_release -cs)
         for dist_ext in "${distribution_extensions[@]}"
         do
-            distribution_components+=("${distribution}${dist_ext:+-${dist_ext}}")
+            distribution_components+=("${dist_ext//\$\{DIST\}/${DIST}}")
         done
     fi
 
     local source_url
-    source_url="deb [arch=${arch} signed-by=${key_file}] ${repo_url}${distribution_components:+ ${distribution_components[*]}}${repo_components:+ ${repo_components[*]}}"
+    source_url="deb [arch=${arch} signed-by=${key_file}] ${repo_url//\$\{DIST\}/${DIST}}${distribution_components:+ ${distribution_components[*]}}${repo_components:+ ${repo_components[*]}}"
 
     local apt_needs_to_be_updated key_needs_to_be_added source_needs_to_be_added
     key_needs_to_be_added=false
