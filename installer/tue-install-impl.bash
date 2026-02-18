@@ -1227,8 +1227,28 @@ function tue-install-apt-key-source-now
     if [[ "${key_needs_to_be_added}" == "true" ]]
     then
         tue-install-debug "Making sure '${key_folder}' folder exists with the correct permissions."
-        tue-install-pipe sudo install -m 0755 -d "${key_folder}" || tue-install-error "Could not create '${key_folder}' folder"
-        tue-install-debug "Downloading gpg key of ${repo_name} repo with fingerprint '${key_fingerprint}'."
+        local key_folder_permissions
+        if ! key_folder_permissions=$(stat -c '%a' "${key_folder}" 2>/dev/null)
+        then
+            tue-install-debug "Folder '${key_folder}' does not exist yet."
+            tue-install-pipe sudo install -m 0755 -d "${key_folder}" || tue-install-error "Could not create '${key_folder}' folder"
+        elif [[ "${key_folder_permissions}" != "755" ]]
+        then
+            tue-install-debug "Folder '${key_folder}' has permissions ${key_folder_permissions} instead of 0755. Updating permissions to 0755."
+            tue-install-pipe sudo chmod 0755 "${key_folder}" || tue-install-error "Could not update permissions of '${key_folder}' folder to 0755"
+
+            local key_folder_owner
+            key_folder_owner=$(stat -c '%U' "${key_folder}")
+            if [[ "${key_folder_owner}" != "root" ]]
+            then
+                tue-install-debug "Folder '${key_folder}' is owned by ${key_folder_owner} instead of root. Updating owner to root."
+                tue-install-pipe sudo chown root:root "${key_folder}" || tue-install-error "Could not update owner of '${key_folder}' folder to root"
+            else
+                tue-install-debug "Folder '${key_folder}' is already owned by root."
+            fi
+        fi
+
+        tue-install-echo "Downloading gpg key of ${repo_name} repo with fingerprint '${key_fingerprint}'."
         curl -fsSL "${key_url}" | sudo gpg --dearmor --yes -o "${key_file}"
         tue-install-debug "Successfully added/updated ${repo_name} repository GPG key"
 
