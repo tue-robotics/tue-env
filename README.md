@@ -355,7 +355,8 @@ Add an APT source including the key which it is signed with.
 <!-- markdownlint-disable MD013 -->
 ```yaml
 - type: apt-key-source
-  distribution-extensions: [<ext1>, [<ext2>, ..., <extN>]] (Minimal one extension required, use "" for no extension, just distribution name)
+  distribution-extensions: [<ext1>, [<ext2>, ..., <extN>]] (Minimal one extension required, use "${DIST}" for no extension, just distribution name)
+  include-distribution: [true/false] (Optional field, default: true)
   key-file: </absolute/path/where/to/store/key>
   key-fingerprint: <fingerprint>
   key-url: <url>
@@ -364,6 +365,15 @@ Add an APT source including the key which it is signed with.
   source-file: </absolute/path/to/source.list> or <relative path of source.list to /etc/apt/sources.list.d/>
 ```
 <!-- markdownlint-enable MD013 -->
+
+The `distribution-extensions` field is used to specify the distribution extensions for which the source should be added.
+If left empty, a single extension with just the distribution name will be used.
+When more extensions are needed,
+use a list of quoted strings and use `${DIST}` to specify the distribution name without extension.
+For example, if the source should be added for `focal` and `focal-updates`,
+the `distribution-extensions` field should be set to `["${DIST}", "${DIST}-updates"]`.
+
+Also in the `repo-url` field, the `${DIST}` variable can be used to substitute the distribution name in the url.
 
 ### Writing `install.bash`
 

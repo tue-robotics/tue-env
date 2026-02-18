@@ -20,10 +20,12 @@ jobs:
         id: get_actionlint
         run: bash <(curl https://raw.githubusercontent.com/rhysd/actionlint/main/scripts/download-actionlint.bash)
       - name: Check workflow files
+        # yamllint disable rule:line-length
         run: |
           curl -sSL https://raw.githubusercontent.com/rhysd/actionlint/main/.github/actionlint-matcher.json -o /tmp/actionlint-matcher.json
           echo "::add-matcher::/tmp/actionlint-matcher.json"
           ${{ steps.get_actionlint.outputs.executable }} -color -verbose
+        # yamllint enable rule:line-length
   linting_hadolint:
     name: Hadolint
     runs-on: ubuntu-latest
@@ -102,6 +104,8 @@ jobs:
     steps:
       - name: Skip non-default-branch
         id: skip_check
+        # yamllint disable rule:indentation
+        # yamllint disable rule:line-length
         run: |
           #! /usr/bin/env bash
           DEFAULT_BRANCH=${{ github.event.repository.default_branch }}
@@ -116,6 +120,8 @@ jobs:
           fi
           echo -e "\e[35;1mskip=${SKIP} >> \${GITHUB_OUTPUT}\e[0m"
           echo "skip=${SKIP}" >> "${GITHUB_OUTPUT}"
+        # yamllint enable rule:line-length
+        # yamllint enable rule:indentation
       - name: Maximize build space
         if: steps.skip_check.outputs.skip == 'false' && matrix.maximize-build-space == true
         uses: easimon/maximize-build-space@master
@@ -138,9 +144,9 @@ jobs:
       - name: Expose GitHub Runtime
         if: steps.skip_check.outputs.skip == 'false'
         uses: crazy-max/ghaction-github-runtime@v3
-#      - name: Set up QEMU
-#        if: steps.skip_check.outputs.skip == 'false' && matrix.setup_qemu == true
-#        uses: docker/setup-qemu-action@v3
+      # - name: Set up QEMU
+      #   if: steps.skip_check.outputs.skip == 'false' && matrix.setup_qemu == true
+      #   uses: docker/setup-qemu-action@v3
       - name: Setup docker buildx
         if: steps.skip_check.outputs.skip == 'false'
         uses: docker/setup-buildx-action@v3

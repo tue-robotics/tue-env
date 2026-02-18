@@ -1174,7 +1174,8 @@ function tue-install-apt-key-source-now
     if [[ ${#distribution_extensions[@]} -le 0 ]]
     then
         tue-install-debug "No distribution extensions provided. Adding empty string to the list"
-        distribution_extensions+=("")
+        # shellcheck disable=SC2016
+        distribution_extensions+=('${DIST}')
     elif [[ "${include_distribution}" == "false" ]]
     then
         tue-install-warning "'distribution-extensions' provided but 'include-distribution' is set to 'false'. No need to set this argument. This will be ignored"
@@ -1189,23 +1190,22 @@ function tue-install-apt-key-source-now
         source_file="/etc/apt/sources.list.d/${source_file}"
     fi
 
-    local arch distribution
+    local arch DIST
     arch=$(dpkg --print-architecture)
+    DIST=$(lsb_release -cs)
 
     local distribution_components
     distribution_components=()
     if [[ "${include_distribution}" == "true" ]]
     then
-        local distribution
-        distribution=$(lsb_release -cs)
         for dist_ext in "${distribution_extensions[@]}"
         do
-            distribution_components+=("${distribution}${dist_ext:+-${dist_ext}}")
+            distribution_components+=("${dist_ext//\$\{DIST\}/${DIST}}")
         done
     fi
 
     local source_url
-    source_url="deb [arch=${arch} signed-by=${key_file}] ${repo_url}${distribution_components:+ ${distribution_components[*]}}${repo_components:+ ${repo_components[*]}}"
+    source_url="deb [arch=${arch} signed-by=${key_file}] ${repo_url//\$\{DIST\}/${DIST}}${distribution_components:+ ${distribution_components[*]}}${repo_components:+ ${repo_components[*]}}"
 
     local apt_needs_to_be_updated key_needs_to_be_added source_needs_to_be_added
     key_needs_to_be_added=false
@@ -1227,8 +1227,28 @@ function tue-install-apt-key-source-now
     if [[ "${key_needs_to_be_added}" == "true" ]]
     then
         tue-install-debug "Making sure '${key_folder}' folder exists with the correct permissions."
-        tue-install-pipe sudo install -m 0755 -d "${key_folder}" || tue-install-error "Could not create '${key_folder}' folder"
-        tue-install-debug "Downloading gpg key of ${repo_name} repo with fingerprint '${key_fingerprint}'."
+        local key_folder_permissions
+        if ! key_folder_permissions=$(stat -c '%a' "${key_folder}" 2>/dev/null)
+        then
+            tue-install-debug "Folder '${key_folder}' does not exist yet."
+            tue-install-pipe sudo install -m 0755 -d "${key_folder}" || tue-install-error "Could not create '${key_folder}' folder"
+        elif [[ "${key_folder_permissions}" != "755" ]]
+        then
+            tue-install-debug "Folder '${key_folder}' has permissions ${key_folder_permissions} instead of 0755. Updating permissions to 0755."
+            tue-install-pipe sudo chmod 0755 "${key_folder}" || tue-install-error "Could not update permissions of '${key_folder}' folder to 0755"
+
+            local key_folder_owner
+            key_folder_owner=$(stat -c '%U' "${key_folder}")
+            if [[ "${key_folder_owner}" != "root" ]]
+            then
+                tue-install-debug "Folder '${key_folder}' is owned by ${key_folder_owner} instead of root. Updating owner to root."
+                tue-install-pipe sudo chown root:root "${key_folder}" || tue-install-error "Could not update owner of '${key_folder}' folder to root"
+            else
+                tue-install-debug "Folder '${key_folder}' is already owned by root."
+            fi
+        fi
+
+        tue-install-echo "Downloading gpg key of ${repo_name} repo with fingerprint '${key_fingerprint}'."
         curl -fsSL "${key_url}" | sudo gpg --dearmor --yes -o "${key_file}"
         tue-install-debug "Successfully added/updated ${repo_name} repository GPG key"
 

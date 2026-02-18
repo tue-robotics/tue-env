@@ -300,7 +300,7 @@ def main() -> int:
         path = Path(sys.argv[1])
         result = install_yaml_parser(path, now)
     except Exception as e:
-        print(f"ERROR: Could not parse package.xml: {repr(e)}\n{traceback.format_exc()}")
+        print(f"ERROR: Could not parse install.yaml: {repr(e)}\n{traceback.format_exc()}")
         return 1
 
     if result["commands"]:
