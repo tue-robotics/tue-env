@@ -1041,7 +1041,8 @@ function tue-install-ppa-now
         elif [[ "$ppa" == "deb "* ]]
         then
             sources_list_entry="true"
-            if ! grep -qF "$ppa" /etc/apt/sources.list 2>&1
+            if ! ( grep -qF "${ppa}" /etc/apt/sources.list 2>&1 || \
+            grep -qF "^URIs:.*${ppa#deb }" /etc/apt/sources.list.d/*.sources )
             then
                 needs_to_be_added="true"
             fi
