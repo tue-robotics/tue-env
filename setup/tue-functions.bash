@@ -452,13 +452,38 @@ function tue-make
     then
         mkdir -p "${TUE_ENV_WS_DIR}"/src
 
+        # Enhanced argument parsing for colcon
+        local log_level_arg=""
+        local filtered_args=()
+        i=1
+        while [[ ${i} -le $# ]]
+        do
+            arg="${!i}"
+            if [[ "${arg}" == "--log-base" ]]
+            then
+                echo -e "\e[31;1mError! --log-base is not allowed.\e[0m"
+                return 1
+            elif [[ "${arg}" == --log-level ]]
+            then
+                i=$((i+1))
+                log_level_arg="--log-level ${!i}"
+            elif [[ "${arg}" == --log-level=* ]]
+            then
+                log_level_arg="--log-level ${arg#--log-level=}"
+            else
+                filtered_args+=("${arg}")
+            fi
+            i=$((i+1))
+        done
+
         # Disable symlink install for production
         if [ "${CI_INSTALL}" == "true" ]
         then
-            rm -rf "${TUE_ENV_WS_DIR}"/install
-            python3 -m colcon --log-base "${TUE_ENV_WS_DIR}"/log build --base-paths "${TUE_ENV_WS_DIR}"/src --build-base "${TUE_ENV_WS_DIR}"/build --install-base "${TUE_ENV_WS_DIR}"/install "$@"
+            # shellcheck disable=SC2086
+            python3 -m colcon${log_level_arg:+ ${log_level_arg}} --log-base "${TUE_ENV_WS_DIR}"/log build --base-paths "${TUE_ENV_WS_DIR}"/src --build-base "${TUE_ENV_WS_DIR}"/build --install-base "${TUE_ENV_WS_DIR}"/install "${filtered_args[@]}"
         else
-            python3 -m colcon --log-base "${TUE_ENV_WS_DIR}"/log build --merge-install --symlink-install --base-paths "${TUE_ENV_WS_DIR}"/src --build-base "${TUE_ENV_WS_DIR}"/build --install-base "${TUE_ENV_WS_DIR}"/install "$@"
+            # shellcheck disable=SC2086
+            python3 -m colcon${log_level_arg:+ ${log_level_arg}} --log-base "${TUE_ENV_WS_DIR}"/log build --merge-install --symlink-install --base-paths "${TUE_ENV_WS_DIR}"/src --build-base "${TUE_ENV_WS_DIR}"/build --install-base "${TUE_ENV_WS_DIR}"/install "${filtered_args[@]}"
         fi
         return $?
     else
@@ -508,12 +533,38 @@ function tue-make-test
             return 1
         fi
 
+        # Enhanced argument parsing for colcon
+        local log_level_arg=""
+        local filtered_args=()
+        i=1
+        while [[ ${i} -le $# ]]
+        do
+            arg="${!i}"
+            if [[ "${arg}" == "--log-base" ]]
+            then
+                echo -e "\e[31;1mError! --log-base is not allowed.\e[0m"
+                return 1
+            elif [[ "${arg}" == --log-level ]]
+            then
+                i=$((i+1))
+                log_level_arg="--log-level ${!i}"
+            elif [[ "${arg}" == --log-level=* ]]
+            then
+                log_level_arg="--log-level ${arg#--log-level=}"
+            else
+                filtered_args+=("${arg}")
+            fi
+            i=$((i+1))
+        done
+
         # Disable symlink install for production
         if [ "${CI_INSTALL}" == "true" ]
         then
-            python3 -m colcon --log-base "${TUE_ENV_WS_DIR}"/log test --base-paths "${TUE_ENV_WS_DIR}"/src --build-base "${TUE_ENV_WS_DIR}"/build --install-base "${TUE_ENV_WS_DIR}"/install --executor sequential --event-handlers console_cohesion+ "$@"
+            # shellcheck disable=SC2086
+            python3 -m colcon${log_level_arg:+ ${log_level_arg}} --log-base "${TUE_ENV_WS_DIR}"/log test --base-paths "${TUE_ENV_WS_DIR}"/src --build-base "${TUE_ENV_WS_DIR}"/build --install-base "${TUE_ENV_WS_DIR}"/install --executor sequential --event-handlers console_cohesion+ "${filtered_args[@]}"
         else
-            python3 -m colcon --log-base "${TUE_ENV_WS_DIR}"/log test --merge-install --base-paths "${TUE_ENV_WS_DIR}"/src --build-base "${TUE_ENV_WS_DIR}"/build --install-base "${TUE_ENV_WS_DIR}"/install --executor sequential --event-handlers console_cohesion+ "$@"
+            # shellcheck disable=SC2086
+            python3 -m colcon${log_level_arg:+ ${log_level_arg}} --log-base "${TUE_ENV_WS_DIR}"/log test --merge-install --base-paths "${TUE_ENV_WS_DIR}"/src --build-base "${TUE_ENV_WS_DIR}"/build --install-base "${TUE_ENV_WS_DIR}"/install --executor sequential --event-handlers console_cohesion+ "${filtered_args[@]}"
         fi
         return $?
     else
@@ -563,7 +614,32 @@ function tue-make-test-result
             return 1
         fi
 
-        python3 -m colcon --log-base "${TUE_ENV_WS_DIR}"/log test-result --test-result-base "${TUE_ENV_WS_DIR}"/build "$@"
+        # Enhanced argument parsing for colcon
+        local log_level_arg=""
+        local filtered_args=()
+        i=1
+        while [[ ${i} -le $# ]]
+        do
+            arg="${!i}"
+            if [[ "${arg}" == "--log-base" ]]
+            then
+                echo -e "\e[31;1mError! --log-base is not allowed.\e[0m"
+                return 1
+            elif [[ "${arg}" == --log-level ]]
+            then
+                i=$((i+1))
+                log_level_arg="--log-level ${!i}"
+            elif [[ "${arg}" == --log-level=* ]]
+            then
+                log_level_arg="--log-level ${arg#--log-level=}"
+            else
+                filtered_args+=("${arg}")
+            fi
+            i=$((i+1))
+        done
+
+        # shellcheck disable=SC2086
+        python3 -m colcon${log_level_arg:+ ${log_level_arg}} --log-base "${TUE_ENV_WS_DIR}"/log test-result --test-result-base "${TUE_ENV_WS_DIR}"/build "${filtered_args[@]}"
         return $?
     else
         echo -e "\e[31;1mError! ROS_VERSION '${TUE_ENV_ROS_VERSION}' is not supported by tue-env.\e[0m"
