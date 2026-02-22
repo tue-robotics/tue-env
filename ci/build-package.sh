@@ -66,6 +66,8 @@ else
     then
         ADDITIONAL_ARGS_COLCON+=("--log-level" "debug")
     fi
+    # For mixin commands (list, add, update), use _tue-colcon-python directly
+    # These are metadata operations that don't need cmake args
     echo -e "\e[35;1mCheck for default mixin repo (colcon ${ADDITIONAL_ARGS_COLCON[*]} mixin list)\e[0m"
     MIXIN_REPOS=$(docker exec tue-env bash -c 'source ~/.bashrc; cd "${TUE_ENV_WS_DIR}" && "$(_tue-colcon-python)" -m colcon '"${ADDITIONAL_ARGS_COLCON[*]}"' mixin list | grep -v "^- "' | tr -d '\r' | awk -F ": " '{print $1}')
     if ! echo -e "${MIXIN_REPOS}" | grep "^default$" -q
@@ -82,6 +84,7 @@ else
     echo -e "\e[35;1mDeleting the merged install directory\e[0m"
     docker exec -t tue-env bash -c 'source ~/.bashrc; cd "${TUE_ENV_WS_DIR}" && rm -rf install'
 
+    # For build commands, use _tue-run-colcon to add cmake args for proper Python venv handling
     echo -e "\e[35;1mCompile the package (colcon ${ADDITIONAL_ARGS_COLCON[*]} build --mixin rel-with-deb-info build-testing-off)\e[0m"
     docker exec -t tue-env bash -c 'source ~/.bashrc; cd "${TUE_ENV_WS_DIR}" && _tue-run-colcon '"${ADDITIONAL_ARGS_COLCON[*]}"' build --packages-up-to "${PACKAGE}" --mixin rel-with-deb-info build-testing-off --event-handlers desktop_notification- status- terminal_title-'
 fi

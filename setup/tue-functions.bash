@@ -29,7 +29,7 @@ function _list_sub_dirs
 }
 
 # Helper function to get the python executable for running colcon
-# Returns the path to the tool venv python if available, otherwise python3
+# Returns the path to the tool venv python if available, otherwise /usr/bin/python3
 function _tue-colcon-python
 {
     local tool_venv_dir
@@ -47,7 +47,7 @@ export -f _tue-colcon-python
 
 # Helper function to run colcon from tool venv while using ROS venv for package builds
 # This function:
-# 1. Runs colcon from the tool venv (if available), otherwise falls back to python3 -m colcon
+# 1. Runs colcon from the tool venv (if available), otherwise falls back to /usr/bin/python3 -m colcon
 # 2. Automatically adds cmake args to ensure packages use the ROS venv's Python interpreter
 # Arguments: All arguments are passed to colcon (including global options, subcommand, and subcommand options)
 function _tue-run-colcon
