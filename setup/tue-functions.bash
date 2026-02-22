@@ -28,6 +28,89 @@ function _list_sub_dirs
     done
 }
 
+# Helper function to get the python executable for running colcon
+# Returns the path to the tool venv python if available, otherwise python3
+function _tue-colcon-python
+{
+    local tool_venv_dir
+    tool_venv_dir="${TUE_ENV_DIR}"/.env/tool-venv
+
+    # Determine which python to use for running colcon
+    if [[ -d "${tool_venv_dir}" ]] && [[ -x "${tool_venv_dir}/bin/python3" ]]
+    then
+        echo "${tool_venv_dir}/bin/python3"
+    else
+        echo "/usr/bin/python3"
+    fi
+}
+export -f _tue-colcon-python
+
+# Helper function to run colcon from tool venv while using ROS venv for package builds
+# This function:
+# 1. Runs colcon from the tool venv (if available), otherwise falls back to python3 -m colcon
+# 2. Automatically adds cmake args to ensure packages use the ROS venv's Python interpreter
+# Arguments: All arguments are passed to colcon (including global options, subcommand, and subcommand options)
+function _tue-run-colcon
+{
+    local ros_venv_dir ros_python_path colcon_python
+    ros_venv_dir="${TUE_ENV_DIR}"/.env/venv
+
+    # Get the python executable for running colcon
+    colcon_python=$(_tue-colcon-python)
+
+    # Determine the Python interpreter for ROS packages
+    # Priority: ROS venv > system python3
+    if [[ -d "${ros_venv_dir}" ]] && [[ -x "${ros_venv_dir}/bin/python3" ]]
+    then
+        ros_python_path="${ros_venv_dir}/bin/python3"
+    else
+        ros_python_path="/usr/bin/python3"
+    fi
+
+    # Build cmake args to ensure packages use the correct Python interpreter
+    # This works for cmake, ament_cmake, ament_cmake_python package types
+    local cmake_python_args=()
+    cmake_python_args+=("-DPython3_EXECUTABLE=${ros_python_path}")
+    cmake_python_args+=("-DPYTHON_EXECUTABLE=${ros_python_path}")
+    cmake_python_args+=("-DPython3_FIND_VIRTUALENV=ONLY")
+
+    # Check if --cmake-args is already present in the arguments
+    local has_cmake_args=false
+    local args=()
+    local found_cmake_args_position=-1
+    local i=0
+
+    for arg in "$@"
+    do
+        if [[ "${arg}" == "--cmake-args" ]]
+        then
+            has_cmake_args=true
+            found_cmake_args_position=$i
+        fi
+        args+=("${arg}")
+        i=$((i+1))
+    done
+
+    # If --cmake-args exists, insert our args right after it
+    # Otherwise, append --cmake-args with our args at the end
+    if [[ "${has_cmake_args}" == "true" ]]
+    then
+        local new_args=()
+        for ((j=0; j<${#args[@]}; j++))
+        do
+            new_args+=("${args[$j]}")
+            if [[ $j -eq ${found_cmake_args_position} ]]
+            then
+                new_args+=("${cmake_python_args[@]}")
+            fi
+        done
+        "${colcon_python}" -m colcon "${new_args[@]}"
+    else
+        "${colcon_python}" -m colcon "$@" --cmake-args "${cmake_python_args[@]}"
+    fi
+}
+export -f _tue-run-colcon
+
 # ----------------------------------------------------------------------------------------------------
 #                                       APT MIRROR SELECTION
 # ----------------------------------------------------------------------------------------------------
@@ -480,10 +563,10 @@ function tue-make
         if [ "${CI_INSTALL}" == "true" ]
         then
             # shellcheck disable=SC2086
-            python3 -m colcon${log_level_arg:+ ${log_level_arg}} --log-base "${TUE_ENV_WS_DIR}"/log build --base-paths "${TUE_ENV_WS_DIR}"/src --build-base "${TUE_ENV_WS_DIR}"/build --install-base "${TUE_ENV_WS_DIR}"/install "${filtered_args[@]}"
+            _tue-run-colcon${log_level_arg:+ ${log_level_arg}} --log-base "${TUE_ENV_WS_DIR}"/log build --base-paths "${TUE_ENV_WS_DIR}"/src --build-base "${TUE_ENV_WS_DIR}"/build --install-base "${TUE_ENV_WS_DIR}"/install "${filtered_args[@]}"
         else
             # shellcheck disable=SC2086
-            python3 -m colcon${log_level_arg:+ ${log_level_arg}} --log-base "${TUE_ENV_WS_DIR}"/log build --merge-install --symlink-install --base-paths "${TUE_ENV_WS_DIR}"/src --build-base "${TUE_ENV_WS_DIR}"/build --install-base "${TUE_ENV_WS_DIR}"/install "${filtered_args[@]}"
+            _tue-run-colcon${log_level_arg:+ ${log_level_arg}} --log-base "${TUE_ENV_WS_DIR}"/log build --merge-install --symlink-install --base-paths "${TUE_ENV_WS_DIR}"/src --build-base "${TUE_ENV_WS_DIR}"/build --install-base "${TUE_ENV_WS_DIR}"/install "${filtered_args[@]}"
         fi
         return $?
     else
@@ -561,10 +644,10 @@ function tue-make-test
         if [ "${CI_INSTALL}" == "true" ]
         then
             # shellcheck disable=SC2086
-            python3 -m colcon${log_level_arg:+ ${log_level_arg}} --log-base "${TUE_ENV_WS_DIR}"/log test --base-paths "${TUE_ENV_WS_DIR}"/src --build-base "${TUE_ENV_WS_DIR}"/build --install-base "${TUE_ENV_WS_DIR}"/install --executor sequential --event-handlers console_cohesion+ "${filtered_args[@]}"
+            _tue-run-colcon${log_level_arg:+ ${log_level_arg}} --log-base "${TUE_ENV_WS_DIR}"/log test --base-paths "${TUE_ENV_WS_DIR}"/src --build-base "${TUE_ENV_WS_DIR}"/build --install-base "${TUE_ENV_WS_DIR}"/install --executor sequential --event-handlers console_cohesion+ "${filtered_args[@]}"
         else
             # shellcheck disable=SC2086
-            python3 -m colcon${log_level_arg:+ ${log_level_arg}} --log-base "${TUE_ENV_WS_DIR}"/log test --merge-install --base-paths "${TUE_ENV_WS_DIR}"/src --build-base "${TUE_ENV_WS_DIR}"/build --install-base "${TUE_ENV_WS_DIR}"/install --executor sequential --event-handlers console_cohesion+ "${filtered_args[@]}"
+            _tue-run-colcon${log_level_arg:+ ${log_level_arg}} --log-base "${TUE_ENV_WS_DIR}"/log test --merge-install --base-paths "${TUE_ENV_WS_DIR}"/src --build-base "${TUE_ENV_WS_DIR}"/build --install-base "${TUE_ENV_WS_DIR}"/install --executor sequential --event-handlers console_cohesion+ "${filtered_args[@]}"
         fi
         return $?
     else
@@ -639,7 +722,7 @@ function tue-make-test-result
         done
 
         # shellcheck disable=SC2086
-        python3 -m colcon${log_level_arg:+ ${log_level_arg}} --log-base "${TUE_ENV_WS_DIR}"/log test-result --test-result-base "${TUE_ENV_WS_DIR}"/build "${filtered_args[@]}"
+        _tue-run-colcon${log_level_arg:+ ${log_level_arg}} --log-base "${TUE_ENV_WS_DIR}"/log test-result --test-result-base "${TUE_ENV_WS_DIR}"/build "${filtered_args[@]}"
         return $?
     else
         echo -e "\e[31;1mError! ROS_VERSION '${TUE_ENV_ROS_VERSION}' is not supported by tue-env.\e[0m"

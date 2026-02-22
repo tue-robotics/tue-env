@@ -72,13 +72,13 @@ else
     fi
     # Build test targets
     echo -e "\e[35;1mBuild test targets of this package (colcon ${COLCON_ADDITIONAL_ARGS[*]} build --packages-select ${PACKAGE} --mixin rel-with-deb-info build-testing-on)\e[0m"
-    docker exec -t tue-env bash -c 'source ~/.bashrc; cd "${TUE_ENV_WS_DIR}" && colcon '"${COLCON_ADDITIONAL_ARGS[*]}"' build --packages-select "${PACKAGE}" --mixin rel-with-deb-info build-testing-on --event-handlers desktop_notification- status- terminal_title-'
+    docker exec -t tue-env bash -c 'source ~/.bashrc; cd "${TUE_ENV_WS_DIR}" && _tue-run-colcon '"${COLCON_ADDITIONAL_ARGS[*]}"' build --packages-select "${PACKAGE}" --mixin rel-with-deb-info build-testing-on --event-handlers desktop_notification- status- terminal_title-'
 
     # Run unit tests
     echo -e "\e[35;1mRun tests on this package (colcon ${COLCON_ADDITIONAL_ARGS[*]} test --packages-select ${PACKAGE} --executor sequential)\e[0m"
-    docker exec -t tue-env bash -c 'source ~/.bashrc; cd "${TUE_ENV_WS_DIR}" && colcon '"${COLCON_ADDITIONAL_ARGS[*]}"' test --packages-select "${PACKAGE}" --executor sequential --event-handlers desktop_notification- status- terminal_title- console_cohesion+'
+    docker exec -t tue-env bash -c 'source ~/.bashrc; cd "${TUE_ENV_WS_DIR}" && _tue-run-colcon '"${COLCON_ADDITIONAL_ARGS[*]}"' test --packages-select "${PACKAGE}" --executor sequential --event-handlers desktop_notification- status- terminal_title- console_cohesion+'
 
     # Check test results
     echo -e "\e[35;1mCheck test results (colcon ${COLCON_ADDITIONAL_ARGS[*]} test-result --verbose)\e[0m"
-    docker exec -t tue-env bash -c 'source ~/.bashrc; cd "${TUE_ENV_WS_DIR}" && colcon '"${COLCON_ADDITIONAL_ARGS[*]}"' test-result --verbose'
+    docker exec -t tue-env bash -c 'source ~/.bashrc; cd "${TUE_ENV_WS_DIR}" && _tue-run-colcon '"${COLCON_ADDITIONAL_ARGS[*]}"' test-result --verbose'
 fi
