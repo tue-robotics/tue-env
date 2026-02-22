@@ -123,6 +123,9 @@ function tue-env
         init-venv      - Initializes a virtualenv
         remove-venv/
         rm-venv        - Removes a virtualenv
+        init-tool-venv - Initializes a tool virtualenv (for colcon)
+        remove-tool-venv/
+        rm-tool-venv   - Removes a tool virtualenv
         list           - List all possible environments
         current        - Shows current environment
         cd             - Changes directory to environment directory
@@ -811,6 +814,144 @@ Environment directory '${tue_env_dir}' didn't exist (anymore)"""
             echo "[tue-env](rm-venv) No virtualenv found for environment '${tue_env}'"
         fi
 
+    elif [[ ${cmd} == "init-tool-venv" ]]
+    then
+        local tue_env
+        for i in "$@"
+        do
+            case $i in
+                --help | -h )
+                    show_help="true"
+                    break
+                    ;;
+                --* )
+                    echo "[tue-env](init-tool-venv) Unknown option $i"
+                    show_help="true"
+                    ;;
+                * )
+                    if [[ -z "${tue_env}" ]]
+                    then
+                        tue_env=$i
+                    else
+                        echo "[tue-env](init-tool-venv) Unknown input variable $i"
+                        show_help="true"
+                    fi
+                    ;;
+            esac
+        done
+
+        [[ -n "${tue_env}" ]] || tue_env=${TUE_ENV}
+        [[ -z "${tue_env}" ]] && show_help="true" && echo "[tue-env](init-tool-venv) no environment set or provided"
+
+        if [[ ${show_help} == "true" ]]
+        then
+            echo "Usage: tue-env init-tool-venv [ENVIRONMENT]"
+            echo ""
+            echo "Initializes a separate tool virtualenv for build tools like colcon."
+            echo "This allows colcon and its plugins to be isolated from ROS package dependencies."
+            return 1
+        fi
+
+        local installed_version parsed_version pkg_name version_requirement
+        pkg_name="virtualenv"
+        version_requirement=">=20.24.0"
+        installed_version=$(/usr/bin/python3 -c "import importlib.metadata; print(importlib.metadata.version('${pkg_name}'))" 2>/dev/null)
+        parsed_version=$(echo "${installed_version}" | grep -oE '[0-9]+\.[0-9]+(\.[0-9]+)?' | head -n1)
+        if ! _tue-env-compare-version "${parsed_version}" "${version_requirement}"
+        then
+            /usr/bin/python3 -Ic "import ${pkg_name}" && \
+            { echo -e "[tue-env](init-tool-venv) '${pkg_name}(${installed_version})' does not match the required version '${version_requirement}' and is installed via APT." \
+            "To prevent any conflicts, first uninstall it: \"sudo apt-get remove python3-${pkg_name}\"" \
+            "Make sure you install it \"/usr/bin/python3 -m pip install --user '${pkg_name}${version_requirement}'\""; return 1; }
+
+            { echo -e "[tue-env](init-tool-venv) '${pkg_name}(${installed_version})' doesn't match the required version '${version_requirement}'. " \
+            "Make sure you install it \"/usr/bin/python3 -m pip install --user '${pkg_name}${version_requirement}'\""; return 1; }
+        fi
+
+        [[ -f "${TUE_DIR}"/user/envs/"${tue_env}" ]] || { echo "[tue-env](init-tool-venv) No such environment: '${tue_env}'"; return 1; }
+        local tue_env_dir
+        tue_env_dir=$(cat "${TUE_DIR}"/user/envs/"${tue_env}")
+        [[ -d "${tue_env_dir}" ]] || { echo "[tue-env](init-tool-venv) Environment directory '${tue_env_dir}' (environment '${tue_env}') does not exist"; return 1; }
+        local tool_venv_dir
+        tool_venv_dir=${tue_env_dir}/.env/tool-venv
+
+        if [[ -d "${tool_venv_dir}" ]]
+        then
+            local tool_venv_dir_moved
+            tool_venv_dir_moved=${tool_venv_dir}.$(date +%F_%H%M%S)
+            mv -f "${tool_venv_dir}" "${tool_venv_dir_moved}"
+            echo "[tue-env](init-tool-venv) Moved old tool virtualenv of environment '${tue_env}' to ${tool_venv_dir_moved}"
+            echo "Don't use it anymore as its old path is hardcoded in the virtualenv"
+        fi
+
+        # Tool venv does NOT include system-site-packages to isolate build tools
+        /usr/bin/python3 -m virtualenv "${tool_venv_dir}" --symlinks --prompt "${tue_env}-tool" -q 2>/dev/null ||
+        { echo "[tue-env](init-tool-venv) Failed to initialize tool virtual environment '${tool_venv_dir}' for environment '${tue_env}'"; return 1; }
+
+        echo "[tue-env](init-tool-venv) Initialized tool virtualenv of environment '${tue_env}'"
+
+    elif [[ ${cmd} == "remove-tool-venv" || ${cmd} == "rm-tool-venv" ]]
+    then
+        local purge tue_env
+        purge="false"
+        for i in "$@"
+        do
+            case $i in
+                --help | -h )
+                    show_help="true"
+                    break
+                    ;;
+                --purge)
+                    purge="true" ;;
+                --* )
+                    echo "[tue-env](rm-tool-venv) Unknown option $i"
+                    show_help="true"
+                    ;;
+                * )
+                    if [[ -z "${tue_env}" ]]
+                    then
+                        tue_env=$i
+                    else
+                        echo "[tue-env](rm-tool-venv) Unknown input variable $i"
+                        show_help="true"
+                    fi
+                    ;;
+            esac
+        done
+
+        [[ -n "${tue_env}" ]] || tue_env=${TUE_ENV}
+        [[ -z "${tue_env}" ]] && show_help="true" && echo "[tue-env](rm-tool-venv) no environment set or provided"
+
+        if [[ ${show_help} == "true" ]]
+        then
+            echo "Usage: tue-env remove-tool-venv [ENVIRONMENT] [--purge]"
+            return 1
+        fi
+
+        [[ -f "${TUE_DIR}"/user/envs/"${tue_env}" ]] || { echo "[tue-env](rm-tool-venv) No such environment: '${tue_env}'"; return 1; }
+        local tue_env_dir
+        tue_env_dir=$(cat "${TUE_DIR}"/user/envs/"${tue_env}")
+        [[ -d "${tue_env_dir}" ]] || { echo "[tue-env](rm-tool-venv) Environment directory '${tue_env_dir}' (environment '${tue_env}') does not exist"; return 1; }
+        local tool_venv_dir
+        tool_venv_dir=${tue_env_dir}/.env/tool-venv
+
+        if [[ -d "${tool_venv_dir}" ]]
+        then
+            if [[ "${purge}" == "true" ]]
+            then
+                rm -rf "${tool_venv_dir}"
+                echo "[tue-env](rm-tool-venv) Purged tool virtualenv of environment '${tue_env}'"
+                return 0
+            else
+                local tool_venv_dir_moved
+                tool_venv_dir_moved=${tool_venv_dir}.$(date +%F_%H%M%S)
+                mv -f "${tool_venv_dir}" "${tool_venv_dir_moved}"
+                echo "[tue-env](rm-tool-venv) Moved old tool virtualenv of environment '${tue_env}' to ${tool_venv_dir_moved}"
+            fi
+        else
+            echo "[tue-env](rm-tool-venv) No tool virtualenv found for environment '${tue_env}'"
+        fi
+
     elif [[ ${cmd} == "config" ]]
     then
         local tue_env args
@@ -946,11 +1087,11 @@ function _tue-env
 
     if [[ "${COMP_CWORD}" -eq 1 ]]
     then
-        mapfile -t COMPREPLY < <(compgen -W "$(echo -e "'init '\n'list '\n'deactivate '\n'switch '\n'current '\n'remove '\n'rm '\n'cd '\n'set-default '\n'unset-default '\n'config '\n'init-targets '\n'targets '\n'init-venv '\n'remove-venv '\n'rm-venv '\n${help_options}")" -- "${cur}")
+        mapfile -t COMPREPLY < <(compgen -W "$(echo -e "'init '\n'list '\n'deactivate '\n'switch '\n'current '\n'remove '\n'rm '\n'cd '\n'set-default '\n'unset-default '\n'config '\n'init-targets '\n'targets '\n'init-venv '\n'remove-venv '\n'rm-venv '\n'init-tool-venv '\n'remove-tool-venv '\n'rm-tool-venv '\n${help_options}")" -- "${cur}")
     else
         local cmd
         cmd=${COMP_WORDS[1]}
-        if [[ ${cmd} == "rm" ]] || [[ ${cmd} == "rm-venv" ]] || [[ ${cmd} == "cd" ]] || [[ ${cmd} == "config" ]] || [[ ${cmd} == "init-targets" ]] || [[ ${cmd} == "init-venv" ]] || [[ ${cmd} == "remove" ]] || [[ ${cmd} == "remove-venv" ]] || [[ ${cmd} == "set-default" ]] || [[ ${cmd} == "targets" ]] || [[ ${cmd} == "switch" ]]
+        if [[ ${cmd} == "rm" ]] || [[ ${cmd} == "rm-venv" ]] || [[ ${cmd} == "rm-tool-venv" ]] || [[ ${cmd} == "cd" ]] || [[ ${cmd} == "config" ]] || [[ ${cmd} == "init-targets" ]] || [[ ${cmd} == "init-venv" ]] || [[ ${cmd} == "init-tool-venv" ]] || [[ ${cmd} == "remove" ]] || [[ ${cmd} == "remove-venv" ]] || [[ ${cmd} == "remove-tool-venv" ]] || [[ ${cmd} == "set-default" ]] || [[ ${cmd} == "targets" ]] || [[ ${cmd} == "switch" ]]
         then
             if [[ "${COMP_CWORD}" -eq 2 ]]
             then
@@ -991,7 +1132,7 @@ function _tue-env
 
                 # Append help completions to COMPREPLY
                 COMPREPLY+=("${help_completions[@]}")
-            elif [[ ${cmd} == "remove" || ${cmd} == "rm" || ${cmd} == "remove-venv" || ${cmd} == "rm-venv" ]] && [[ "${COMP_CWORD}" -eq 3 ]]
+            elif [[ ${cmd} == "remove" || ${cmd} == "rm" || ${cmd} == "remove-venv" || ${cmd} == "rm-venv" || ${cmd} == "remove-tool-venv" || ${cmd} == "rm-tool-venv" ]] && [[ "${COMP_CWORD}" -eq 3 ]]
             then
                 mapfile -t COMPREPLY < <(compgen -W "$(echo -e "'--purge '\n${help_options}")" -- "${cur}")
             elif [[ ${cmd} == "switch" ]] && [[ "${COMP_CWORD}" -eq 3 ]]

@@ -1836,7 +1836,7 @@ function tue-install-ros-remove-source
         # Clean the package from the workspace in colcon
         if [[ "${TUE_ENV_ROS_VERSION}" != "1" ]]
         then
-            tue-install-pipe /usr/bin/python3 -m colcon clean packages --log-base "${TUE_ENV_WS_DIR}"/log --base-paths "${TUE_ENV_WS_DIR}"/src --build-base "${TUE_ENV_WS_DIR}"/build --install-base "${TUE_ENV_WS_DIR}"/install --packages-select "${ros_pkg_name}" -y
+            tue-install-pipe "$(_tue-colcon-python)" -m colcon clean packages --log-base "${TUE_ENV_WS_DIR}"/log --base-paths "${TUE_ENV_WS_DIR}"/src --build-base "${TUE_ENV_WS_DIR}"/build --install-base "${TUE_ENV_WS_DIR}"/install --packages-select "${ros_pkg_name}" -y
         fi
 
         tue-install-pipe rm "${ros_pkg_dir}"
