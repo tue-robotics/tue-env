@@ -82,6 +82,11 @@ jobs:
           - ros-distro: rolling
             ros-version: 2
             platform: "amd64"
+            base-image: "ubuntu:20.04"
+            flavor: u20
+          - ros-distro: rolling
+            ros-version: 2
+            platform: "amd64"
             base-image: "ubuntu:22.04"
             flavor: u22
           - ros-distro: rolling
