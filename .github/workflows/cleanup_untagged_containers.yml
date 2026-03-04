@@ -11,12 +11,11 @@ jobs:
     runs-on: ubuntu-latest
     outputs:
       packages: ${{ steps.organization_containers.outputs.packages }}
-    permissions:
-      packages: read
     steps:
+      - uses: actions/checkout@v6
       - name: Organization containers
         id: organization_containers
-        uses: tue-robotics/tue-env/ci/organization-packages@master
+        uses: ./ci/organization-packages
         with:
           package-type: container
           token: ${{ secrets.READ_PACKAGES_TOKEN }}
@@ -25,6 +24,8 @@ jobs:
     name: Delete untagged containers
     runs-on: ubuntu-latest
     needs: organization_containers
+    permissions:
+      packages: write
     strategy:
       fail-fast: false
       matrix:
