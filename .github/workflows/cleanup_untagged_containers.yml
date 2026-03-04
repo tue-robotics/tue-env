@@ -24,6 +24,8 @@ jobs:
     name: Delete untagged containers
     runs-on: ubuntu-latest
     needs: organization_containers
+    permissions:
+      packages: write
     strategy:
       fail-fast: false
       matrix:
