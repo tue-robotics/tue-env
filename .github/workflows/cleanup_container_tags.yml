@@ -9,6 +9,7 @@ jobs:
     outputs:
       packages: ${{ steps.organization_containers.outputs.packages }}
     steps:
+      - uses: actions/checkout@v6
       - name: Organization containers
         id: organization_containers
         uses: ./ci/organization-packages
