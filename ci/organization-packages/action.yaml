@@ -4,17 +4,14 @@ inputs:
   package-type:
     description: 'Type of the packages'
     required: true
-    type: string
     default: 'container'
   organization:
     description: 'Name of the organization'
     required: true
-    type: string
     default: ${{ github.repository_owner }}
   token:
     description: 'GitHub token'
     required: true
-    type: string
     default: ${{ github.token }}
 outputs:
   packages:
