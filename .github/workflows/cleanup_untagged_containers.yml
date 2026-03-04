@@ -11,6 +11,8 @@ jobs:
     runs-on: ubuntu-latest
     outputs:
       packages: ${{ steps.organization_containers.outputs.packages }}
+    permissions:
+      packages: read
     steps:
       - name: Organization containers
         id: organization_containers

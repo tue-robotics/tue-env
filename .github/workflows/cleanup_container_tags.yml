@@ -6,6 +6,8 @@ jobs:
   organization_containers:
     name: Get all containers in the organization
     runs-on: ubuntu-latest
+    permissions:
+      packages: read
     outputs:
       packages: ${{ steps.organization_containers.outputs.packages }}
     steps:
@@ -14,7 +16,6 @@ jobs:
         uses: tue-robotics/tue-env/ci/organization-packages@master
         with:
           package-type: container
-          token: ${{ secrets.READ_PACKAGES_TOKEN }}
 
   delete_container_tag:
     name: Delete container tag
