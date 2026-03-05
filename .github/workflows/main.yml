@@ -151,7 +151,7 @@ jobs:
       #   uses: docker/setup-qemu-action@v3
       - name: Setup docker buildx
         if: steps.skip_check.outputs.skip == 'false'
-        uses: docker/setup-buildx-action@v3
+        uses: docker/setup-buildx-action@v4
       - name: Docker info
         if: steps.skip_check.outputs.skip == 'false'
         run: docker info
