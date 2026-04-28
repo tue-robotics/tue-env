@@ -38,6 +38,9 @@ do
         -s=* | --shared=* )
             SHARED_DIR="${i#*=}" ;;
 
+        --default-branch=* )
+            DEFAULT_BRANCH="${i#*=}" ;;
+
         --ssh )
             USE_SSH=true ;;
 
@@ -64,10 +67,11 @@ do
     shift
 done
 
-echo -e "\e[35;1mPACKAGE      = ${PACKAGE}\e[0m"
-echo -e "\e[35;1mBRANCH       = ${BRANCH}\e[0m"
-echo -e "\e[35;1mCOMMIT       = ${COMMIT}\e[0m"
-echo -e "\e[35;1mPULL_REQUEST = ${PULL_REQUEST}\e[0m"
+echo -e "\e[35;1mPACKAGE        = ${PACKAGE}\e[0m"
+echo -e "\e[35;1mBRANCH         = ${BRANCH}\e[0m"
+echo -e "\e[35;1mCOMMIT         = ${COMMIT}\e[0m"
+echo -e "\e[35;1mPULL_REQUEST   = ${PULL_REQUEST}\e[0m"
+echo -e "\e[35;1mDEFAULT_BRANCH = ${DEFAULT_BRANCH}\e[0m"
 
 # Set default value for IMAGE_NAME
 [ -z "$IMAGE_NAME" ] && IMAGE_NAME='ghcr.io/tue-robotics/tue-env-ros-noetic'
@@ -149,7 +153,14 @@ then
     DOCKER_ARGS+=("-e" "GITHUB_TOKEN=${GH_TOKEN}")
 fi
 
+ADDITIONAL_ARGS_TUE_GET_FIRST_RUN=()
 ADDITIONAL_ARGS_TUE_GET=()
+if [[ -n "${DEFAULT_BRANCH}" ]]
+then
+    ADDITIONAL_ARGS_LOCAL_INSTALL+=("--default-branch=${DEFAULT_BRANCH}")
+    ADDITIONAL_ARGS_TUE_GET+=("--try-branch=${DEFAULT_BRANCH}")
+fi
+
 if [[ ${DEBUG} == "true" ]]
 then
     ADDITIONAL_ARGS_LOCAL_INSTALL+=("--debug")
@@ -260,9 +271,9 @@ echo -e "\e[35;1mROS_DISTRO = ${ROS_DISTRO}\e[0m"
 TUE_ENV_WS_DIR=$(docker exec tue-env bash -c 'source ~/.bashrc; echo "${TUE_ENV_WS_DIR}"' | tr -d '\r')
 
 # First install only the git repo of the package so that appropriate branch can be checked out later
-echo -e "\e[35;1mtue-get install ros-${PACKAGE} --no-ros-deps ${ADDITIONAL_ARGS_TUE_GET[*]}\e[0m"
+echo -e "\e[35;1mtue-get install ros-${PACKAGE} --no-ros-deps ${ADDITIONAL_ARGS_TUE_GET_FIRST_RUN[*]} ${ADDITIONAL_ARGS_TUE_GET[*]}\e[0m"
 docker exec -t tue-env bash -c 'echo "debconf debconf/frontend select Noninteractive" | sudo debconf-set-selections'
-docker exec -t tue-env bash -c 'source ~/.bashrc; tue-get install ros-"${PACKAGE}" --no-ros-deps '"${ADDITIONAL_ARGS_TUE_GET[*]}"
+docker exec -t tue-env bash -c 'source ~/.bashrc; tue-get install ros-"${PACKAGE}" --no-ros-deps '"${ADDITIONAL_ARGS_TUE_GET_FIRST_RUN[*]} ${ADDITIONAL_ARGS_TUE_GET[*]}"
 
 if [[ $PULL_REQUEST != "false" ]]
 then
