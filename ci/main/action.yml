@@ -1,6 +1,9 @@
 name: 'TUe CI'
 description: 'Install, build and test package in tue-env environment'
 inputs:
+  default-branch:
+    description: 'Default branch of the repository'
+    required: false
   image:
     default: 'ghcr.io/tue-robotics/tue-env-ros-noetic'
     description: 'Container Image to be used'
@@ -47,24 +50,29 @@ runs:
       run: |
         echo "::group::install-package.sh"
         start_time=$(date +%s)
+        ADDITIONAL_ARGS=()
         BRANCH=${GITHUB_BASE_REF:-${GITHUB_REF_NAME}}
-        DEFAULT_BRANCH=${{ github.event.repository.default_branch }}
-        if [[ "$BRANCH" == "$DEFAULT_BRANCH" ]]
+        DEFAULT_REPO_BRANCH=${{ github.event.repository.default_branch }}
+        if [[ "${BRANCH}" == "${DEFAULT_REPO_BRANCH}" ]]
         then
             BRANCH=""
+        fi
+        DEFAULT_BRANCH=${{ inputs.default-branch }}
+        if [[ -n "${DEFAULT_BRANCH}" ]]
+        then
+            ADDITIONAL_ARGS+=("--default-branch=${DEFAULT_BRANCH}")
         fi
         PULLREQUEST=${{ github.event.number }}
         PULLREQUEST=${PULLREQUEST:-false}
         SSH_KEY="${{ inputs.ssh-key }}"
         SSH_KNOWN_HOSTS="${{ inputs.ssh-known-hosts }}"
-        SSH_ARGS=()
         if [[ -n "${SSH_KEY}" ]]
         then
           SSH_KEY_PATH="${HOME}"/.ssh/ci_ssh_key
           echo -e "\e[35;1mmkdir -p ${HOME}/.ssh\e[0m"
           mkdir -p "${HOME}"/.ssh
           echo "${SSH_KEY}" > "${SSH_KEY_PATH}"
-          SSH_ARGS+=("--ssh" "--ssh-key=${SSH_KEY_PATH}")
+          ADDITIONAL_ARGS+=("--ssh" "--ssh-key=${SSH_KEY_PATH}")
         fi
         if [[ -n "${SSH_KNOWN_HOSTS}" ]]
         then
@@ -76,12 +84,11 @@ runs:
             ssh-keyscan -t rsa -H "${host}" 2>&1 | tee -a "${HOME}"/.ssh/known_hosts
           done
         fi
-        DEBUG_ARGS=()
         DEBUG=${RUNNER_DEBUG:+true}
         DEBUG=${DEBUG:-false}
         if [[ ${DEBUG} == "true" ]]
         then
-          DEBUG_ARGS+=("--debug")
+          ADDITIONAL_ARGS+=("--debug")
         fi
         ${{ github.action_path }}/../install-package.sh \
           --image=${{ inputs.image }} \
@@ -90,8 +97,7 @@ runs:
           --commit="${GITHUB_SHA}" \
           --pullrequest="${PULLREQUEST}" \
           --gh-token="${{ github.token }}" \
-          "${SSH_ARGS[@]}" \
-          "${DEBUG_ARGS[@]}"
+          "${ADDITIONAL_ARGS[@]}"
         return_code=$?
         echo "::endgroup::"
         end_time=$(date +%s)
@@ -108,16 +114,16 @@ runs:
       run: |
         echo "::group::build-package.sh"
         start_time=$(date +%s)
-        DEBUG_ARGS=()
+        ADDITIONAL_ARGS=()
         DEBUG=${RUNNER_DEBUG:+true}
         DEBUG=${DEBUG:-false}
         if [[ ${DEBUG} == "true" ]]
         then
-          DEBUG_ARGS+=("--debug")
+          ADDITIONAL_ARGS+=("--debug")
         fi
         ${{ github.action_path }}/../build-package.sh \
           --package=${{ inputs.package }} \
-          "${DEBUG_ARGS[@]}"
+          "${ADDITIONAL_ARGS[@]}"
         return_code=$?
         echo "::endgroup::"
         end_time=$(date +%s)
@@ -134,16 +140,16 @@ runs:
       run: |
         echo "::group::test-package.sh"
         start_time=$(date +%s)
-        DEBUG_ARGS=()
+        ADDITIONAL_ARGS=()
         DEBUG=${RUNNER_DEBUG:+true}
         DEBUG=${DEBUG:-false}
         if [[ ${DEBUG} == "true" ]]
         then
-          DEBUG_ARGS+=("--debug")
+          ADDITIONAL_ARGS+=("--debug")
         fi
         ${{ github.action_path }}/../test-package.sh \
           --package=${{ inputs.package }} \
-          "${DEBUG_ARGS[@]}"
+          "${ADDITIONAL_ARGS[@]}"
         return_code=$?
         echo "::endgroup::"
         end_time=$(date +%s)
