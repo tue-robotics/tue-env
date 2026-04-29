@@ -163,7 +163,7 @@ runs:
     - name: Always save pip cache
       id: cache-pip-save
       if: always() && steps.cache-pip-restore.outputs.cache-hit != 'true'
-      uses: actions/cache/save@v4
+      uses: actions/cache/save@v5
       with:
         path: |
           ~/.cache/pip
@@ -172,7 +172,7 @@ runs:
     - name: Always save ccache
       id: cache-ccache-save
       if: always() && steps.cache-ccache-restore.outputs.cache-hit != 'true'
-      uses: actions/cache/save@v4
+      uses: actions/cache/save@v5
       with:
         path: |
           ~/.ccache
