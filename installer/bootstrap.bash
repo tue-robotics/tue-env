@@ -338,6 +338,7 @@ function main
     ros2_distribution_map["20.04"]="galactic"
     ros2_distribution_map["22.04"]="humble"
     ros2_distribution_map["24.04"]="jazzy"
+    ros2_distribution_map["26.04"]="lyrical"
 
     case ${distrib_release} in
         "20.04")
@@ -369,7 +370,7 @@ function main
                 echo "[tue-env](bootstrap) Using default ROS_DISTRO '${tue_env_ros_distro}' with ROS_VERSION '${tue_env_ros_version}'"
             fi
             ;;
-        "22.04" | "24.04")
+        "22.04" | "24.04" | "26.04")
             if [[ -n "${ros_version}" ]] && [[ "${ros_version}" -ne 2 ]]
             then
                  echo "[tue-env](bootstrap) Error! Only ROS version 2 is supported with ubuntu 22.04 and newer" >&2
@@ -390,7 +391,7 @@ function main
             fi
             ;;
         *)
-            echo "[tue-env](bootstrap) Ubuntu ${distrib_release} is unsupported. Please use one of Ubuntu 20.04, 22.04 or 24.04." >&2
+            echo "[tue-env](bootstrap) Ubuntu ${distrib_release} is unsupported. Please use one of Ubuntu 20.04, 22.04, 24.04 or 26.04." >&2
             return 1
             ;;
     esac

@@ -3,8 +3,8 @@
 #       Dockerfile to build working Ubuntu image with tue-env
 # ----------------------------------------------------------------
 
-# Set default base image to Ubuntu 24.04
-ARG BASE_IMAGE=ubuntu:24.04
+# Set default base image to Ubuntu 26.04
+ARG BASE_IMAGE=ubuntu:26.04
 
 # ----------------------------------------------------------------
 #                           STAGE 1

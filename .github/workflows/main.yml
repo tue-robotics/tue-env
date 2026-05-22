@@ -81,6 +81,12 @@ jobs:
             base-image: "ubuntu:24.04"
             create-venv: true
             docker-user-id: 1001
+          - ros-distro: lyrical
+            ros-version: 2
+            platform: "amd64"
+            base-image: "ubuntu:26.04"
+            create-venv: true
+            docker-user-id: 1001
           - ros-distro: rolling
             ros-version: 2
             platform: "amd64"
@@ -91,6 +97,13 @@ jobs:
             platform: "amd64"
             base-image: "ubuntu:24.04"
             flavor: u24
+            create-venv: true
+            docker-user-id: 1001
+          - ros-distro: rolling
+            ros-version: 2
+            platform: "amd64"
+            base-image: "ubuntu:26.04"
+            flavor: u26
             create-venv: true
             docker-user-id: 1001
           - ros-distro: noetic
