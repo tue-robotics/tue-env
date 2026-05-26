@@ -1348,10 +1348,25 @@ function _tue-install-pip-now
     [[ -z "${VIRTUAL_ENV}" ]] && user_arg="--user"
 
     # Make sure pip is up-to-date before checking version and installing
-    local pip_version desired_pip_version
+    local -A desired_pip_versions
+    desired_pip_versions["3.8"]="25.0.1"
+    desired_pip_versions["3.9"]="26.0.1"
+    desired_pip_versions[default]="26.1"
+
+    local desired_pip_version pip_version python_version
     pip_version=$(python"${pv}" -m pip --version | awk '{print $2}')
-    desired_pip_version="25.3"
-    if dpkg --compare-versions "${desired_pip_version}" ge "${pip_version}"
+    python_version=$(python3 -V | awk '{split($2, a, "."); print a[1]"."a[2]}')
+
+    if [[ -n "${desired_pip_versions[${python_version}]}" ]]
+    then
+        desired_pip_version="${desired_pip_versions[${python_version}]}"
+        tue-install-debug "Desired pip version for Python ${python_version} is ${desired_pip_version}"
+    else
+        desired_pip_version="${desired_pip_versions[default]}"
+        tue-install-warning "No specific desired pip version for Python ${python_version}. Using default version ${desired_pip_version}"
+    fi
+
+    if dpkg --compare-versions "${desired_pip_version}" gt "${pip_version}"
     then
         tue-install-debug "pip${pv} not yet version >=$desired_pip_version, but $pip_version"
         tue-install-pipe python"${pv}" -m pip install ${user_arg} --upgrade pip
