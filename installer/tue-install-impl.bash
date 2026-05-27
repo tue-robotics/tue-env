@@ -1357,21 +1357,31 @@ function _tue-install-pip-now
     pip_version=$(python"${pv}" -m pip --version | awk '{print $2}')
     python_version=$(python3 -V | awk '{split($2, a, "."); print a[1]"."a[2]}')
 
+    local desired_pip_version_specified
+    desired_pip_version_specified=false
     if [[ -n "${desired_pip_versions[${python_version}]}" ]]
     then
+        desired_pip_version_specified=true
         desired_pip_version="${desired_pip_versions[${python_version}]}"
         tue-install-debug "Desired pip version for Python ${python_version} is ${desired_pip_version}"
     else
         desired_pip_version="${desired_pip_versions[default]}"
-        tue-install-warning "No specific desired pip version for Python ${python_version}. Using default version ${desired_pip_version}"
     fi
 
     if dpkg --compare-versions "${desired_pip_version}" gt "${pip_version}"
     then
-        tue-install-debug "pip${pv} not yet version >=$desired_pip_version, but $pip_version"
-        tue-install-pipe python"${pv}" -m pip install ${user_arg} --upgrade pip
+        if [ "${desired_pip_version_specified}" == "false" ]
+        then
+            tue-install-echo "No specific desired pip version specified for Python ${python_version}. Using default desired pip version ${desired_pip_version}."
+        fi
+        tue-install-debug "pip${pv} not yet version >=${desired_pip_version}, but ${pip_version}"
+        tue-install-pipe python"${pv}" -m pip install ${user_arg} --upgrade "pip>=${desired_pip_version}" # <<< yes || tue-install-error "An error occurred while upgrading pip${pv} to version >=${desired_pip_version}."
         hash -r
     else
+        if [ "${desired_pip_version_specified}" == "false" ]
+        then
+            tue-install-debug "No specific desired pip version specified for Python ${python_version}. Using default desired pip version ${desired_pip_version}."
+        fi
         tue-install-debug "Already pip${pv}>=$desired_pip_version"
     fi
 
