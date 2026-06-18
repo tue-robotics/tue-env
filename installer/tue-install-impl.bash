@@ -186,6 +186,168 @@ function tue-install-target-now
 
 # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # #
 
+function _set_dependencies
+{
+    local parent_target=$1
+    local target=$2
+
+    # If the target has a parent target, add target as a dependency to the parent target
+    if [ -n "$parent_target" ] && [ "$parent_target" != "main-loop" ]
+    then
+
+        if [ "$parent_target" != "$target" ]
+        then
+            tue-install-debug "echo $target >> $TUE_INSTALL_DEPENDENCIES_DIR/$parent_target"
+            tue-install-debug "echo $parent_target >> $TUE_INSTALL_DEPENDENCIES_ON_DIR/$target"
+            echo "$target" >> "$TUE_INSTALL_DEPENDENCIES_DIR"/"$parent_target"
+            echo "$parent_target" >> "$TUE_INSTALL_DEPENDENCIES_ON_DIR"/"$target"
+            sort "$TUE_INSTALL_DEPENDENCIES_DIR"/"$parent_target" -u -o "$TUE_INSTALL_DEPENDENCIES_DIR"/"$parent_target"
+            sort "$TUE_INSTALL_DEPENDENCIES_ON_DIR"/"$target" -u -o "$TUE_INSTALL_DEPENDENCIES_ON_DIR"/"$target"
+        fi
+    fi
+}
+
+# # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # #
+
+function tue-install-rosdep
+{
+    tue-install-debug "tue-install-rosdep $*"
+
+    local target=$1
+    local now=$2
+
+    local parent_target=$TUE_INSTALL_CURRENT_TARGET
+    TUE_INSTALL_CURRENT_TARGET=$target
+    TUE_INSTALL_CURRENT_TARGET_DIR=$TUE_INSTALL_TARGETS_DIR/$target
+
+    local state_file="$TUE_INSTALL_STATE_DIR"/"$target"
+    local state_file_now="${state_file}-now"
+
+    # Determine if this target needs to be executed
+    local execution_needed="true"
+
+    if [ -f "$state_file_now" ]
+    then
+        tue-install-debug "File $state_file_now does exist, so installation has already been executed with 'now' option. No execution is needed"
+        execution_needed="false"
+    elif [ -f "$state_file" ]
+    then
+        if [ "$now" == "true" ]
+        then
+            tue-install-debug "File $state_file_now doesn't exist, but file $state_file does. So installation has been executed yet, but not with the 'now' option. Going to execute it with 'now' option."
+        else
+            tue-install-debug "File $state_file_now does exist. 'now' is not enabled, so no execution needed."
+            execution_needed="false"
+        fi
+    else
+        if [ "$now" == "true" ]
+        then
+            tue-install-debug "Files $state_file_now and $state_file don't exist. Going to execute with 'now' option."
+        else
+            tue-install-debug "Files $state_file_now and $state_file don't exist. Going to execute without 'now' option."
+        fi
+    fi
+
+    # If file exist, target has been resolved correctly in the past.
+    if [ "$execution_needed" == "true" ]
+    then
+        tue-install-debug "Target '$target' has not yet been resolved by rosdep, going to installation procedure"
+
+        # Empty the target's dependency file
+        tue-install-debug "Emptying $TUE_INSTALL_DEPENDENCIES_DIR/$target"
+        truncate -s 0 "$TUE_INSTALL_DEPENDENCIES_DIR"/"$target"
+        local target_processed=false
+
+        # Check if target can be resolved by rosdep
+        tue-install-debug "rosdep resolve $target"
+        local rosdep_res
+        local rosdep_return_code
+        rosdep_res=$(rosdep resolve "$target" 2>&1)
+        rosdep_return_code=$?
+
+        local IFS=$'\n'
+        mapfile -t rosdep_res <<< "$rosdep_res"
+        unset IFS
+
+        if [ $rosdep_return_code -eq 0 ]
+        then
+            tue-install-debug "rosdep correctly resolved to: ${rosdep_res[*]}"
+
+            case ${rosdep_res[0]} in
+                "#apt")
+                    if [ "$now" == "true" ]
+                    then
+                        tue-install-system-now "${rosdep_res[1]}"
+                    else
+                        tue-install-system "${rosdep_res[1]}"
+                    fi
+                ;;
+                "#pip")
+                    if [ "$now" == "true" ]
+                    then
+                        tue-install-pip-now "${rosdep_res[1]}"
+                    else
+                        tue-install-pip "${rosdep_res[1]}"
+                    fi
+                ;;
+                *) tue-install-debug "Unsupported rosdep output: ${rosdep_res[*]}";
+                   TUE_INSTALL_CURRENT_TARGET=$parent_target;
+                   TUE_INSTALL_CURRENT_TARGET_DIR=$TUE_INSTALL_TARGETS_DIR/$parent_target;
+                   return 1
+                ;;
+            esac
+
+            if [[ ${rosdep_res[1]} == "ros-"* ]]
+            then
+                # Also make sure ros is installed
+                tue-install-target ros || tue-install-error "Failed to install target 'ROS'"
+            fi
+
+            _set_dependencies "$parent_target" "$target"
+
+            if [ "$now" == "true" ]
+            then
+                touch "$state_file_now"
+            else
+                touch "$state_file"
+            fi
+
+            TUE_INSTALL_CURRENT_TARGET=$parent_target
+            TUE_INSTALL_CURRENT_TARGET_DIR=$TUE_INSTALL_TARGETS_DIR/$parent_target
+            return 0
+        else
+            tue-install-debug "Could not be resolved by rosdep. error: ${rosdep_res[*]}"
+            TUE_INSTALL_CURRENT_TARGET=$parent_target
+            TUE_INSTALL_CURRENT_TARGET_DIR=$TUE_INSTALL_TARGETS_DIR/$parent_target
+            return 1
+        fi
+    else
+        tue-install-debug "Target '$target' already resolved correctly by rosdep, skipping it this time."
+
+        _set_dependencies "$parent_target" "$target"
+
+        TUE_INSTALL_CURRENT_TARGET=$parent_target
+        TUE_INSTALL_CURRENT_TARGET_DIR=$TUE_INSTALL_TARGETS_DIR/$parent_target
+        return 0
+    fi
+}
+
+# # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # #
+
+function tue-install-target-now
+{
+    tue-install-debug "tue-install-target-now $*"
+
+    local target
+    target=$1
+
+    tue-install-debug "calling: tue-install-target $target true"
+    tue-install-target "$target" "true"
+    return $?
+}
+
+# # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # #
+
 function tue-install-target
 {
     tue-install-debug "tue-install-target $*"
@@ -194,31 +356,34 @@ function tue-install-target
     target=$1
     now=$2
 
-    tue-install-debug "Installing target: $target"
+    tue-install-debug "Installing $target"
 
     # Check if valid target received as input
     if [ ! -d "$TUE_INSTALL_TARGETS_DIR"/"$target" ]
     then
-        tue-install-debug "Target '$target' does not exist."
-        return 1
+        # Targets starting with 'ros-' will never be resolved by rosdep
+        if [[ "$target" != "ros-"* ]]
+        then
+            # Check if can be resolved by rosdep
+            if tue-install-rosdep "$target" "$now"
+            then
+                return 0
+            else
+                tue-install-debug "Target '$target' does not exist."
+                return 1
+            fi
+        else
+            tue-install-debug "Target '$target' does not exist."
+            return 1
+        fi
     fi
 
     local parent_target
     parent_target=$TUE_INSTALL_CURRENT_TARGET
-    TUE_INSTALL_CURRENT_TARGET_DIR=$TUE_INSTALL_TARGETS_DIR/$target
     TUE_INSTALL_CURRENT_TARGET=$target
+    TUE_INSTALL_CURRENT_TARGET_DIR=$TUE_INSTALL_TARGETS_DIR/$target
 
-    # If the target has a parent target, add target as a dependency to the parent target
-    if [ -n "$parent_target" ] && [ "$parent_target" != "main-loop" ]
-    then
-        if [ "$parent_target" != "$target" ]
-        then
-            echo "$target" >> "$TUE_INSTALL_DEPENDENCIES_DIR"/"$parent_target"
-            echo "$parent_target" >> "$TUE_INSTALL_DEPENDENCIES_ON_DIR"/"$target"
-            sort "$TUE_INSTALL_DEPENDENCIES_DIR"/"$parent_target" -u -o "$TUE_INSTALL_DEPENDENCIES_DIR"/"$parent_target"
-            sort "$TUE_INSTALL_DEPENDENCIES_ON_DIR"/"$target" -u -o "$TUE_INSTALL_DEPENDENCIES_ON_DIR"/"$target"
-        fi
-    fi
+    _set_dependencies "$parent_target" "$target"
 
     local state_file state_file_now
     state_file="$TUE_INSTALL_STATE_DIR"/"$target"
@@ -354,6 +519,8 @@ function tue-install-target
             touch "$state_file"
         fi
 
+    else
+        tue-install-debug "Target '$target' already installed, skipping it this time."
     fi
 
     TUE_INSTALL_CURRENT_TARGET=$parent_target
