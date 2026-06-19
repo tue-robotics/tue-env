@@ -15,7 +15,7 @@ jobs:
     name: Actionlint
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@v6
+      - uses: actions/checkout@v7
       - name: Download actionlint
         id: get_actionlint
         run: bash <(curl https://raw.githubusercontent.com/rhysd/actionlint/main/scripts/download-actionlint.bash)
@@ -30,7 +30,7 @@ jobs:
     name: Hadolint
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@v6
+      - uses: actions/checkout@v7
       - name: Hadolint
         uses: hadolint/hadolint-action@v3.3.0
         with:
@@ -41,7 +41,7 @@ jobs:
     name: Black Linting
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@v6
+      - uses: actions/checkout@v7
       - uses: psf/black@stable
         with:
           options: --check --diff --color -l 120
@@ -50,7 +50,7 @@ jobs:
     name: ShellCheck
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@v6
+      - uses: actions/checkout@v7
       - name: Shellcheck
         run: |
           shopt -s globstar
@@ -134,7 +134,7 @@ jobs:
       - name: Restart docker
         if: steps.skip_check.outputs.skip == 'false' && matrix.maximize-build-space == true
         run: sudo service docker restart
-      - uses: actions/checkout@v6
+      - uses: actions/checkout@v7
         if: steps.skip_check.outputs.skip == 'false'
       - name: Login to Docker registry
         if: steps.skip_check.outputs.skip == 'false'
@@ -270,7 +270,7 @@ jobs:
       packages: write
     if: github.event_name != 'pull_request'
     steps:
-      - uses: actions/checkout@v6
+      - uses: actions/checkout@v7
       - name: Login to Docker registry
         uses: docker/login-action@v4
         with:
