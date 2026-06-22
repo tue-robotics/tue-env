@@ -12,7 +12,7 @@ jobs:
     outputs:
       packages: ${{ steps.organization_containers.outputs.packages }}
     steps:
-      - uses: actions/checkout@v6
+      - uses: actions/checkout@v7
       - name: Organization containers
         id: organization_containers
         uses: ./ci/organization-packages
