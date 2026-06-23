@@ -127,7 +127,7 @@ echo -e "\e[35;1mCI_VENV_INCLUDE_SYSTEM_SITE = ${CI_VENV_INCLUDE_SYSTEM_SITE}\e[
 
 [[ -z "$CI_DOCKER_LOGIN" ]] && CI_DOCKER_LOGIN="false"
 echo -e "\e[35;1mCI_DOCKER_LOGIN       = ${CI_DOCKER_LOGIN}\e[0m"
-[[ -z "$CI_DOCKER_BASE_IMAGE" ]] && CI_DOCKER_BASE_IMAGE="ubuntu:24.04"
+[[ -z "$CI_DOCKER_BASE_IMAGE" ]] && CI_DOCKER_BASE_IMAGE="ubuntu:26.04"
 echo -e "\e[35;1mCI_DOCKER_BASE_IMAGE  = ${CI_DOCKER_BASE_IMAGE}\e[0m"
 [[ -z "$CI_DOCKER_USER" ]] && CI_DOCKER_USER="docker"
 echo -e "\e[35;1mCI_DOCKER_USER        = ${CI_DOCKER_USER}\e[0m"
