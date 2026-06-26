@@ -58,7 +58,7 @@ then
     then
         ADDITIONAL_ARGS_CATKIN+=("--verbose")
     fi
-    echo -e "\e[35;1mCompile the package (tue-make ${ADDITIONAL_ARGS_CATKIN[*]})\e[0m"
+    echo -e "\e[35;1mCompile the package (tue-make ${ADDITIONAL_ARGS_CATKIN[*]:+${ADDITIONAL_ARGS_CATKIN[*]} })\e[0m"
     docker exec -t tue-env bash -c 'source ~/.bashrc; cd "${TUE_ENV_WS_DIR}"/src/"${PACKAGE}" && tue-make --this --no-status '"${ADDITIONAL_ARGS_CATKIN[*]}"''
 else
     ADDITIONAL_ARGS_COLCON=()
@@ -66,22 +66,22 @@ else
     then
         ADDITIONAL_ARGS_COLCON+=("--log-level" "debug")
     fi
-    echo -e "\e[35;1mCheck for default mixin repo (colcon ${ADDITIONAL_ARGS_COLCON[*]} mixin list)\e[0m"
+    echo -e "\e[35;1mCheck for default mixin repo (colcon ${ADDITIONAL_ARGS_COLCON[*]:+${ADDITIONAL_ARGS_COLCON[*]} }mixin list)\e[0m"
     MIXIN_REPOS=$(docker exec tue-env bash -c 'source ~/.bashrc; cd "${TUE_ENV_WS_DIR}" && colcon '"${ADDITIONAL_ARGS_COLCON[*]}"' mixin list | grep -v "^- "' | tr -d '\r' | awk -F ": " '{print $1}')
     if ! echo -e "${MIXIN_REPOS}" | grep "^default$" -q
     then
-        echo -e "\e[35;1mAdd the default mixin repo (colcon ${ADDITIONAL_ARGS_COLCON[*]} mixin add default https://raw.githubusercontent.com/colcon/colcon-mixin-repository/master/index.yaml)\e[0m"
+        echo -e "\e[35;1mAdd the default mixin repo (colcon ${ADDITIONAL_ARGS_COLCON[*]:+${ADDITIONAL_ARGS_COLCON[*]} }mixin add default https://raw.githubusercontent.com/colcon/colcon-mixin-repository/master/index.yaml)\e[0m"
         docker exec -t tue-env bash -c 'source ~/.bashrc; cd "${TUE_ENV_WS_DIR}" && colcon '"${ADDITIONAL_ARGS_COLCON[*]}"' mixin add default https://raw.githubusercontent.com/colcon/colcon-mixin-repository/master/index.yaml'
     else
         echo -e "\e[35;1mDefault mixin repo already exists\e[0m"
     fi
 
-    echo -e "\e[35;1mUpdate colcon mixins (colcon ${ADDITIONAL_ARGS_COLCON[*]} mixin update)\e[0m"
+    echo -e "\e[35;1mUpdate colcon mixins (colcon ${ADDITIONAL_ARGS_COLCON[*]:+${ADDITIONAL_ARGS_COLCON[*]} }mixin update)\e[0m"
     docker exec -t tue-env bash -c 'source ~/.bashrc; cd "${TUE_ENV_WS_DIR}" && colcon '"${ADDITIONAL_ARGS_COLCON[*]}"' mixin update'
 
     echo -e "\e[35;1mDeleting the merged install directory\e[0m"
     docker exec -t tue-env bash -c 'source ~/.bashrc; cd "${TUE_ENV_WS_DIR}" && rm -rf install'
 
-    echo -e "\e[35;1mCompile the package (colcon ${ADDITIONAL_ARGS_COLCON[*]} build --mixin rel-with-deb-info build-testing-off)\e[0m"
+    echo -e "\e[35;1mCompile the package (colcon ${ADDITIONAL_ARGS_COLCON[*]:+${ADDITIONAL_ARGS_COLCON[*]} }build --mixin rel-with-deb-info build-testing-off)\e[0m"
     docker exec -t tue-env bash -c 'source ~/.bashrc; cd "${TUE_ENV_WS_DIR}" && colcon '"${ADDITIONAL_ARGS_COLCON[*]}"' build --packages-up-to "${PACKAGE}" --mixin rel-with-deb-info build-testing-off --event-handlers desktop_notification- status- terminal_title-'
 fi
