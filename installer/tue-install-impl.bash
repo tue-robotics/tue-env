@@ -399,16 +399,27 @@ function _try_branch_git
     sparse_args=()
     [[ -n "${sparse_sub_dir}" ]] && sparse_args+=("${sparse_sub_dir}")
 
-    tue-install-debug "git -C ${repo} checkout ${branch} --recurse-submodules --"
-    _try_branch_res=$(git -C "${repo}" checkout "${branch}" --recurse-submodules -- 2>&1)  # _try_branch_res is a "global" variable from tue-install-git
+    # Deliberately NOT using --recurse-submodules here: checking out a branch that
+    # introduces a NEW (not-yet-initialized) submodule makes git abort with
+    # "fatal: not a git repository: .../.git/modules/<sub>". We switch the branch
+    # first and let the explicit `submodule update --init` below populate submodules.
+    tue-install-debug "git -C ${repo} checkout ${branch} --"
+    _try_branch_res=$(git -C "${repo}" checkout "${branch}" -- 2>&1)  # _try_branch_res is a "global" variable from tue-install-git
     _checkout_error_code=$?
     tue-install-debug "_try_branch_res(${_checkout_error_code}): ${_try_branch_res}"
 
-    if [[ ${_try_branch_res} == "Already on "* || ${_try_branch_res} == "fatal: invalid reference:"* ]]
+    # Branch does not exist in this repo -> nothing to do, let the caller try the next branch
+    if [[ ${_try_branch_res} == "fatal: invalid reference:"* ]]
     then
         _try_branch_res=
+        return "${_checkout_error_code}"
     fi
-    [ "${_checkout_error_code}" -gt 0 ] && return ${_checkout_error_code}
+
+    # Harmless "already on branch" message
+    [[ ${_try_branch_res} == "Already on "* ]] && _try_branch_res=
+
+    # Any other checkout failure is real -> report and bail before touching submodules
+    [ "${_checkout_error_code}" -gt 0 ] && return "${_checkout_error_code}"
 
     local _submodule_sync_res _submodule_sync_error_code
     tue-install-debug "git -C ${repo} submodule sync --recursive -- ${sparse_args[*]}"
@@ -416,15 +427,20 @@ function _try_branch_git
     _submodule_sync_error_code=$?
     tue-install-debug "_submodule_sync_res(${_submodule_sync_error_code}): ${_submodule_sync_res}"
 
-    local _submodule_res
+    local _submodule_res _submodule_error_code
     tue-install-debug "git -C ${repo} submodule update --init --recursive -- ${sparse_args[*]}"
     _submodule_res=$(git -C "${repo}" submodule update --init --recursive -- "${sparse_args[@]}" 2>&1)
-    tue-install-debug "_submodule_res: $_submodule_res"
+    _submodule_error_code=$?
+    tue-install-debug "_submodule_res(${_submodule_error_code}): $_submodule_res"
 
-    [ "$_submodule_sync_error_code" -gt 0 ] && [ -n "$_submodule_sync_res" ] && _try_branch_res="${res:+${res}\n}$_submodule_sync_res"
+    [ "$_submodule_sync_error_code" -gt 0 ] && [ -n "$_submodule_sync_res" ] && _try_branch_res="${_try_branch_res:+${_try_branch_res}\n}$_submodule_sync_res"
     [ -n "$_submodule_res" ] && _try_branch_res="${_try_branch_res:+${_try_branch_res}\n}$_submodule_res"
 
-    return ${_checkout_error_code}
+    # Surface a submodule failure instead of silently returning the (successful) checkout code
+    [ "${_submodule_sync_error_code}" -gt 0 ] && return "${_submodule_sync_error_code}"
+    [ "${_submodule_error_code}" -gt 0 ] && return "${_submodule_error_code}"
+
+    return "${_checkout_error_code}"
 }
 
 # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # #
