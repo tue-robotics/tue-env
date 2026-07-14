@@ -129,7 +129,7 @@ RUN { [[ -n "$OAUTH2_TOKEN" ]] && git config --global --unset credential.helper;
 #                           STAGE 2
 # ----------------------------------------------------------------
 # hadolint ignore=DL3006
-FROM ${BASE_IMAGE} as final
+FROM ${BASE_IMAGE} AS final
 
 ARG DOCKER_USER=docker
 ARG DOCKER_USER_ID=1000
