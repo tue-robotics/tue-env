@@ -60,6 +60,7 @@ RUN --mount=type=cache,target=/var/cache/apt,sharing=locked \
     echo "%sudo ALL=(ALL) NOPASSWD:ALL" >> /etc/sudoers.d/"${USER}"
 
 # Setup the current user and its home directory
+# hadolint ignore=DL3066
 USER "${DOCKER_USER_ID}"
 WORKDIR /home/"${USER}"
 
@@ -145,6 +146,7 @@ ENV DEBIAN_FRONTEND=noninteractive \
 SHELL ["/bin/bash", "-c"]
 
 # Setup the current user and its home directory
+# hadolint ignore=DL3066
 USER "${DOCKER_USER_ID}"
 WORKDIR /home/"${USER}"
 
