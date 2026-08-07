@@ -245,12 +245,14 @@ fi
 
 if [[ -n "${CI_OAUTH2_TOKEN}" ]]
 then
-    CI_DOCKER_BUILD_ARGS+=("--build-arg=OAUTH2_TOKEN=${CI_OAUTH2_TOKEN}")
+    export CI_OAUTH2_TOKEN
+    CI_DOCKER_BUILD_ARGS+=("--secret=id=oauth2_token,env=CI_OAUTH2_TOKEN")
 fi
 
 if [[ -n "${CI_GH_TOKEN}" ]]
 then
-    CI_DOCKER_BUILD_ARGS+=("--build-arg=GITHUB_TOKEN=${CI_GH_TOKEN}")
+    export CI_GH_TOKEN
+    CI_DOCKER_BUILD_ARGS+=("--secret=id=github_token,env=CI_GH_TOKEN")
 fi
 
 # Check if the specified or default Dockerfile exists
