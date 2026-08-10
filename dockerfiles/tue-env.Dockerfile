@@ -26,9 +26,6 @@ ARG ROS_DISTRO
 ARG TARGETS_REPO
 ARG CREATE_VENV=false
 ARG VENV_INCLUDE_SYSTEM_SITE=true
-ARG OAUTH2_TOKEN
-ARG GITHUB_TOKEN
-ENV GITHUB_TOKEN=${GITHUB_TOKEN}
 
 ARG DOCKER_USER=docker
 ARG DOCKER_USER_ID=1000
@@ -63,7 +60,8 @@ RUN --mount=type=cache,target=/var/cache/apt,sharing=locked \
     echo "%sudo ALL=(ALL) NOPASSWD:ALL" >> /etc/sudoers.d/"${USER}"
 
 # Setup the current user and its home directory
-USER "${USER}"
+# hadolint ignore=DL3066
+USER "${DOCKER_USER_ID}"
 WORKDIR /home/"${USER}"
 
 # hadolint ignore=SC2174
@@ -73,12 +71,15 @@ RUN cp ~/.ssh/known_hosts ~/.ssh/known_hosts.bak
 
 # Setup Git HTTPS token authentication
 # hadolint ignore=SC2016
-RUN { [[ -n "$OAUTH2_TOKEN" ]] && git config --global credential.helper '!f() { printf "%s\n" "username=oauth2" "password=$OAUTH2_TOKEN"; };f'; } || exit 0
+RUN --mount=type=secret,id=oauth2_token,env=OAUTH2_TOKEN \
+    { [[ -n "$OAUTH2_TOKEN" ]] && git config --global credential.helper '!f() { printf "%s\n" "username=oauth2" "password=$OAUTH2_TOKEN"; };f'; } || exit 0
 
 # Setup tue-env and install target ros
 # hadolint ignore=DL3004,SC1091
 RUN --mount=type=cache,target=/var/cache/apt,sharing=locked \
     --mount=type=cache,target=/var/lib/apt,sharing=locked \
+    --mount=type=secret,id=oauth2_token,env=OAUTH2_TOKEN \
+    --mount=type=secret,id=github_token,env=GITHUB_TOKEN \
     --mount=type=ssh,uid=$USER_ID --mount=type=bind,source=installer/bootstrap.bash,target=bootstrap.bash \
     # Remove interactive check from bashrc, otherwise bashrc refuses to execute
     sed -e s/return//g -i ~/.bashrc && \
@@ -123,7 +124,8 @@ RUN --mount=type=cache,target=/var/cache/apt,sharing=locked \
 RUN mv -f ~/.ssh/known_hosts.bak ~/.ssh/known_hosts
 
 # Remove Git HTTPS token authentication
-RUN { [[ -n "$OAUTH2_TOKEN" ]] && git config --global --unset credential.helper; } || exit 0
+RUN --mount=type=secret,id=oauth2_token,env=OAUTH2_TOKEN \
+    { [[ -n "$OAUTH2_TOKEN" ]] && git config --global --unset credential.helper; } || exit 0
 
 # ----------------------------------------------------------------
 #                           STAGE 2
@@ -144,7 +146,9 @@ ENV DEBIAN_FRONTEND=noninteractive \
 SHELL ["/bin/bash", "-c"]
 
 # Setup the current user and its home directory
-USER "${USER}"
+# hadolint ignore=DL3066
+USER "${DOCKER_USER_ID}"
 WORKDIR /home/"${USER}"
 
+# hadolint ignore=DL3067
 COPY --from=builder / /
