@@ -131,7 +131,7 @@ RUN --mount=type=secret,id=oauth2_token,env=OAUTH2_TOKEN \
 #                           STAGE 2
 # ----------------------------------------------------------------
 # hadolint ignore=DL3006
-FROM ${BASE_IMAGE} as final
+FROM ${BASE_IMAGE} AS final
 
 ARG DOCKER_USER=docker
 ARG DOCKER_USER_ID=1000
