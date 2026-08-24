@@ -201,6 +201,25 @@ function __tue_env_track_attrs
     return 0
 }
 
+function __tue_env_track_listable
+{
+    # $1: pre-load declare line, $2: post-load declare line, either may be empty. Returns 0 when
+    # neither side is an array, so the value may be treated as a `:`-separated list. Arrays are never
+    # `extended`, and __tue_env_track_value must never be evaluated on an array line: `declare -p`
+    # renders one as bash array syntax, so eval would turn __TUE_ENV_VALUE into an array, and an
+    # associative key can carry an assignment that bash performs in arithmetic context.
+    local __tue_env_a
+    __tue_env_track_attrs "$1"
+    __tue_env_a="${__TUE_ENV_ATTRS}"
+    __tue_env_track_attrs "$2"
+    __tue_env_a+="${__TUE_ENV_ATTRS}"
+    if [[ "${__tue_env_a}" == *a* ]] || [[ "${__tue_env_a}" == *A* ]]
+    then
+        return 1
+    fi
+    return 0
+}
+
 function __tue_env_track_value
 {
     # $1: a `declare -p` line of a scalar. Result in __TUE_ENV_VALUE. `declare -p` output is written
@@ -280,7 +299,7 @@ function __tue_env_track_diff_vars
             __tue_env_kind="added"
             # Remember the entries as well: if a later load extends this variable, the merged entry
             # has to be able to fall back to entry-wise removal instead of unsetting it.
-            if [[ "${__TUE_ENV_ATTRS}" != *a* ]] && [[ "${__TUE_ENV_ATTRS}" != *A* ]]
+            if __tue_env_track_listable "" "${__tue_env_post}"
             then
                 __tue_env_track_value "${__tue_env_post}"
                 if __tue_env_track_entries "" "${__TUE_ENV_VALUE}"
@@ -293,7 +312,7 @@ function __tue_env_track_diff_vars
             __tue_env_kind="removed"
         else
             __tue_env_kind="replaced"
-            if [[ "${__TUE_ENV_ATTRS}" != *a* ]] && [[ "${__TUE_ENV_ATTRS}" != *A* ]]
+            if __tue_env_track_listable "${__tue_env_pre}" "${__tue_env_post}"
             then
                 __tue_env_track_value "${__tue_env_pre}"
                 __tue_env_pv="${__TUE_ENV_VALUE}"

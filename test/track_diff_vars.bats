@@ -107,3 +107,63 @@ setup() {
     [[ "${__TUE_ENV_LEDGER_VAR[TUE_TEST_PP]}" == "added" ]]
     [[ "$(tue_track_added TUE_TEST_PP)" == "0=/a,1=/b" ]]
 }
+
+@test "diff: an array replaced by a scalar is replaced, never extended" {
+    TUE_TEST_ARR2=(a b)
+    tue_track_snapshot PRE
+    unset TUE_TEST_ARR2
+    TUE_TEST_ARR2=a
+    tue_track_snapshot POST
+    __tue_env_track_diff_vars
+    [[ "${__TUE_ENV_LEDGER_VAR[TUE_TEST_ARR2]}" == "replaced" ]]
+}
+
+@test "diff: an array replaced by a list-shaped scalar is replaced, never extended" {
+    TUE_TEST_ARR3=(/p)
+    tue_track_snapshot PRE
+    unset TUE_TEST_ARR3
+    export TUE_TEST_ARR3="/new:/p"
+    tue_track_snapshot POST
+    __tue_env_track_diff_vars
+    [[ "${__TUE_ENV_LEDGER_VAR[TUE_TEST_ARR3]}" == "replaced" ]]
+    [[ -z "$(tue_track_added TUE_TEST_ARR3)" ]]
+}
+
+@test "diff: an associative array replaced by a scalar is replaced" {
+    declare -gA TUE_TEST_ARR4=([k]=v)
+    tue_track_snapshot PRE
+    unset TUE_TEST_ARR4
+    TUE_TEST_ARR4=v
+    tue_track_snapshot POST
+    __tue_env_track_diff_vars
+    [[ "${__TUE_ENV_LEDGER_VAR[TUE_TEST_ARR4]}" == "replaced" ]]
+}
+
+@test "diff: an associative array key cannot assign a variable through eval" {
+    declare -gA TUE_TEST_ARR5=(['x[TUE_TEST_PWNED=99]']=v)
+    tue_track_snapshot PRE
+    unset TUE_TEST_ARR5
+    TUE_TEST_ARR5=v
+    tue_track_snapshot POST
+    __tue_env_track_diff_vars
+    [[ -z "${TUE_TEST_PWNED:-}" ]]
+}
+
+@test "diff: an entry inserted in the middle is extended at its own index" {
+    export TUE_TEST_LIST="A:B"
+    tue_track_snapshot PRE
+    export TUE_TEST_LIST="A:X:B"
+    tue_track_snapshot POST
+    __tue_env_track_diff_vars
+    [[ "${__TUE_ENV_LEDGER_VAR[TUE_TEST_LIST]}" == "extended" ]]
+    [[ "$(tue_track_added TUE_TEST_LIST)" == "1=X" ]]
+}
+
+@test "diff: an entry that only shares a prefix is replaced, not extended" {
+    export TUE_TEST_LIST="/opt/ros"
+    tue_track_snapshot PRE
+    export TUE_TEST_LIST="/opt/ros/bin"
+    tue_track_snapshot POST
+    __tue_env_track_diff_vars
+    [[ "${__TUE_ENV_LEDGER_VAR[TUE_TEST_LIST]}" == "replaced" ]]
+}
