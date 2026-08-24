@@ -65,7 +65,9 @@ jobs:
       - name: Install bats
         run: ./test/install-bats.bash
       - name: Run bats
-        run: ./test/.bats/bin/bats --print-output-on-failure --recursive test
+        # test/*.bats, not `--recursive test`: the recursive walk descends into test/.bats, the
+        # bats-core checkout, and gathers its own abort fixtures instead of this repo's tests.
+        run: ./test/.bats/bin/bats --print-output-on-failure test/*.bats
 
   docker_generation_tue_env:
     name: Docker Generation tue-env
