@@ -954,3 +954,159 @@ function _tue-env-track-revert
     hash -r
     return 0
 }
+
+# ----------------------------------------------------------------------------------------------------
+#                                          REPORTING
+# ----------------------------------------------------------------------------------------------------
+
+function __tue_env_track_display
+{
+    # $1: a `declare -p` line. Result in __TUE_ENV_VALUE, ready to print. Array values are not
+    # rendered: their `declare -p` body is bash source, not something a user wants to read.
+    __tue_env_track_attrs "$1"
+    if [[ "${__TUE_ENV_ATTRS}" == *a* ]] || [[ "${__TUE_ENV_ATTRS}" == *A* ]]
+    then
+        __TUE_ENV_VALUE="(array)"
+        return 0
+    fi
+    __tue_env_track_value "$1"
+    return 0
+}
+
+function __tue_env_track_entry_list
+{
+    # $1: recorded added entries. Result in __TUE_ENV_LIST: "entry, entry".
+    local __tue_env_rest="$1" __tue_env_pair __tue_env_o=""
+    while [[ -n "${__tue_env_rest}" ]]
+    do
+        __tue_env_pair="${__tue_env_rest%%"${__TUE_ENV_RS}"*}"
+        __tue_env_rest="${__tue_env_rest#*"${__TUE_ENV_RS}"}"
+        [[ -z "${__tue_env_pair}" ]] && continue
+        __tue_env_o+="${__tue_env_o:+, }${__tue_env_pair#*"${__TUE_ENV_PS}"}"
+    done
+    __TUE_ENV_LIST="${__tue_env_o}"
+    return 0
+}
+
+function __tue_env_track_report_vars
+{
+    # $1: changes or revert.
+    local __tue_env_n __tue_env_k __tue_env_pre __tue_env_post __tue_env_cur
+    local -a __tue_env_names
+    mapfile -t __tue_env_names < <(printf '%s\n' "${!__TUE_ENV_LEDGER_VAR[@]}" | LC_ALL=C sort)
+
+    for __tue_env_n in "${__tue_env_names[@]}"
+    do
+        [[ -z "${__tue_env_n}" ]] && continue
+        __tue_env_k="${__TUE_ENV_LEDGER_VAR[${__tue_env_n}]}"
+        __tue_env_pre="${__TUE_ENV_LEDGER_VAR_PRE[${__tue_env_n}]}"
+        __tue_env_post="${__TUE_ENV_LEDGER_VAR_POST[${__tue_env_n}]}"
+
+        if [[ "${__tue_env_k}" == "extended" ]]
+        then
+            __tue_env_track_entry_list "${__TUE_ENV_LEDGER_VAR_ADD[${__tue_env_n}]}"
+            if [[ "$1" == "changes" ]]
+            then
+                echo "added   ${__tue_env_n} entries: ${__TUE_ENV_LIST}"
+            else
+                echo "would remove ${__tue_env_n} entries: ${__TUE_ENV_LIST}"
+            fi
+            continue
+        fi
+
+        __tue_env_cur="$(declare -p "${__tue_env_n}" 2> /dev/null)" || __tue_env_cur=""
+        if [[ "$1" == "revert" ]] && [[ "${__tue_env_cur}" != "${__tue_env_post}" ]]
+        then
+            __tue_env_track_display "${__tue_env_cur}"
+            echo "would keep   ${__tue_env_n}=${__TUE_ENV_VALUE} (changed since load)"
+            continue
+        fi
+
+        case "${__tue_env_k}" in
+            added )
+                __tue_env_track_display "${__tue_env_post}"
+                if [[ "$1" == "changes" ]]
+                then
+                    echo "added   ${__tue_env_n}=${__TUE_ENV_VALUE}"
+                else
+                    echo "would unset  ${__tue_env_n}"
+                fi ;;
+            removed | replaced )
+                __tue_env_track_display "${__tue_env_pre}"
+                if [[ "$1" != "changes" ]]
+                then
+                    echo "would restore ${__tue_env_n} to '${__TUE_ENV_VALUE}'"
+                elif [[ "${__tue_env_k}" == "removed" ]]
+                then
+                    echo "removed ${__tue_env_n} (was '${__TUE_ENV_VALUE}')"
+                else
+                    echo "changed ${__tue_env_n} (was '${__TUE_ENV_VALUE}')"
+                fi ;;
+        esac
+    done
+
+    return 0
+}
+
+function __tue_env_track_report_objects
+{
+    # $1: changes or revert, $2: FUNC, ALIAS or COMPLETE, $3: label to print before each name.
+    # Distinct nameref names from __tue_env_track_ledger_simple's: reusing them makes shellcheck
+    # carry an SC2178 across function scopes and fail the file.
+    local -n __tue_env_pk="__TUE_ENV_LEDGER_$2"
+    local -n __tue_env_pq="__TUE_ENV_LEDGER_$2_POST"
+    # __tue_env_pkeep, not __tue_env_keep: __tue_env_track_strip already uses that name for an
+    # associative array, and shellcheck carries the type across function scopes (SC2178).
+    local __tue_env_n __tue_env_add="" __tue_env_gone="" __tue_env_chg="" __tue_env_pkeep=""
+    local -a __tue_env_names
+    mapfile -t __tue_env_names < <(printf '%s\n' "${!__tue_env_pk[@]}" | LC_ALL=C sort)
+
+    for __tue_env_n in "${__tue_env_names[@]}"
+    do
+        [[ -z "${__tue_env_n}" ]] && continue
+        __tue_env_track_current "$2" "${__tue_env_n}"
+        if [[ "$1" == "revert" ]] && [[ "${__TUE_ENV_CURRENT}" != "${__tue_env_pq[${__tue_env_n}]}" ]]
+        then
+            __tue_env_pkeep+="${__tue_env_pkeep:+, }$3 ${__tue_env_n}"
+            continue
+        fi
+        case "${__tue_env_pk[${__tue_env_n}]}" in
+            added )
+                __tue_env_add+="${__tue_env_add:+, }$3 ${__tue_env_n}" ;;
+            removed )
+                __tue_env_gone+="${__tue_env_gone:+, }$3 ${__tue_env_n}" ;;
+            replaced )
+                __tue_env_chg+="${__tue_env_chg:+, }$3 ${__tue_env_n}" ;;
+        esac
+    done
+
+    if [[ "$1" == "changes" ]]
+    then
+        [[ -n "${__tue_env_add}" ]] && echo "added   ${__tue_env_add}"
+        [[ -n "${__tue_env_chg}" ]] && echo "changed ${__tue_env_chg}"
+        [[ -n "${__tue_env_gone}" ]] && echo "removed ${__tue_env_gone}"
+    else
+        [[ -n "${__tue_env_add}" ]] && echo "would unset  ${__tue_env_add}"
+        [[ -n "${__tue_env_chg}" ]] && echo "would restore ${__tue_env_chg}"
+        [[ -n "${__tue_env_gone}" ]] && echo "would restore ${__tue_env_gone}"
+        [[ -n "${__tue_env_pkeep}" ]] && echo "would keep   ${__tue_env_pkeep} (changed since load)"
+    fi
+
+    return 0
+}
+
+function _tue-env-track-report
+{
+    # $1: changes or revert. Renders the ledger, or the revert it would perform, without mutating
+    # anything. Returns 1 when the ledger is empty.
+    if __tue_env_track_empty
+    then
+        return 1
+    fi
+
+    __tue_env_track_report_vars "$1"
+    __tue_env_track_report_objects "$1" ALIAS "alias"
+    __tue_env_track_report_objects "$1" FUNC "function"
+    __tue_env_track_report_objects "$1" COMPLETE "completion for"
+    return 0
+}
