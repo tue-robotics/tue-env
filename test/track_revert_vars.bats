@@ -121,3 +121,19 @@ setup() {
     __tue_env_track_revert_vars
     [[ "${TUE_TEST_NASTY}" == "${__tue_env_want}" ]]
 }
+
+@test "revert: a variable added then extended is unset when every recorded entry goes" {
+    # Reaches the extended branch's unset line: the merge promotes add-then-extend to `extended` while
+    # keeping the original absent pre-load state, so stripping every recorded entry leaves nothing and
+    # the variable must go away rather than become an empty string.
+    _tue-env-track-begin
+    export TUE_TEST_PP="/one"
+    _tue-env-track-commit
+    _tue-env-track-begin
+    export TUE_TEST_PP="/two:${TUE_TEST_PP}"
+    _tue-env-track-commit
+    [[ "${__TUE_ENV_LEDGER_VAR[TUE_TEST_PP]}" == "extended" ]]
+    [[ "${__TUE_ENV_LEDGER_VAR_PRE[TUE_TEST_PP]}" == "" ]]
+    __tue_env_track_revert_vars
+    [[ -z "${TUE_TEST_PP+set}" ]]
+}
