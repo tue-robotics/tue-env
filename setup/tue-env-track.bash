@@ -624,58 +624,120 @@ function __tue_env_track_restore_line
     then
         __tue_env_flags=""
     fi
+    # Unset first: re-declaring over a variable whose current type differs keeps the old data (a
+    # scalar restored over an array leaves the array's other elements in place) and can leave a stale
+    # attribute, or fail outright between indexed and associative.
+    local __tue_env_name="${__tue_env_rest%%=*}"
+    unset -v "${__tue_env_name}"
     eval "declare -g${__tue_env_flags} ${__tue_env_rest}"
+    return 0
+}
+
+function __tue_env_track_split
+{
+    # $1: a `:`-separated value. Result in __TUE_ENV_SPLIT, empty fields preserved. `IFS=':' read -a`
+    # silently drops a trailing empty field, and an empty field in PATH means the current directory,
+    # so losing one changes what the shell executes. A wholly empty value yields no entries, which is
+    # what __tue_env_track_entries already assumes.
+    __TUE_ENV_SPLIT=()
+    if [[ -z "$1" ]]
+    then
+        return 0
+    fi
+    local -a __tue_env_s=()
+    IFS=':' read -r -a __tue_env_s <<< "$1:."
+    unset "__tue_env_s[$(( ${#__tue_env_s[@]} - 1 ))]"
+    __TUE_ENV_SPLIT=("${__tue_env_s[@]}")
     return 0
 }
 
 function __tue_env_track_strip
 {
-    # $1: current value, $2: recorded added entries. Result in __TUE_ENV_VALUE: one occurrence of each
-    # recorded entry removed. The occurrence closest to the recorded index is the one that goes, so
-    # that an entry duplicating one the user already had does not silently reorder their value. An
-    # entry that is no longer present is skipped.
-    local -a __tue_env_c
-    IFS=':' read -r -a __tue_env_c <<< "$1"
+    # $1: current value, $2: recorded added entries, $3: the pre-load value ("" when the variable did
+    # not exist before the load). Result in __TUE_ENV_VALUE.
+    #
+    # Each recorded entry removes one occurrence: the one closest to the recorded index, ties going to
+    # the HIGHER position, because a user prepending to the value shifts the environment's entries
+    # rightwards. An occurrence is never removed if that would leave fewer copies of the entry than
+    # the value held before the load — the copies the user already had must survive, and when the
+    # environment duplicated one of them the two cannot be told apart by value alone. An entry that is
+    # no longer present is skipped.
+    local -a __tue_env_c __tue_env_p
+    __tue_env_track_split "$1"
+    __tue_env_c=("${__TUE_ENV_SPLIT[@]}")
+    __tue_env_track_split "$3"
+    __tue_env_p=("${__TUE_ENV_SPLIT[@]}")
+
+    # An empty entry (an empty PATH field) cannot be used as an associative-array subscript on its
+    # own: `a[""]=1` is a bash syntax error ("bad array subscript"), even though the empty string is
+    # a perfectly valid array VALUE. Every key below is therefore prefixed with a fixed, non-empty
+    # character; concatenating a constant prefix can never make two different entries collide, so the
+    # mapping stays one-to-one.
+    local -A __tue_env_keep=() __tue_env_live=()
+    local __tue_env_x
+    for __tue_env_x in ${__tue_env_p[@]+"${__tue_env_p[@]}"}
+    do
+        __tue_env_keep["k${__tue_env_x}"]=$(( ${__tue_env_keep["k${__tue_env_x}"]:-0} + 1 ))
+    done
+    for __tue_env_x in ${__tue_env_c[@]+"${__tue_env_c[@]}"}
+    do
+        __tue_env_live["k${__tue_env_x}"]=$(( ${__tue_env_live["k${__tue_env_x}"]:-0} + 1 ))
+    done
+
     local -A __tue_env_dead=()
     local __tue_env_rest="$2" __tue_env_pair __tue_env_idx __tue_env_e
-    local __tue_env_best __tue_env_bestd __tue_env_p __tue_env_d
-
+    local __tue_env_best __tue_env_bestd __tue_env_i __tue_env_d
     while [[ -n "${__tue_env_rest}" ]]
     do
+        # Same trap the test helper guards: without this an unterminated tail spins forever.
+        [[ "${__tue_env_rest}" == *"${__TUE_ENV_RS}"* ]] || break
         __tue_env_pair="${__tue_env_rest%%"${__TUE_ENV_RS}"*}"
         __tue_env_rest="${__tue_env_rest#*"${__TUE_ENV_RS}"}"
         [[ -z "${__tue_env_pair}" ]] && continue
         __tue_env_idx="${__tue_env_pair%%"${__TUE_ENV_PS}"*}"
         __tue_env_e="${__tue_env_pair#*"${__TUE_ENV_PS}"}"
 
+        if (( ${__tue_env_live["k${__tue_env_e}"]:-0} <= ${__tue_env_keep["k${__tue_env_e}"]:-0} ))
+        then
+            continue
+        fi
+
         __tue_env_best=""
         __tue_env_bestd=-1
-        for (( __tue_env_p = 0; __tue_env_p < ${#__tue_env_c[@]}; __tue_env_p++ ))
+        for (( __tue_env_i = 0; __tue_env_i < ${#__tue_env_c[@]}; __tue_env_i++ ))
         do
-            [[ -n "${__tue_env_dead[${__tue_env_p}]:-}" ]] && continue
-            [[ "${__tue_env_c[__tue_env_p]}" != "${__tue_env_e}" ]] && continue
-            __tue_env_d=$(( __tue_env_p - __tue_env_idx ))
+            [[ -n "${__tue_env_dead[${__tue_env_i}]:-}" ]] && continue
+            [[ "${__tue_env_c[__tue_env_i]}" != "${__tue_env_e}" ]] && continue
+            __tue_env_d=$(( __tue_env_i - __tue_env_idx ))
             if (( __tue_env_d < 0 ))
             then
                 __tue_env_d=$(( 0 - __tue_env_d ))
             fi
-            if (( __tue_env_bestd < 0 )) || (( __tue_env_d < __tue_env_bestd ))
+            # `<=`, not `<`: on a tie the higher position wins.
+            if (( __tue_env_bestd < 0 )) || (( __tue_env_d <= __tue_env_bestd ))
             then
                 __tue_env_bestd="${__tue_env_d}"
-                __tue_env_best="${__tue_env_p}"
+                __tue_env_best="${__tue_env_i}"
             fi
         done
         if [[ -n "${__tue_env_best}" ]]
         then
             __tue_env_dead["${__tue_env_best}"]=1
+            __tue_env_live["k${__tue_env_e}"]=$(( ${__tue_env_live["k${__tue_env_e}"]} - 1 ))
         fi
     done
 
-    local __tue_env_o=""
-    for (( __tue_env_p = 0; __tue_env_p < ${#__tue_env_c[@]}; __tue_env_p++ ))
+    local __tue_env_o="" __tue_env_first="true"
+    for (( __tue_env_i = 0; __tue_env_i < ${#__tue_env_c[@]}; __tue_env_i++ ))
     do
-        [[ -n "${__tue_env_dead[${__tue_env_p}]:-}" ]] && continue
-        __tue_env_o+="${__tue_env_o:+:}${__tue_env_c[__tue_env_p]}"
+        [[ -n "${__tue_env_dead[${__tue_env_i}]:-}" ]] && continue
+        if [[ "${__tue_env_first}" == "true" ]]
+        then
+            __tue_env_o="${__tue_env_c[__tue_env_i]}"
+            __tue_env_first="false"
+        else
+            __tue_env_o+=":${__tue_env_c[__tue_env_i]}"
+        fi
     done
     __TUE_ENV_VALUE="${__tue_env_o}"
     return 0
@@ -685,7 +747,7 @@ function __tue_env_track_revert_vars
 {
     # Applies every variable entry in the ledger. Names are sorted so that the notes printed for kept
     # user changes come out in a stable order.
-    local __tue_env_n __tue_env_kind __tue_env_pre __tue_env_post __tue_env_cur
+    local __tue_env_n __tue_env_kind __tue_env_pre __tue_env_post __tue_env_cur __tue_env_pv
     local -a __tue_env_names
     mapfile -t __tue_env_names < <(printf '%s\n' "${!__TUE_ENV_LEDGER_VAR[@]}" | LC_ALL=C sort)
 
@@ -702,8 +764,25 @@ function __tue_env_track_revert_vars
             # Entry-wise removal needs no conflict check: whatever the user added stays by
             # construction.
             [[ -z "${__tue_env_cur}" ]] && continue
+
+            # The current state must still be listable, exactly like __tue_env_track_diff_vars
+            # requires before treating a value as `:`-separated: evaluating an associative array's
+            # `declare -p` line can execute a command substitution smuggled into a key.
+            if ! __tue_env_track_listable "" "${__tue_env_cur}"
+            then
+                __tue_env_track_kept "value for ${__tue_env_n}"
+                continue
+            fi
+
+            __tue_env_pv=""
+            if [[ -n "${__tue_env_pre}" ]]
+            then
+                __tue_env_track_value "${__tue_env_pre}"
+                __tue_env_pv="${__TUE_ENV_VALUE}"
+            fi
             __tue_env_track_value "${__tue_env_cur}"
-            __tue_env_track_strip "${__TUE_ENV_VALUE}" "${__TUE_ENV_LEDGER_VAR_ADD[${__tue_env_n}]}"
+            __tue_env_track_strip "${__TUE_ENV_VALUE}" \
+                                  "${__TUE_ENV_LEDGER_VAR_ADD[${__tue_env_n}]}" "${__tue_env_pv}"
             if [[ -z "${__TUE_ENV_VALUE}" ]] && [[ -z "${__tue_env_pre}" ]]
             then
                 unset "${__tue_env_n}"

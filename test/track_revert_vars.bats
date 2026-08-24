@@ -137,3 +137,70 @@ setup() {
     __tue_env_track_revert_vars
     [[ -z "${TUE_TEST_PP+set}" ]]
 }
+
+@test "revert: on a tie between two identical entries, the higher position is removed" {
+    # The environment appended a second X at index 3; the user then prepended Y, shifting the
+    # original X to index 2 and the environment's added X to index 4 - both now distance 1 from the
+    # recorded index. The higher position must go, leaving the user's original X in place.
+    export TUE_TEST_LIST="A:X:B"
+    _tue-env-track-begin
+    export TUE_TEST_LIST="A:X:B:X"
+    _tue-env-track-commit
+    export TUE_TEST_LIST="Y:A:X:B:X"
+    __tue_env_track_revert_vars
+    [[ "${TUE_TEST_LIST}" == "Y:A:X:B" ]]
+}
+
+@test "revert: an entry the user already removed a duplicate of is not eaten again" {
+    # The environment appended a second X (recorded index 3), but the user reduced the value back to
+    # exactly its pre-load form before the revert runs. The count guard must see that only as many X
+    # copies remain as the pre-load value already held, and leave it alone.
+    export TUE_TEST_LIST="A:X:B"
+    _tue-env-track-begin
+    export TUE_TEST_LIST="A:X:B:X"
+    _tue-env-track-commit
+    export TUE_TEST_LIST="A:X:B"
+    __tue_env_track_revert_vars
+    [[ "${TUE_TEST_LIST}" == "A:X:B" ]]
+}
+
+@test "revert: a trailing empty field survives the round trip" {
+    export TUE_TEST_LIST="/usr/bin:"
+    _tue-env-track-begin
+    export TUE_TEST_LIST="/new:${TUE_TEST_LIST}"
+    _tue-env-track-commit
+    __tue_env_track_revert_vars
+    [[ "${TUE_TEST_LIST}" == "/usr/bin:" ]]
+}
+
+@test "revert: a leading empty field survives the round trip" {
+    export TUE_TEST_LIST=":/usr/bin"
+    _tue-env-track-begin
+    export TUE_TEST_LIST="/new:${TUE_TEST_LIST}"
+    _tue-env-track-commit
+    __tue_env_track_revert_vars
+    [[ "${TUE_TEST_LIST}" == ":/usr/bin" ]]
+}
+
+@test "revert: a scalar the environment turned into an array is restored with no leftover element" {
+    export TUE_TEST_SC="original"
+    _tue-env-track-begin
+    TUE_TEST_SC=(one two)
+    _tue-env-track-commit
+    __tue_env_track_revert_vars
+    [[ "$(declare -p TUE_TEST_SC)" == 'declare -x TUE_TEST_SC="original"' ]]
+}
+
+@test "revert: an extended variable turned into an associative array is kept, and no command in a key runs" {
+    local __tue_env_marker
+    __tue_env_marker="$(mktemp -u)"
+    export TUE_TEST_LIST="/usr/bin"
+    _tue-env-track-begin
+    export TUE_TEST_LIST="/new:${TUE_TEST_LIST}"
+    _tue-env-track-commit
+    declare -gA TUE_TEST_LIST=(["\$(touch ${__tue_env_marker})"]="x")
+    run __tue_env_track_revert_vars
+    [[ "${output}" == *"kept your value for TUE_TEST_LIST"* ]]
+    [[ ! -e "${__tue_env_marker}" ]]
+    rm -f "${__tue_env_marker}"
+}
