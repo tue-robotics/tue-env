@@ -1845,6 +1845,25 @@ function __tue_env_track_restore_line
     return 0
 }
 
+function __tue_env_track_split
+{
+    # $1: a `:`-separated value. Result in __TUE_ENV_SPLIT, empty fields preserved. `IFS=':' read -a`
+    # is unusable here twice over: it silently drops a trailing empty field, and it stops at the first
+    # newline, which would make the `:.` sentinel below invisible and delete a real field instead. An
+    # empty field in PATH means the current directory, so either mistake changes what the shell runs.
+    # A wholly empty value yields no entries, which is what __tue_env_track_entries already assumes.
+    __TUE_ENV_SPLIT=()
+    if [[ -z "$1" ]]
+    then
+        return 0
+    fi
+    local -a __tue_env_s=()
+    mapfile -d ':' -t __tue_env_s < <(printf '%s:.' "$1")
+    unset "__tue_env_s[$(( ${#__tue_env_s[@]} - 1 ))]"
+    __TUE_ENV_SPLIT=("${__tue_env_s[@]}")
+    return 0
+}
+
 function __tue_env_track_strip
 {
     # $1: current value, $2: recorded added entries, $3: the pre-load value ("" when the variable did
