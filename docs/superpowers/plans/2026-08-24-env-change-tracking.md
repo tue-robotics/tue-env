@@ -1290,6 +1290,19 @@ setup() {
     [[ "${__TUE_ENV_LEDGER_VAR_PRE[TUE_TEST_MINE]}" == 'declare -x TUE_TEST_MINE="mine"' ]]
 }
 
+@test "merge: a name already in the ledger keeps its original absent pre-load state" {
+    _tue-env-track-begin
+    export TUE_TEST_S=env1
+    _tue-env-track-commit
+    export TUE_TEST_S=mine
+    _tue-env-track-begin
+    export TUE_TEST_S=env2
+    _tue-env-track-commit
+    [[ "${__TUE_ENV_LEDGER_VAR[TUE_TEST_S]}" == "added" ]]
+    [[ "${__TUE_ENV_LEDGER_VAR_PRE[TUE_TEST_S]}" == "" ]]
+    [[ "${__TUE_ENV_LEDGER_VAR_POST[TUE_TEST_S]}" == 'declare -x TUE_TEST_S="env2"' ]]
+}
+
 @test "merge: the added entries of an extended variable are unioned" {
     export TUE_TEST_LIST="/usr/bin"
     _tue-env-track-begin
