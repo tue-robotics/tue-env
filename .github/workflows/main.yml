@@ -57,6 +57,16 @@ jobs:
           shellcheck --version
           shellcheck -- **/*.bash **/*.sh
 
+  test_bats:
+    name: Bats
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v7
+      - name: Install bats
+        run: ./test/install-bats.bash
+      - name: Run bats
+        run: ./test/.bats/bin/bats --print-output-on-failure --recursive test
+
   docker_generation_tue_env:
     name: Docker Generation tue-env
     runs-on: ubuntu-latest

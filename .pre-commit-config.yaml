@@ -24,7 +24,7 @@ repos:
       - id: check-json
       - id: check-merge-conflict
       - id: check-shebang-scripts-are-executable
-        exclude: '(^setup\.bash$|^setup/tue-data.bash$|^setup/tue-env.bash$|^setup/tue-functions.bash$|^setup/tue-misc.bash$)'
+        exclude: '(^setup\.bash$|^setup/tue-data.bash$|^setup/tue-env.bash$|^setup/tue-env-track\.bash$|^setup/tue-functions.bash$|^setup/tue-misc.bash$)'
       - id: check-symlinks
       - id: check-toml
       - id: check-vcs-permalinks

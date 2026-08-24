@@ -3,3 +3,4 @@ env
 bin
 user/
 .superpowers/
+test/.bats
