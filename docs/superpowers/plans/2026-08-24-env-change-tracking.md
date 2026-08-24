@@ -2210,7 +2210,7 @@ function __tue_env_track_revert_funcs
 {
     local __tue_env_n __tue_env_pre
     local -a __tue_env_names
-    mapfile -t __tue_env_names < <(printf '%s\n' "${!__TUE_ENV_LEDGER_FUNC[@]}" | LC_ALL=C sort)
+    mapfile -t __tue_env_names < <(printf '%s\\n' "${!__TUE_ENV_LEDGER_FUNC[@]}" | LC_ALL=C sort)
 
     for __tue_env_n in "${__tue_env_names[@]}"
     do
@@ -2229,7 +2229,9 @@ function __tue_env_track_revert_funcs
             eval "${__tue_env_pre}"
             if [[ "${__TUE_ENV_LEDGER_FUNC_XPRE[${__tue_env_n}]}" == "x" ]]
             then
-                # `declare -f` output does not encode `export -f`, so it has to be re-applied.
+                # `declare -f` output does not encode `export -f`, so it has to be re-applied. The name
+                # to export is held in a variable, not literal, which is exactly what SC2163 flags.
+                # shellcheck disable=SC2163
                 export -f "${__tue_env_n}"
             fi
         fi
@@ -2240,13 +2242,16 @@ function __tue_env_track_revert_funcs
 
 function __tue_env_track_revert_simple
 {
-    # $1: ALIAS or COMPLETE.
-    local -n __tue_env_lk="__TUE_ENV_LEDGER_$1"
-    local -n __tue_env_lp="__TUE_ENV_LEDGER_$1_PRE"
-    local -n __tue_env_lq="__TUE_ENV_LEDGER_$1_POST"
+    # $1: ALIAS or COMPLETE. The nameref locals are named distinctly from __tue_env_track_ledger_simple's
+    # (which also namerefs the same three globals): shellcheck's SC2178 does not scope nameref type
+    # inference per function, so reusing those names here reads, to it, as the same variable switching
+    # from array to scalar and it warns; giving these their own names side-steps that false positive.
+    local -n __tue_env_rlk="__TUE_ENV_LEDGER_$1"
+    local -n __tue_env_rlp="__TUE_ENV_LEDGER_$1_PRE"
+    local -n __tue_env_rlq="__TUE_ENV_LEDGER_$1_POST"
     local __tue_env_n __tue_env_pre __tue_env_label
     local -a __tue_env_names
-    mapfile -t __tue_env_names < <(printf '%s\n' "${!__tue_env_lk[@]}" | LC_ALL=C sort)
+    mapfile -t __tue_env_names < <(printf '%s\\n' "${!__tue_env_rlk[@]}" | LC_ALL=C sort)
 
     if [[ "$1" == "ALIAS" ]]
     then
@@ -2259,18 +2264,21 @@ function __tue_env_track_revert_simple
     do
         [[ -z "${__tue_env_n}" ]] && continue
         __tue_env_track_current "$1" "${__tue_env_n}"
-        if [[ "${__TUE_ENV_CURRENT}" != "${__tue_env_lq[${__tue_env_n}]}" ]]
+        if [[ "${__TUE_ENV_CURRENT}" != "${__tue_env_rlq[${__tue_env_n}]}" ]]
         then
             __tue_env_track_kept "version of ${__tue_env_label} ${__tue_env_n}"
             continue
         fi
 
-        __tue_env_pre="${__tue_env_lp[${__tue_env_n}]}"
+        __tue_env_pre="${__tue_env_rlp[${__tue_env_n}]}"
         if [[ "$1" == "ALIAS" ]]
         then
             unalias "${__tue_env_n}" 2> /dev/null || true
             if [[ -n "${__tue_env_pre}" ]]
             then
+                # The pre-load alias text is meant to expand right now, into the literal text that
+                # `alias` re-registers; it is not a deferred expression, which is what SC2139 flags.
+                # shellcheck disable=SC2139
                 alias "${__tue_env_n}=${__tue_env_pre}"
             fi
         else
@@ -2557,22 +2565,24 @@ function __tue_env_track_report_vars
 function __tue_env_track_report_objects
 {
     # $1: changes or revert, $2: FUNC, ALIAS or COMPLETE, $3: label to print before each name.
-    local -n __tue_env_lk="__TUE_ENV_LEDGER_$2"
-    local -n __tue_env_lq="__TUE_ENV_LEDGER_$2_POST"
+    # Distinct nameref names from __tue_env_track_ledger_simple's: reusing them makes shellcheck
+    # carry an SC2178 across function scopes and fail the file.
+    local -n __tue_env_pk="__TUE_ENV_LEDGER_$2"
+    local -n __tue_env_pq="__TUE_ENV_LEDGER_$2_POST"
     local __tue_env_n __tue_env_add="" __tue_env_gone="" __tue_env_chg="" __tue_env_keep=""
     local -a __tue_env_names
-    mapfile -t __tue_env_names < <(printf '%s\n' "${!__tue_env_lk[@]}" | LC_ALL=C sort)
+    mapfile -t __tue_env_names < <(printf '%s\n' "${!__tue_env_pk[@]}" | LC_ALL=C sort)
 
     for __tue_env_n in "${__tue_env_names[@]}"
     do
         [[ -z "${__tue_env_n}" ]] && continue
         __tue_env_track_current "$2" "${__tue_env_n}"
-        if [[ "$1" == "revert" ]] && [[ "${__TUE_ENV_CURRENT}" != "${__tue_env_lq[${__tue_env_n}]}" ]]
+        if [[ "$1" == "revert" ]] && [[ "${__TUE_ENV_CURRENT}" != "${__tue_env_pq[${__tue_env_n}]}" ]]
         then
             __tue_env_keep+="${__tue_env_keep:+, }$3 ${__tue_env_n}"
             continue
         fi
-        case "${__tue_env_lk[${__tue_env_n}]}" in
+        case "${__tue_env_pk[${__tue_env_n}]}" in
             added )
                 __tue_env_add+="${__tue_env_add:+, }$3 ${__tue_env_n}" ;;
             removed )
