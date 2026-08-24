@@ -182,3 +182,144 @@ function __tue_env_track_parse
 
     return 0
 }
+
+# ----------------------------------------------------------------------------------------------------
+#                                        CLASSIFICATION
+# ----------------------------------------------------------------------------------------------------
+
+function __tue_env_track_attrs
+{
+    # $1: a `declare -p` line. Result in __TUE_ENV_ATTRS: the attribute letters, "" for none.
+    local __tue_env_a="${1#declare }"
+    __tue_env_a="${__tue_env_a%% *}"
+    __tue_env_a="${__tue_env_a#-}"
+    if [[ "${__tue_env_a}" == "-" ]]
+    then
+        __tue_env_a=""
+    fi
+    __TUE_ENV_ATTRS="${__tue_env_a}"
+    return 0
+}
+
+function __tue_env_track_value
+{
+    # $1: a `declare -p` line of a scalar. Result in __TUE_ENV_VALUE. `declare -p` output is written
+    # to be re-evaluated by bash, so eval is the round trip; it is never applied to array lines.
+    __TUE_ENV_VALUE=""
+    if [[ "$1" != *=* ]]
+    then
+        return 0
+    fi
+    eval "__TUE_ENV_VALUE=${1#*=}"
+    return 0
+}
+
+function __tue_env_track_entries
+{
+    # $1: pre-load value, $2: post-load value. Returns 0 when $1's `:`-separated entries are a
+    # subsequence, in order, of $2's, and puts the entries of $2 that the match did not consume into
+    # __TUE_ENV_ADDED as "index PS entry" pairs joined by RS. This is exactly the shape produced by
+    # `export PATH=/usr/lib/ccache:${PATH}` and by /opt/ros/<distro>/setup.bash.
+    __TUE_ENV_ADDED=""
+    if [[ "$1" == *$'\n'* ]] || [[ "$2" == *$'\n'* ]]
+    then
+        return 1
+    fi
+
+    local -a __tue_env_p __tue_env_q
+    IFS=':' read -r -a __tue_env_p <<< "$1"
+    IFS=':' read -r -a __tue_env_q <<< "$2"
+
+    local __tue_env_i __tue_env_j=0 __tue_env_o=""
+    for (( __tue_env_i = 0; __tue_env_i < ${#__tue_env_q[@]}; __tue_env_i++ ))
+    do
+        if (( __tue_env_j < ${#__tue_env_p[@]} )) &&
+           [[ "${__tue_env_q[__tue_env_i]}" == "${__tue_env_p[__tue_env_j]}" ]]
+        then
+            __tue_env_j=$(( __tue_env_j + 1 ))
+        else
+            __tue_env_o+="${__tue_env_i}${__TUE_ENV_PS}${__tue_env_q[__tue_env_i]}${__TUE_ENV_RS}"
+        fi
+    done
+
+    if (( __tue_env_j != ${#__tue_env_p[@]} ))
+    then
+        return 1
+    fi
+    __TUE_ENV_ADDED="${__tue_env_o}"
+    return 0
+}
+
+function __tue_env_track_diff_vars
+{
+    # Classifies every variable that differs between the PRE and POST snapshots and hands the result
+    # to __tue_env_track_ledger_var.
+    local __tue_env_n __tue_env_pre __tue_env_post __tue_env_kind __tue_env_add
+    local __tue_env_pv __tue_env_qv
+    local -A __tue_env_seen=()
+
+    for __tue_env_n in "${!__TUE_ENV_PRE_VAR[@]}" "${!__TUE_ENV_POST_VAR[@]}"
+    do
+        if [[ -n "${__tue_env_seen[${__tue_env_n}]:-}" ]]
+        then
+            continue
+        fi
+        __tue_env_seen["${__tue_env_n}"]=1
+
+        __tue_env_pre="${__TUE_ENV_PRE_VAR[${__tue_env_n}]:-}"
+        __tue_env_post="${__TUE_ENV_POST_VAR[${__tue_env_n}]:-}"
+        [[ "${__tue_env_pre}" == "${__tue_env_post}" ]] && continue
+
+        # A readonly variable can be neither restored nor unset, so it is left alone entirely.
+        __tue_env_track_attrs "${__tue_env_post:-${__tue_env_pre}}"
+        [[ "${__TUE_ENV_ATTRS}" == *r* ]] && continue
+
+        __tue_env_add=""
+        if [[ -z "${__tue_env_pre}" ]]
+        then
+            __tue_env_kind="added"
+            # Remember the entries as well: if a later load extends this variable, the merged entry
+            # has to be able to fall back to entry-wise removal instead of unsetting it.
+            if [[ "${__TUE_ENV_ATTRS}" != *a* ]] && [[ "${__TUE_ENV_ATTRS}" != *A* ]]
+            then
+                __tue_env_track_value "${__tue_env_post}"
+                if __tue_env_track_entries "" "${__TUE_ENV_VALUE}"
+                then
+                    __tue_env_add="${__TUE_ENV_ADDED}"
+                fi
+            fi
+        elif [[ -z "${__tue_env_post}" ]]
+        then
+            __tue_env_kind="removed"
+        else
+            __tue_env_kind="replaced"
+            if [[ "${__TUE_ENV_ATTRS}" != *a* ]] && [[ "${__TUE_ENV_ATTRS}" != *A* ]]
+            then
+                __tue_env_track_value "${__tue_env_pre}"
+                __tue_env_pv="${__TUE_ENV_VALUE}"
+                __tue_env_track_value "${__tue_env_post}"
+                __tue_env_qv="${__TUE_ENV_VALUE}"
+                if __tue_env_track_entries "${__tue_env_pv}" "${__tue_env_qv}"
+                then
+                    __tue_env_kind="extended"
+                    __tue_env_add="${__TUE_ENV_ADDED}"
+                fi
+            fi
+        fi
+
+        __tue_env_track_ledger_var "${__tue_env_n}" "${__tue_env_kind}" "${__tue_env_pre}" \
+                                   "${__tue_env_post}" "${__tue_env_add}"
+    done
+
+    return 0
+}
+
+function __tue_env_track_ledger_var
+{
+    # $1: name, $2: kind, $3: pre-load declare line, $4: post-load declare line, $5: added entries.
+    __TUE_ENV_LEDGER_VAR["$1"]="$2"
+    __TUE_ENV_LEDGER_VAR_PRE["$1"]="$3"
+    __TUE_ENV_LEDGER_VAR_POST["$1"]="$4"
+    __TUE_ENV_LEDGER_VAR_ADD["$1"]="$5"
+    return 0
+}
