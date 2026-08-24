@@ -745,10 +745,10 @@ function __tue_env_track_attrs
 function __tue_env_track_listable
 {
     # $1: pre-load declare line, $2: post-load declare line, either may be empty. Returns 0 when
-    # neither side is an array, so the value may be treated as a `:`-separated list. Both sides have to
-    # be tested: an array replaced by a scalar would otherwise pass a POST-only guard, be classified
-    # `extended`, and reach eval with an array line — where an associative key can carry an assignment
-    # that bash performs in arithmetic context.
+    # neither side is an array, so the value may be treated as a `:`-separated list. Arrays are never
+    # `extended`, and __tue_env_track_value must never be evaluated on an array line: `declare -p`
+    # renders one as bash array syntax, so eval would turn __TUE_ENV_VALUE into an array, and an
+    # associative key can carry an assignment that bash performs in arithmetic context.
     local __tue_env_a
     __tue_env_track_attrs "$1"
     __tue_env_a="${__TUE_ENV_ATTRS}"
