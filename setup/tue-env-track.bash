@@ -600,3 +600,132 @@ function _tue-env-track-commit
     __TUE_ENV_POST_COMPLETE=()
     return 0
 }
+
+# ----------------------------------------------------------------------------------------------------
+#                                          REVERTING
+# ----------------------------------------------------------------------------------------------------
+
+function __tue_env_track_kept
+{
+    # $1: what was kept, e.g. "value for PATH" or "version of function tue-make".
+    echo "[tue-env](deactivate) kept your $1"
+    return 0
+}
+
+function __tue_env_track_restore_line
+{
+    # $1: a captured `declare -p` line. Evaluating it as it stands from inside a function would create
+    # a function-local variable and silently do nothing, so the attributes are rewritten to carry -g.
+    local __tue_env_rest="${1#declare }"
+    local __tue_env_attrs="${__tue_env_rest%% *}"
+    __tue_env_rest="${__tue_env_rest#* }"
+    local __tue_env_flags="${__tue_env_attrs#-}"
+    if [[ "${__tue_env_flags}" == "-" ]]
+    then
+        __tue_env_flags=""
+    fi
+    eval "declare -g${__tue_env_flags} ${__tue_env_rest}"
+    return 0
+}
+
+function __tue_env_track_strip
+{
+    # $1: current value, $2: recorded added entries. Result in __TUE_ENV_VALUE: one occurrence of each
+    # recorded entry removed. The occurrence closest to the recorded index is the one that goes, so
+    # that an entry duplicating one the user already had does not silently reorder their value. An
+    # entry that is no longer present is skipped.
+    local -a __tue_env_c
+    IFS=':' read -r -a __tue_env_c <<< "$1"
+    local -A __tue_env_dead=()
+    local __tue_env_rest="$2" __tue_env_pair __tue_env_idx __tue_env_e
+    local __tue_env_best __tue_env_bestd __tue_env_p __tue_env_d
+
+    while [[ -n "${__tue_env_rest}" ]]
+    do
+        __tue_env_pair="${__tue_env_rest%%"${__TUE_ENV_RS}"*}"
+        __tue_env_rest="${__tue_env_rest#*"${__TUE_ENV_RS}"}"
+        [[ -z "${__tue_env_pair}" ]] && continue
+        __tue_env_idx="${__tue_env_pair%%"${__TUE_ENV_PS}"*}"
+        __tue_env_e="${__tue_env_pair#*"${__TUE_ENV_PS}"}"
+
+        __tue_env_best=""
+        __tue_env_bestd=-1
+        for (( __tue_env_p = 0; __tue_env_p < ${#__tue_env_c[@]}; __tue_env_p++ ))
+        do
+            [[ -n "${__tue_env_dead[${__tue_env_p}]:-}" ]] && continue
+            [[ "${__tue_env_c[__tue_env_p]}" != "${__tue_env_e}" ]] && continue
+            __tue_env_d=$(( __tue_env_p - __tue_env_idx ))
+            if (( __tue_env_d < 0 ))
+            then
+                __tue_env_d=$(( 0 - __tue_env_d ))
+            fi
+            if (( __tue_env_bestd < 0 )) || (( __tue_env_d < __tue_env_bestd ))
+            then
+                __tue_env_bestd="${__tue_env_d}"
+                __tue_env_best="${__tue_env_p}"
+            fi
+        done
+        if [[ -n "${__tue_env_best}" ]]
+        then
+            __tue_env_dead["${__tue_env_best}"]=1
+        fi
+    done
+
+    local __tue_env_o=""
+    for (( __tue_env_p = 0; __tue_env_p < ${#__tue_env_c[@]}; __tue_env_p++ ))
+    do
+        [[ -n "${__tue_env_dead[${__tue_env_p}]:-}" ]] && continue
+        __tue_env_o+="${__tue_env_o:+:}${__tue_env_c[__tue_env_p]}"
+    done
+    __TUE_ENV_VALUE="${__tue_env_o}"
+    return 0
+}
+
+function __tue_env_track_revert_vars
+{
+    # Applies every variable entry in the ledger. Names are sorted so that the notes printed for kept
+    # user changes come out in a stable order.
+    local __tue_env_n __tue_env_kind __tue_env_pre __tue_env_post __tue_env_cur
+    local -a __tue_env_names
+    mapfile -t __tue_env_names < <(printf '%s\n' "${!__TUE_ENV_LEDGER_VAR[@]}" | LC_ALL=C sort)
+
+    for __tue_env_n in "${__tue_env_names[@]}"
+    do
+        [[ -z "${__tue_env_n}" ]] && continue
+        __tue_env_kind="${__TUE_ENV_LEDGER_VAR[${__tue_env_n}]}"
+        __tue_env_pre="${__TUE_ENV_LEDGER_VAR_PRE[${__tue_env_n}]}"
+        __tue_env_post="${__TUE_ENV_LEDGER_VAR_POST[${__tue_env_n}]}"
+        __tue_env_cur="$(declare -p "${__tue_env_n}" 2> /dev/null)" || __tue_env_cur=""
+
+        if [[ "${__tue_env_kind}" == "extended" ]]
+        then
+            # Entry-wise removal needs no conflict check: whatever the user added stays by
+            # construction.
+            [[ -z "${__tue_env_cur}" ]] && continue
+            __tue_env_track_value "${__tue_env_cur}"
+            __tue_env_track_strip "${__TUE_ENV_VALUE}" "${__TUE_ENV_LEDGER_VAR_ADD[${__tue_env_n}]}"
+            if [[ -z "${__TUE_ENV_VALUE}" ]] && [[ -z "${__tue_env_pre}" ]]
+            then
+                unset "${__tue_env_n}"
+            else
+                printf -v "${__tue_env_n}" '%s' "${__TUE_ENV_VALUE}"
+            fi
+            continue
+        fi
+
+        if [[ "${__tue_env_cur}" != "${__tue_env_post}" ]]
+        then
+            __tue_env_track_kept "value for ${__tue_env_n}"
+            continue
+        fi
+
+        if [[ -z "${__tue_env_pre}" ]]
+        then
+            unset "${__tue_env_n}"
+        else
+            __tue_env_track_restore_line "${__tue_env_pre}"
+        fi
+    done
+
+    return 0
+}
