@@ -43,6 +43,18 @@ setup() {
     declare -Fx | grep -q ' tue_test_fn$'
 }
 
+@test "revert: a function the environment removed is restored" {
+    tue_test_fn() {
+        echo original
+    }
+    _tue-env-track-begin
+    unset -f tue_test_fn
+    _tue-env-track-commit
+    [[ "${__TUE_ENV_LEDGER_FUNC[tue_test_fn]}" == "removed" ]]
+    _tue-env-track-revert
+    [[ "$(tue_test_fn)" == "original" ]]
+}
+
 @test "revert: a function the user redefined after the load is kept" {
     _tue-env-track-begin
     tue_test_fn() {
@@ -54,6 +66,19 @@ setup() {
     }
     run _tue-env-track-revert
     [[ "${output}" == *"kept your version of function tue_test_fn"* ]]
+}
+
+@test "revert: a function the user redefined after the load is left in place" {
+    _tue-env-track-begin
+    tue_test_fn() {
+        echo fromenv
+    }
+    _tue-env-track-commit
+    tue_test_fn() {
+        echo mine
+    }
+    _tue-env-track-revert
+    [[ "$(tue_test_fn)" == "mine" ]]
 }
 
 @test "revert: an added alias is unset and a replaced one restored" {
