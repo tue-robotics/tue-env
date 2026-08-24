@@ -339,10 +339,51 @@ function __tue_env_track_diff_vars
 function __tue_env_track_ledger_var
 {
     # $1: name, $2: kind, $3: pre-load declare line, $4: post-load declare line, $5: added entries.
-    __TUE_ENV_LEDGER_VAR["$1"]="$2"
-    __TUE_ENV_LEDGER_VAR_PRE["$1"]="$3"
+    # Merging keeps the original pre-load state and takes the new post-load state. A change the user
+    # made by hand between two loads is in both the new pre-load and the new post-load snapshot, so it
+    # cancels out of the diff and is never attributed to the environment; that is why the ledger
+    # accumulates diffs instead of re-baselining.
+    local __tue_env_kind="$2" __tue_env_pre="$3" __tue_env_add="$5"
+
+    if [[ -n "${__TUE_ENV_LEDGER_VAR[$1]:-}" ]]
+    then
+        local __tue_env_ok="${__TUE_ENV_LEDGER_VAR[$1]}"
+        local __tue_env_oadd="${__TUE_ENV_LEDGER_VAR_ADD[$1]}"
+        __tue_env_pre="${__TUE_ENV_LEDGER_VAR_PRE[$1]}"
+
+        if [[ -z "${__tue_env_pre}" ]] && [[ -z "$4" ]]
+        then
+            unset "__TUE_ENV_LEDGER_VAR[$1]" "__TUE_ENV_LEDGER_VAR_PRE[$1]" \
+                  "__TUE_ENV_LEDGER_VAR_POST[$1]" "__TUE_ENV_LEDGER_VAR_ADD[$1]"
+            return 0
+        fi
+
+        if [[ -z "$4" ]]
+        then
+            __tue_env_kind="removed"
+            __tue_env_add=""
+        elif [[ "${__tue_env_ok}" == "extended" ]] && [[ "${__tue_env_kind}" == "extended" ]]
+        then
+            __tue_env_add="${__tue_env_oadd}${__tue_env_add}"
+        elif [[ -z "${__tue_env_pre}" ]]
+        then
+            if [[ "${__tue_env_ok}" == "extended" ]] || [[ "${__tue_env_kind}" == "extended" ]]
+            then
+                __tue_env_kind="extended"
+                __tue_env_add="${__tue_env_oadd}${__tue_env_add}"
+            else
+                __tue_env_kind="added"
+            fi
+        else
+            __tue_env_kind="replaced"
+            __tue_env_add=""
+        fi
+    fi
+
+    __TUE_ENV_LEDGER_VAR["$1"]="${__tue_env_kind}"
+    __TUE_ENV_LEDGER_VAR_PRE["$1"]="${__tue_env_pre}"
     __TUE_ENV_LEDGER_VAR_POST["$1"]="$4"
-    __TUE_ENV_LEDGER_VAR_ADD["$1"]="$5"
+    __TUE_ENV_LEDGER_VAR_ADD["$1"]="${__tue_env_add}"
     return 0
 }
 
@@ -426,10 +467,35 @@ function __tue_env_track_diff_simple
 function __tue_env_track_ledger_func
 {
     # $1: name, $2: kind, $3: pre-load body, $4: post-load body, $5: pre-load export flag.
-    __TUE_ENV_LEDGER_FUNC["$1"]="$2"
-    __TUE_ENV_LEDGER_FUNC_PRE["$1"]="$3"
+    local __tue_env_kind="$2" __tue_env_pre="$3" __tue_env_xp="$5"
+
+    if [[ -n "${__TUE_ENV_LEDGER_FUNC[$1]:-}" ]]
+    then
+        __tue_env_pre="${__TUE_ENV_LEDGER_FUNC_PRE[$1]}"
+        __tue_env_xp="${__TUE_ENV_LEDGER_FUNC_XPRE[$1]}"
+
+        if [[ -z "${__tue_env_pre}" ]] && [[ -z "$4" ]]
+        then
+            unset "__TUE_ENV_LEDGER_FUNC[$1]" "__TUE_ENV_LEDGER_FUNC_PRE[$1]" \
+                  "__TUE_ENV_LEDGER_FUNC_POST[$1]" "__TUE_ENV_LEDGER_FUNC_XPRE[$1]"
+            return 0
+        fi
+
+        if [[ -z "$4" ]]
+        then
+            __tue_env_kind="removed"
+        elif [[ -z "${__tue_env_pre}" ]]
+        then
+            __tue_env_kind="added"
+        else
+            __tue_env_kind="replaced"
+        fi
+    fi
+
+    __TUE_ENV_LEDGER_FUNC["$1"]="${__tue_env_kind}"
+    __TUE_ENV_LEDGER_FUNC_PRE["$1"]="${__tue_env_pre}"
     __TUE_ENV_LEDGER_FUNC_POST["$1"]="$4"
-    __TUE_ENV_LEDGER_FUNC_XPRE["$1"]="$5"
+    __TUE_ENV_LEDGER_FUNC_XPRE["$1"]="${__tue_env_xp}"
     return 0
 }
 
@@ -439,8 +505,98 @@ function __tue_env_track_ledger_simple
     local -n __tue_env_lk="__TUE_ENV_LEDGER_$1"
     local -n __tue_env_lp="__TUE_ENV_LEDGER_$1_PRE"
     local -n __tue_env_lq="__TUE_ENV_LEDGER_$1_POST"
-    __tue_env_lk["$2"]="$3"
-    __tue_env_lp["$2"]="$4"
+    local __tue_env_kind="$3" __tue_env_pre="$4"
+
+    if [[ -n "${__tue_env_lk[$2]:-}" ]]
+    then
+        __tue_env_pre="${__tue_env_lp[$2]}"
+
+        if [[ -z "${__tue_env_pre}" ]] && [[ -z "$5" ]]
+        then
+            unset "__tue_env_lk[$2]" "__tue_env_lp[$2]" "__tue_env_lq[$2]"
+            return 0
+        fi
+
+        if [[ -z "$5" ]]
+        then
+            __tue_env_kind="removed"
+        elif [[ -z "${__tue_env_pre}" ]]
+        then
+            __tue_env_kind="added"
+        else
+            __tue_env_kind="replaced"
+        fi
+    fi
+
+    __tue_env_lk["$2"]="${__tue_env_kind}"
+    __tue_env_lp["$2"]="${__tue_env_pre}"
     __tue_env_lq["$2"]="$5"
+    return 0
+}
+
+# ----------------------------------------------------------------------------------------------------
+#                                       ENTRY POINTS
+# ----------------------------------------------------------------------------------------------------
+
+function __tue_env_track_empty
+{
+    # Returns 0 when the ledger holds nothing.
+    if (( ${#__TUE_ENV_LEDGER_VAR[@]} + ${#__TUE_ENV_LEDGER_FUNC[@]} +
+          ${#__TUE_ENV_LEDGER_ALIAS[@]} + ${#__TUE_ENV_LEDGER_COMPLETE[@]} == 0 ))
+    then
+        return 0
+    fi
+    return 1
+}
+
+function _tue-env-track-begin
+{
+    # Takes the transient pre-load snapshot, guarded by a depth counter so that a target setup script
+    # that sources setup.bash recursively contributes to the outer load instead of starting its own.
+    __TUE_ENV_TRACK_DEPTH=$(( __TUE_ENV_TRACK_DEPTH + 1 ))
+    if (( __TUE_ENV_TRACK_DEPTH != 1 ))
+    then
+        return 0
+    fi
+    __TUE_ENV_SNAP_PRE="$(__tue_env_track_dump)"
+    return 0
+}
+
+function _tue-env-track-commit
+{
+    # Takes the post-load snapshot, diffs it against the pre-load one and merges the diff into the
+    # ledger, but only when the depth counter comes back to zero.
+    if (( __TUE_ENV_TRACK_DEPTH == 0 ))
+    then
+        return 0
+    fi
+    __TUE_ENV_TRACK_DEPTH=$(( __TUE_ENV_TRACK_DEPTH - 1 ))
+    if (( __TUE_ENV_TRACK_DEPTH != 0 ))
+    then
+        return 0
+    fi
+
+    local __tue_env_snap
+    __tue_env_snap="$(__tue_env_track_dump)"
+    __tue_env_track_parse "${__TUE_ENV_SNAP_PRE}" PRE
+    __tue_env_track_parse "${__tue_env_snap}" POST
+    __TUE_ENV_SNAP_PRE=""
+
+    __tue_env_track_diff_vars
+    __tue_env_track_diff_funcs
+    __tue_env_track_diff_simple ALIAS
+    __tue_env_track_diff_simple COMPLETE
+
+    # The snapshots are transient; they exist only for the duration of a load.
+    __TUE_ENV_PRE_VAR=()
+    __TUE_ENV_PRE_FUNC=()
+    __TUE_ENV_PRE_FUNCX=()
+    __TUE_ENV_PRE_ALIAS=()
+    __TUE_ENV_PRE_COMPLETE=()
+    __TUE_ENV_POST_VAR=()
+    __TUE_ENV_POST_FUNC=()
+    __TUE_ENV_POST_FUNCX=()
+    __TUE_ENV_POST_ALIAS=()
+    __TUE_ENV_POST_COMPLETE=()
     return 0
 }
