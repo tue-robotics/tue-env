@@ -562,7 +562,9 @@ In `.github/workflows/main.yml`, after the `linting_shellcheck` job:
       - name: Install bats
         run: ./test/install-bats.bash
       - name: Run bats
-        run: ./test/.bats/bin/bats --print-output-on-failure --recursive test
+        # test/*.bats, not `--recursive test`: the recursive walk descends into test/.bats, the
+        # bats-core checkout, and gathers its own abort fixtures instead of this repo's tests.
+        run: ./test/.bats/bin/bats --print-output-on-failure test/*.bats
 ```
 
 Run: `yamllint --strict .github/workflows/main.yml`
@@ -1509,7 +1511,7 @@ verify that in the "drops out of the ledger" tests rather than trusting it.
 
 - [ ] **Step 5: Run the whole suite to verify nothing regressed**
 
-Run: `./test/.bats/bin/bats --print-output-on-failure --recursive test`
+Run: `./test/.bats/bin/bats --print-output-on-failure test/*.bats`
 Expected: all tests pass, including the Task 2 and 3 tests — with an empty ledger, merging reduces to
 inserting the entry as-is
 
@@ -2114,7 +2116,7 @@ function _tue-env-track-revert
 
 - [ ] **Step 4: Run the whole suite to verify it passes**
 
-Run: `./test/.bats/bin/bats --print-output-on-failure --recursive test`
+Run: `./test/.bats/bin/bats --print-output-on-failure test/*.bats`
 Expected: all tests pass
 
 Run: `shellcheck -- setup/tue-env-track.bash`
@@ -2401,7 +2403,7 @@ function _tue-env-track-report
 
 - [ ] **Step 4: Run the whole suite to verify it passes**
 
-Run: `./test/.bats/bin/bats --print-output-on-failure --recursive test`
+Run: `./test/.bats/bin/bats --print-output-on-failure test/*.bats`
 Expected: all tests pass
 
 Run: `shellcheck -- setup/tue-env-track.bash`
@@ -2743,7 +2745,7 @@ unset -f _tue-env-bootstrap _tue-env-load _tue-env-main
 Run: `./test/.bats/bin/bats --print-output-on-failure test/setup_integration.bats`
 Expected: 5 tests, all pass
 
-Run: `./test/.bats/bin/bats --print-output-on-failure --recursive test`
+Run: `./test/.bats/bin/bats --print-output-on-failure test/*.bats`
 Expected: all tests pass
 
 Run: `shellcheck -- setup.bash test/helpers/env.bash`
@@ -3111,7 +3113,7 @@ And extend the `deactivate` branch of the same function to offer the flag, and g
 Run: `./test/.bats/bin/bats --print-output-on-failure test/tue_env_cmd.bats`
 Expected: 11 tests, all pass
 
-Run: `./test/.bats/bin/bats --print-output-on-failure --recursive test`
+Run: `./test/.bats/bin/bats --print-output-on-failure test/*.bats`
 Expected: all tests pass
 
 Run: `shellcheck -- setup/tue-env.bash`
@@ -3184,7 +3186,7 @@ git commit -m "Document tue-env changes, deactivate --dry-run and the revert con
 
 - [ ] **Step 4: Run everything once more**
 
-Run: `./test/.bats/bin/bats --print-output-on-failure --recursive test`
+Run: `./test/.bats/bin/bats --print-output-on-failure test/*.bats`
 Expected: all tests pass
 
 Run: `pre-commit run --all-files`
