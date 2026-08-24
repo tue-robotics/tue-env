@@ -253,6 +253,7 @@ function tue_track_added
     local __tue_env_r="${__TUE_ENV_LEDGER_VAR_ADD[$1]:-}" __tue_env_p __tue_env_o=""
     while [[ -n "${__tue_env_r}" ]]
     do
+        [[ "${__tue_env_r}" == *"${__TUE_ENV_RS}"* ]] || break
         __tue_env_p="${__tue_env_r%%"${__TUE_ENV_RS}"*}"
         __tue_env_r="${__tue_env_r#*"${__TUE_ENV_RS}"}"
         [[ -z "${__tue_env_p}" ]] && continue
@@ -341,6 +342,15 @@ line"
     [[ "${__tue_env_a}" == "${__tue_env_b}" ]]
 }
 
+@test "capture: parsing a second snapshot replaces the first one's content" {
+    export TUE_TEST_TRANSIENT=1
+    tue_track_snapshot PRE
+    [[ -n "${__TUE_ENV_PRE_VAR[TUE_TEST_TRANSIENT]:-}" ]]
+    unset TUE_TEST_TRANSIENT
+    tue_track_snapshot PRE
+    [[ -z "${__TUE_ENV_PRE_VAR[TUE_TEST_TRANSIENT]:-}" ]]
+}
+
 @test "capture: an extra exclude pattern hides a name" {
     __TUE_ENV_TRACK_EXTRA_EXCLUDE+=('TUE_TEST_HIDDEN')
     export TUE_TEST_HIDDEN=1
@@ -419,8 +429,9 @@ function __tue_env_track_excluded
     # $1: name. Returns 0 when the name must not be tracked.
     local __tue_env_p
     case "$1" in
-        BASH* | COMP_* | DIRSTACK | EPOCH* | FUNCNAME | GROUPS | HISTCMD | LINENO | OLDPWD | \
-        PIPESTATUS | PWD | RANDOM | SECONDS | SHLVL | SRANDOM | _ | __TUE_ENV_* | __tue_env_* )
+        BASH* | COLUMNS | COMP_* | DIRSTACK | EPOCH* | FUNCNAME | GROUPS | HISTCMD | LINENO | LINES | \
+        OLDPWD | PIPESTATUS | PWD | RANDOM | SECONDS | SHELLOPTS | SHLVL | SRANDOM | _ | \
+        __TUE_ENV_* | __tue_env_* )
             return 0 ;;
     esac
     for __tue_env_p in "${__TUE_ENV_TRACK_EXTRA_EXCLUDE[@]}"
@@ -439,7 +450,13 @@ function __tue_env_track_dump
     # Writes a snapshot of this shell to stdout, framed as described at the top of the plan. Meant to
     # be called inside a command substitution; the few substitutions below are per category, never per
     # name, so the cost of a snapshot does not grow with the size of the environment.
+    #
+    # The local IFS pins field-splitting to its default regardless of what the caller set it to, which
+    # is what keeps the `declare -Fx` read loop below correct; the two `compgen` name lists are read
+    # with `mapfile` instead of a split, so they are immune to IFS and to globbing either way.
+    local IFS=$' \t\n'
     local __tue_env_n __tue_env_names __tue_env_l __tue_env_d1 __tue_env_d2
+    local -a __tue_env_list=()
     local -A __tue_env_xf=()
 
     # Which functions carry `export -f`; `declare -f` output does not encode it.
@@ -452,8 +469,8 @@ function __tue_env_track_dump
         fi
     done <<< "${__tue_env_names}"
 
-    __tue_env_names="$(compgen -v)"
-    for __tue_env_n in ${__tue_env_names}
+    mapfile -t __tue_env_list < <(compgen -v)
+    for __tue_env_n in "${__tue_env_list[@]}"
     do
         __tue_env_track_excluded "${__tue_env_n}" && continue
         printf 'V%s%s%s' "${__TUE_ENV_FS}" "${__tue_env_n}" "${__TUE_ENV_FS}"
@@ -461,8 +478,8 @@ function __tue_env_track_dump
         printf '%s' "${__TUE_ENV_RS}"
     done
 
-    __tue_env_names="$(compgen -A function)"
-    for __tue_env_n in ${__tue_env_names}
+    mapfile -t __tue_env_list < <(compgen -A function)
+    for __tue_env_n in "${__tue_env_list[@]}"
     do
         __tue_env_track_excluded "${__tue_env_n}" && continue
         printf 'F%s%s%s%s%s' "${__TUE_ENV_FS}" "${__tue_env_n}" "${__TUE_ENV_FS}" \
@@ -480,8 +497,9 @@ function __tue_env_track_dump
     done
 
     # `complete -p` prints one registration per line; the command it applies to is the last field.
+    # IFS= on the read itself keeps a registration's leading/trailing whitespace intact.
     __tue_env_names="$(complete -p 2> /dev/null)"
-    while read -r __tue_env_l
+    while IFS= read -r __tue_env_l
     do
         [[ -z "${__tue_env_l}" ]] && continue
         __tue_env_n="${__tue_env_l##* }"
@@ -549,7 +567,7 @@ function __tue_env_track_parse
 - [ ] **Step 8: Run the tests to verify they pass**
 
 Run: `./test/.bats/bin/bats --print-output-on-failure test/track_capture.bats`
-Expected: 9 tests, all pass
+Expected: 10 tests, all pass
 
 Run: `shellcheck -- setup/tue-env-track.bash test/install-bats.bash test/helpers/track.bash`
 Expected: no output
@@ -570,6 +588,14 @@ In `.github/workflows/main.yml`, after the `linting_shellcheck` job:
         # test/*.bats, not `--recursive test`: the recursive walk descends into test/.bats, the
         # bats-core checkout, and gathers its own abort fixtures instead of this repo's tests.
         run: ./test/.bats/bin/bats --print-output-on-failure test/*.bats
+```
+
+Add `test_bats` to `docker_generation_tue_env`'s `needs:` list as well, alongside the four linting
+jobs that already gate it — a test job that does not gate the docker builds lets a red suite burn
+build minutes and publish images:
+
+```yaml
+    needs: [linting_actionlint, linting_hadolint, linting_python_black, linting_shellcheck, test_bats]
 ```
 
 Run: `yamllint --strict .github/workflows/main.yml`
