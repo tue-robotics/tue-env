@@ -1717,6 +1717,22 @@ setup() {
     [[ "${TUE_TEST_PP}" == "/a:/mine" ]]
 }
 
+@test "revert: a variable added then extended is unset when every recorded entry goes" {
+    # Reaches the extended branch's unset line: the merge promotes add-then-extend to `extended` while
+    # keeping the original absent pre-load state, so stripping every recorded entry leaves nothing and
+    # the variable must go away rather than become an empty string.
+    _tue-env-track-begin
+    export TUE_TEST_PP="/one"
+    _tue-env-track-commit
+    _tue-env-track-begin
+    export TUE_TEST_PP="/two:${TUE_TEST_PP}"
+    _tue-env-track-commit
+    [[ "${__TUE_ENV_LEDGER_VAR[TUE_TEST_PP]}" == "extended" ]]
+    [[ "${__TUE_ENV_LEDGER_VAR_PRE[TUE_TEST_PP]}" == "" ]]
+    __tue_env_track_revert_vars
+    [[ -z "${TUE_TEST_PP+set}" ]]
+}
+
 @test "revert: a replaced scalar is restored" {
     export TUE_TEST_RMW=rmw_fastrtps_cpp
     _tue-env-track-begin
@@ -1896,7 +1912,10 @@ function __tue_env_track_revert_vars
         __tue_env_kind="${__TUE_ENV_LEDGER_VAR[${__tue_env_n}]}"
         __tue_env_pre="${__TUE_ENV_LEDGER_VAR_PRE[${__tue_env_n}]}"
         __tue_env_post="${__TUE_ENV_LEDGER_VAR_POST[${__tue_env_n}]}"
-        __tue_env_cur="$(declare -p "${__tue_env_n}" 2> /dev/null)"
+        # `declare -p` returns 1 for a name that does not exist, and a bare command-substitution
+        # assignment propagates that, so a caller running under `set -e` would abort here rather than
+        # treat the variable as absent.
+        __tue_env_cur="$(declare -p "${__tue_env_n}" 2> /dev/null)" || __tue_env_cur=""
 
         if [[ "${__tue_env_kind}" == "extended" ]]
         then
@@ -2095,13 +2114,16 @@ Append to `setup/tue-env-track.bash`:
 function __tue_env_track_current
 {
     # $1: FUNC, ALIAS or COMPLETE, $2: name. Result in __TUE_ENV_CURRENT, empty when absent.
+    # `declare -f` and `complete -p` both return 1 for a name that does not exist, and a bare
+    # command-substitution assignment propagates that, so without the `||` a caller running under
+    # `set -e` would abort here instead of treating the object as absent.
     case "$1" in
         FUNC )
-            __TUE_ENV_CURRENT="$(declare -f "$2" 2> /dev/null)" ;;
+            __TUE_ENV_CURRENT="$(declare -f "$2" 2> /dev/null)" || __TUE_ENV_CURRENT="" ;;
         ALIAS )
             __TUE_ENV_CURRENT="${BASH_ALIASES[$2]:-}" ;;
         COMPLETE )
-            __TUE_ENV_CURRENT="$(complete -p "$2" 2> /dev/null)" ;;
+            __TUE_ENV_CURRENT="$(complete -p "$2" 2> /dev/null)" || __TUE_ENV_CURRENT="" ;;
     esac
     return 0
 }
@@ -2420,7 +2442,7 @@ function __tue_env_track_report_vars
             continue
         fi
 
-        __tue_env_cur="$(declare -p "${__tue_env_n}" 2> /dev/null)"
+        __tue_env_cur="$(declare -p "${__tue_env_n}" 2> /dev/null)" || __tue_env_cur=""
         if [[ "$1" == "revert" ]] && [[ "${__tue_env_cur}" != "${__tue_env_post}" ]]
         then
             __tue_env_track_display "${__tue_env_cur}"
