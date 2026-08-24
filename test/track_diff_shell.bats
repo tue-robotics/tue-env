@@ -87,3 +87,16 @@ setup() {
        "complete -o nospace -F tue_test_complete tue-test-new" ]]
     [[ "${__TUE_ENV_LEDGER_COMPLETE[tue-test-old]}" == "removed" ]]
 }
+
+@test "diff: a function whose body is unchanged but export flag changed is replaced" {
+    tue_test_fn() {
+        echo same
+    }
+    tue_track_snapshot PRE
+    export -f tue_test_fn
+    tue_track_snapshot POST
+    __tue_env_track_diff_funcs
+    [[ "${__TUE_ENV_LEDGER_FUNC[tue_test_fn]}" == "replaced" ]]
+    [[ "${__TUE_ENV_LEDGER_FUNC_XPRE[tue_test_fn]}" == "" ]]
+    [[ "${__TUE_ENV_LEDGER_FUNC_PRE[tue_test_fn]}" == "${__TUE_ENV_LEDGER_FUNC_POST[tue_test_fn]}" ]]
+}

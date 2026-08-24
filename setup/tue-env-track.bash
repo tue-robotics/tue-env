@@ -156,7 +156,7 @@ function __tue_env_track_parse
 
     # One mapfile pass rather than shrinking the stream with ${x%%RS*} / ${x#*RS} per record: those
     # rescan the whole remaining string every iteration, which is quadratic in the snapshot size. On a
-    # 77 KB snapshot the shrinking loop measured 1115 ms against 22 ms here, and
+    # 77 KB snapshot the parse measured 1032 ms that way against roughly 34 ms here, and
     # _tue-env-track-commit parses two snapshots on every environment load.
     local -a __tue_env_recs
     mapfile -d "${__TUE_ENV_RS}" -t __tue_env_recs < <(printf '%s' "$1")
