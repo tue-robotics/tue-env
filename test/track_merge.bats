@@ -138,3 +138,51 @@ setup() {
     [[ "${__TUE_ENV_LEDGER_VAR_PRE[TUE_TEST_S]}" == "" ]]
     [[ "${__TUE_ENV_LEDGER_VAR_POST[TUE_TEST_S]}" == 'declare -x TUE_TEST_S="env2"' ]]
 }
+
+@test "merge: a variable the environment replaced and then unset becomes removed" {
+    export TUE_TEST_S=original
+    _tue-env-track-begin
+    export TUE_TEST_S=fromenv
+    _tue-env-track-commit
+    [[ "${__TUE_ENV_LEDGER_VAR[TUE_TEST_S]}" == "replaced" ]]
+    _tue-env-track-begin
+    unset TUE_TEST_S
+    _tue-env-track-commit
+    [[ "${__TUE_ENV_LEDGER_VAR[TUE_TEST_S]}" == "removed" ]]
+    [[ "${__TUE_ENV_LEDGER_VAR_PRE[TUE_TEST_S]}" == 'declare -x TUE_TEST_S="original"' ]]
+    [[ "${__TUE_ENV_LEDGER_VAR_POST[TUE_TEST_S]}" == "" ]]
+    [[ -z "$(tue_track_added TUE_TEST_S)" ]]
+}
+
+@test "merge: a function added on one load and removed on the next drops out of the ledger" {
+    _tue-env-track-begin
+    tue_test_fn() {
+        echo added
+    }
+    _tue-env-track-commit
+    [[ "${__TUE_ENV_LEDGER_FUNC[tue_test_fn]}" == "added" ]]
+    _tue-env-track-begin
+    unset -f tue_test_fn
+    _tue-env-track-commit
+    [[ -z "${__TUE_ENV_LEDGER_FUNC[tue_test_fn]:-}" ]]
+    [[ -z "${__TUE_ENV_LEDGER_FUNC_PRE[tue_test_fn]:-}" ]]
+    [[ -z "${__TUE_ENV_LEDGER_FUNC_XPRE[tue_test_fn]:-}" ]]
+}
+
+@test "merge: a completion replaced on two loads keeps the original registration" {
+    tue_test_complete() {
+        COMPREPLY=()
+    }
+    complete -F tue_test_complete tue-test-cmd
+    _tue-env-track-begin
+    complete -o nospace -F tue_test_complete tue-test-cmd
+    _tue-env-track-commit
+    _tue-env-track-begin
+    complete -o default -F tue_test_complete tue-test-cmd
+    _tue-env-track-commit
+    [[ "${__TUE_ENV_LEDGER_COMPLETE[tue-test-cmd]}" == "replaced" ]]
+    [[ "${__TUE_ENV_LEDGER_COMPLETE_PRE[tue-test-cmd]}" == \
+       "complete -F tue_test_complete tue-test-cmd" ]]
+    [[ "${__TUE_ENV_LEDGER_COMPLETE_POST[tue-test-cmd]}" == \
+       "complete -o default -F tue_test_complete tue-test-cmd" ]]
+}
