@@ -204,3 +204,25 @@ setup() {
     [[ ! -e "${__tue_env_marker}" ]]
     rm -f "${__tue_env_marker}"
 }
+
+@test "revert: a newline in the current value's last field survives the round trip" {
+    export TUE_TEST_LIST="/usr/bin"
+    _tue-env-track-begin
+    export TUE_TEST_LIST="/new:${TUE_TEST_LIST}"
+    _tue-env-track-commit
+    TUE_TEST_LIST="/new:/usr/bin:A"$'\n'"B"
+    __tue_env_track_revert_vars
+    [[ "${TUE_TEST_LIST}" == "/usr/bin:A"$'\n'"B" ]]
+}
+
+@test "revert: a newline in the current value's first field does not empty or unset the variable" {
+    export TUE_TEST_LIST="/usr/bin"
+    _tue-env-track-begin
+    export TUE_TEST_LIST="/new:${TUE_TEST_LIST}"
+    _tue-env-track-commit
+    TUE_TEST_LIST="A"$'\n'"B:/new:/usr/bin"
+    __tue_env_track_revert_vars
+    [[ -n "${TUE_TEST_LIST+set}" ]]
+    [[ -n "${TUE_TEST_LIST}" ]]
+    [[ "${TUE_TEST_LIST}" == "A"$'\n'"B:/usr/bin" ]]
+}
