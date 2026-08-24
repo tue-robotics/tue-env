@@ -1589,13 +1589,17 @@ setup() {
     [[ -z "${TUE_TEST_PP+set}" ]]
 }
 
-@test "revert: an added list variable keeps the entries the user appended" {
+@test "revert: an added list variable the user appended to is kept whole" {
+    # `added` is not `extended`: the spec puts everything that is not entry-wise through the conflict
+    # check, so a variable the environment created and the user then changed is handed back untouched.
     _tue-env-track-begin
     export TUE_TEST_PP="/a"
     _tue-env-track-commit
     export TUE_TEST_PP="${TUE_TEST_PP}:/mine"
+    run __tue_env_track_revert_vars
+    [[ "${output}" == *"kept your value for TUE_TEST_PP"* ]]
     __tue_env_track_revert_vars
-    [[ "${TUE_TEST_PP}" == "/mine" ]]
+    [[ "${TUE_TEST_PP}" == "/a:/mine" ]]
 }
 
 @test "revert: a replaced scalar is restored" {
@@ -2423,8 +2427,9 @@ git commit -m "Report tracked changes and planned reverts"
 
 - Consumes: `_tue-env-track-begin`, `_tue-env-track-commit`, `_tue-env-track-revert`.
 - Produces: `_tue-env-bootstrap` (everything outside the tracked span) and `_tue-env-load` (everything
-  inside it), both unset again at the end of `setup.bash`; `tue_env_fixture`, `tue_env_fixture_venv` and
-  `tue_env_fixture_target` for the tests.
+  inside it), both unset again at the end of `setup.bash`; `tue_env_clean_shell`, `tue_env_fixture`,
+  `tue_env_fixture_venv` and `tue_env_fixture_target` for the tests. Task 9 uses
+  `tue_env_clean_shell` too.
 
 The span begins immediately after `setup/tue-env.bash` is sourced and ends at the end of the load, so
 `TUE_DIR`, `TUE_BIN`, their `PATH` entries, the `tue-env` function and `_tue-check-env-vars` survive an
@@ -2443,11 +2448,46 @@ Create `test/helpers/env.bash`:
 #
 # Requires helpers/track to be loaded first, for TUE_TRACK_REPO_ROOT.
 
+function tue_env_clean_shell
+{
+    # The shell running the tests usually has a tue-env environment of its own loaded, and exports it
+    # into every child process: on the machine this was written on a child inherits TUE_ENV, TUE_DIR
+    # and sixteen exported tue functions. Left in place they would land in the pre-load snapshot, so
+    # `tue-make` would be classified `replaced` instead of `added`, and the inherited TUE_ENV would
+    # decide which environment the fixture loads. Clear them, but keep the harness's own TUE_TRACK_*
+    # and TUE_TEST_* variables.
+    local __tue_env_n __tue_env_d1 __tue_env_d2
+
+    for __tue_env_n in $(compgen -v TUE_) $(compgen -v ROS_) $(compgen -v VIRTUAL_ENV) \
+                       $(compgen -v _OLD_VIRTUAL)
+    do
+        case "${__tue_env_n}" in
+            TUE_TRACK_* | TUE_TEST_* )
+                continue ;;
+        esac
+        unset "${__tue_env_n}"
+    done
+    unset AMENT_PREFIX_PATH COLCON_PREFIX_PATH PYTHONPATH RMW_IMPLEMENTATION
+
+    # Only exported functions: those are the ones that came in from the parent shell. The tracker's
+    # own functions are not exported, so this cannot remove them.
+    while read -r __tue_env_d1 __tue_env_d2 __tue_env_n
+    do
+        case "${__tue_env_n}" in
+            tue-* | _tue-* | __tue-* | _git_* )
+                unset -f "${__tue_env_n}" ;;
+        esac
+    done <<< "$(declare -Fx)"
+
+    return 0
+}
+
 function tue_env_fixture
 {
     # $1: environment name. Sets TUE_TEST_DIR (the TUE_DIR copy) and TUE_TEST_ENV_DIR.
     # The name goes into user/config/default_env rather than into TUE_ENV, so that setup.bash exports
     # TUE_ENV itself, inside the tracked span, exactly as it does for a real interactive shell.
+    tue_env_clean_shell
     TUE_TEST_DIR="${BATS_TEST_TMPDIR}/tue"
     TUE_TEST_ENV_DIR="${BATS_TEST_TMPDIR}/env"
     mkdir -p "${TUE_TEST_DIR}/setup" "${TUE_TEST_DIR}/user/envs" "${TUE_TEST_DIR}/user/config" \
@@ -2489,10 +2529,12 @@ ACTIVATE
 function tue_env_fixture_target
 {
     # A stand-in for target_setup.bash and the target setup scripts it chains, including the git-ps1
-    # target that clobbers the prompt the virtualenv saved.
+    # target that clobbers the prompt the virtualenv saved. The PATH entry it adds is deliberately
+    # unique: a developer's own PATH already holds /usr/lib/ccache from the real ccache target, which
+    # would mask the assertion that the entry is gone after the revert.
     cat > "${TUE_TEST_ENV_DIR}/.env/setup/target_setup.bash" << 'TARGET'
 export TUE_TEST_TARGET_VAR=1
-export PATH="/usr/lib/ccache${PATH:+:${PATH}}"
+export PATH="/opt/tue-test/bin${PATH:+:${PATH}}"
 alias tue_test_target_alias='echo aliased'
 tue_test_target_fn() {
     echo target
@@ -2523,7 +2565,7 @@ setup() {
 
     [[ "${TUE_ENV}" == "testenv" ]]
     [[ "${TUE_TEST_USER_SETUP}" == "1" ]]
-    [[ ":${PATH}:" == *":/usr/lib/ccache:"* ]]
+    [[ ":${PATH}:" == *":/opt/tue-test/bin:"* ]]
 
     _tue-env-track-revert
 
@@ -2536,7 +2578,7 @@ setup() {
     ! declare -F tue_test_target_fn > /dev/null
     ! declare -F tue-make > /dev/null
     [[ -z "$(complete -p tue-make 2> /dev/null)" ]]
-    [[ ":${PATH}:" != *":/usr/lib/ccache:"* ]]
+    [[ ":${PATH}:" != *":/opt/tue-test/bin:"* ]]
 
     # Everything the bootstrap did is outside the tracked span, so it survives
     [[ "${TUE_DIR}" == "${TUE_TEST_DIR}" ]]
@@ -2592,8 +2634,8 @@ setup() {
     _tue-env-track-revert
     [[ "${PS1}" == "${__tue_env_want}" ]]
     [[ -z "${TUE_ENV+set}" ]]
-    # /usr/lib/ccache was added by both loads, and both occurrences have to go
-    [[ ":${PATH}:" != *":/usr/lib/ccache:"* ]]
+    # /opt/tue-test/bin was added by both loads, and both occurrences have to go
+    [[ ":${PATH}:" != *":/opt/tue-test/bin:"* ]]
 }
 
 @test "setup: a change made by hand between two loads survives the unload" {
@@ -2746,6 +2788,9 @@ load helpers/env
 
 setup() {
     tue_track_setup
+    # Before sourcing tue-env.bash, not after: the inherited TUE_ENV would make the "no environment
+    # is active" test fail, and cleaning afterwards would unset the `tue-env` this test needs.
+    tue_env_clean_shell
     # shellcheck source=/dev/null
     source "${TUE_TRACK_REPO_ROOT}/setup/tue-env.bash"
     TUE_DIR="${BATS_TEST_TMPDIR}/tue"
