@@ -342,3 +342,102 @@ function __tue_env_track_ledger_var
     __TUE_ENV_LEDGER_VAR_ADD["$1"]="$5"
     return 0
 }
+
+function __tue_env_track_diff_funcs
+{
+    # Functions use the added / removed / replaced triple; the list rule does not apply to them.
+    local __tue_env_n __tue_env_pre __tue_env_post __tue_env_kind __tue_env_xp __tue_env_xq
+    local -A __tue_env_seen=()
+
+    for __tue_env_n in "${!__TUE_ENV_PRE_FUNC[@]}" "${!__TUE_ENV_POST_FUNC[@]}"
+    do
+        if [[ -n "${__tue_env_seen[${__tue_env_n}]:-}" ]]
+        then
+            continue
+        fi
+        __tue_env_seen["${__tue_env_n}"]=1
+
+        __tue_env_pre="${__TUE_ENV_PRE_FUNC[${__tue_env_n}]:-}"
+        __tue_env_post="${__TUE_ENV_POST_FUNC[${__tue_env_n}]:-}"
+        __tue_env_xp="${__TUE_ENV_PRE_FUNCX[${__tue_env_n}]:-}"
+        __tue_env_xq="${__TUE_ENV_POST_FUNCX[${__tue_env_n}]:-}"
+        if [[ "${__tue_env_pre}" == "${__tue_env_post}" ]] && [[ "${__tue_env_xp}" == "${__tue_env_xq}" ]]
+        then
+            continue
+        fi
+
+        if [[ -z "${__tue_env_pre}" ]]
+        then
+            __tue_env_kind="added"
+        elif [[ -z "${__tue_env_post}" ]]
+        then
+            __tue_env_kind="removed"
+        else
+            __tue_env_kind="replaced"
+        fi
+
+        __tue_env_track_ledger_func "${__tue_env_n}" "${__tue_env_kind}" "${__tue_env_pre}" \
+                                    "${__tue_env_post}" "${__tue_env_xp}"
+    done
+
+    return 0
+}
+
+function __tue_env_track_diff_simple
+{
+    # $1: ALIAS or COMPLETE. Same triple, one state string per name.
+    local -n __tue_env_sp="__TUE_ENV_PRE_$1"
+    local -n __tue_env_sq="__TUE_ENV_POST_$1"
+    local __tue_env_n __tue_env_pre __tue_env_post __tue_env_kind
+    local -A __tue_env_seen=()
+
+    for __tue_env_n in "${!__tue_env_sp[@]}" "${!__tue_env_sq[@]}"
+    do
+        if [[ -n "${__tue_env_seen[${__tue_env_n}]:-}" ]]
+        then
+            continue
+        fi
+        __tue_env_seen["${__tue_env_n}"]=1
+
+        __tue_env_pre="${__tue_env_sp[${__tue_env_n}]:-}"
+        __tue_env_post="${__tue_env_sq[${__tue_env_n}]:-}"
+        [[ "${__tue_env_pre}" == "${__tue_env_post}" ]] && continue
+
+        if [[ -z "${__tue_env_pre}" ]]
+        then
+            __tue_env_kind="added"
+        elif [[ -z "${__tue_env_post}" ]]
+        then
+            __tue_env_kind="removed"
+        else
+            __tue_env_kind="replaced"
+        fi
+
+        __tue_env_track_ledger_simple "$1" "${__tue_env_n}" "${__tue_env_kind}" "${__tue_env_pre}" \
+                                     "${__tue_env_post}"
+    done
+
+    return 0
+}
+
+function __tue_env_track_ledger_func
+{
+    # $1: name, $2: kind, $3: pre-load body, $4: post-load body, $5: pre-load export flag.
+    __TUE_ENV_LEDGER_FUNC["$1"]="$2"
+    __TUE_ENV_LEDGER_FUNC_PRE["$1"]="$3"
+    __TUE_ENV_LEDGER_FUNC_POST["$1"]="$4"
+    __TUE_ENV_LEDGER_FUNC_XPRE["$1"]="$5"
+    return 0
+}
+
+function __tue_env_track_ledger_simple
+{
+    # $1: ALIAS or COMPLETE, $2: name, $3: kind, $4: pre-load state, $5: post-load state.
+    local -n __tue_env_lk="__TUE_ENV_LEDGER_$1"
+    local -n __tue_env_lp="__TUE_ENV_LEDGER_$1_PRE"
+    local -n __tue_env_lq="__TUE_ENV_LEDGER_$1_POST"
+    __tue_env_lk["$2"]="$3"
+    __tue_env_lp["$2"]="$4"
+    __tue_env_lq["$2"]="$5"
+    return 0
+}
