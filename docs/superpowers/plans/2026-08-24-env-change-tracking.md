@@ -1328,6 +1328,54 @@ setup() {
     [[ "$(tue_track_added TUE_TEST_PP)" == "0=/one,0=/two" ]]
 }
 
+@test "merge: a variable the environment replaced and then unset becomes removed" {
+    export TUE_TEST_S=original
+    _tue-env-track-begin
+    export TUE_TEST_S=fromenv
+    _tue-env-track-commit
+    [[ "${__TUE_ENV_LEDGER_VAR[TUE_TEST_S]}" == "replaced" ]]
+    _tue-env-track-begin
+    unset TUE_TEST_S
+    _tue-env-track-commit
+    [[ "${__TUE_ENV_LEDGER_VAR[TUE_TEST_S]}" == "removed" ]]
+    [[ "${__TUE_ENV_LEDGER_VAR_PRE[TUE_TEST_S]}" == 'declare -x TUE_TEST_S="original"' ]]
+    [[ "${__TUE_ENV_LEDGER_VAR_POST[TUE_TEST_S]}" == "" ]]
+    [[ -z "$(tue_track_added TUE_TEST_S)" ]]
+}
+
+@test "merge: a function added on one load and removed on the next drops out of the ledger" {
+    _tue-env-track-begin
+    tue_test_fn() {
+        echo added
+    }
+    _tue-env-track-commit
+    [[ "${__TUE_ENV_LEDGER_FUNC[tue_test_fn]}" == "added" ]]
+    _tue-env-track-begin
+    unset -f tue_test_fn
+    _tue-env-track-commit
+    [[ -z "${__TUE_ENV_LEDGER_FUNC[tue_test_fn]:-}" ]]
+    [[ -z "${__TUE_ENV_LEDGER_FUNC_PRE[tue_test_fn]:-}" ]]
+    [[ -z "${__TUE_ENV_LEDGER_FUNC_XPRE[tue_test_fn]:-}" ]]
+}
+
+@test "merge: a completion replaced on two loads keeps the original registration" {
+    tue_test_complete() {
+        COMPREPLY=()
+    }
+    complete -F tue_test_complete tue-test-cmd
+    _tue-env-track-begin
+    complete -o nospace -F tue_test_complete tue-test-cmd
+    _tue-env-track-commit
+    _tue-env-track-begin
+    complete -o default -F tue_test_complete tue-test-cmd
+    _tue-env-track-commit
+    [[ "${__TUE_ENV_LEDGER_COMPLETE[tue-test-cmd]}" == "replaced" ]]
+    [[ "${__TUE_ENV_LEDGER_COMPLETE_PRE[tue-test-cmd]}" == \
+       "complete -F tue_test_complete tue-test-cmd" ]]
+    [[ "${__TUE_ENV_LEDGER_COMPLETE_POST[tue-test-cmd]}" == \
+       "complete -o default -F tue_test_complete tue-test-cmd" ]]
+}
+
 @test "merge: a function replaced on two loads keeps the first pre-load body" {
     tue_test_fn() {
         echo original
@@ -3137,6 +3185,11 @@ In the `switch` branch, replace the block that sets the variables and sources `s
         # Successful, so we can set the environment variables. Begin the tracked span here rather than
         # in setup.bash, so that TUE_ENV and TUE_ENV_DIR are part of the diff; setup.bash's own
         # begin/commit pair nests inside this one and is a no-op.
+        # The status is collected through `||` for the same reason setup.bash's wrapper does it: a
+        # begin whose commit is skipped pins the depth counter above zero for the life of the shell,
+        # which silently stops all tracking and retains the pre-load snapshot. Declare the local
+        # BEFORE the begin, so the commit's snapshot does not see it appear.
+        local __tue_env_ret=0
         _tue-env-track-begin
 
         TUE_ENV=${tue_env}
@@ -3146,9 +3199,10 @@ In the `switch` branch, replace the block that sets the variables and sources `s
 
         echo "[tue-env](switch) Loading the new '${TUE_ENV}' environment"
         # shellcheck disable=SC1091
-        source "$TUE_DIR"/setup.bash
+        source "$TUE_DIR"/setup.bash || __tue_env_ret=$?
 
         _tue-env-track-commit
+        return "${__tue_env_ret}"
 ```
 
 - [ ] **Step 7: Add both to the completion function**
