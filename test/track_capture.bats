@@ -76,3 +76,12 @@ line"
     tue_track_snapshot PRE
     [[ -z "${__TUE_ENV_PRE_VAR[TUE_TEST_HIDDEN]:-}" ]]
 }
+
+@test "capture: parsing a second snapshot replaces the first one's content" {
+    export TUE_TEST_TRANSIENT=1
+    tue_track_snapshot PRE
+    [[ -n "${__TUE_ENV_PRE_VAR[TUE_TEST_TRANSIENT]:-}" ]]
+    unset TUE_TEST_TRANSIENT
+    tue_track_snapshot PRE
+    [[ -z "${__TUE_ENV_PRE_VAR[TUE_TEST_TRANSIENT]:-}" ]]
+}

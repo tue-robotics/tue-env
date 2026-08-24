@@ -72,7 +72,7 @@ jobs:
   docker_generation_tue_env:
     name: Docker Generation tue-env
     runs-on: ubuntu-latest
-    needs: [linting_actionlint, linting_hadolint, linting_python_black, linting_shellcheck]
+    needs: [linting_actionlint, linting_hadolint, linting_python_black, linting_shellcheck, test_bats]
     permissions:
       packages: write
     strategy:

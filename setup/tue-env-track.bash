@@ -58,8 +58,9 @@ function __tue_env_track_excluded
     # $1: name. Returns 0 when the name must not be tracked.
     local __tue_env_p
     case "$1" in
-        BASH* | COMP_* | DIRSTACK | EPOCH* | FUNCNAME | GROUPS | HISTCMD | LINENO | OLDPWD | \
-        PIPESTATUS | PWD | RANDOM | SECONDS | SHLVL | SRANDOM | _ | __TUE_ENV_* | __tue_env_* )
+        BASH* | COLUMNS | COMP_* | DIRSTACK | EPOCH* | FUNCNAME | GROUPS | HISTCMD | LINENO | LINES | \
+        OLDPWD | PIPESTATUS | PWD | RANDOM | SECONDS | SHELLOPTS | SHLVL | SRANDOM | _ | \
+        __TUE_ENV_* | __tue_env_* )
             return 0 ;;
     esac
     for __tue_env_p in "${__TUE_ENV_TRACK_EXTRA_EXCLUDE[@]}"
@@ -78,7 +79,13 @@ function __tue_env_track_dump
     # Writes a snapshot of this shell to stdout, framed as described at the top of the plan. Meant to
     # be called inside a command substitution; the few substitutions below are per category, never per
     # name, so the cost of a snapshot does not grow with the size of the environment.
+    #
+    # The local IFS pins field-splitting to its default regardless of what the caller set it to, which
+    # is what keeps the `declare -Fx` read loop below correct; the two `compgen` name lists are read
+    # with `mapfile` instead of a split, so they are immune to IFS and to globbing either way.
+    local IFS=$' \t\n'
     local __tue_env_n __tue_env_names __tue_env_l __tue_env_d1 __tue_env_d2
+    local -a __tue_env_list=()
     local -A __tue_env_xf=()
 
     # Which functions carry `export -f`; `declare -f` output does not encode it.
@@ -91,8 +98,8 @@ function __tue_env_track_dump
         fi
     done <<< "${__tue_env_names}"
 
-    __tue_env_names="$(compgen -v)"
-    for __tue_env_n in ${__tue_env_names}
+    mapfile -t __tue_env_list < <(compgen -v)
+    for __tue_env_n in "${__tue_env_list[@]}"
     do
         __tue_env_track_excluded "${__tue_env_n}" && continue
         printf 'V%s%s%s' "${__TUE_ENV_FS}" "${__tue_env_n}" "${__TUE_ENV_FS}"
@@ -100,8 +107,8 @@ function __tue_env_track_dump
         printf '%s' "${__TUE_ENV_RS}"
     done
 
-    __tue_env_names="$(compgen -A function)"
-    for __tue_env_n in ${__tue_env_names}
+    mapfile -t __tue_env_list < <(compgen -A function)
+    for __tue_env_n in "${__tue_env_list[@]}"
     do
         __tue_env_track_excluded "${__tue_env_n}" && continue
         printf 'F%s%s%s%s%s' "${__TUE_ENV_FS}" "${__tue_env_n}" "${__TUE_ENV_FS}" \
@@ -119,8 +126,9 @@ function __tue_env_track_dump
     done
 
     # `complete -p` prints one registration per line; the command it applies to is the last field.
+    # IFS= on the read itself keeps a registration's leading/trailing whitespace intact.
     __tue_env_names="$(complete -p 2> /dev/null)"
-    while read -r __tue_env_l
+    while IFS= read -r __tue_env_l
     do
         [[ -z "${__tue_env_l}" ]] && continue
         __tue_env_n="${__tue_env_l##* }"
@@ -149,6 +157,8 @@ function __tue_env_track_parse
     local __tue_env_rest="$1" __tue_env_rec __tue_env_k __tue_env_n
     while [[ -n "${__tue_env_rest}" ]]
     do
+        # A stream with no more RS cannot be split further; without this, an unterminated tail spins.
+        [[ "${__tue_env_rest}" == *"${__TUE_ENV_RS}"* ]] || break
         __tue_env_rec="${__tue_env_rest%%"${__TUE_ENV_RS}"*}"
         __tue_env_rest="${__tue_env_rest#*"${__TUE_ENV_RS}"}"
         [[ -z "${__tue_env_rec}" ]] && continue
