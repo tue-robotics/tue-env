@@ -253,6 +253,7 @@ function tue_track_added
     local __tue_env_r="${__TUE_ENV_LEDGER_VAR_ADD[$1]:-}" __tue_env_p __tue_env_o=""
     while [[ -n "${__tue_env_r}" ]]
     do
+        # A stream with no more RS cannot be split further; without this, an unterminated tail spins.
         [[ "${__tue_env_r}" == *"${__TUE_ENV_RS}"* ]] || break
         __tue_env_p="${__tue_env_r%%"${__TUE_ENV_RS}"*}"
         __tue_env_r="${__tue_env_r#*"${__TUE_ENV_RS}"}"
