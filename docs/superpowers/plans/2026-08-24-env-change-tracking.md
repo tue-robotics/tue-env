@@ -528,7 +528,7 @@ function __tue_env_track_parse
 
     # One mapfile pass rather than shrinking the stream with ${x%%RS*} / ${x#*RS} per record: those
     # rescan the whole remaining string every iteration, which is quadratic in the snapshot size. On a
-    # 77 KB snapshot the shrinking loop measured 1115 ms against 22 ms here, and
+    # 77 KB snapshot the parse measured 1032 ms that way against roughly 34 ms here, and
     # _tue-env-track-commit parses two snapshots on every environment load.
     local -a __tue_env_recs
     mapfile -d "${__TUE_ENV_RS}" -t __tue_env_recs < <(printf '%s' "$1")
@@ -2210,7 +2210,7 @@ function __tue_env_track_revert_funcs
 {
     local __tue_env_n __tue_env_pre
     local -a __tue_env_names
-    mapfile -t __tue_env_names < <(printf '%s\\n' "${!__TUE_ENV_LEDGER_FUNC[@]}" | LC_ALL=C sort)
+    mapfile -t __tue_env_names < <(printf '%s\n' "${!__TUE_ENV_LEDGER_FUNC[@]}" | LC_ALL=C sort)
 
     for __tue_env_n in "${__tue_env_names[@]}"
     do
@@ -2251,7 +2251,7 @@ function __tue_env_track_revert_simple
     local -n __tue_env_rlq="__TUE_ENV_LEDGER_$1_POST"
     local __tue_env_n __tue_env_pre __tue_env_label
     local -a __tue_env_names
-    mapfile -t __tue_env_names < <(printf '%s\\n' "${!__tue_env_rlk[@]}" | LC_ALL=C sort)
+    mapfile -t __tue_env_names < <(printf '%s\n' "${!__tue_env_rlk[@]}" | LC_ALL=C sort)
 
     if [[ "$1" == "ALIAS" ]]
     then
@@ -2569,7 +2569,9 @@ function __tue_env_track_report_objects
     # carry an SC2178 across function scopes and fail the file.
     local -n __tue_env_pk="__TUE_ENV_LEDGER_$2"
     local -n __tue_env_pq="__TUE_ENV_LEDGER_$2_POST"
-    local __tue_env_n __tue_env_add="" __tue_env_gone="" __tue_env_chg="" __tue_env_keep=""
+    # __tue_env_pkeep, not __tue_env_keep: __tue_env_track_strip already uses that name for an
+    # associative array, and shellcheck carries the type across function scopes (SC2178).
+    local __tue_env_n __tue_env_add="" __tue_env_gone="" __tue_env_chg="" __tue_env_pkeep=""
     local -a __tue_env_names
     mapfile -t __tue_env_names < <(printf '%s\n' "${!__tue_env_pk[@]}" | LC_ALL=C sort)
 
@@ -2579,7 +2581,7 @@ function __tue_env_track_report_objects
         __tue_env_track_current "$2" "${__tue_env_n}"
         if [[ "$1" == "revert" ]] && [[ "${__TUE_ENV_CURRENT}" != "${__tue_env_pq[${__tue_env_n}]}" ]]
         then
-            __tue_env_keep+="${__tue_env_keep:+, }$3 ${__tue_env_n}"
+            __tue_env_pkeep+="${__tue_env_pkeep:+, }$3 ${__tue_env_n}"
             continue
         fi
         case "${__tue_env_pk[${__tue_env_n}]}" in
@@ -2601,7 +2603,7 @@ function __tue_env_track_report_objects
         [[ -n "${__tue_env_add}" ]] && echo "would unset  ${__tue_env_add}"
         [[ -n "${__tue_env_chg}" ]] && echo "would restore ${__tue_env_chg}"
         [[ -n "${__tue_env_gone}" ]] && echo "would restore ${__tue_env_gone}"
-        [[ -n "${__tue_env_keep}" ]] && echo "would keep   ${__tue_env_keep} (changed since load)"
+        [[ -n "${__tue_env_pkeep}" ]] && echo "would keep   ${__tue_env_pkeep} (changed since load)"
     fi
 
     return 0
