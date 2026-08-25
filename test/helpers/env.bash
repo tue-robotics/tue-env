@@ -101,3 +101,17 @@ PS1="\\u@\\h git \\\$ "
 TARGET
     return 0
 }
+
+function tue_env_fixture_second
+{
+    # $1: environment name, $2: the body of its target_setup.bash. Creates a SECOND environment with
+    # a directory of its own, so that `tue-env switch` really does leave one environment for another
+    # rather than re-loading the same directory under a new name. Sets TUE_TEST_ENV_DIR_TWO.
+    # Requires tue_env_fixture to have run first, for TUE_TEST_DIR.
+    TUE_TEST_ENV_DIR_TWO="${BATS_TEST_TMPDIR}/$1"
+    mkdir -p "${TUE_TEST_ENV_DIR_TWO}/.env/targets" "${TUE_TEST_ENV_DIR_TWO}/.env/setup"
+    printf '%s\n' "${TUE_TEST_ENV_DIR_TWO}" > "${TUE_TEST_DIR}/user/envs/$1"
+    printf '#! /usr/bin/env bash\n' > "${TUE_TEST_ENV_DIR_TWO}/.env/setup/user_setup.bash"
+    printf '%s\n' "$2" > "${TUE_TEST_ENV_DIR_TWO}/.env/setup/target_setup.bash"
+    return 0
+}

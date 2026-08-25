@@ -112,6 +112,36 @@ setup() {
     [[ -z "${TUE_ENV_DIR+set}" ]]
 }
 
+@test "switch: the dispatcher's own locals never reach the ledger" {
+    # bash scopes locals dynamically, so the tracker's snapshots see every local of the `tue-env`
+    # call they run inside. While those were unprefixed, a target script assigning a variable that
+    # happened to share a name with one of them wrote to the dispatcher's copy: the ledger recorded
+    # tue-env's internal state as the environment's, the unload printed a note about keeping a value
+    # the user never set, and the environment's real global was never reverted at all.
+    tue_env_fixture envone
+    tue_env_fixture_second envtwo 'cmd=target-clobber
+tue_env_dir=/target/dir
+dry_run=/target/dry'
+
+    source "${TUE_TEST_DIR}/setup.bash"
+    tue-env switch envtwo
+
+    # what the target script really set, not the dispatcher's same-named local
+    [[ "${cmd}" == "target-clobber" ]]
+    [[ "${tue_env_dir}" == "/target/dir" ]]
+    [[ "${__TUE_ENV_LEDGER_VAR[cmd]}" == "added" ]]
+    [[ "${__TUE_ENV_LEDGER_VAR[tue_env_dir]}" == "added" ]]
+
+    run tue-env deactivate
+    [[ "${status}" -eq 0 ]]
+    [[ "${output}" != *"kept your value for"* ]]
+
+    tue-env deactivate
+    [[ -z "${cmd+set}" ]]
+    [[ -z "${tue_env_dir+set}" ]]
+    [[ -z "${dry_run+set}" ]]
+}
+
 @test "completion: changes and --dry-run are offered" {
     COMP_WORDS=(tue-env "")
     COMP_CWORD=1
