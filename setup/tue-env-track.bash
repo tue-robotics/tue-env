@@ -979,6 +979,9 @@ function __tue_env_track_entry_list
     local __tue_env_rest="$1" __tue_env_pair __tue_env_o=""
     while [[ -n "${__tue_env_rest}" ]]
     do
+        # Same trap the sibling loops guard against (__tue_env_track_strip, tue_track_added):
+        # without this an unterminated tail spins forever.
+        [[ "${__tue_env_rest}" == *"${__TUE_ENV_RS}"* ]] || break
         __tue_env_pair="${__tue_env_rest%%"${__TUE_ENV_RS}"*}"
         __tue_env_rest="${__tue_env_rest#*"${__TUE_ENV_RS}"}"
         [[ -z "${__tue_env_pair}" ]] && continue
@@ -988,10 +991,40 @@ function __tue_env_track_entry_list
     return 0
 }
 
+function __tue_env_track_removed
+{
+    # $1: a `:`-separated value, $2: the same value after __tue_env_track_strip. Result in
+    # __TUE_ENV_LIST: the entries of $1 that do not survive in $2, "entry, entry", in the order
+    # they appear in $1. $2 is always exactly $1 with some positions dropped, so a left-to-right
+    # greedy alignment always finds a valid pairing; which of several equal-valued entries it
+    # credits as dropped does not matter here, only the combined text of the dropped ones does.
+    local -a __tue_env_c __tue_env_r
+    __tue_env_track_split "$1"
+    __tue_env_c=("${__TUE_ENV_SPLIT[@]}")
+    __tue_env_track_split "$2"
+    __tue_env_r=("${__TUE_ENV_SPLIT[@]}")
+
+    local __tue_env_ci=0 __tue_env_ri=0 __tue_env_o=""
+    while (( __tue_env_ci < ${#__tue_env_c[@]} ))
+    do
+        if (( __tue_env_ri < ${#__tue_env_r[@]} )) &&
+           [[ "${__tue_env_c[__tue_env_ci]}" == "${__tue_env_r[__tue_env_ri]}" ]]
+        then
+            __tue_env_ri=$(( __tue_env_ri + 1 ))
+        else
+            __tue_env_o+="${__tue_env_o:+, }${__tue_env_c[__tue_env_ci]}"
+        fi
+        __tue_env_ci=$(( __tue_env_ci + 1 ))
+    done
+    __TUE_ENV_LIST="${__tue_env_o}"
+    return 0
+}
+
 function __tue_env_track_report_vars
 {
     # $1: changes or revert.
-    local __tue_env_n __tue_env_k __tue_env_pre __tue_env_post __tue_env_cur
+    local __tue_env_n __tue_env_k __tue_env_pre __tue_env_post __tue_env_cur __tue_env_pv
+    local __tue_env_cv
     local -a __tue_env_names
     mapfile -t __tue_env_names < <(printf '%s\n' "${!__TUE_ENV_LEDGER_VAR[@]}" | LC_ALL=C sort)
 
@@ -1001,20 +1034,53 @@ function __tue_env_track_report_vars
         __tue_env_k="${__TUE_ENV_LEDGER_VAR[${__tue_env_n}]}"
         __tue_env_pre="${__TUE_ENV_LEDGER_VAR_PRE[${__tue_env_n}]}"
         __tue_env_post="${__TUE_ENV_LEDGER_VAR_POST[${__tue_env_n}]}"
+        __tue_env_cur="$(declare -p "${__tue_env_n}" 2> /dev/null)" || __tue_env_cur=""
 
         if [[ "${__tue_env_k}" == "extended" ]]
         then
-            __tue_env_track_entry_list "${__TUE_ENV_LEDGER_VAR_ADD[${__tue_env_n}]}"
             if [[ "$1" == "changes" ]]
             then
+                __tue_env_track_entry_list "${__TUE_ENV_LEDGER_VAR_ADD[${__tue_env_n}]}"
                 echo "added   ${__tue_env_n} entries: ${__TUE_ENV_LIST}"
-            else
+                continue
+            fi
+
+            # Mirror __tue_env_track_revert_vars's extended branch (764-778): a variable the
+            # user has since unset gets nothing done to it, and one that is no longer listable
+            # is kept whole rather than guessed at.
+            if [[ -z "${__tue_env_cur}" ]]
+            then
+                continue
+            fi
+            if ! __tue_env_track_listable "" "${__tue_env_cur}"
+            then
+                __tue_env_track_display "${__tue_env_cur}"
+                echo "would keep   ${__tue_env_n}=${__TUE_ENV_VALUE} (changed since load)"
+                continue
+            fi
+
+            # Ask the real stripper what it would leave behind, then read off which of the
+            # current entries would not survive: this is the exact computation
+            # __tue_env_track_revert_vars performs before assigning, so the report cannot
+            # invent its own answer and drift from what a revert actually does.
+            __tue_env_pv=""
+            if [[ -n "${__tue_env_pre}" ]]
+            then
+                __tue_env_track_value "${__tue_env_pre}"
+                __tue_env_pv="${__TUE_ENV_VALUE}"
+            fi
+            __tue_env_track_value "${__tue_env_cur}"
+            __tue_env_cv="${__TUE_ENV_VALUE}"
+            __tue_env_track_strip "${__tue_env_cv}" "${__TUE_ENV_LEDGER_VAR_ADD[${__tue_env_n}]}" \
+                                  "${__tue_env_pv}"
+            __tue_env_track_removed "${__tue_env_cv}" "${__TUE_ENV_VALUE}"
+            if [[ -n "${__TUE_ENV_LIST}" ]]
+            then
                 echo "would remove ${__tue_env_n} entries: ${__TUE_ENV_LIST}"
             fi
             continue
         fi
 
-        __tue_env_cur="$(declare -p "${__tue_env_n}" 2> /dev/null)" || __tue_env_cur=""
         if [[ "$1" == "revert" ]] && [[ "${__tue_env_cur}" != "${__tue_env_post}" ]]
         then
             __tue_env_track_display "${__tue_env_cur}"
@@ -1098,7 +1164,14 @@ function __tue_env_track_report_objects
 function _tue-env-track-report
 {
     # $1: changes or revert. Renders the ledger, or the revert it would perform, without mutating
-    # anything. Returns 1 when the ledger is empty.
+    # anything. Returns 2 when $1 is neither, 1 when the ledger is empty.
+    case "${1-}" in
+        changes | revert ) ;;
+        * )
+            echo "_tue-env-track-report: mode must be 'changes' or 'revert'" >&2
+            return 2 ;;
+    esac
+
     if __tue_env_track_empty
     then
         return 1
