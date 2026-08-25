@@ -142,6 +142,29 @@ dry_run=/target/dry'
     [[ -z "${dry_run+set}" ]]
 }
 
+@test "help: the top-level command list names deactivate" {
+    run tue-env --help
+    [[ "${status}" -eq 1 ]]
+    [[ "${output}" == *"deactivate     - "* ]]
+}
+
+@test "deactivate: the fallback comment does not claim a case that cannot reach it" {
+    # A comment has no behaviour to assert, so this pins the fact it states instead. The empty-ledger
+    # fallback claimed to cover a non-interactive child shell that inherited `tue-env` but not the
+    # ledger. It cannot: _tue-env-deactivate-current-env is not exported, so such a shell fails
+    # before it. Establish that by execution, then require the comment to give that as the reason.
+    export TUE_ENV=fake
+    run bash --noprofile --norc -c 'tue-env deactivate'
+    [[ "${status}" -eq 1 ]]
+    [[ "${output}" == *"Failed to deactivate the current environment"* ]]
+    # the fallback body never ran: none of what it prints is in the output
+    [[ "${output}" != *"Unsetting all TUE_ENV"* ]]
+
+    grep -q 'this function is not exported' "${TUE_TRACK_REPO_ROOT}/setup/tue-env.bash"
+    [[ -z "$(grep 'Empty ledger.*non-interactive child shell' \
+             "${TUE_TRACK_REPO_ROOT}/setup/tue-env.bash")" ]]
+}
+
 @test "completion: changes and --dry-run are offered" {
     COMP_WORDS=(tue-env "")
     COMP_CWORD=1

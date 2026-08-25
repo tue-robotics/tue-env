@@ -14,8 +14,10 @@ function _tue-env-deactivate-current-env
         return 0
     fi
 
-    # Empty ledger: a shell started before change tracking existed, or a non-interactive child shell
-    # that inherited `tue-env` but not the ledger. Behave exactly as this function did before.
+    # Empty ledger: a shell started before change tracking existed. Behave exactly as this function
+    # did before. A non-interactive child shell has no ledger either, but it never gets this far:
+    # this function is not exported, so `tue-env deactivate` fails to find it and reports the
+    # failure to the user instead - a pre-existing limitation, unchanged by change tracking.
 
     # Deactivate the old virtualenv if it exists
     if [[ -n ${VIRTUAL_ENV} ]]
@@ -132,6 +134,7 @@ function tue-env
         init           - Initializes new environment
         remove/rm      - Removes an existing environment
         switch         - Switch to a different environment
+        deactivate     - Unloads the current environment from this shell
         changes        - Shows what loading the current environment changed in this shell
         config         - Configures current environment
         set-default    - Set default environment
