@@ -777,16 +777,20 @@ function __tue_env_track_attrs
 function __tue_env_track_listable
 {
     # $1: pre-load declare line, $2: post-load declare line, either may be empty. Returns 0 when
-    # neither side is an array, so the value may be treated as a `:`-separated list. Arrays are never
-    # `extended`, and __tue_env_track_value must never be evaluated on an array line: `declare -p`
-    # renders one as bash array syntax, so eval would turn __TUE_ENV_VALUE into an array, and an
-    # associative key can carry an assignment that bash performs in arithmetic context.
+    # neither side is an array or a nameref, so the value may be treated as a `:`-separated list.
+    # Arrays are never `extended`, and __tue_env_track_value must never be evaluated on an array
+    # line: `declare -p` renders one as bash array syntax, so eval would turn __TUE_ENV_VALUE into
+    # an array, and an associative key can carry an assignment that bash performs in arithmetic
+    # context. Namerefs are excluded for the mirror-image reason on the way out: a nameref's value
+    # is the name it points at, so the entry-wise branch would hand it to `printf -v`, which writes
+    # THROUGH the reference and overwrites a target variable the load never touched.
     local __tue_env_a
     __tue_env_track_attrs "$1"
     __tue_env_a="${__TUE_ENV_ATTRS}"
     __tue_env_track_attrs "$2"
     __tue_env_a+="${__TUE_ENV_ATTRS}"
-    if [[ "${__tue_env_a}" == *a* ]] || [[ "${__tue_env_a}" == *A* ]]
+    if [[ "${__tue_env_a}" == *a* ]] || [[ "${__tue_env_a}" == *A* ]] ||
+       [[ "${__tue_env_a}" == *n* ]]
     then
         return 1
     fi
@@ -818,9 +822,15 @@ function __tue_env_track_entries
         return 1
     fi
 
+    # __tue_env_track_split, not `IFS=':' read -a`: the latter silently drops a trailing empty
+    # field, so an entry the environment appended as an empty field would be classified as no
+    # addition at all and survive the revert. An empty PATH field means the current directory, so
+    # that is the difference between unloading an environment and leaving `.` on PATH for good.
     local -a __tue_env_p __tue_env_q
-    IFS=':' read -r -a __tue_env_p <<< "$1"
-    IFS=':' read -r -a __tue_env_q <<< "$2"
+    __tue_env_track_split "$1"
+    __tue_env_p=("${__TUE_ENV_SPLIT[@]}")
+    __tue_env_track_split "$2"
+    __tue_env_q=("${__TUE_ENV_SPLIT[@]}")
 
     local __tue_env_i __tue_env_j=0 __tue_env_o=""
     for (( __tue_env_i = 0; __tue_env_i < ${#__tue_env_q[@]}; __tue_env_i++ ))
@@ -1718,22 +1728,6 @@ setup() {
     [[ "${TUE_TEST_PP}" == "/a:/mine" ]]
 }
 
-@test "revert: a variable added then extended is unset when every recorded entry goes" {
-    # Reaches the extended branch's unset line: the merge promotes add-then-extend to `extended` while
-    # keeping the original absent pre-load state, so stripping every recorded entry leaves nothing and
-    # the variable must go away rather than become an empty string.
-    _tue-env-track-begin
-    export TUE_TEST_PP="/one"
-    _tue-env-track-commit
-    _tue-env-track-begin
-    export TUE_TEST_PP="/two:${TUE_TEST_PP}"
-    _tue-env-track-commit
-    [[ "${__TUE_ENV_LEDGER_VAR[TUE_TEST_PP]}" == "extended" ]]
-    [[ "${__TUE_ENV_LEDGER_VAR_PRE[TUE_TEST_PP]}" == "" ]]
-    __tue_env_track_revert_vars
-    [[ -z "${TUE_TEST_PP+set}" ]]
-}
-
 @test "revert: a replaced scalar is restored" {
     export TUE_TEST_RMW=rmw_fastrtps_cpp
     _tue-env-track-begin
@@ -1801,6 +1795,173 @@ setup() {
     __tue_env_track_revert_vars
     [[ "${TUE_TEST_NASTY}" == "${__tue_env_want}" ]]
 }
+
+@test "revert: a variable added then extended is unset when every recorded entry goes" {
+    # Reaches the extended branch's unset line: the merge promotes add-then-extend to `extended` while
+    # keeping the original absent pre-load state, so stripping every recorded entry leaves nothing and
+    # the variable must go away rather than become an empty string.
+    _tue-env-track-begin
+    export TUE_TEST_PP="/one"
+    _tue-env-track-commit
+    _tue-env-track-begin
+    export TUE_TEST_PP="/two:${TUE_TEST_PP}"
+    _tue-env-track-commit
+    [[ "${__TUE_ENV_LEDGER_VAR[TUE_TEST_PP]}" == "extended" ]]
+    [[ "${__TUE_ENV_LEDGER_VAR_PRE[TUE_TEST_PP]}" == "" ]]
+    __tue_env_track_revert_vars
+    [[ -z "${TUE_TEST_PP+set}" ]]
+}
+
+@test "revert: on a tie between two identical entries, the higher position is removed" {
+    # The environment appended a second X at index 3; the user then prepended Y, shifting the
+    # original X to index 2 and the environment's added X to index 4 - both now distance 1 from the
+    # recorded index. The higher position must go, leaving the user's original X in place.
+    export TUE_TEST_LIST="A:X:B"
+    _tue-env-track-begin
+    export TUE_TEST_LIST="A:X:B:X"
+    _tue-env-track-commit
+    export TUE_TEST_LIST="Y:A:X:B:X"
+    __tue_env_track_revert_vars
+    [[ "${TUE_TEST_LIST}" == "Y:A:X:B" ]]
+}
+
+@test "revert: an entry the user already removed a duplicate of is not eaten again" {
+    # The environment appended a second X (recorded index 3), but the user reduced the value back to
+    # exactly its pre-load form before the revert runs. The count guard must see that only as many X
+    # copies remain as the pre-load value already held, and leave it alone.
+    export TUE_TEST_LIST="A:X:B"
+    _tue-env-track-begin
+    export TUE_TEST_LIST="A:X:B:X"
+    _tue-env-track-commit
+    export TUE_TEST_LIST="A:X:B"
+    __tue_env_track_revert_vars
+    [[ "${TUE_TEST_LIST}" == "A:X:B" ]]
+}
+
+@test "revert: a trailing empty field survives the round trip" {
+    export TUE_TEST_LIST="/usr/bin:"
+    _tue-env-track-begin
+    export TUE_TEST_LIST="/new:${TUE_TEST_LIST}"
+    _tue-env-track-commit
+    __tue_env_track_revert_vars
+    [[ "${TUE_TEST_LIST}" == "/usr/bin:" ]]
+}
+
+@test "revert: a leading empty field survives the round trip" {
+    export TUE_TEST_LIST=":/usr/bin"
+    _tue-env-track-begin
+    export TUE_TEST_LIST="/new:${TUE_TEST_LIST}"
+    _tue-env-track-commit
+    __tue_env_track_revert_vars
+    [[ "${TUE_TEST_LIST}" == ":/usr/bin" ]]
+}
+
+@test "revert: a scalar the environment turned into an array is restored with no leftover element" {
+    export TUE_TEST_SC="original"
+    _tue-env-track-begin
+    TUE_TEST_SC=(one two)
+    _tue-env-track-commit
+    __tue_env_track_revert_vars
+    [[ "$(declare -p TUE_TEST_SC)" == 'declare -x TUE_TEST_SC="original"' ]]
+}
+
+@test "revert: an extended variable turned into an associative array is kept, and no command in a key runs" {
+    local __tue_env_marker
+    __tue_env_marker="$(mktemp -u)"
+    export TUE_TEST_LIST="/usr/bin"
+    _tue-env-track-begin
+    export TUE_TEST_LIST="/new:${TUE_TEST_LIST}"
+    _tue-env-track-commit
+    declare -gA TUE_TEST_LIST=(["\$(touch ${__tue_env_marker})"]="x")
+    run __tue_env_track_revert_vars
+    [[ "${output}" == *"kept your value for TUE_TEST_LIST"* ]]
+    [[ ! -e "${__tue_env_marker}" ]]
+    rm -f "${__tue_env_marker}"
+}
+
+@test "revert: a newline in the current value's last field survives the round trip" {
+    export TUE_TEST_LIST="/usr/bin"
+    _tue-env-track-begin
+    export TUE_TEST_LIST="/new:${TUE_TEST_LIST}"
+    _tue-env-track-commit
+    TUE_TEST_LIST="/new:/usr/bin:A"$'\n'"B"
+    __tue_env_track_revert_vars
+    [[ "${TUE_TEST_LIST}" == "/usr/bin:A"$'\n'"B" ]]
+}
+
+@test "revert: a newline in the current value's first field does not empty or unset the variable" {
+    export TUE_TEST_LIST="/usr/bin"
+    _tue-env-track-begin
+    export TUE_TEST_LIST="/new:${TUE_TEST_LIST}"
+    _tue-env-track-commit
+    TUE_TEST_LIST="A"$'\n'"B:/new:/usr/bin"
+    __tue_env_track_revert_vars
+    [[ -n "${TUE_TEST_LIST+set}" ]]
+    [[ -n "${TUE_TEST_LIST}" ]]
+    [[ "${TUE_TEST_LIST}" == "A"$'\n'"B:/usr/bin" ]]
+}
+
+@test "revert: an empty field the environment appended is removed" {
+    # An empty `:`-separated field means the current directory. `IFS=':' read -a`, which the
+    # classification side used, silently drops a trailing empty field, so the entry was recorded as
+    # no addition at all and the revert left `.` on the value for the life of the shell. The two
+    # tests above only cover empty fields the USER already had, which the count guard preserves for
+    # an unrelated reason, so neither of them sees this.
+    export TUE_TEST_LIST="/usr/bin:/bin"
+    export TUE_TEST_PP="/usr/bin"
+    _tue-env-track-begin
+    export TUE_TEST_LIST="${TUE_TEST_LIST}:"
+    export TUE_TEST_PP="/opt/x:${TUE_TEST_PP}:"
+    _tue-env-track-commit
+    [[ "${__TUE_ENV_LEDGER_VAR[TUE_TEST_LIST]}" == "extended" ]]
+    __tue_env_track_revert_vars
+    [[ "${TUE_TEST_LIST}" == "/usr/bin:/bin" ]]
+    [[ "${TUE_TEST_PP}" == "/usr/bin" ]]
+}
+
+@test "revert: unsetting a nameref the environment added leaves its target alone" {
+    # Plain `unset` on a nameref follows the reference and destroys the variable it points at, which
+    # the load never touched - the one thing the whole design promises cannot happen.
+    export TUE_TEST_TARGET="precious user data"
+    _tue-env-track-begin
+    declare -gn TUE_TEST_NREF=TUE_TEST_TARGET
+    _tue-env-track-commit
+    [[ "${__TUE_ENV_LEDGER_VAR[TUE_TEST_NREF]}" == "added" ]]
+    __tue_env_track_revert_vars
+    [[ "${TUE_TEST_TARGET}" == "precious user data" ]]
+    [[ -z "$(declare -p TUE_TEST_NREF 2> /dev/null)" ]]
+}
+
+@test "revert: restoring over a nameref the environment created does not write through it" {
+    # Same trap on the restore path, twice over: the unset destroys the target, and the re-declare
+    # then assigns the recorded value THROUGH the surviving reference, so the user's variable ends
+    # up holding the restored value and the name that was restored is still a nameref.
+    export TUE_TEST_TARGET="precious user data"
+    export TUE_TEST_NREF="plain string"
+    _tue-env-track-begin
+    unset -v TUE_TEST_NREF
+    declare -gn TUE_TEST_NREF=TUE_TEST_TARGET
+    _tue-env-track-commit
+    [[ "${__TUE_ENV_LEDGER_VAR[TUE_TEST_NREF]}" == "replaced" ]]
+    __tue_env_track_revert_vars
+    [[ "${TUE_TEST_TARGET}" == "precious user data" ]]
+    [[ "$(declare -p TUE_TEST_NREF)" == 'declare -x TUE_TEST_NREF="plain string"' ]]
+}
+
+@test "revert: a value the environment turned into a nameref is never treated as a list" {
+    # A nameref's value is the name it points at, so the entry-wise branch would hand it to
+    # `printf -v`, which writes THROUGH the reference. An empty pre-load value has no entries, so a
+    # one-entry nameref value is a valid subsequence extension of it and reaches exactly that.
+    export TUE_TEST_TARGET="precious user data"
+    TUE_TEST_LIST=""
+    _tue-env-track-begin
+    unset -v TUE_TEST_LIST
+    declare -gn TUE_TEST_LIST=TUE_TEST_TARGET
+    _tue-env-track-commit
+    [[ "${__TUE_ENV_LEDGER_VAR[TUE_TEST_LIST]}" == "replaced" ]]
+    __tue_env_track_revert_vars
+    [[ "${TUE_TEST_TARGET}" == "precious user data" ]]
+}
 ```
 
 - [ ] **Step 2: Run the tests to verify they fail**
@@ -1824,10 +1985,28 @@ function __tue_env_track_kept
     return 0
 }
 
+function __tue_env_track_unset
+{
+    # $1: name, $2: the name's CURRENT `declare -p` line, "" when it does not exist. Plain `unset`
+    # on a nameref follows the reference and destroys the variable it points AT - something the load
+    # never touched and the ledger knows nothing about - so a nameref is removed with `unset -n`,
+    # which drops the reference itself. `unset -n` cannot simply be used for everything: on a name
+    # that is not a nameref bash silently does nothing at all, leaving the variable in place.
+    __tue_env_track_attrs "$2"
+    if [[ "${__TUE_ENV_ATTRS}" == *n* ]]
+    then
+        unset -n "$1"
+    else
+        unset -v "$1"
+    fi
+    return 0
+}
+
 function __tue_env_track_restore_line
 {
-    # $1: a captured `declare -p` line. Evaluating it as it stands from inside a function would create
-    # a function-local variable and silently do nothing, so the attributes are rewritten to carry -g.
+    # $1: a captured `declare -p` line, $2: the name's current `declare -p` line. Evaluating $1 as it
+    # stands from inside a function would create a function-local variable and silently do nothing,
+    # so the attributes are rewritten to carry -g.
     local __tue_env_rest="${1#declare }"
     local __tue_env_attrs="${__tue_env_rest%% *}"
     __tue_env_rest="${__tue_env_rest#* }"
@@ -1838,9 +2017,12 @@ function __tue_env_track_restore_line
     fi
     # Unset first: re-declaring over a variable whose current type differs keeps the old data (a
     # scalar restored over an array leaves the array's other elements in place) and can leave a stale
-    # attribute, or fail outright between indexed and associative.
+    # attribute, or fail outright between indexed and associative. The unset is driven by the
+    # CURRENT attributes rather than the recorded ones: when the environment turned the name into a
+    # nameref, both a plain unset and the assignment below would otherwise reach through it and
+    # rewrite the target variable instead.
     local __tue_env_name="${__tue_env_rest%%=*}"
-    unset -v "${__tue_env_name}"
+    __tue_env_track_unset "${__tue_env_name}" "$2"
     eval "declare -g${__tue_env_flags} ${__tue_env_rest}"
     return 0
 }
@@ -2004,7 +2186,7 @@ function __tue_env_track_revert_vars
                                   "${__TUE_ENV_LEDGER_VAR_ADD[${__tue_env_n}]}" "${__tue_env_pv}"
             if [[ -z "${__TUE_ENV_VALUE}" ]] && [[ -z "${__tue_env_pre}" ]]
             then
-                unset "${__tue_env_n}"
+                __tue_env_track_unset "${__tue_env_n}" "${__tue_env_cur}"
             else
                 printf -v "${__tue_env_n}" '%s' "${__TUE_ENV_VALUE}"
             fi
@@ -2019,9 +2201,9 @@ function __tue_env_track_revert_vars
 
         if [[ -z "${__tue_env_pre}" ]]
         then
-            unset "${__tue_env_n}"
+            __tue_env_track_unset "${__tue_env_n}" "${__tue_env_cur}"
         else
-            __tue_env_track_restore_line "${__tue_env_pre}"
+            __tue_env_track_restore_line "${__tue_env_pre}" "${__tue_env_cur}"
         fi
     done
 
@@ -2202,6 +2384,44 @@ setup() {
     run _tue-env-track-revert
     [[ "${status}" -eq 1 ]]
 }
+
+@test "revert: a function whose recorded body will not parse is not destroyed" {
+    # Function bodies are captured raw, so a literal RS byte in the user's own function truncates
+    # the ledger record and the eval that restores it cannot parse. Unsetting the function first
+    # made that unrecoverable: the user was left with no function at all. Not unsetting leaves the
+    # environment's version in place, which is a missed revert rather than data loss.
+    eval "tue_test_fn() { echo \$'\x1e'original; }"
+    _tue-env-track-begin
+    tue_test_fn() {
+        echo replaced
+    }
+    _tue-env-track-commit
+    [[ "${__TUE_ENV_LEDGER_FUNC[tue_test_fn]}" == "replaced" ]]
+    # Not `run`: that evaluates its command inside a command substitution, so an `unset -f` in there
+    # would be undone by the subshell exiting and the assertion below could never fail.
+    local __tue_env_status=0
+    __tue_env_track_revert_funcs || __tue_env_status=$?
+    [[ -n "$(declare -F tue_test_fn)" ]]
+    [[ "${__tue_env_status}" -eq 0 ]]
+}
+
+@test "revert: an export -f the environment added is cleared from a restored function" {
+    # Guards the half of the above that the vanished `unset -f` used to cover for free: the pre-load
+    # function was not exported, the environment exported it, and the restore has to take that flag
+    # back off with `export -nf` rather than by destroying and re-creating the function.
+    tue_test_fn() {
+        echo original
+    }
+    _tue-env-track-begin
+    tue_test_fn() {
+        echo replaced
+    }
+    export -f tue_test_fn
+    _tue-env-track-commit
+    _tue-env-track-revert
+    [[ "$(tue_test_fn)" == "original" ]]
+    [[ -z "$(declare -Fx | grep ' tue_test_fn$')" ]]
+}
 ```
 
 - [ ] **Step 2: Run the tests to verify they fail**
@@ -2247,17 +2467,33 @@ function __tue_env_track_revert_funcs
             continue
         fi
 
-        unset -f "${__tue_env_n}"
         __tue_env_pre="${__TUE_ENV_LEDGER_FUNC_PRE[${__tue_env_n}]}"
-        if [[ -n "${__tue_env_pre}" ]]
+        if [[ -z "${__tue_env_pre}" ]]
         then
-            eval "${__tue_env_pre}"
+            # The environment created this function, so removing it is the whole job.
+            unset -f "${__tue_env_n}"
+            continue
+        fi
+
+        # No `unset -f` first. `eval` of a captured body replaces the function atomically, whereas
+        # unsetting and then failing to re-parse the body leaves the user with nothing at all - and
+        # bodies are captured raw, so an RS byte inside the user's own function truncates the record
+        # and makes exactly that happen. The unset was only ever needed to clear a stale `export -f`
+        # flag, and `export -nf` does that without destroying the body. Testing the eval rather than
+        # running it bare also keeps a caller under `set -e` alive when the body will not parse.
+        if eval "${__tue_env_pre}"
+        then
+            # `declare -f` output does not encode `export -f`, so the pre-load flag has to be
+            # re-applied by hand - and explicitly cleared when the environment exported a function
+            # the user had not exported, which the vanished `unset -f` used to take care of. The name
+            # to export is held in a variable, not literal, which is exactly what SC2163 flags.
             if [[ "${__TUE_ENV_LEDGER_FUNC_XPRE[${__tue_env_n}]}" == "x" ]]
             then
-                # `declare -f` output does not encode `export -f`, so it has to be re-applied. The name
-                # to export is held in a variable, not literal, which is exactly what SC2163 flags.
                 # shellcheck disable=SC2163
                 export -f "${__tue_env_n}"
+            else
+                # shellcheck disable=SC2163
+                export -nf "${__tue_env_n}"
             fi
         fi
     done
@@ -2996,6 +3232,20 @@ PS1="\\u@\\h git \\\$ "
 TARGET
     return 0
 }
+
+function tue_env_fixture_second
+{
+    # $1: environment name, $2: the body of its target_setup.bash. Creates a SECOND environment with
+    # a directory of its own, so that `tue-env switch` really does leave one environment for another
+    # rather than re-loading the same directory under a new name. Sets TUE_TEST_ENV_DIR_TWO.
+    # Requires tue_env_fixture to have run first, for TUE_TEST_DIR.
+    TUE_TEST_ENV_DIR_TWO="${BATS_TEST_TMPDIR}/$1"
+    mkdir -p "${TUE_TEST_ENV_DIR_TWO}/.env/targets" "${TUE_TEST_ENV_DIR_TWO}/.env/setup"
+    printf '%s\n' "${TUE_TEST_ENV_DIR_TWO}" > "${TUE_TEST_DIR}/user/envs/$1"
+    printf '#! /usr/bin/env bash\n' > "${TUE_TEST_ENV_DIR_TWO}/.env/setup/user_setup.bash"
+    printf '%s\n' "$2" > "${TUE_TEST_ENV_DIR_TWO}/.env/setup/target_setup.bash"
+    return 0
+}
 ```
 
 - [ ] **Step 2: Write the failing integration tests**
@@ -3101,6 +3351,47 @@ setup() {
     _tue-env-track-revert
     [[ ":${PATH}:" == *":/opt/mine/bin:"* ]]
     [[ "${TUE_TEST_OF_MINE}" == "1" ]]
+}
+
+@test "setup: a real load is undone by the tue-env deactivate command itself" {
+    # The dispatcher-to-tracker path, end to end. Everything else either calls _tue-env-track-revert
+    # directly or drives the dispatcher from a hand-built one-entry ledger, so nothing in the suite
+    # would notice `tue-env deactivate` losing its way to the tracker and silently falling back to
+    # the old unset-a-few-known-names heuristic.
+    tue_env_fixture testenv
+    tue_env_fixture_venv
+    tue_env_fixture_target
+    export TUE_TEST_OF_MINE=survivor
+
+    source "${TUE_TEST_DIR}/setup.bash"
+    [[ "${TUE_ENV}" == "testenv" ]]
+    [[ ":${PATH}:" == *":/opt/tue-test/bin:"* ]]
+
+    run tue-env deactivate
+    [[ "${status}" -eq 0 ]]
+    [[ "${output}" == *"Deactivating the current environment 'testenv'"* ]]
+
+    # `run` evaluates in a command substitution, so the shell above is untouched by it; do it again
+    # for real and assert on this shell.
+    tue-env deactivate
+
+    [[ -z "${TUE_ENV+set}" ]]
+    [[ -z "${TUE_ENV_DIR+set}" ]]
+    [[ -z "${TUE_ENV_TARGETS_DIR+set}" ]]
+    [[ -z "${TUE_TEST_USER_SETUP+set}" ]]
+    [[ -z "${TUE_TEST_TARGET_VAR+set}" ]]
+    [[ -z "${VIRTUAL_ENV+set}" ]]
+    [[ -z "${BASH_ALIASES[tue_test_target_alias]:-}" ]]
+    [[ -z "$(declare -F tue_test_target_fn)" ]]
+    [[ -z "$(declare -F deactivate)" ]]
+    [[ ":${PATH}:" != *":/opt/tue-test/bin:"* ]]
+
+    # and the survivors survive: the bootstrap is outside the tracked span, and so is anything the
+    # user had before the load
+    [[ "${TUE_TEST_OF_MINE}" == "survivor" ]]
+    [[ "${TUE_DIR}" == "${TUE_TEST_DIR}" ]]
+    [[ ":${PATH}:" == *":${TUE_TEST_DIR}/bin:"* ]]
+    declare -F tue-env > /dev/null
 }
 ```
 
@@ -3334,19 +3625,90 @@ setup() {
     [[ "${output}" == *"Unknown option --nonsense"* ]]
 }
 
-@test "switch: the new TUE_ENV is tracked, so a later deactivate unsets it" {
+@test "switch: the old environment is unloaded before the new one is loaded" {
+    # envtwo points at a directory of its own. Pointing it at envone's directory, as this test used
+    # to, re-loads the same target script under a new name, so everything envone added is added
+    # again by envtwo and the test cannot tell an unload from no unload at all.
     tue_env_fixture envone
-    printf '%s\n' "${TUE_TEST_ENV_DIR}" > "${TUE_TEST_DIR}/user/envs/envtwo"
-    source "${TUE_TEST_DIR}/setup.bash" || true
+    tue_env_fixture_target
+    tue_env_fixture_second envtwo 'export TUE_TEST_TWO_VAR=1'
+
+    source "${TUE_TEST_DIR}/setup.bash"
     [[ "${TUE_ENV}" == "envone" ]]
+    [[ "${TUE_TEST_TARGET_VAR}" == "1" ]]
+    [[ -n "${BASH_ALIASES[tue_test_target_alias]:-}" ]]
+    [[ -n "$(declare -F tue_test_target_fn)" ]]
 
-    tue-env switch envtwo || true
+    tue-env switch envtwo
     [[ "${TUE_ENV}" == "envtwo" ]]
-    [[ -n "${__TUE_ENV_LEDGER_VAR[TUE_ENV]:-}" ]]
+    [[ "${TUE_ENV_DIR}" == "${TUE_TEST_ENV_DIR_TWO}" ]]
+    [[ "${TUE_TEST_TWO_VAR}" == "1" ]]
 
+    # everything envone's target script installed is gone, and so is its PATH entry
+    [[ -z "${TUE_TEST_TARGET_VAR+set}" ]]
+    [[ -z "${BASH_ALIASES[tue_test_target_alias]:-}" ]]
+    [[ -z "$(declare -F tue_test_target_fn)" ]]
+    [[ ":${PATH}:" != *":/opt/tue-test/bin:"* ]]
+
+    # and envtwo is itself tracked, so unloading it unsets what it set
+    [[ -n "${__TUE_ENV_LEDGER_VAR[TUE_ENV]:-}" ]]
     _tue-env-track-revert
     [[ -z "${TUE_ENV+set}" ]]
     [[ -z "${TUE_ENV_DIR+set}" ]]
+    [[ -z "${TUE_TEST_TWO_VAR+set}" ]]
+}
+
+@test "switch: the dispatcher's own locals never reach the ledger" {
+    # bash scopes locals dynamically, so the tracker's snapshots see every local of the `tue-env`
+    # call they run inside. While those were unprefixed, a target script assigning a variable that
+    # happened to share a name with one of them wrote to the dispatcher's copy: the ledger recorded
+    # tue-env's internal state as the environment's, the unload printed a note about keeping a value
+    # the user never set, and the environment's real global was never reverted at all.
+    tue_env_fixture envone
+    tue_env_fixture_second envtwo 'cmd=target-clobber
+tue_env_dir=/target/dir
+dry_run=/target/dry'
+
+    source "${TUE_TEST_DIR}/setup.bash"
+    tue-env switch envtwo
+
+    # what the target script really set, not the dispatcher's same-named local
+    [[ "${cmd}" == "target-clobber" ]]
+    [[ "${tue_env_dir}" == "/target/dir" ]]
+    [[ "${__TUE_ENV_LEDGER_VAR[cmd]}" == "added" ]]
+    [[ "${__TUE_ENV_LEDGER_VAR[tue_env_dir]}" == "added" ]]
+
+    run tue-env deactivate
+    [[ "${status}" -eq 0 ]]
+    [[ "${output}" != *"kept your value for"* ]]
+
+    tue-env deactivate
+    [[ -z "${cmd+set}" ]]
+    [[ -z "${tue_env_dir+set}" ]]
+    [[ -z "${dry_run+set}" ]]
+}
+
+@test "help: the top-level command list names deactivate" {
+    run tue-env --help
+    [[ "${status}" -eq 1 ]]
+    [[ "${output}" == *"deactivate     - "* ]]
+}
+
+@test "deactivate: the fallback comment does not claim a case that cannot reach it" {
+    # A comment has no behaviour to assert, so this pins the fact it states instead. The empty-ledger
+    # fallback claimed to cover a non-interactive child shell that inherited `tue-env` but not the
+    # ledger. It cannot: _tue-env-deactivate-current-env is not exported, so such a shell fails
+    # before it. Establish that by execution, then require the comment to give that as the reason.
+    export TUE_ENV=fake
+    run bash --noprofile --norc -c 'tue-env deactivate'
+    [[ "${status}" -eq 1 ]]
+    [[ "${output}" == *"Failed to deactivate the current environment"* ]]
+    # the fallback body never ran: none of what it prints is in the output
+    [[ "${output}" != *"Unsetting all TUE_ENV"* ]]
+
+    grep -q 'this function is not exported' "${TUE_TRACK_REPO_ROOT}/setup/tue-env.bash"
+    [[ -z "$(grep 'Empty ledger.*non-interactive child shell' \
+             "${TUE_TRACK_REPO_ROOT}/setup/tue-env.bash")" ]]
 }
 
 @test "completion: changes and --dry-run are offered" {
