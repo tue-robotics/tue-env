@@ -2082,7 +2082,7 @@ setup() {
     }
     _tue-env-track-commit
     _tue-env-track-revert
-    ! declare -F tue_test_fn > /dev/null
+    [[ -z "$(declare -F tue_test_fn)" ]]
 }
 
 @test "revert: a replaced function is restored" {
@@ -2114,6 +2114,18 @@ setup() {
     declare -Fx | grep -q ' tue_test_fn$'
 }
 
+@test "revert: a function the environment removed is restored" {
+    tue_test_fn() {
+        echo original
+    }
+    _tue-env-track-begin
+    unset -f tue_test_fn
+    _tue-env-track-commit
+    [[ "${__TUE_ENV_LEDGER_FUNC[tue_test_fn]}" == "removed" ]]
+    _tue-env-track-revert
+    [[ "$(tue_test_fn)" == "original" ]]
+}
+
 @test "revert: a function the user redefined after the load is kept" {
     _tue-env-track-begin
     tue_test_fn() {
@@ -2125,6 +2137,19 @@ setup() {
     }
     run _tue-env-track-revert
     [[ "${output}" == *"kept your version of function tue_test_fn"* ]]
+}
+
+@test "revert: a function the user redefined after the load is left in place" {
+    _tue-env-track-begin
+    tue_test_fn() {
+        echo fromenv
+    }
+    _tue-env-track-commit
+    tue_test_fn() {
+        echo mine
+    }
+    _tue-env-track-revert
+    [[ "$(tue_test_fn)" == "mine" ]]
 }
 
 @test "revert: an added alias is unset and a replaced one restored" {
@@ -3002,8 +3027,8 @@ setup() {
     [[ -z "${TUE_TEST_USER_SETUP+set}" ]]
     [[ -z "${TUE_TEST_TARGET_VAR+set}" ]]
     [[ -z "${BASH_ALIASES[tue_test_target_alias]:-}" ]]
-    ! declare -F tue_test_target_fn > /dev/null
-    ! declare -F tue-make > /dev/null
+    [[ -z "$(declare -F tue_test_target_fn)" ]]
+    [[ -z "$(declare -F tue-make)" ]]
     [[ -z "$(complete -p tue-make 2> /dev/null)" ]]
     [[ ":${PATH}:" != *":/opt/tue-test/bin:"* ]]
 
@@ -3032,7 +3057,7 @@ setup() {
     # venv's own deactivate would have restored the wrong one. The ledger keeps the pre-load state
     # from first sight, so the prompt comes back pristine.
     [[ "${PS1}" == "${__tue_env_want}" ]]
-    ! declare -F deactivate > /dev/null
+    [[ -z "$(declare -F deactivate)" ]]
     [[ -z "${VIRTUAL_ENV+set}" ]]
     [[ -z "${_OLD_VIRTUAL_PS1+set}" ]]
     [[ -z "${_OLD_VIRTUAL_PATH+set}" ]]
