@@ -11,7 +11,7 @@ setup() {
     }
     _tue-env-track-commit
     _tue-env-track-revert
-    ! declare -F tue_test_fn > /dev/null
+    [[ -z "$(declare -F tue_test_fn)" ]]
 }
 
 @test "revert: a replaced function is restored" {

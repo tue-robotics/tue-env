@@ -22,8 +22,8 @@ setup() {
     [[ -z "${TUE_TEST_USER_SETUP+set}" ]]
     [[ -z "${TUE_TEST_TARGET_VAR+set}" ]]
     [[ -z "${BASH_ALIASES[tue_test_target_alias]:-}" ]]
-    ! declare -F tue_test_target_fn > /dev/null
-    ! declare -F tue-make > /dev/null
+    [[ -z "$(declare -F tue_test_target_fn)" ]]
+    [[ -z "$(declare -F tue-make)" ]]
     [[ -z "$(complete -p tue-make 2> /dev/null)" ]]
     [[ ":${PATH}:" != *":/opt/tue-test/bin:"* ]]
 
@@ -52,7 +52,7 @@ setup() {
     # venv's own deactivate would have restored the wrong one. The ledger keeps the pre-load state
     # from first sight, so the prompt comes back pristine.
     [[ "${PS1}" == "${__tue_env_want}" ]]
-    ! declare -F deactivate > /dev/null
+    [[ -z "$(declare -F deactivate)" ]]
     [[ -z "${VIRTUAL_ENV+set}" ]]
     [[ -z "${_OLD_VIRTUAL_PS1+set}" ]]
     [[ -z "${_OLD_VIRTUAL_PATH+set}" ]]
