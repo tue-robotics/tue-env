@@ -176,10 +176,12 @@ tue-env deactivate --dry-run # what unloading would do right now
 ```
 
 Readline bindings a target makes with `bind` are not tracked and survive an unload. A shell started
-before this feature existed, and a non-interactive child shell, have no record to work from: there,
-`tue-env changes` and `tue-env deactivate --dry-run` both fail with an explanatory message, while
-`tue-env deactivate` itself still falls back to deactivating an active virtualenv and unsetting
-`TUE_ENV*`, `ROS_*` and a few known variables, as it did before.
+before this feature existed has no record to work from: `changes` and `deactivate --dry-run` both
+fail with an explanatory message, and `deactivate` itself falls back to deactivating an active
+virtualenv and unsetting `TUE_ENV*`, `ROS_*` and a few known variables, as it did before. A
+non-interactive child shell also has no record, so `changes` and `deactivate --dry-run` fail the
+same way there too, but plain `deactivate` has never worked in such a shell: it errors out and tells
+you to stop using the terminal, a pre-existing limitation this feature does not change.
 
 ## Guidelines on creating a new target
 
