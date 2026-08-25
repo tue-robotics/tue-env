@@ -207,16 +207,20 @@ function __tue_env_track_attrs
 function __tue_env_track_listable
 {
     # $1: pre-load declare line, $2: post-load declare line, either may be empty. Returns 0 when
-    # neither side is an array, so the value may be treated as a `:`-separated list. Arrays are never
-    # `extended`, and __tue_env_track_value must never be evaluated on an array line: `declare -p`
-    # renders one as bash array syntax, so eval would turn __TUE_ENV_VALUE into an array, and an
-    # associative key can carry an assignment that bash performs in arithmetic context.
+    # neither side is an array or a nameref, so the value may be treated as a `:`-separated list.
+    # Arrays are never `extended`, and __tue_env_track_value must never be evaluated on an array
+    # line: `declare -p` renders one as bash array syntax, so eval would turn __TUE_ENV_VALUE into
+    # an array, and an associative key can carry an assignment that bash performs in arithmetic
+    # context. Namerefs are excluded for the mirror-image reason on the way out: a nameref's value
+    # is the name it points at, so the entry-wise branch would hand it to `printf -v`, which writes
+    # THROUGH the reference and overwrites a target variable the load never touched.
     local __tue_env_a
     __tue_env_track_attrs "$1"
     __tue_env_a="${__TUE_ENV_ATTRS}"
     __tue_env_track_attrs "$2"
     __tue_env_a+="${__TUE_ENV_ATTRS}"
-    if [[ "${__tue_env_a}" == *a* ]] || [[ "${__tue_env_a}" == *A* ]]
+    if [[ "${__tue_env_a}" == *a* ]] || [[ "${__tue_env_a}" == *A* ]] ||
+       [[ "${__tue_env_a}" == *n* ]]
     then
         return 1
     fi
@@ -618,10 +622,28 @@ function __tue_env_track_kept
     return 0
 }
 
+function __tue_env_track_unset
+{
+    # $1: name, $2: the name's CURRENT `declare -p` line, "" when it does not exist. Plain `unset`
+    # on a nameref follows the reference and destroys the variable it points AT - something the load
+    # never touched and the ledger knows nothing about - so a nameref is removed with `unset -n`,
+    # which drops the reference itself. `unset -n` cannot simply be used for everything: on a name
+    # that is not a nameref bash silently does nothing at all, leaving the variable in place.
+    __tue_env_track_attrs "$2"
+    if [[ "${__TUE_ENV_ATTRS}" == *n* ]]
+    then
+        unset -n "$1"
+    else
+        unset -v "$1"
+    fi
+    return 0
+}
+
 function __tue_env_track_restore_line
 {
-    # $1: a captured `declare -p` line. Evaluating it as it stands from inside a function would create
-    # a function-local variable and silently do nothing, so the attributes are rewritten to carry -g.
+    # $1: a captured `declare -p` line, $2: the name's current `declare -p` line. Evaluating $1 as it
+    # stands from inside a function would create a function-local variable and silently do nothing,
+    # so the attributes are rewritten to carry -g.
     local __tue_env_rest="${1#declare }"
     local __tue_env_attrs="${__tue_env_rest%% *}"
     __tue_env_rest="${__tue_env_rest#* }"
@@ -632,9 +654,12 @@ function __tue_env_track_restore_line
     fi
     # Unset first: re-declaring over a variable whose current type differs keeps the old data (a
     # scalar restored over an array leaves the array's other elements in place) and can leave a stale
-    # attribute, or fail outright between indexed and associative.
+    # attribute, or fail outright between indexed and associative. The unset is driven by the
+    # CURRENT attributes rather than the recorded ones: when the environment turned the name into a
+    # nameref, both a plain unset and the assignment below would otherwise reach through it and
+    # rewrite the target variable instead.
     local __tue_env_name="${__tue_env_rest%%=*}"
-    unset -v "${__tue_env_name}"
+    __tue_env_track_unset "${__tue_env_name}" "$2"
     eval "declare -g${__tue_env_flags} ${__tue_env_rest}"
     return 0
 }
@@ -792,7 +817,7 @@ function __tue_env_track_revert_vars
                                   "${__TUE_ENV_LEDGER_VAR_ADD[${__tue_env_n}]}" "${__tue_env_pv}"
             if [[ -z "${__TUE_ENV_VALUE}" ]] && [[ -z "${__tue_env_pre}" ]]
             then
-                unset "${__tue_env_n}"
+                __tue_env_track_unset "${__tue_env_n}" "${__tue_env_cur}"
             else
                 printf -v "${__tue_env_n}" '%s' "${__TUE_ENV_VALUE}"
             fi
@@ -807,9 +832,9 @@ function __tue_env_track_revert_vars
 
         if [[ -z "${__tue_env_pre}" ]]
         then
-            unset "${__tue_env_n}"
+            __tue_env_track_unset "${__tue_env_n}" "${__tue_env_cur}"
         else
-            __tue_env_track_restore_line "${__tue_env_pre}"
+            __tue_env_track_restore_line "${__tue_env_pre}" "${__tue_env_cur}"
         fi
     done
 

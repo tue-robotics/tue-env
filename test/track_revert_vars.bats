@@ -244,3 +244,47 @@ setup() {
     [[ "${TUE_TEST_LIST}" == "/usr/bin:/bin" ]]
     [[ "${TUE_TEST_PP}" == "/usr/bin" ]]
 }
+
+@test "revert: unsetting a nameref the environment added leaves its target alone" {
+    # Plain `unset` on a nameref follows the reference and destroys the variable it points at, which
+    # the load never touched - the one thing the whole design promises cannot happen.
+    export TUE_TEST_TARGET="precious user data"
+    _tue-env-track-begin
+    declare -gn TUE_TEST_NREF=TUE_TEST_TARGET
+    _tue-env-track-commit
+    [[ "${__TUE_ENV_LEDGER_VAR[TUE_TEST_NREF]}" == "added" ]]
+    __tue_env_track_revert_vars
+    [[ "${TUE_TEST_TARGET}" == "precious user data" ]]
+    [[ -z "$(declare -p TUE_TEST_NREF 2> /dev/null)" ]]
+}
+
+@test "revert: restoring over a nameref the environment created does not write through it" {
+    # Same trap on the restore path, twice over: the unset destroys the target, and the re-declare
+    # then assigns the recorded value THROUGH the surviving reference, so the user's variable ends
+    # up holding the restored value and the name that was restored is still a nameref.
+    export TUE_TEST_TARGET="precious user data"
+    export TUE_TEST_NREF="plain string"
+    _tue-env-track-begin
+    unset -v TUE_TEST_NREF
+    declare -gn TUE_TEST_NREF=TUE_TEST_TARGET
+    _tue-env-track-commit
+    [[ "${__TUE_ENV_LEDGER_VAR[TUE_TEST_NREF]}" == "replaced" ]]
+    __tue_env_track_revert_vars
+    [[ "${TUE_TEST_TARGET}" == "precious user data" ]]
+    [[ "$(declare -p TUE_TEST_NREF)" == 'declare -x TUE_TEST_NREF="plain string"' ]]
+}
+
+@test "revert: a value the environment turned into a nameref is never treated as a list" {
+    # A nameref's value is the name it points at, so the entry-wise branch would hand it to
+    # `printf -v`, which writes THROUGH the reference. An empty pre-load value has no entries, so a
+    # one-entry nameref value is a valid subsequence extension of it and reaches exactly that.
+    export TUE_TEST_TARGET="precious user data"
+    TUE_TEST_LIST=""
+    _tue-env-track-begin
+    unset -v TUE_TEST_LIST
+    declare -gn TUE_TEST_LIST=TUE_TEST_TARGET
+    _tue-env-track-commit
+    [[ "${__TUE_ENV_LEDGER_VAR[TUE_TEST_LIST]}" == "replaced" ]]
+    __tue_env_track_revert_vars
+    [[ "${TUE_TEST_TARGET}" == "precious user data" ]]
+}
