@@ -248,9 +248,15 @@ function __tue_env_track_entries
         return 1
     fi
 
+    # __tue_env_track_split, not `IFS=':' read -a`: the latter silently drops a trailing empty
+    # field, so an entry the environment appended as an empty field would be classified as no
+    # addition at all and survive the revert. An empty PATH field means the current directory, so
+    # that is the difference between unloading an environment and leaving `.` on PATH for good.
     local -a __tue_env_p __tue_env_q
-    IFS=':' read -r -a __tue_env_p <<< "$1"
-    IFS=':' read -r -a __tue_env_q <<< "$2"
+    __tue_env_track_split "$1"
+    __tue_env_p=("${__TUE_ENV_SPLIT[@]}")
+    __tue_env_track_split "$2"
+    __tue_env_q=("${__TUE_ENV_SPLIT[@]}")
 
     local __tue_env_i __tue_env_j=0 __tue_env_o=""
     for (( __tue_env_i = 0; __tue_env_i < ${#__tue_env_q[@]}; __tue_env_i++ ))

@@ -226,3 +226,21 @@ setup() {
     [[ -n "${TUE_TEST_LIST}" ]]
     [[ "${TUE_TEST_LIST}" == "A"$'\n'"B:/usr/bin" ]]
 }
+
+@test "revert: an empty field the environment appended is removed" {
+    # An empty `:`-separated field means the current directory. `IFS=':' read -a`, which the
+    # classification side used, silently drops a trailing empty field, so the entry was recorded as
+    # no addition at all and the revert left `.` on the value for the life of the shell. The two
+    # tests above only cover empty fields the USER already had, which the count guard preserves for
+    # an unrelated reason, so neither of them sees this.
+    export TUE_TEST_LIST="/usr/bin:/bin"
+    export TUE_TEST_PP="/usr/bin"
+    _tue-env-track-begin
+    export TUE_TEST_LIST="${TUE_TEST_LIST}:"
+    export TUE_TEST_PP="/opt/x:${TUE_TEST_PP}:"
+    _tue-env-track-commit
+    [[ "${__TUE_ENV_LEDGER_VAR[TUE_TEST_LIST]}" == "extended" ]]
+    __tue_env_track_revert_vars
+    [[ "${TUE_TEST_LIST}" == "/usr/bin:/bin" ]]
+    [[ "${TUE_TEST_PP}" == "/usr/bin" ]]
+}
