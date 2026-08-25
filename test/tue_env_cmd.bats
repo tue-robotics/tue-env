@@ -97,19 +97,37 @@ setup() {
     [[ "${output}" == *"Unknown option --nonsense"* ]]
 }
 
-@test "switch: the new TUE_ENV is tracked, so a later deactivate unsets it" {
+@test "switch: the old environment is unloaded before the new one is loaded" {
+    # envtwo points at a directory of its own. Pointing it at envone's directory, as this test used
+    # to, re-loads the same target script under a new name, so everything envone added is added
+    # again by envtwo and the test cannot tell an unload from no unload at all.
     tue_env_fixture envone
-    printf '%s\n' "${TUE_TEST_ENV_DIR}" > "${TUE_TEST_DIR}/user/envs/envtwo"
-    source "${TUE_TEST_DIR}/setup.bash" || true
+    tue_env_fixture_target
+    tue_env_fixture_second envtwo 'export TUE_TEST_TWO_VAR=1'
+
+    source "${TUE_TEST_DIR}/setup.bash"
     [[ "${TUE_ENV}" == "envone" ]]
+    [[ "${TUE_TEST_TARGET_VAR}" == "1" ]]
+    [[ -n "${BASH_ALIASES[tue_test_target_alias]:-}" ]]
+    [[ -n "$(declare -F tue_test_target_fn)" ]]
 
-    tue-env switch envtwo || true
+    tue-env switch envtwo
     [[ "${TUE_ENV}" == "envtwo" ]]
-    [[ -n "${__TUE_ENV_LEDGER_VAR[TUE_ENV]:-}" ]]
+    [[ "${TUE_ENV_DIR}" == "${TUE_TEST_ENV_DIR_TWO}" ]]
+    [[ "${TUE_TEST_TWO_VAR}" == "1" ]]
 
+    # everything envone's target script installed is gone, and so is its PATH entry
+    [[ -z "${TUE_TEST_TARGET_VAR+set}" ]]
+    [[ -z "${BASH_ALIASES[tue_test_target_alias]:-}" ]]
+    [[ -z "$(declare -F tue_test_target_fn)" ]]
+    [[ ":${PATH}:" != *":/opt/tue-test/bin:"* ]]
+
+    # and envtwo is itself tracked, so unloading it unsets what it set
+    [[ -n "${__TUE_ENV_LEDGER_VAR[TUE_ENV]:-}" ]]
     _tue-env-track-revert
     [[ -z "${TUE_ENV+set}" ]]
     [[ -z "${TUE_ENV_DIR+set}" ]]
+    [[ -z "${TUE_TEST_TWO_VAR+set}" ]]
 }
 
 @test "switch: the dispatcher's own locals never reach the ledger" {

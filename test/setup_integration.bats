@@ -97,3 +97,44 @@ setup() {
     [[ ":${PATH}:" == *":/opt/mine/bin:"* ]]
     [[ "${TUE_TEST_OF_MINE}" == "1" ]]
 }
+
+@test "setup: a real load is undone by the tue-env deactivate command itself" {
+    # The dispatcher-to-tracker path, end to end. Everything else either calls _tue-env-track-revert
+    # directly or drives the dispatcher from a hand-built one-entry ledger, so nothing in the suite
+    # would notice `tue-env deactivate` losing its way to the tracker and silently falling back to
+    # the old unset-a-few-known-names heuristic.
+    tue_env_fixture testenv
+    tue_env_fixture_venv
+    tue_env_fixture_target
+    export TUE_TEST_OF_MINE=survivor
+
+    source "${TUE_TEST_DIR}/setup.bash"
+    [[ "${TUE_ENV}" == "testenv" ]]
+    [[ ":${PATH}:" == *":/opt/tue-test/bin:"* ]]
+
+    run tue-env deactivate
+    [[ "${status}" -eq 0 ]]
+    [[ "${output}" == *"Deactivating the current environment 'testenv'"* ]]
+
+    # `run` evaluates in a command substitution, so the shell above is untouched by it; do it again
+    # for real and assert on this shell.
+    tue-env deactivate
+
+    [[ -z "${TUE_ENV+set}" ]]
+    [[ -z "${TUE_ENV_DIR+set}" ]]
+    [[ -z "${TUE_ENV_TARGETS_DIR+set}" ]]
+    [[ -z "${TUE_TEST_USER_SETUP+set}" ]]
+    [[ -z "${TUE_TEST_TARGET_VAR+set}" ]]
+    [[ -z "${VIRTUAL_ENV+set}" ]]
+    [[ -z "${BASH_ALIASES[tue_test_target_alias]:-}" ]]
+    [[ -z "$(declare -F tue_test_target_fn)" ]]
+    [[ -z "$(declare -F deactivate)" ]]
+    [[ ":${PATH}:" != *":/opt/tue-test/bin:"* ]]
+
+    # and the survivors survive: the bootstrap is outside the tracked span, and so is anything the
+    # user had before the load
+    [[ "${TUE_TEST_OF_MINE}" == "survivor" ]]
+    [[ "${TUE_DIR}" == "${TUE_TEST_DIR}" ]]
+    [[ ":${PATH}:" == *":${TUE_TEST_DIR}/bin:"* ]]
+    declare -F tue-env > /dev/null
+}
