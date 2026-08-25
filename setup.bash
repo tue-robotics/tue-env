@@ -11,8 +11,10 @@ function _tue-check-env-vars
 }
 export -f _tue-check-env-vars
 
-function _tue-env-main
+function _tue-env-bootstrap
 {
+    # Everything here runs before the tracked span begins, so it survives `tue-env deactivate`.
+
     # -----------------------------------------
     # Set the TUE_DIR variable
     TUE_DIR="$( cd "$( dirname "${BASH_SOURCE[0]}" )" && pwd )"
@@ -37,6 +39,14 @@ function _tue-env-main
     # shellcheck disable=SC1091
     source "${TUE_DIR}"/setup/tue-env.bash
 
+    # -----------------------------------------
+    # Load the change tracker, so that it exists before the tracked span begins
+    # shellcheck disable=SC1091
+    source "${TUE_DIR}"/setup/tue-env-track.bash
+}
+
+function _tue-env-load
+{
     # Load the (optional) default environment
     if [[ -z "${TUE_ENV}" ]]
     then
@@ -113,6 +123,22 @@ function _tue-env-main
     fi
 }
 
+function _tue-env-main
+{
+    _tue-env-bootstrap
+
+    # The wrapper is required, not cosmetic: _tue-env-load returns early on a missing environment, a
+    # missing TUE_ENV_DIR and a missing targets directory, all after TUE_ENV has been exported.
+    # Without committing on those paths a failed load would leave TUE_ENV* set and untracked.
+    # Collecting the status through `||` also keeps a caller's `set -e` from skipping the commit, and
+    # the local is prefixed so that the commit snapshot does not record it as an added variable.
+    local __tue_env_ret=0
+    _tue-env-track-begin
+    _tue-env-load "$@" || __tue_env_ret=$?
+    _tue-env-track-commit
+    return "${__tue_env_ret}"
+}
+
 _tue-env-main "$@"
 
-unset -f _tue-env-main
+unset -f _tue-env-bootstrap _tue-env-load _tue-env-main
