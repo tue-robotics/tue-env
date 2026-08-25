@@ -6,6 +6,17 @@
 
 function _tue-env-deactivate-current-env
 {
+    # The ledger is the sole authority when it holds anything: it recorded everything the load did,
+    # including everything the virtual environment's `activate` did, so `deactivate` is not called any
+    # more and its _OLD_* variables are unset with everything else.
+    if declare -F _tue-env-track-revert > /dev/null && _tue-env-track-revert
+    then
+        return 0
+    fi
+
+    # Empty ledger: a shell started before change tracking existed, or a non-interactive child shell
+    # that inherited `tue-env` but not the ledger. Behave exactly as this function did before.
+
     # Deactivate the old virtualenv if it exists
     if [[ -n ${VIRTUAL_ENV} ]]
     then
@@ -115,6 +126,7 @@ function tue-env
         init           - Initializes new environment
         remove/rm      - Removes an existing environment
         switch         - Switch to a different environment
+        changes        - Shows what loading the current environment changed in this shell
         config         - Configures current environment
         set-default    - Set default environment
         unset-default  - Unset default environment
@@ -319,6 +331,8 @@ Environment directory '${tue_env_dir}' didn't exist (anymore)"""
 
     elif [[ ${cmd} == "deactivate" ]]
     then
+        local dry_run
+        dry_run="false"
         for i in "$@"
         do
             case $i in
@@ -326,6 +340,8 @@ Environment directory '${tue_env_dir}' didn't exist (anymore)"""
                     show_help="true"
                     break
                     ;;
+                --dry-run )
+                    dry_run="true" ;;
                 --*)
                     echo "[tue-env](deactivate) Unknown option $i"
                     show_help="true"
@@ -343,6 +359,7 @@ Environment directory '${tue_env_dir}' didn't exist (anymore)"""
             echo """Usage: tue-env deactivate [options]
 
     Possible options:
+                --dry-run      - Show what unloading would do, without changing anything
                 --help, -h     - Show this help message and exit
 """
             return 1
@@ -354,8 +371,76 @@ Environment directory '${tue_env_dir}' didn't exist (anymore)"""
             return 1
         fi
 
+        if [[ "${dry_run}" == "true" ]]
+        then
+            if ! declare -F _tue-env-track-report > /dev/null
+            then
+                echo "[tue-env](deactivate) change tracking is not available in this shell"
+                return 1
+            fi
+            if ! _tue-env-track-report revert
+            then
+                echo "[tue-env](deactivate) no tracked changes; this shell was started before change tracking"
+                return 1
+            fi
+            return 0
+        fi
+
         echo "[tue-env](deactivate) Deactivating the current environment '${TUE_ENV}'"
         _tue-env-deactivate-current-env || { echo "[tue-env](deactivate) Failed to deactivate the current environment, don't use this terminal anymore, open a new terminal"; return 1; }
+
+        return 0
+
+    elif [[ ${cmd} == "changes" ]]
+    then
+        for i in "$@"
+        do
+            case $i in
+                --help | -h )
+                    show_help="true"
+                    break
+                    ;;
+                --*)
+                    echo "[tue-env](changes) Unknown option $i"
+                    show_help="true"
+                    ;;
+                * )
+                    echo "[tue-env](changes) Unknown input variable $i"
+                    show_help="true"
+                    ;;
+            esac
+        done
+
+        if [[ ${show_help} == "true" ]]
+        then
+            # shellcheck disable=SC1078,SC1079
+            echo """Usage: tue-env changes [options]
+
+    Shows what loading the current environment changed in this shell.
+
+    Possible options:
+                --help, -h     - Show this help message and exit
+"""
+            return 1
+        fi
+
+        if [[ -z "${TUE_ENV}" ]]
+        then
+            echo "[tue-env](changes) No environment is currently active"
+            return 1
+        fi
+
+        if ! declare -F _tue-env-track-report > /dev/null
+        then
+            echo "[tue-env](changes) change tracking is not available in this shell"
+            return 1
+        fi
+
+        if ! _tue-env-track-report changes
+        then
+            echo "[tue-env](changes) no tracked changes; this shell was started before change tracking"
+            return 1
+        fi
 
         return 0
 
@@ -425,7 +510,16 @@ Environment directory '${tue_env_dir}' didn't exist (anymore)"""
             _tue-env-deactivate-current-env || { echo "[tue-env](switch) Failed to deactivate the current environment, don't use this terminal anymore, open a new terminal"; return 1; }
         fi
 
-        # Successful, so we can set the environment variables
+        # Successful, so we can set the environment variables. Begin the tracked span here rather than
+        # in setup.bash, so that TUE_ENV and TUE_ENV_DIR are part of the diff; setup.bash's own
+        # begin/commit pair nests inside this one and is a no-op.
+        # The status is collected through `||` for the same reason setup.bash's wrapper does it: a
+        # begin whose commit is skipped pins the depth counter above zero for the life of the shell,
+        # which silently stops all tracking and retains the pre-load snapshot. Declare the local
+        # BEFORE the begin, so the commit's snapshot does not see it appear.
+        local __tue_env_ret=0
+        _tue-env-track-begin
+
         TUE_ENV=${tue_env}
         export TUE_ENV
         TUE_ENV_DIR=${tue_env_dir}
@@ -433,7 +527,10 @@ Environment directory '${tue_env_dir}' didn't exist (anymore)"""
 
         echo "[tue-env](switch) Loading the new '${TUE_ENV}' environment"
         # shellcheck disable=SC1091
-        source "$TUE_DIR"/setup.bash
+        source "$TUE_DIR"/setup.bash || __tue_env_ret=$?
+
+        _tue-env-track-commit
+        return "${__tue_env_ret}"
 
     elif [[ ${cmd} == "set-default" ]]
     then
@@ -946,7 +1043,7 @@ function _tue-env
 
     if [[ "${COMP_CWORD}" -eq 1 ]]
     then
-        mapfile -t COMPREPLY < <(compgen -W "$(echo -e "'init '\n'list '\n'deactivate '\n'switch '\n'current '\n'remove '\n'rm '\n'cd '\n'set-default '\n'unset-default '\n'config '\n'init-targets '\n'targets '\n'init-venv '\n'remove-venv '\n'rm-venv '\n${help_options}")" -- "${cur}")
+        mapfile -t COMPREPLY < <(compgen -W "$(echo -e "'init '\n'list '\n'deactivate '\n'switch '\n'current '\n'changes '\n'remove '\n'rm '\n'cd '\n'set-default '\n'unset-default '\n'config '\n'init-targets '\n'targets '\n'init-venv '\n'remove-venv '\n'rm-venv '\n${help_options}")" -- "${cur}")
     else
         local cmd
         cmd=${COMP_WORDS[1]}
@@ -1002,6 +1099,12 @@ function _tue-env
                 mapfile -t COMPREPLY < <(compgen -W "$(echo -e "'--include-system-site-packages='\n${help_options}")" -- "${cur}")
             fi
         elif [[ ${cmd} == "deactivate" ]]
+        then
+            if [[ "${COMP_CWORD}" -eq 2 ]]
+            then
+                mapfile -t COMPREPLY < <(compgen -W "$(echo -e "'--dry-run '\n${help_options}")" -- "${cur}")
+            fi
+        elif [[ ${cmd} == "changes" ]]
         then
             if [[ "${COMP_CWORD}" -eq 2 ]]
             then
