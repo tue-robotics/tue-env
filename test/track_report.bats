@@ -38,6 +38,9 @@ setup() {
     run _tue-env-track-report revert
     [[ "${status}" -eq 0 ]]
     [[ "${output}" == *"would remove TUE_TEST_LIST entries: /usr/lib/ccache"* ]]
+    # Loose substring match alone would also accept a longer, wrong list (e.g. one that wrongly
+    # names the user's own /usr/bin as removable): rule out anything after the one true entry.
+    [[ "${output}" != *"TUE_TEST_LIST entries: /usr/lib/ccache, "* ]]
     [[ "${output}" == *"would keep   TUE_TEST_RMW=rmw_connext (changed since load)"* ]]
     [[ "${output}" == *"would restore PS1 to '\u@\h \\$ '"* ]]
     [[ "${output}" == *"would unset  alias tue_test_trunk"* ]]
@@ -104,7 +107,10 @@ setup() {
     run _tue-env-track-report revert
     [[ "${status}" -eq 0 ]]
     [[ "${output}" == *"would remove TUE_TEST_A entries: /ccache"* ]]
-    [[ "${output}" != *"TUE_TEST_A entries: /ccache, /opt/ros"* ]]
+    # A substring match alone is satisfied by any longer list too: without this, a broken
+    # alignment that names every current entry (including the user's own /usr/bin) as removable
+    # would still pass. Rule out anything appended after the one true entry.
+    [[ "${output}" != *"TUE_TEST_A entries: /ccache, "* ]]
     [[ "${output}" != *"TUE_TEST_B"* ]]
 }
 
