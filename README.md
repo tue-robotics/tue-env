@@ -165,8 +165,8 @@ Or use `tue-env set-default` if you want this to be the default.
 
 `tue-env deactivate` unloads the current environment from the running shell. Loading an environment is
 recorded as it happens, so unloading removes what the load added and leaves anything you changed
-afterwards alone: a `PATH` entry you added by hand stays, and a variable you set after loading keeps your
-value, with one line printed to say it was kept.
+afterwards alone: a `PATH` entry you added by hand stays with no message printed, and a variable you set
+after loading keeps your value, printing one line to say it was kept.
 
 Two commands show what is going on:
 
@@ -176,9 +176,10 @@ tue-env deactivate --dry-run # what unloading would do right now
 ```
 
 Readline bindings a target makes with `bind` are not tracked and survive an unload. A shell started
-before this feature existed, and a non-interactive child shell, have no record to work from; there
-`tue-env deactivate` falls back to unsetting `TUE_ENV*`, `ROS_*` and a few known variables, as it did
-before.
+before this feature existed, and a non-interactive child shell, have no record to work from: there,
+`tue-env changes` and `tue-env deactivate --dry-run` both fail with an explanatory message, while
+`tue-env deactivate` itself still falls back to deactivating an active virtualenv and unsetting
+`TUE_ENV*`, `ROS_*` and a few known variables, as it did before.
 
 ## Guidelines on creating a new target
 
