@@ -874,17 +874,33 @@ function __tue_env_track_revert_funcs
             continue
         fi
 
-        unset -f "${__tue_env_n}"
         __tue_env_pre="${__TUE_ENV_LEDGER_FUNC_PRE[${__tue_env_n}]}"
-        if [[ -n "${__tue_env_pre}" ]]
+        if [[ -z "${__tue_env_pre}" ]]
         then
-            eval "${__tue_env_pre}"
+            # The environment created this function, so removing it is the whole job.
+            unset -f "${__tue_env_n}"
+            continue
+        fi
+
+        # No `unset -f` first. `eval` of a captured body replaces the function atomically, whereas
+        # unsetting and then failing to re-parse the body leaves the user with nothing at all - and
+        # bodies are captured raw, so an RS byte inside the user's own function truncates the record
+        # and makes exactly that happen. The unset was only ever needed to clear a stale `export -f`
+        # flag, and `export -nf` does that without destroying the body. Testing the eval rather than
+        # running it bare also keeps a caller under `set -e` alive when the body will not parse.
+        if eval "${__tue_env_pre}"
+        then
+            # `declare -f` output does not encode `export -f`, so the pre-load flag has to be
+            # re-applied by hand - and explicitly cleared when the environment exported a function
+            # the user had not exported, which the vanished `unset -f` used to take care of. The name
+            # to export is held in a variable, not literal, which is exactly what SC2163 flags.
             if [[ "${__TUE_ENV_LEDGER_FUNC_XPRE[${__tue_env_n}]}" == "x" ]]
             then
-                # `declare -f` output does not encode `export -f`, so it has to be re-applied. The name
-                # to export is held in a variable, not literal, which is exactly what SC2163 flags.
                 # shellcheck disable=SC2163
                 export -f "${__tue_env_n}"
+            else
+                # shellcheck disable=SC2163
+                export -nf "${__tue_env_n}"
             fi
         fi
     done

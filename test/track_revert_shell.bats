@@ -131,3 +131,41 @@ setup() {
     run _tue-env-track-revert
     [[ "${status}" -eq 1 ]]
 }
+
+@test "revert: a function whose recorded body will not parse is not destroyed" {
+    # Function bodies are captured raw, so a literal RS byte in the user's own function truncates
+    # the ledger record and the eval that restores it cannot parse. Unsetting the function first
+    # made that unrecoverable: the user was left with no function at all. Not unsetting leaves the
+    # environment's version in place, which is a missed revert rather than data loss.
+    eval "tue_test_fn() { echo \$'\x1e'original; }"
+    _tue-env-track-begin
+    tue_test_fn() {
+        echo replaced
+    }
+    _tue-env-track-commit
+    [[ "${__TUE_ENV_LEDGER_FUNC[tue_test_fn]}" == "replaced" ]]
+    # Not `run`: that evaluates its command inside a command substitution, so an `unset -f` in there
+    # would be undone by the subshell exiting and the assertion below could never fail.
+    local __tue_env_status=0
+    __tue_env_track_revert_funcs || __tue_env_status=$?
+    [[ -n "$(declare -F tue_test_fn)" ]]
+    [[ "${__tue_env_status}" -eq 0 ]]
+}
+
+@test "revert: an export -f the environment added is cleared from a restored function" {
+    # Guards the half of the above that the vanished `unset -f` used to cover for free: the pre-load
+    # function was not exported, the environment exported it, and the restore has to take that flag
+    # back off with `export -nf` rather than by destroying and re-creating the function.
+    tue_test_fn() {
+        echo original
+    }
+    _tue-env-track-begin
+    tue_test_fn() {
+        echo replaced
+    }
+    export -f tue_test_fn
+    _tue-env-track-commit
+    _tue-env-track-revert
+    [[ "$(tue_test_fn)" == "original" ]]
+    [[ -z "$(declare -Fx | grep ' tue_test_fn$')" ]]
+}
