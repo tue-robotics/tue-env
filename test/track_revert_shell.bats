@@ -226,62 +226,47 @@ setup() {
     # like the start of a variable record used to have its tail parsed as a record of its own,
     # overwriting the real pre-load state of a variable it names - so the unload either restored a
     # value the user never had or, as here, saw no change at all and left the environment's value in
-    # place. Every record carries __TUE_ENV_MARK now, which a body written before the tracker ran
-    # cannot be carrying.
+    # place.
+    #
+    # Both shapes of the forgery are here. The first is a bare `RS V FS`, which the record token
+    # alone already defeated. The second carries the token's constant base as well - the literal
+    # `RS TUEENVREC FS V FS` - and that one a constant token could NOT defend against: it forged for
+    # real, and was pinned as a known limitation until the token grew a per-snapshot nonce. It fails
+    # now because the body was written before the nonce was drawn, so it cannot be carrying the
+    # digits this snapshot is framed with.
+    #
+    # The literal below stays spelled out rather than built from __TUE_ENV_MARK_BASE: the case under
+    # test is a body that carries the base verbatim, and reading the base back out of the tracker
+    # would stop testing that the moment the base changed.
     export TUE_TEST_PRECIOUS="the user's own value"
+    export TUE_TEST_PRECIOUS2="the other value the user owns"
     eval "tue_test_inj() { echo \$'\x1eV\x1fTUE_TEST_PRECIOUS\x1fdeclare -x TUE_TEST_PRECIOUS=\"INJECTED\"'; }"
+    # In two pieces only because one line of it would run past 120 columns.
+    local __tue_env_forged="\$'\x1eTUEENVREC\x1fV\x1fTUE_TEST_PRECIOUS2"
+    __tue_env_forged+="\x1fdeclare -x TUE_TEST_PRECIOUS2=\"INJECTED\"'"
+    eval "tue_test_inj2() { echo ${__tue_env_forged}; }"
+
+    # Directly: neither body is truncated at its own RS, and neither has written a record of its own
+    # over a variable the snapshot had already recorded correctly.
+    tue_track_snapshot PRE
+    [[ "${__TUE_ENV_PRE_FUNC[tue_test_inj]}" == "$(declare -f tue_test_inj)" ]]
+    [[ "${__TUE_ENV_PRE_FUNC[tue_test_inj2]}" == "$(declare -f tue_test_inj2)" ]]
+    [[ "${__TUE_ENV_PRE_VAR[TUE_TEST_PRECIOUS]}" == *"the user's own value"* ]]
+    [[ "${__TUE_ENV_PRE_VAR[TUE_TEST_PRECIOUS2]}" == *"the other value the user owns"* ]]
+
+    # End to end: the load's real change to both variables is recorded, and the unload hands the
+    # user's own values back.
     _tue-env-track-begin
     export TUE_TEST_PRECIOUS="from the environment"
+    export TUE_TEST_PRECIOUS2="also from the environment"
     _tue-env-track-commit
     [[ "${__TUE_ENV_LEDGER_VAR[TUE_TEST_PRECIOUS]}" == "replaced" ]]
+    [[ "${__TUE_ENV_LEDGER_VAR[TUE_TEST_PRECIOUS2]}" == "replaced" ]]
     [[ "${__TUE_ENV_LEDGER_VAR_PRE[TUE_TEST_PRECIOUS]}" == *"the user's own value"* ]]
+    [[ "${__TUE_ENV_LEDGER_VAR_PRE[TUE_TEST_PRECIOUS2]}" == *"the other value the user owns"* ]]
     __tue_env_track_revert_vars
     [[ "${TUE_TEST_PRECIOUS}" == "the user's own value" ]]
-}
-
-@test "revert: KNOWN LIMITATION - a body carrying the marker itself still forges a record" {
-    # CHARACTERISATION TEST. Everything it asserts is a BUG being recorded, not a contract being
-    # kept. It exists so that this residual cannot change without somebody noticing; do not read a
-    # single assertion in it as desirable behaviour.
-    #
-    # The marker is a heuristic, not a guarantee. It works because a function body written before
-    # the tracker ran cannot be carrying the marker - but a body that DOES carry the literal
-    # sequence RS + TUEENVREC + FS forges a record exactly as a bare RS + V + FS used to before the
-    # marker existed, and the test above no longer catches it. Escaping the body would close the
-    # hole for good and cannot be afforded: `declare -f` writes straight into the snapshot's own
-    # command substitution, and pulling its output into a variable in order to escape it costs a
-    # fork per function - measured at 62 forks for 20 names and 422 for 200, against a flat 12.
-    #
-    # The literal below is deliberate: the forgery is only possible because the marker is a
-    # compile-time constant that a body can carry verbatim. So if anyone ever closes the hole - a
-    # per-snapshot nonce in the marker is the obvious candidate - this test FAILS, loudly and on
-    # purpose. That is the whole point of it. Do not paper over the failure: delete this test and
-    # let the one above it, which asserts the CORRECT behaviour, cover the case instead.
-    [[ "${__TUE_ENV_MARK}" == "TUEENVREC" ]]  # the eval below has to carry the REAL marker
-    export TUE_TEST_PRECIOUS="the user's own value"
-    # The body of the forgery, in two pieces only because one line of it would run past 120 columns:
-    # a record separator, the marker, and then a variable record naming a variable of the user's.
-    local __tue_env_forged="\$'\x1eTUEENVREC\x1fV\x1fTUE_TEST_PRECIOUS"
-    __tue_env_forged+="\x1fdeclare -x TUE_TEST_PRECIOUS=\"INJECTED\"'"
-    eval "tue_test_inj() { echo ${__tue_env_forged}; }"
-
-    # Directly: the rejoin hands the forged tail to the record parse, so the body is truncated at
-    # its own RS and a variable the snapshot already recorded correctly is overwritten by the body.
-    tue_track_snapshot PRE
-    [[ "${__TUE_ENV_PRE_FUNC[tue_test_inj]}" != "$(declare -f tue_test_inj)" ]]
-    [[ "${__TUE_ENV_PRE_VAR[TUE_TEST_PRECIOUS]}" == *"INJECTED"* ]]
-
-    # End to end: the forgery lands in the pre-load AND the post-load snapshot, so the two agree
-    # about the variable and the load's real change to it is never recorded...
-    _tue-env-track-begin
-    export TUE_TEST_PRECIOUS="from the environment"
-    _tue-env-track-commit
-    [[ -z "${__TUE_ENV_LEDGER_VAR[TUE_TEST_PRECIOUS]:-}" ]]
-
-    # ...and the unload therefore leaves the environment's value in the user's shell. What SHOULD
-    # happen here is what the test above it gets: "the user's own value" back.
-    __tue_env_track_revert_vars
-    [[ "${TUE_TEST_PRECIOUS}" == "from the environment" ]]
+    [[ "${TUE_TEST_PRECIOUS2}" == "the other value the user owns" ]]
 }
 
 @test "revert: an export -f the environment added is cleared from a restored function" {

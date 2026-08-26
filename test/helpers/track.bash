@@ -25,8 +25,12 @@ function tue_track_setup
 
 function tue_track_snapshot
 {
-    # $1: PRE or POST. Snapshots this shell into the __TUE_ENV_$1_* arrays.
+    # $1: PRE or POST. Snapshots this shell into the __TUE_ENV_$1_* arrays. The nonce is drawn here
+    # for the same reason _tue-env-track-begin draws it: the record token has to be one no already
+    # defined function body could be carrying, and __tue_env_track_dump does not draw it itself so
+    # that two back-to-back dumps stay byte-identical.
     local __tue_env_snap
+    __tue_env_track_nonce
     __tue_env_snap="$(__tue_env_track_dump)"
     __tue_env_track_parse "${__tue_env_snap}" "$1"
     return 0

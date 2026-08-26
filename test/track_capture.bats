@@ -176,10 +176,81 @@ line"
 }
 
 @test "capture: two snapshots of an unchanged shell are byte-identical" {
+    # The record token is drawn by the CALLER of the dump, never inside it, so a single dump stays a
+    # pure function of the shell and the nonce cannot make two back-to-back dumps differ. Drawing it
+    # inside would break exactly this, and on the bash 5.0 floor `$RANDOM` inside a command
+    # substitution is not guaranteed to be reseeded per subshell anyway.
     local __tue_env_a __tue_env_b
     __tue_env_a="$(__tue_env_track_dump)"
     __tue_env_b="$(__tue_env_track_dump)"
     [[ "${__tue_env_a}" == "${__tue_env_b}" ]]
+}
+
+@test "capture: every snapshot is framed with a record token drawn for that snapshot" {
+    # What closes the forgery: a body already defined in the shell cannot be carrying a number that
+    # had not been drawn when it was written. Assert the three things that makes true - the token
+    # changes between draws, it is the base plus digits only so it can never pick up a framing byte,
+    # and the stream really is framed with the token that was live when it was taken.
+    local __tue_env_a __tue_env_b __tue_env_ma __tue_env_mb __tue_env_digits
+    __tue_env_track_nonce
+    __tue_env_ma="${__TUE_ENV_MARK}"
+    __tue_env_a="$(__tue_env_track_dump)"
+    __tue_env_track_nonce
+    __tue_env_mb="${__TUE_ENV_MARK}"
+    __tue_env_b="$(__tue_env_track_dump)"
+
+    [[ "${__tue_env_ma}" != "${__tue_env_mb}" ]]
+
+    # The base plus digits and nothing else: a token that could pick up a framing byte of its own
+    # would end its record before the record had begun.
+    __tue_env_digits="${__tue_env_ma#"${__TUE_ENV_MARK_BASE}"}"
+    [[ -n "${__tue_env_digits}" ]]
+    [[ -z "${__tue_env_digits//[0-9]/}" ]]
+
+    [[ "${__tue_env_a}" == "${__tue_env_ma}${__TUE_ENV_FS}"* ]]
+    [[ "${__tue_env_b}" == "${__tue_env_mb}${__TUE_ENV_FS}"* ]]
+}
+
+@test "capture: the parse reads the token out of the stream, not out of the live global" {
+    # The reason the nonce is safe at all. setup.bash is re-sourced from INSIDE the tracked span, so
+    # __TUE_ENV_MARK does not still hold the token the pre-load stream was framed with by the time
+    # that stream is parsed. A parse that read the global would match nothing, classify the whole
+    # shell as `added`, and have the unload destroy variables the user owned.
+    export TUE_TEST_DERIVED=1
+    local __tue_env_snap
+    __tue_env_track_nonce
+    __tue_env_snap="$(__tue_env_track_dump)"
+    # Stand in for what a re-source does to the global between the dump and the parse of its stream.
+    __TUE_ENV_MARK="${__TUE_ENV_MARK_BASE}"
+    __tue_env_track_parse "${__tue_env_snap}" PRE
+    [[ -n "${__TUE_ENV_PRE_VAR[TUE_TEST_DERIVED]:-}" ]]
+}
+
+@test "capture: an empty or unframed stream parses to nothing rather than to nonsense" {
+    # The token is derived from the stream's first record, so a stream that carries no token has to
+    # leave the arrays as the parse cleared them - empty - rather than adopting whatever that first
+    # record's first field happens to be as a token and reading somebody's function body as records.
+    # The five cases are: nothing at all; a fragment with no separator in it; a first field that is
+    # empty; a first RECORD that is empty; and a first field that is somebody else's text. The last
+    # three carry a well-formed-looking forged variable record behind that first field. Cases three
+    # and five are the ones that forge if the token's constant base stops being checked; case four
+    # is the empty-first-record path, which no stream the dump produces can take either.
+    export TUE_TEST_TOCLEAR=1
+    tue_track_snapshot PRE
+    [[ -n "${__TUE_ENV_PRE_VAR[TUE_TEST_TOCLEAR]:-}" ]]
+
+    local __tue_env_case
+    for __tue_env_case in "" "no separators here at all" \
+        $'\x1fV\x1fTUE_TEST_TOCLEAR\x1fdeclare -x TUE_TEST_TOCLEAR="FORGED"\x1e' \
+        $'\x1eTUEENVREC1\x1fV\x1fTUE_TEST_TOCLEAR\x1fdeclare -x TUE_TEST_TOCLEAR="FORGED"\x1e' \
+        $'garbage\x1fV\x1fTUE_TEST_TOCLEAR\x1fdeclare -x TUE_TEST_TOCLEAR="FORGED"\x1e'
+    do
+        __tue_env_track_parse "${__tue_env_case}" PRE
+        [[ "${#__TUE_ENV_PRE_VAR[@]}" -eq 0 ]]
+        [[ "${#__TUE_ENV_PRE_FUNC[@]}" -eq 0 ]]
+        [[ "${#__TUE_ENV_PRE_ALIAS[@]}" -eq 0 ]]
+        [[ "${#__TUE_ENV_PRE_COMPLETE[@]}" -eq 0 ]]
+    done
 }
 
 @test "capture: the number of forks a load costs does not grow with the number of names" {

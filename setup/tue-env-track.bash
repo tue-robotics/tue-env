@@ -29,7 +29,21 @@ __TUE_ENV_ESC=$'\x1b'
 # the tail of a body that a raw RS byte cut in half, and it does that by looking for this. A bare
 # one-letter kind would not do: a body holding `RS V FS` would then read as a variable record and
 # write a pre-load state for a variable the load never touched.
-__TUE_ENV_MARK='TUEENVREC'
+#
+# A constant token is not enough on its own: a body carrying the literal sequence RS + the token +
+# FS forges a record and truncates itself at its own RS. So the token carries a nonce that
+# __tue_env_track_nonce draws immediately before each dump - a body written before that draw cannot
+# be carrying the number. The constant below is the base of the token and the fail-safe value: a
+# dump nobody drew a nonce for frames exactly as it always did.
+#
+# __TUE_ENV_MARK holds the token the NEXT dump will frame with, and nothing else may read it. In
+# particular __tue_env_track_parse does not: it takes the token from the stream it is handed. That
+# is load-bearing. setup.bash re-sources this file from inside the tracked span, which resets the
+# assignment below, so a parse that read the live global would stop matching the pre-load stream it
+# was handed, classify the entire shell as `added`, and have deactivate unset variables the user
+# owned before the load.
+__TUE_ENV_MARK_BASE='TUEENVREC'
+__TUE_ENV_MARK="${__TUE_ENV_MARK_BASE}"
 
 # Extra glob patterns of names never to track. Empty in production; the test harness uses it to hide
 # its own bookkeeping.
@@ -115,6 +129,21 @@ function __tue_env_track_excluded
         fi
     done
     return 1
+}
+
+function __tue_env_track_nonce
+{
+    # Draws the record token the next dump frames its records with. Call it immediately before the
+    # dump, with nothing in between: the whole point is that no code which has already run - and so
+    # no function body already defined - can have seen the number.
+    #
+    # `$RANDOM` is a parameter expansion, so this costs no fork, which is what lets the token be
+    # per-snapshot at all. Two draws are decimal digits only, so the token can never pick up a
+    # framing byte. A shell where `RANDOM` has been unset expands both to nothing and the token
+    # falls back to the bare base - the behaviour this had before the nonce, never something the
+    # parse cannot read.
+    __TUE_ENV_MARK="${__TUE_ENV_MARK_BASE}${RANDOM}${RANDOM}"
+    return 0
 }
 
 function __tue_env_track_dump
@@ -219,15 +248,37 @@ function __tue_env_track_parse
 
     # A function body is the one payload the capture cannot escape - see __tue_env_track_dump - so a
     # raw RS byte inside somebody's own function still cuts its record in two here. Every record
-    # begins with __TUE_ENV_MARK and a FS, and every other payload IS escaped at capture, so a piece
-    # that does not begin that way is the rest of the body in the piece before it: put the byte back
-    # and rejoin. Without this the tail of such a body is parsed as a record in its own right, which
+    # begins with this stream's record token and a FS, and every other payload IS escaped at capture,
+    # so a piece that does not begin that way is the rest of the body in the piece before it: put it
+    # back and rejoin. Without this the tail of such a body is parsed as a record of its own, which
     # at best loses the function and at worst writes a pre-load state for a variable the load never
     # touched.
     #
     # `mapfile -d` treats the separator as a terminator, so a well-formed stream produces no trailing
     # empty piece, and an empty piece here really is two adjacent RS bytes inside a body.
-    local __tue_env_rec __tue_env_hdr="${__TUE_ENV_MARK}${__TUE_ENV_FS}"
+    #
+    # The token is read out of the stream and never out of __TUE_ENV_MARK, which by now holds the
+    # token of a LATER dump or the bare base that re-sourcing this file put back. Deriving it is what
+    # makes a per-snapshot nonce safe; see the comment on __TUE_ENV_MARK. The cost is that the NONCE
+    # half of the token is no longer validated - whatever the stream's first field holds is taken as
+    # its token - and __tue_env_track_dump being the only producer of a stream is what makes that a
+    # fair trade. The BASE half is still checked, because unlike the nonce it cannot desynchronise:
+    # re-sourcing this file assigns it the value it already had. So a stream whose first field is not
+    # a token at all - an empty stream, or a fragment with no FS in it - parses to nothing, and the
+    # arrays are left as this function cleared them: empty, never half-filled with pieces of
+    # somebody's function body.
+    #
+    # It is read out of the first RECORD rather than out of the whole stream. `${x%%FS*}` costs time
+    # proportional to the length of x, not to the offset of the FS it finds, so taking it from the
+    # stream would scan the whole snapshot - measured at 4.7 ms on a 154 KB stream against 0.23 ms on
+    # its first record, twice per environment load. Same value either way: the stream begins with its
+    # first record, and a record begins with the token.
+    local __tue_env_rec __tue_env_hdr="${__tue_env_recs[0]:-}"
+    __tue_env_hdr="${__tue_env_hdr%%"${__TUE_ENV_FS}"*}${__TUE_ENV_FS}"
+    if [[ "${__tue_env_hdr}" != "${__TUE_ENV_MARK_BASE}"* ]]
+    then
+        return 0
+    fi
     for __tue_env_rec in ${__tue_env_recs[@]+"${__tue_env_recs[@]}"}
     do
         if [[ "${__tue_env_rec}" == "${__tue_env_hdr}"* ]]
@@ -698,6 +749,7 @@ function _tue-env-track-begin
     then
         return 0
     fi
+    __tue_env_track_nonce
     __TUE_ENV_SNAP_PRE="$(__tue_env_track_dump)"
     return 0
 }
@@ -717,6 +769,7 @@ function _tue-env-track-commit
     fi
 
     local __tue_env_snap
+    __tue_env_track_nonce
     __tue_env_snap="$(__tue_env_track_dump)"
     __tue_env_track_parse "${__TUE_ENV_SNAP_PRE}" PRE
     __tue_env_track_parse "${__tue_env_snap}" POST

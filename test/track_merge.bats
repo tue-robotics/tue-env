@@ -17,6 +17,29 @@ setup() {
     [[ "${__TUE_ENV_TRACK_DEPTH}" -eq 0 ]]
 }
 
+@test "depth: re-sourcing the tracker inside the tracked span keeps the pre-load snapshot" {
+    # A target_setup.bash that sources setup.bash again is the case the depth counter exists to
+    # tolerate, and setup.bash re-sources this file every time. That resets every unguarded global in
+    # it - the record token among them - in the middle of a load. Nothing about the pre-load snapshot
+    # may depend on a global that survives to commit time: if it did, the pre-load stream would match
+    # nothing, the whole shell would be classified `added`, and the unload would unset variables the
+    # user owned before the load rather than the ones the environment added.
+    export TUE_TEST_BEFORE="user value"
+    _tue-env-track-begin
+    export TUE_TEST_BEFORE="environment value"
+    export TUE_TEST_ADDED=1
+    # shellcheck source=/dev/null
+    source "${TUE_TRACK_REPO_ROOT}/setup/tue-env-track.bash"
+    _tue-env-track-commit
+
+    [[ "${__TUE_ENV_LEDGER_VAR[TUE_TEST_BEFORE]}" == "replaced" ]]
+    [[ "${__TUE_ENV_LEDGER_VAR[TUE_TEST_ADDED]}" == "added" ]]
+    [[ "${#__TUE_ENV_LEDGER_VAR[@]}" -eq 2 ]]
+    _tue-env-track-revert
+    [[ "${TUE_TEST_BEFORE}" == "user value" ]]
+    [[ -z "${TUE_TEST_ADDED+set}" ]]
+}
+
 @test "depth: a commit without a begin does nothing" {
     _tue-env-track-commit
     [[ "${__TUE_ENV_TRACK_DEPTH}" -eq 0 ]]

@@ -161,11 +161,28 @@ that does not begin with it is the rest of the body in the piece before it, and 
 rejoins. A bare one-letter kind would not be enough of a marker — a body holding `\x1e V \x1f` would read as a
 variable record and write a pre-load state for a variable the load never touched.
 
-The marker reduces that forgery surface rather than eliminating it: it is a heuristic, not a guarantee. A body that
-carries the literal sequence `\x1e TUEENVREC \x1f` still forges a record and truncates itself at its own `\x1e`,
-where before the marker any `\x1e V \x1f` did. Closing the residual for good needs a marker a body cannot carry — a
-per-snapshot nonce, say — not just a longer constant. A characterisation test pins the residual as a known
-limitation, so that closing it fails that test rather than changing the behaviour silently.
+A constant marker would only narrow that forgery surface, not close it: a body carrying the literal sequence
+`\x1e TUEENVREC \x1f` would forge a record and truncate itself exactly as `\x1e V \x1f` did before the marker
+existed. The marker is therefore not a constant. It is `TUEENVREC` plus a per-snapshot nonce, two `$RANDOM` draws,
+and a body already defined in the shell cannot be carrying a number that had not been drawn when it was written.
+`$RANDOM` is a parameter expansion, so the nonce costs no fork and the constant fork count is unaffected.
+
+The nonce is drawn by the *caller*, immediately before each dump, and never inside the dump. Two consequences follow,
+and both are load-bearing. A single dump stays a pure function of the shell, so two back-to-back snapshots of an
+unchanged shell are still byte-identical. And the parse takes the marker from the *stream it is reading* — the first
+field of its first record — rather than from the live global, because `setup.bash` is re-sourced from inside the
+tracked span and that resets the global mid-load. A parse that read the global would match nothing in the pre-load
+stream, classify the entire shell as `added`, and have `tue-env deactivate` unset variables the user owned before the
+load. What the parse still checks against the global is the constant `TUEENVREC` base, which re-sourcing can only
+assign the value it already had, so a stream that carries no marker at all parses to nothing rather than adopting its
+own first field as one.
+
+What the nonce buys is robustness against an unlucky payload — tue-env's own fixtures, a dotfile function that greps
+snapshots, a here-doc holding a captured stream — and nothing more. It is **not** a security property. `$RANDOM` is
+not cryptographically strong, and it does not need to be: code running inside the tracked span already has the user's
+privileges and can assign to the ledger arrays directly, so it never has to forge a record to do harm. The tracker
+has no integrity boundary against the code it is tracking and cannot have one. A shell with `RANDOM` unset degrades
+the marker to the bare constant, which is fail-safe: the old behaviour, not a broken parse.
 
 Variables are captured with `declare -p "${name}"`, not with the `${!ref@A}` parameter transformation. `@A` under
 indirection silently mangles arrays — it indirects to the first element and then renders that:
