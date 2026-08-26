@@ -23,6 +23,22 @@ setup() {
     [[ "${TUE_TEST_LIST}" == "A:X:B" ]]
 }
 
+@test "revert: a list entry holding a record separator is the one that gets removed" {
+    # The recorded added entries are framed with the same bytes as a snapshot record, and an entry is
+    # a `:`-separated field of somebody's variable, so it can hold any byte at all. Unescaped, an
+    # entry with an RS in it was read back cut off at the byte, matched nothing in the current value
+    # and was skipped - leaving the environment's entry on the variable for the life of the shell.
+    local __tue_env_entry=$'/opt/a\x1eb'
+    export TUE_TEST_LIST="/usr/bin:/bin"
+    _tue-env-track-begin
+    export TUE_TEST_LIST="${__tue_env_entry}:${TUE_TEST_LIST}"
+    _tue-env-track-commit
+    [[ "${__TUE_ENV_LEDGER_VAR[TUE_TEST_LIST]}" == "extended" ]]
+    [[ "$(tue_track_added TUE_TEST_LIST)" == "0=${__tue_env_entry}" ]]
+    __tue_env_track_revert_vars
+    [[ "${TUE_TEST_LIST}" == "/usr/bin:/bin" ]]
+}
+
 @test "revert: an entry the ledger recorded but that is gone is skipped silently" {
     export TUE_TEST_LIST="/usr/bin"
     _tue-env-track-begin

@@ -15,11 +15,21 @@
 # a caller running under `set -e` would abort.
 # ----------------------------------------------------------------------------------------------------
 
-# Record, field and pair separators. Newlines cannot be used, `declare -p` emits literal newlines
-# inside values; NUL cannot be used, command substitution discards it.
+# Record, field and pair separators, and the byte that escapes them inside a payload. Newlines cannot
+# be used, `declare -p` emits literal newlines inside values; NUL cannot be used, command substitution
+# discards it. A payload that contains a separator byte of its own would otherwise end its record or
+# its field early - silently truncating an alias, or destroying it outright when the byte comes first.
 __TUE_ENV_RS=$'\x1e'
 __TUE_ENV_FS=$'\x1f'
 __TUE_ENV_PS=$'\x1d'
+__TUE_ENV_ESC=$'\x1b'
+
+# Every record starts with this token and a FS. A function body is the one payload that cannot be
+# escaped at capture - see __tue_env_track_dump - so the parse has to be able to tell a record from
+# the tail of a body that a raw RS byte cut in half, and it does that by looking for this. A bare
+# one-letter kind would not do: a body holding `RS V FS` would then read as a variable record and
+# write a pre-load state for a variable the load never touched.
+__TUE_ENV_MARK='TUEENVREC'
 
 # Extra glob patterns of names never to track. Empty in production; the test harness uses it to hide
 # its own bookkeeping.
@@ -53,6 +63,39 @@ declare -gA __TUE_ENV_POST_ALIAS=() __TUE_ENV_POST_COMPLETE=()
 #                                          CAPTURE
 # ----------------------------------------------------------------------------------------------------
 
+function __tue_env_track_escape
+{
+    # $1: raw text. Result in __TUE_ENV_ESCAPED, with every framing byte replaced by a two-byte
+    # sequence, so that the text can no longer end a record or a field. ESC is substituted first:
+    # after that step every ESC in the string is one this function put there, so the three
+    # substitutions that follow cannot collide with a payload's own ESC bytes.
+    #
+    # Parameter expansion only, and never a command substitution: the whole capture is built to cost
+    # a constant number of forks per load rather than one per name, and escaping must not be what
+    # breaks that.
+    local __tue_env_esc="$1"
+    __tue_env_esc="${__tue_env_esc//"${__TUE_ENV_ESC}"/"${__TUE_ENV_ESC}0"}"
+    __tue_env_esc="${__tue_env_esc//"${__TUE_ENV_RS}"/"${__TUE_ENV_ESC}1"}"
+    __tue_env_esc="${__tue_env_esc//"${__TUE_ENV_FS}"/"${__TUE_ENV_ESC}2"}"
+    __tue_env_esc="${__tue_env_esc//"${__TUE_ENV_PS}"/"${__TUE_ENV_ESC}3"}"
+    __TUE_ENV_ESCAPED="${__tue_env_esc}"
+    return 0
+}
+
+function __tue_env_track_unescape
+{
+    # $1: escaped text. Result in __TUE_ENV_UNESCAPED. Exactly the mirror image: ESC is put back
+    # last, so that a `${ESC}0` this function has just produced can never be re-read as an escape
+    # pair by a later substitution.
+    local __tue_env_esc="$1"
+    __tue_env_esc="${__tue_env_esc//"${__TUE_ENV_ESC}3"/"${__TUE_ENV_PS}"}"
+    __tue_env_esc="${__tue_env_esc//"${__TUE_ENV_ESC}2"/"${__TUE_ENV_FS}"}"
+    __tue_env_esc="${__tue_env_esc//"${__TUE_ENV_ESC}1"/"${__TUE_ENV_RS}"}"
+    __tue_env_esc="${__tue_env_esc//"${__TUE_ENV_ESC}0"/"${__TUE_ENV_ESC}"}"
+    __TUE_ENV_UNESCAPED="${__tue_env_esc}"
+    return 0
+}
+
 function __tue_env_track_excluded
 {
     # $1: name. Returns 0 when the name must not be tracked.
@@ -84,7 +127,7 @@ function __tue_env_track_dump
     # is what keeps the `declare -Fx` read loop below correct; the two `compgen` name lists are read
     # with `mapfile` instead of a split, so they are immune to IFS and to globbing either way.
     local IFS=$' \t\n'
-    local __tue_env_n __tue_env_names __tue_env_l __tue_env_d1 __tue_env_d2
+    local __tue_env_n __tue_env_names __tue_env_l __tue_env_d1 __tue_env_d2 __tue_env_en
     local -a __tue_env_list=()
     local -A __tue_env_xf=()
 
@@ -102,7 +145,8 @@ function __tue_env_track_dump
     for __tue_env_n in "${__tue_env_list[@]}"
     do
         __tue_env_track_excluded "${__tue_env_n}" && continue
-        printf 'V%s%s%s' "${__TUE_ENV_FS}" "${__tue_env_n}" "${__TUE_ENV_FS}"
+        printf '%sV%s%s%s' "${__TUE_ENV_MARK}${__TUE_ENV_FS}" "${__TUE_ENV_FS}" \
+               "${__tue_env_n}" "${__TUE_ENV_FS}"
         declare -p "${__tue_env_n}" 2> /dev/null
         printf '%s' "${__TUE_ENV_RS}"
     done
@@ -111,8 +155,14 @@ function __tue_env_track_dump
     for __tue_env_n in "${__tue_env_list[@]}"
     do
         __tue_env_track_excluded "${__tue_env_n}" && continue
-        printf 'F%s%s%s%s%s' "${__TUE_ENV_FS}" "${__tue_env_n}" "${__TUE_ENV_FS}" \
-               "${__tue_env_xf[${__tue_env_n}]:-}" "${__TUE_ENV_FS}"
+        # Only the name is escaped. `declare -f` writes its output straight into the snapshot's own
+        # command substitution; capturing it into a variable first, which is what escaping it would
+        # need, costs a fork per function and is exactly what this dump is built to avoid. The parse
+        # puts a body that a raw RS split back together instead.
+        __tue_env_track_escape "${__tue_env_n}"
+        printf '%sF%s%s%s%s%s' "${__TUE_ENV_MARK}${__TUE_ENV_FS}" "${__TUE_ENV_FS}" \
+               "${__TUE_ENV_ESCAPED}" "${__TUE_ENV_FS}" "${__tue_env_xf[${__tue_env_n}]:-}" \
+               "${__TUE_ENV_FS}"
         declare -f "${__tue_env_n}"
         printf '%s' "${__TUE_ENV_RS}"
     done
@@ -121,8 +171,11 @@ function __tue_env_track_dump
     for __tue_env_n in "${!BASH_ALIASES[@]}"
     do
         __tue_env_track_excluded "${__tue_env_n}" && continue
-        printf 'A%s%s%s%s%s' "${__TUE_ENV_FS}" "${__tue_env_n}" "${__TUE_ENV_FS}" \
-               "${BASH_ALIASES[${__tue_env_n}]}" "${__TUE_ENV_RS}"
+        __tue_env_track_escape "${__tue_env_n}"
+        __tue_env_en="${__TUE_ENV_ESCAPED}"
+        __tue_env_track_escape "${BASH_ALIASES[${__tue_env_n}]}"
+        printf '%sA%s%s%s%s%s' "${__TUE_ENV_MARK}${__TUE_ENV_FS}" "${__TUE_ENV_FS}" \
+               "${__tue_env_en}" "${__TUE_ENV_FS}" "${__TUE_ENV_ESCAPED}" "${__TUE_ENV_RS}"
     done
 
     # `complete -p` prints one registration per line; the command it applies to is the last field.
@@ -133,8 +186,11 @@ function __tue_env_track_dump
         [[ -z "${__tue_env_l}" ]] && continue
         __tue_env_n="${__tue_env_l##* }"
         __tue_env_track_excluded "${__tue_env_n}" && continue
-        printf 'C%s%s%s%s%s' "${__TUE_ENV_FS}" "${__tue_env_n}" "${__TUE_ENV_FS}" \
-               "${__tue_env_l}" "${__TUE_ENV_RS}"
+        __tue_env_track_escape "${__tue_env_n}"
+        __tue_env_en="${__TUE_ENV_ESCAPED}"
+        __tue_env_track_escape "${__tue_env_l}"
+        printf '%sC%s%s%s%s%s' "${__TUE_ENV_MARK}${__TUE_ENV_FS}" "${__TUE_ENV_FS}" \
+               "${__tue_env_en}" "${__TUE_ENV_FS}" "${__TUE_ENV_ESCAPED}" "${__TUE_ENV_RS}"
     done <<< "${__tue_env_names}"
 
     return 0
@@ -158,28 +214,64 @@ function __tue_env_track_parse
     # rescan the whole remaining string every iteration, which is quadratic in the snapshot size. On a
     # 77 KB snapshot the parse measured 1032 ms that way against roughly 34 ms here, and
     # _tue-env-track-commit parses two snapshots on every environment load.
-    local -a __tue_env_recs
+    local -a __tue_env_recs __tue_env_joined=()
     mapfile -d "${__TUE_ENV_RS}" -t __tue_env_recs < <(printf '%s' "$1")
 
-    local __tue_env_rec __tue_env_k __tue_env_n
-    for __tue_env_rec in "${__tue_env_recs[@]}"
+    # A function body is the one payload the capture cannot escape - see __tue_env_track_dump - so a
+    # raw RS byte inside somebody's own function still cuts its record in two here. Every record
+    # begins with __TUE_ENV_MARK and a FS, and every other payload IS escaped at capture, so a piece
+    # that does not begin that way is the rest of the body in the piece before it: put the byte back
+    # and rejoin. Without this the tail of such a body is parsed as a record in its own right, which
+    # at best loses the function and at worst writes a pre-load state for a variable the load never
+    # touched.
+    #
+    # `mapfile -d` treats the separator as a terminator, so a well-formed stream produces no trailing
+    # empty piece, and an empty piece here really is two adjacent RS bytes inside a body.
+    local __tue_env_rec __tue_env_hdr="${__TUE_ENV_MARK}${__TUE_ENV_FS}"
+    for __tue_env_rec in ${__tue_env_recs[@]+"${__tue_env_recs[@]}"}
+    do
+        if [[ "${__tue_env_rec}" == "${__tue_env_hdr}"* ]]
+        then
+            __tue_env_joined+=("${__tue_env_rec#"${__tue_env_hdr}"}")
+        elif (( ${#__tue_env_joined[@]} > 0 ))
+        then
+            __tue_env_joined[-1]+="${__TUE_ENV_RS}${__tue_env_rec}"
+        fi
+    done
+
+    local __tue_env_k __tue_env_n
+    for __tue_env_rec in ${__tue_env_joined[@]+"${__tue_env_joined[@]}"}
     do
         [[ -z "${__tue_env_rec}" ]] && continue
         __tue_env_k="${__tue_env_rec%%"${__TUE_ENV_FS}"*}"
         __tue_env_rec="${__tue_env_rec#*"${__TUE_ENV_FS}"}"
         __tue_env_n="${__tue_env_rec%%"${__TUE_ENV_FS}"*}"
         __tue_env_rec="${__tue_env_rec#*"${__TUE_ENV_FS}"}"
+        # Unescaping here, as the ledger is built, is what keeps the blast radius of the wire format
+        # to this one function: revert, report, strip and merge all go on seeing exactly the text
+        # they saw before. A variable's payload is NOT unescaped - `declare -p` renders every control
+        # byte as printable `$'\036'` text itself, for a scalar, for an array's elements and for an
+        # associative array's keys, so a variable payload never carries a framing byte, never went
+        # through the escape on the way out, and has nothing here for the unescape to undo.
         case "${__tue_env_k}" in
             V )
                 __tue_env_rv["${__tue_env_n}"]="${__tue_env_rec%$'\n'}" ;;
             F )
+                __tue_env_track_unescape "${__tue_env_n}"
+                __tue_env_n="${__TUE_ENV_UNESCAPED}"
                 __tue_env_rx["${__tue_env_n}"]="${__tue_env_rec%%"${__TUE_ENV_FS}"*}"
                 __tue_env_rec="${__tue_env_rec#*"${__TUE_ENV_FS}"}"
                 __tue_env_rf["${__tue_env_n}"]="${__tue_env_rec%$'\n'}" ;;
             A )
-                __tue_env_ra["${__tue_env_n}"]="${__tue_env_rec}" ;;
+                __tue_env_track_unescape "${__tue_env_n}"
+                __tue_env_n="${__TUE_ENV_UNESCAPED}"
+                __tue_env_track_unescape "${__tue_env_rec}"
+                __tue_env_ra["${__tue_env_n}"]="${__TUE_ENV_UNESCAPED}" ;;
             C )
-                __tue_env_rc["${__tue_env_n}"]="${__tue_env_rec%$'\n'}" ;;
+                __tue_env_track_unescape "${__tue_env_n}"
+                __tue_env_n="${__TUE_ENV_UNESCAPED}"
+                __tue_env_track_unescape "${__tue_env_rec%$'\n'}"
+                __tue_env_rc["${__tue_env_n}"]="${__TUE_ENV_UNESCAPED}" ;;
         esac
     done
 
@@ -270,7 +362,11 @@ function __tue_env_track_entries
         then
             __tue_env_j=$(( __tue_env_j + 1 ))
         else
-            __tue_env_o+="${__tue_env_i}${__TUE_ENV_PS}${__tue_env_q[__tue_env_i]}${__TUE_ENV_RS}"
+            # The entry is escaped for the same reason an alias value is: it is a `:`-separated field
+            # of somebody's variable, so it can hold any byte at all, including the RS that ends this
+            # pair and would otherwise truncate or destroy the record.
+            __tue_env_track_escape "${__tue_env_q[__tue_env_i]}"
+            __tue_env_o+="${__tue_env_i}${__TUE_ENV_PS}${__TUE_ENV_ESCAPED}${__TUE_ENV_RS}"
         fi
     done
 
@@ -785,7 +881,8 @@ function __tue_env_track_strip
         __tue_env_rest="${__tue_env_rest#*"${__TUE_ENV_RS}"}"
         [[ -z "${__tue_env_pair}" ]] && continue
         __tue_env_idx="${__tue_env_pair%%"${__TUE_ENV_PS}"*}"
-        __tue_env_e="${__tue_env_pair#*"${__TUE_ENV_PS}"}"
+        __tue_env_track_unescape "${__tue_env_pair#*"${__TUE_ENV_PS}"}"
+        __tue_env_e="${__TUE_ENV_UNESCAPED}"
 
         if (( ${__tue_env_live["k${__tue_env_e}"]:-0} <= ${__tue_env_keep["k${__tue_env_e}"]:-0} ))
         then
@@ -1111,7 +1208,8 @@ function __tue_env_track_entry_list
         __tue_env_pair="${__tue_env_rest%%"${__TUE_ENV_RS}"*}"
         __tue_env_rest="${__tue_env_rest#*"${__TUE_ENV_RS}"}"
         [[ -z "${__tue_env_pair}" ]] && continue
-        __tue_env_o+="${__tue_env_o:+, }${__tue_env_pair#*"${__TUE_ENV_PS}"}"
+        __tue_env_track_unescape "${__tue_env_pair#*"${__TUE_ENV_PS}"}"
+        __tue_env_o+="${__tue_env_o:+, }${__TUE_ENV_UNESCAPED}"
     done
     __TUE_ENV_LIST="${__tue_env_o}"
     return 0

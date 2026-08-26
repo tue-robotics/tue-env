@@ -131,6 +131,30 @@ setup() {
     [[ "${BASH_ALIASES[tue_test_a]}" == "" ]]
 }
 
+@test "revert: an alias value holding a record separator is restored byte-exactly" {
+    # The framing bytes used to end the record early: a value with an RS in the middle came back
+    # truncated at the byte, and one that began with an RS came back destroyed.
+    local __tue_env_want=$'echo foo\x1eBAR'
+    alias "tue_test_rs=${__tue_env_want}"
+    _tue-env-track-begin
+    alias tue_test_rs='echo fromenv'
+    _tue-env-track-commit
+    _tue-env-track-revert
+    [[ -n "${BASH_ALIASES[tue_test_rs]+set}" ]]
+    [[ "${BASH_ALIASES[tue_test_rs]}" == "${__tue_env_want}" ]]
+}
+
+@test "revert: an alias value that begins with a record separator is not destroyed" {
+    local __tue_env_want=$'\x1eecho mine'
+    alias "tue_test_rs=${__tue_env_want}"
+    _tue-env-track-begin
+    alias tue_test_rs='echo fromenv'
+    _tue-env-track-commit
+    _tue-env-track-revert
+    [[ -n "${BASH_ALIASES[tue_test_rs]+set}" ]]
+    [[ "${BASH_ALIASES[tue_test_rs]}" == "${__tue_env_want}" ]]
+}
+
 @test "revert: an added completion is removed and a replaced one restored" {
     tue_test_complete() {
         COMPREPLY=()
@@ -171,24 +195,48 @@ setup() {
     [[ "${status}" -eq 1 ]]
 }
 
-@test "revert: a function whose recorded body will not parse is not destroyed" {
-    # Function bodies are captured raw, so a literal RS byte in the user's own function truncates
-    # the ledger record and the eval that restores it cannot parse. Unsetting the function first
-    # made that unrecoverable: the user was left with no function at all. Not unsetting leaves the
-    # environment's version in place, which is a missed revert rather than data loss.
+@test "revert: a function whose own body holds a record separator is restored, not just spared" {
+    # Function bodies are captured raw - `declare -f` writes into the snapshot's own command
+    # substitution, and pulling its output into a variable to escape it would cost a fork per
+    # function. A literal RS byte in the user's function therefore still splits its record, and the
+    # ledger used to keep only the piece before the byte: the eval that restores it could not parse,
+    # and the user was left with the environment's version instead of their own. The parse rejoins
+    # the pieces now, so the body that comes back is the body that went in.
     eval "tue_test_fn() { echo \$'\x1e'original; }"
+    local __tue_env_want
+    __tue_env_want="$(declare -f tue_test_fn)"
     _tue-env-track-begin
     tue_test_fn() {
         echo replaced
     }
     _tue-env-track-commit
     [[ "${__TUE_ENV_LEDGER_FUNC[tue_test_fn]}" == "replaced" ]]
-    # Not `run`: that evaluates its command inside a command substitution, so an `unset -f` in there
-    # would be undone by the subshell exiting and the assertion below could never fail.
+    # Not `run`: that evaluates its command inside a command substitution, so anything the revert
+    # does to the function would be undone by the subshell exiting and could never be asserted on.
     local __tue_env_status=0
     __tue_env_track_revert_funcs || __tue_env_status=$?
-    [[ -n "$(declare -F tue_test_fn)" ]]
     [[ "${__tue_env_status}" -eq 0 ]]
+    [[ -n "$(declare -F tue_test_fn)" ]]
+    [[ "$(declare -f tue_test_fn)" == "${__tue_env_want}" ]]
+    [[ "$(tue_test_fn)" == $'\x1eoriginal' ]]
+}
+
+@test "revert: a function body cannot forge a record for a variable the load never touched" {
+    # The worst of the raw-body cases. A body carrying a record separator followed by what looks
+    # like the start of a variable record used to have its tail parsed as a record of its own,
+    # overwriting the real pre-load state of a variable it names - so the unload either restored a
+    # value the user never had or, as here, saw no change at all and left the environment's value in
+    # place. Every record carries __TUE_ENV_MARK now, which a body written before the tracker ran
+    # cannot be carrying.
+    export TUE_TEST_PRECIOUS="the user's own value"
+    eval "tue_test_inj() { echo \$'\x1eV\x1fTUE_TEST_PRECIOUS\x1fdeclare -x TUE_TEST_PRECIOUS=\"INJECTED\"'; }"
+    _tue-env-track-begin
+    export TUE_TEST_PRECIOUS="from the environment"
+    _tue-env-track-commit
+    [[ "${__TUE_ENV_LEDGER_VAR[TUE_TEST_PRECIOUS]}" == "replaced" ]]
+    [[ "${__TUE_ENV_LEDGER_VAR_PRE[TUE_TEST_PRECIOUS]}" == *"the user's own value"* ]]
+    __tue_env_track_revert_vars
+    [[ "${TUE_TEST_PRECIOUS}" == "the user's own value" ]]
 }
 
 @test "revert: an export -f the environment added is cleared from a restored function" {

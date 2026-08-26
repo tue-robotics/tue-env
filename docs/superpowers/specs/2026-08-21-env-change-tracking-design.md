@@ -136,7 +136,7 @@ Two consequences follow from the merge rules and are intended:
 ## Capture
 
 A snapshot is a single command substitution around a dump function built entirely from builtins: `compgen -v`,
-`declare -p`, `compgen -A function`, `declare -f`, `declare -Fx`, `alias -p`, `complete -p`. The per-name work all
+`declare -p`, `compgen -A function`, `declare -f`, `declare -Fx`, `BASH_ALIASES`, `complete -p`. The per-name work all
 runs inside the one already-forked subshell, so an environment load costs **a constant number of forks, never one per
 name**: the outer substitution, plus the handful the dump and the parse each make for a whole category at a time
 (`declare -Fx`, `complete -p`, the `compgen` process substitutions, the `mapfile`s). That count does not grow with
@@ -146,6 +146,20 @@ changed as the dump has.
 Records are framed with `\x1e` and `\x1f` separators rather than newlines: `declare -p` emits literal newlines inside
 values and spans multiple lines for arrays. NUL is unusable as a separator because command substitution discards NUL
 bytes. Parsing back into associative arrays uses bash string operations only.
+
+A payload can hold those bytes itself — an alias value, a completion registration or a `:`-separated entry is
+arbitrary text — so each is escaped at capture, `\x1b` first and then each separator to `\x1b` plus a digit, and
+unescaped again as the ledger is built. Both directions are pure parameter expansion, because escaping must not be
+what turns a constant fork count into one per name. Variables are the exception and are left alone: `declare -p`
+already renders every control byte as printable `$'\036'` text, for a scalar, for an array's elements and for an
+associative array's keys, so a variable payload never carries a framing byte in the first place.
+
+Function bodies are the one payload that cannot be escaped. `declare -f` writes into the snapshot's own command
+substitution, and pulling its output into a variable first would cost a fork per function. A raw `\x1e` inside
+somebody's function therefore still splits its record, so every record instead begins with a marker token: a piece
+that does not begin with it is the rest of the body in the piece before it, and the parse puts the byte back and
+rejoins. A bare one-letter kind would not be enough of a marker — a body holding `\x1e V \x1f` would read as a
+variable record and write a pre-load state for a variable the load never touched.
 
 Variables are captured with `declare -p "${name}"`, not with the `${!ref@A}` parameter transformation. `@A` under
 indirection silently mangles arrays — it indirects to the first element and then renders that:
@@ -164,7 +178,7 @@ Four categories are captured:
 | --- | --- | --- |
 | Variables | `declare -p` per name from `compgen -v` | value plus attributes |
 | Functions | `declare -f` bodies, `declare -Fx` for export status | `tue-functions.bash` exports ~20 |
-| Aliases | `alias -p` | |
+| Aliases | the `BASH_ALIASES` array | names and values, without a fork |
 | Completions | `complete -p` | tue-env's 5, plus colcon/ros2 argcomplete hooks |
 
 ### Exclusions

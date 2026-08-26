@@ -88,7 +88,10 @@ function tue_track_added
         __tue_env_r="${__tue_env_r#*"${__TUE_ENV_RS}"}"
         [[ -z "${__tue_env_p}" ]] && continue
         __tue_env_o+="${__tue_env_o:+,}${__tue_env_p%%"${__TUE_ENV_PS}"*}"
-        __tue_env_o+="=${__tue_env_p#*"${__TUE_ENV_PS}"}"
+        # The entries are escaped on the wire, exactly as an alias value is; print them the way the
+        # tracker's own readers see them.
+        __tue_env_track_unescape "${__tue_env_p#*"${__TUE_ENV_PS}"}"
+        __tue_env_o+="=${__TUE_ENV_UNESCAPED}"
     done
     printf '%s' "${__tue_env_o}"
     return 0

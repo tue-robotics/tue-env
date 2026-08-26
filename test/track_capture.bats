@@ -63,6 +63,110 @@ line"
     [[ "${__TUE_ENV_PRE_COMPLETE[tue-test-cmd]}" == "complete -o nospace -F tue_test_complete tue-test-cmd" ]]
 }
 
+@test "capture: the escape round-trips every framing byte byte-exactly" {
+    # The wire format frames records with RS, fields with FS and index/entry pairs with PS, and a
+    # payload that holds one of those bytes used to end its record or its field early: an alias value
+    # was silently truncated at the byte, and one that started with the byte was destroyed outright.
+    # The escape has to be exact in both directions for every arrangement of those bytes and of the
+    # escape byte itself - one at the very start, one at the very end, several, and none at all - or
+    # it trades one corruption for another.
+    local __tue_env_t __tue_env_i
+    local -a __tue_env_cases=(
+        ''
+        'plain text, no framing bytes at all'
+        $'\x1e' $'\x1f' $'\x1d' $'\x1b'
+        $'\x1eleading record separator'
+        $'trailing record separator\x1e'
+        $'\x1bleading escape'
+        $'trailing escape\x1b'
+        $'\x1e\x1e\x1e' $'\x1b\x1b\x1b' $'\x1f\x1f'
+        $'\x1b0' $'\x1b1' $'\x1b2' $'\x1b3' $'\x1b\x1b1'
+        $'a\x1eb\x1fc\x1dd\x1be'
+        $'\x1e\x1f\x1d\x1ba mix of every one of them\x1b\x1d\x1f\x1e'
+        $'echo foo\x1eBAR'
+        $'\x1eecho mine'
+    )
+    for (( __tue_env_i = 0; __tue_env_i < ${#__tue_env_cases[@]}; __tue_env_i++ ))
+    do
+        __tue_env_t="${__tue_env_cases[__tue_env_i]}"
+        __tue_env_track_escape "${__tue_env_t}"
+        # no framing byte survives the escape, whatever went in
+        [[ "${__TUE_ENV_ESCAPED}" != *$'\x1e'* ]]
+        [[ "${__TUE_ENV_ESCAPED}" != *$'\x1f'* ]]
+        [[ "${__TUE_ENV_ESCAPED}" != *$'\x1d'* ]]
+        __tue_env_track_unescape "${__TUE_ENV_ESCAPED}"
+        [[ "${__TUE_ENV_UNESCAPED}" == "${__tue_env_t}" ]]
+    done
+}
+
+@test "capture: an alias value holding framing bytes survives the round trip byte-exactly" {
+    local __tue_env_t __tue_env_i
+    local -a __tue_env_cases=(
+        'plain'
+        $'echo foo\x1eBAR'
+        $'\x1eecho mine'
+        $'echo mine\x1e'
+        $'echo a\x1fb'
+        $'echo a\x1db'
+        $'echo a\x1bb'
+        $'\x1b1\x1e\x1b0'
+        $'\x1e\x1e'
+    )
+    for (( __tue_env_i = 0; __tue_env_i < ${#__tue_env_cases[@]}; __tue_env_i++ ))
+    do
+        __tue_env_t="${__tue_env_cases[__tue_env_i]}"
+        alias "tue_test_rs=${__tue_env_t}"
+        tue_track_snapshot PRE
+        [[ "${__TUE_ENV_PRE_ALIAS[tue_test_rs]}" == "${__tue_env_t}" ]]
+    done
+}
+
+@test "capture: a function body holding a record separator is captured whole" {
+    # `declare -f` writes straight into the snapshot's command substitution, so its output is the one
+    # payload that cannot be escaped without paying a fork per function. The parse puts a body a raw
+    # RS split back together instead; what comes out has to be exactly what `declare -f` printed.
+    eval "tue_test_fn() { echo \$'\x1e'original; }"
+    eval "tue_test_two() { echo \$'\x1e\x1e'twice\$'\x1e'; }"
+    tue_track_snapshot PRE
+    [[ "${__TUE_ENV_PRE_FUNC[tue_test_fn]}" == "$(declare -f tue_test_fn)" ]]
+    [[ "${__TUE_ENV_PRE_FUNC[tue_test_two]}" == "$(declare -f tue_test_two)" ]]
+    # the split body did not become a record of its own, and the records after it still parsed
+    [[ -z "${__TUE_ENV_PRE_FUNC[original]:-}" ]]
+    [[ -n "${__TUE_ENV_PRE_VAR[PATH]:-}" ]]
+}
+
+@test "capture: a variable's declare line carries no raw framing byte, so it is never escaped" {
+    # Variables must not go through the escape the other payloads go through, and the reason is that
+    # they cannot need it: `declare -p` renders every control byte as printable `$'\036'` text, for a
+    # scalar, for an array's elements and for an associative array's keys alike. Pin that, because it
+    # is the whole argument - if the capture ever stopped going through `declare -p`, or bash ever
+    # stopped quoting, a value would start carrying framing bytes onto the wire and the escape would
+    # have to cover it too. Then pin what the user actually gets: the value back, byte for byte.
+    local __tue_env_want=$'a\x1eb\x1fc\x1dd\x1be\x1b1f\x1b0g'
+    TUE_TEST_ESCY="${__tue_env_want}"
+    TUE_TEST_ESCARR=($'x\x1by' $'p\x1eq')
+    declare -A TUE_TEST_ESCMAP=([$'k\x1b1']=$'v\x1e')
+    local __tue_env_l
+    for __tue_env_l in "$(declare -p TUE_TEST_ESCY)" "$(declare -p TUE_TEST_ESCARR)" \
+                       "$(declare -p TUE_TEST_ESCMAP)"
+    do
+        [[ "${__tue_env_l}" != *$'\x1e'* ]]
+        [[ "${__tue_env_l}" != *$'\x1f'* ]]
+        [[ "${__tue_env_l}" != *$'\x1d'* ]]
+        [[ "${__tue_env_l}" != *$'\x1b'* ]]
+    done
+
+    tue_track_snapshot PRE
+    [[ "${__TUE_ENV_PRE_VAR[TUE_TEST_ESCY]}" == "$(declare -p TUE_TEST_ESCY)" ]]
+    [[ "${__TUE_ENV_PRE_VAR[TUE_TEST_ESCARR]}" == "$(declare -p TUE_TEST_ESCARR)" ]]
+
+    _tue-env-track-begin
+    TUE_TEST_ESCY=changed
+    _tue-env-track-commit
+    _tue-env-track-revert
+    [[ "${TUE_TEST_ESCY}" == "${__tue_env_want}" ]]
+}
+
 @test "capture: two snapshots of an unchanged shell are byte-identical" {
     local __tue_env_a __tue_env_b
     __tue_env_a="$(__tue_env_track_dump)"
