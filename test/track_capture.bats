@@ -154,6 +154,14 @@ line"
         [[ "${__tue_env_l}" != *$'\x1f'* ]]
         [[ "${__tue_env_l}" != *$'\x1d'* ]]
         [[ "${__tue_env_l}" != *$'\x1b'* ]]
+        # Say the same thing once more in the form that survives the escape growing an alphabet:
+        # escaping a `declare -p` line is the IDENTITY. The four assertions above only rule out the
+        # four bytes the escape happens to cover today, so widening it - to backslash, say, which
+        # every one of these lines carries because that is how bash quotes a control byte - would
+        # leave all four green while variables silently started arriving on the wire in a form the
+        # parse does not unescape.
+        __tue_env_track_escape "${__tue_env_l}"
+        [[ "${__TUE_ENV_ESCAPED}" == "${__tue_env_l}" ]]
     done
 
     tue_track_snapshot PRE
