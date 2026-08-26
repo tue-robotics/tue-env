@@ -233,6 +233,25 @@ dry_run=/target/dry'
              "${TUE_TRACK_REPO_ROOT}/setup/tue-env.bash")" ]]
 }
 
+@test "deactivate: the spec's child-shell paragraph matches what a child shell does" {
+    # The spec said a child `bash` running `tue-env deactivate` "hits the empty-ledger fallback and
+    # behaves as it does today". It does not: _tue-env-deactivate-current-env is not exported, so the
+    # child dies before any fallback. The README was corrected for exactly this; the spec never was.
+    # Same shape as the test above - establish the behaviour by execution, then require the document
+    # to describe that behaviour and not the one it cannot have.
+    export TUE_ENV=fake
+    run bash --noprofile --norc -c 'tue-env deactivate'
+    [[ "${status}" -eq 1 ]]
+    [[ "${output}" == *"Failed to deactivate the current environment"* ]]
+    [[ "${output}" != *"Unsetting all TUE_ENV"* ]]
+
+    local __tue_env_spec
+    __tue_env_spec="${TUE_TRACK_REPO_ROOT}/docs/superpowers/specs/2026-08-21-env-change-tracking-design.md"
+    grep -q 'never reaches the empty-ledger fallback' "${__tue_env_spec}"
+    [[ -z "$(grep 'hits the empty-ledger fallback and behaves as it does today' \
+             "${__tue_env_spec}")" ]]
+}
+
 @test "completion: changes and --dry-run are offered" {
     COMP_WORDS=(tue-env "")
     COMP_CWORD=1

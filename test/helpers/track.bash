@@ -32,6 +32,50 @@ function tue_track_snapshot
     return 0
 }
 
+function tue_track_min_forks
+{
+    # $1: how many names of each of the three kinds to put in the shell first. Result in
+    # TUE_TRACK_FORKS: the smallest number of processes one begin/commit pair created, over five
+    # samples.
+    #
+    # Measured in a child `bash --norc --noprofile`, never in the bats shell: bats installs a DEBUG
+    # trap that runs on every single command and forks of its own, so the figure taken here would be
+    # dominated by the harness AND would grow with the amount of work the tracker does - which is
+    # exactly the thing under test.
+    #
+    # Forks are counted from the PIDs the kernel hands out: they are allocated in sequence, so the
+    # gap between two bracketing subshells covers every process created in between. Anything else
+    # running on the machine can only widen that gap, never narrow it, so the smallest sample is the
+    # measurement and every assertion built on it has to be one-sided.
+    # shellcheck disable=SC2034
+    TUE_TRACK_FORKS="$(bash --norc --noprofile -c '
+        # shellcheck source=/dev/null
+        source "$1/setup/tue-env-track.bash"
+        for (( __tue_env_i = 0; __tue_env_i < $2; __tue_env_i++ ))
+        do
+            eval "TUE_TEST_MEAS_V${__tue_env_i}=x"
+            eval "tue_test_meas_f${__tue_env_i}() { echo ${__tue_env_i}; }"
+            eval "alias tue_test_meas_a${__tue_env_i}=\"echo ${__tue_env_i}\""
+        done
+        __tue_env_m=-1
+        for (( __tue_env_k = 0; __tue_env_k < 5; __tue_env_k++ ))
+        do
+            __tue_env_a="$(echo "${BASHPID}")"
+            _tue-env-track-begin
+            _tue-env-track-commit
+            __tue_env_b="$(echo "${BASHPID}")"
+            __tue_env_d=$(( __tue_env_b - __tue_env_a - 1 ))
+            (( __tue_env_d < 0 )) && continue
+            if (( __tue_env_m < 0 )) || (( __tue_env_d < __tue_env_m ))
+            then
+                __tue_env_m="${__tue_env_d}"
+            fi
+        done
+        printf "%s" "${__tue_env_m}"
+    ' bash "${TUE_TRACK_REPO_ROOT}" "$1")"
+    return 0
+}
+
 function tue_track_added
 {
     # $1: variable name. Prints the recorded added entries as "index=entry,index=entry".

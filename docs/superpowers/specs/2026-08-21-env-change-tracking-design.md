@@ -136,8 +136,12 @@ Two consequences follow from the merge rules and are intended:
 ## Capture
 
 A snapshot is a single command substitution around a dump function built entirely from builtins: `compgen -v`,
-`declare -p`, `compgen -A function`, `declare -f`, `declare -Fx`, `alias -p`, `complete -p`. Everything runs inside
-the one already-forked subshell, so the cost is **two forks per environment load**, not two per name.
+`declare -p`, `compgen -A function`, `declare -f`, `declare -Fx`, `alias -p`, `complete -p`. The per-name work all
+runs inside the one already-forked subshell, so an environment load costs **a constant number of forks, never one per
+name**: the outer substitution, plus the handful the dump and the parse each make for a whole category at a time
+(`declare -Fx`, `complete -p`, the `compgen` process substitutions, the `mapfile`s). That count does not grow with
+the size of the environment, which is the property that matters; the exact number is an implementation detail and has
+changed as the dump has.
 
 Records are framed with `\x1e` and `\x1f` separators rather than newlines: `declare -p` emits literal newlines inside
 values and spans multiple lines for arrays. NUL is unusable as a separator because command substitution discards NUL
@@ -278,9 +282,11 @@ would unset  function qtcreator, function tsync
 ## Boundaries
 
 **Child shells.** Associative arrays cannot be exported, so a child `bash` inherits the environment variables but not
-the ledger. `tue-env deactivate` there hits the empty-ledger fallback and behaves as it does today. Serialising the
-ledger into an exported variable was rejected: the function bodies alone are roughly 60 KB, which every subsequent
-`fork`+`exec` would have to copy.
+the ledger. `changes` and `deactivate --dry-run` fail there with their explanatory message. Plain `deactivate`
+never reaches the empty-ledger fallback at all: `_tue-env-deactivate-current-env` is not exported either, so the
+child errors out and tells the user to stop using the terminal — as it has always done, a pre-existing limitation
+this feature does not change. Serialising the ledger into an exported variable was rejected: the function bodies
+alone are roughly 60 KB, which every subsequent `fork`+`exec` would have to copy.
 
 **Readline bindings.** Not tracked, so `bind` calls made by a target survive an unload. Documented, not engineered
 around.
