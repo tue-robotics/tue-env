@@ -63,6 +63,21 @@ setup() {
     [[ "${output}" == *"added   alias tue_test_a, alias tue_test_b"* ]]
 }
 
+@test "report: an alias the user re-created empty is named as kept, not as restorable" {
+    # The dry run has to reach the same verdict as the revert, and it read presence the same wrong
+    # way: an alias that exists with an empty value looked absent, so it promised to restore the
+    # pre-load text over the top of the user's own alias.
+    alias tue_test_a='echo original'
+    _tue-env-track-begin
+    unalias tue_test_a
+    _tue-env-track-commit
+    alias tue_test_a=''
+    run _tue-env-track-report revert
+    [[ "${status}" -eq 0 ]]
+    [[ "${output}" == *"would keep   alias tue_test_a (changed since load)"* ]]
+    [[ "${output}" != *"would restore alias tue_test_a"* ]]
+}
+
 @test "report: an empty ledger returns 1 and prints nothing" {
     run _tue-env-track-report changes
     [[ "${status}" -eq 1 ]]

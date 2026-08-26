@@ -76,7 +76,10 @@ entry and leaves everything else alone.
 Recording the index matters when the added entry duplicates one that was already present. With `PATH=A:X:B` and a
 target that appends `X`, the post-load value is `A:X:B:X`; deleting the leftmost `X` would yield `A:B:X` and silently
 reorder the user's path, while deleting the occurrence nearest the recorded index yields `A:X:B`. At unload the
-occurrence closest to the recorded index is removed, falling back to any occurrence if the value has shifted.
+occurrences that line up, in order, with the pre-load value are set aside as the user's own, and the one closest to
+the recorded index is removed from what remains. Both halves are needed: without the alignment, a user who prepends
+entries of their own shifts every position rightwards until "closest to the recorded index" is the user's copy and
+the environment's outlives the unload.
 
 ```text
 pre-load  : /usr/bin:/bin

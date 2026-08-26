@@ -151,6 +151,37 @@ setup() {
     [[ "${TUE_TEST_LIST}" == "Y:A:X:B" ]]
 }
 
+@test "revert: the environment's copy of a duplicated entry goes, not the user's, after a prepend" {
+    # Every recorded index is an index into the value as it stood at the end of the load. Once the
+    # user prepends entries of their own, every position shifts rightwards and "closest to the
+    # recorded index" starts picking the user's own occurrence: here the X at position 3, which the
+    # value already held before the load, sits exactly at the recorded index while the environment's
+    # copy has moved out to 5. No entry is lost either way, which is why a count-based check passes,
+    # but the wrong one goes: `:`-separated precedence changes and the environment's entry outlives
+    # the unload.
+    export TUE_TEST_LIST="A:X:B"
+    _tue-env-track-begin
+    export TUE_TEST_LIST="A:X:B:X"
+    _tue-env-track-commit
+    export TUE_TEST_LIST="Y:Z:${TUE_TEST_LIST}"
+    __tue_env_track_revert_vars
+    [[ "${TUE_TEST_LIST}" == "Y:Z:A:X:B" ]]
+}
+
+@test "revert: a PATH-shaped duplicate survives a prepend of several entries" {
+    # The same thing in the shape it actually arrives in: a directory that is already on PATH and
+    # that the environment appends a second copy of, with the user prepending a few entries
+    # afterwards. The shift is larger than the distance between the two copies, so the nearest-index
+    # rule on its own removes the copy the user started with.
+    export TUE_TEST_LIST="/usr/bin:/opt/x:/bin"
+    _tue-env-track-begin
+    export TUE_TEST_LIST="${TUE_TEST_LIST}:/opt/x"
+    _tue-env-track-commit
+    export TUE_TEST_LIST="/p1:/p2:/p3:${TUE_TEST_LIST}"
+    __tue_env_track_revert_vars
+    [[ "${TUE_TEST_LIST}" == "/p1:/p2:/p3:/usr/bin:/opt/x:/bin" ]]
+}
+
 @test "revert: an entry the user already removed a duplicate of is not eaten again" {
     # The environment appended a second X (recorded index 3), but the user reduced the value back to
     # exactly its pre-load form before the revert runs. The count guard must see that only as many X

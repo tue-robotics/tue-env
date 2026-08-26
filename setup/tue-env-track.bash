@@ -442,7 +442,7 @@ function __tue_env_track_diff_simple
     # $1: ALIAS or COMPLETE. Same triple, one state string per name.
     local -n __tue_env_sp="__TUE_ENV_PRE_$1"
     local -n __tue_env_sq="__TUE_ENV_POST_$1"
-    local __tue_env_n __tue_env_pre __tue_env_post __tue_env_kind
+    local __tue_env_n __tue_env_pre __tue_env_post __tue_env_kind __tue_env_hp __tue_env_hq
     local -A __tue_env_seen=()
 
     for __tue_env_n in "${!__tue_env_sp[@]}" "${!__tue_env_sq[@]}"
@@ -453,14 +453,27 @@ function __tue_env_track_diff_simple
         fi
         __tue_env_seen["${__tue_env_n}"]=1
 
+        # Presence, not emptiness. `alias foo=` is an ordinary alias whose value happens to be the
+        # empty string, and `${arr[key]:-}` cannot tell that from no alias of that name at all. Both
+        # directions were broken by the conflation: an empty alias the user already had was recorded
+        # as `added` and destroyed by the unload, and an empty alias the environment created was not
+        # recorded at all and outlived it.
+        __tue_env_hp="false"
+        __tue_env_hq="false"
+        [[ -v __tue_env_sp["${__tue_env_n}"] ]] && __tue_env_hp="true"
+        [[ -v __tue_env_sq["${__tue_env_n}"] ]] && __tue_env_hq="true"
         __tue_env_pre="${__tue_env_sp[${__tue_env_n}]:-}"
         __tue_env_post="${__tue_env_sq[${__tue_env_n}]:-}"
-        [[ "${__tue_env_pre}" == "${__tue_env_post}" ]] && continue
+        if [[ "${__tue_env_hp}" == "${__tue_env_hq}" ]] &&
+           [[ "${__tue_env_pre}" == "${__tue_env_post}" ]]
+        then
+            continue
+        fi
 
-        if [[ -z "${__tue_env_pre}" ]]
+        if [[ "${__tue_env_hp}" == "false" ]]
         then
             __tue_env_kind="added"
-        elif [[ -z "${__tue_env_post}" ]]
+        elif [[ "${__tue_env_hq}" == "false" ]]
         then
             __tue_env_kind="removed"
         else
@@ -515,22 +528,30 @@ function __tue_env_track_ledger_simple
     local -n __tue_env_lk="__TUE_ENV_LEDGER_$1"
     local -n __tue_env_lp="__TUE_ENV_LEDGER_$1_PRE"
     local -n __tue_env_lq="__TUE_ENV_LEDGER_$1_POST"
-    local __tue_env_kind="$3" __tue_env_pre="$4"
+    local __tue_env_kind="$3" __tue_env_pre="$4" __tue_env_hp __tue_env_hq
 
-    if [[ -n "${__tue_env_lk[$2]:-}" ]]
+    # The kind already carries both sides' presence - `added` means there was nothing before the
+    # load, `removed` means there is nothing after it - so the merge reads that instead of guessing
+    # presence from an empty state string, which an alias with an empty value makes a lie.
+    __tue_env_hq="true"
+    [[ "$3" == "removed" ]] && __tue_env_hq="false"
+
+    if [[ -v __tue_env_lk["$2"] ]]
     then
         __tue_env_pre="${__tue_env_lp[$2]}"
+        __tue_env_hp="true"
+        [[ "${__tue_env_lk[$2]}" == "added" ]] && __tue_env_hp="false"
 
-        if [[ -z "${__tue_env_pre}" ]] && [[ -z "$5" ]]
+        if [[ "${__tue_env_hp}" == "false" ]] && [[ "${__tue_env_hq}" == "false" ]]
         then
             unset "__tue_env_lk[$2]" "__tue_env_lp[$2]" "__tue_env_lq[$2]"
             return 0
         fi
 
-        if [[ -z "$5" ]]
+        if [[ "${__tue_env_hq}" == "false" ]]
         then
             __tue_env_kind="removed"
-        elif [[ -z "${__tue_env_pre}" ]]
+        elif [[ "${__tue_env_hp}" == "false" ]]
         then
             __tue_env_kind="added"
         else
@@ -557,6 +578,19 @@ function __tue_env_track_empty
         return 0
     fi
     return 1
+}
+
+function _tue-env-track-active
+{
+    # Returns 0 when the ledger holds a load that this shell can still unload. `tue-env deactivate`
+    # and `tue-env changes` ask this as well as looking at the TUE_ENV marker: a user who unset
+    # TUE_ENV by hand is exactly the case the ledger exists to survive, and the marker on its own
+    # would refuse them the unload that would put the shell back.
+    if __tue_env_track_empty
+    then
+        return 1
+    fi
+    return 0
 }
 
 function _tue-env-track-begin
@@ -688,12 +722,12 @@ function __tue_env_track_strip
     # $1: current value, $2: recorded added entries, $3: the pre-load value ("" when the variable did
     # not exist before the load). Result in __TUE_ENV_VALUE.
     #
-    # Each recorded entry removes one occurrence: the one closest to the recorded index, ties going to
-    # the HIGHER position, because a user prepending to the value shifts the environment's entries
-    # rightwards. An occurrence is never removed if that would leave fewer copies of the entry than
-    # the value held before the load — the copies the user already had must survive, and when the
-    # environment duplicated one of them the two cannot be told apart by value alone. An entry that is
-    # no longer present is skipped.
+    # Each recorded entry removes one occurrence: the one closest to the recorded index among the
+    # occurrences that are not part of the pre-load value, ties going to the HIGHER position, because
+    # a user prepending to the value shifts the environment's entries rightwards. An occurrence is
+    # never removed if that would leave fewer copies of the entry than the value held before the load
+    # — the copies the user already had must survive, and when the environment duplicated one of them
+    # the two cannot be told apart by value alone. An entry that is no longer present is skipped.
     local -a __tue_env_c __tue_env_p
     __tue_env_track_split "$1"
     __tue_env_c=("${__TUE_ENV_SPLIT[@]}")
@@ -716,9 +750,33 @@ function __tue_env_track_strip
         __tue_env_live["k${__tue_env_x}"]=$(( ${__tue_env_live["k${__tue_env_x}"]:-0} + 1 ))
     done
 
+    # Which positions in the current value line up, in order, with the value the variable held
+    # before the load: those are the user's own entries, and the environment's copy of a duplicated
+    # entry is never one of them. Without this the nearest-index rule alone picks whichever
+    # occurrence happens to sit closest to the recorded index, and once the user has prepended
+    # entries of their own every position has shifted rightwards until that is the user's copy
+    # rather than the environment's - no entry is lost, but the wrong one goes, `:`-separated
+    # precedence changes and the environment's entry outlives the unload.
+    #
+    # A left-to-right greedy alignment is enough: the count guard above has already established that
+    # this entry occurs more often now than it did before the load, and an alignment protects at
+    # most as many occurrences of it as the pre-load value held, so an unprotected occurrence always
+    # remains for as long as the guard keeps letting entries through.
+    local -A __tue_env_prot=()
+    local __tue_env_pi=0 __tue_env_i
+    for (( __tue_env_i = 0; __tue_env_i < ${#__tue_env_c[@]}; __tue_env_i++ ))
+    do
+        if (( __tue_env_pi < ${#__tue_env_p[@]} )) &&
+           [[ "${__tue_env_c[__tue_env_i]}" == "${__tue_env_p[__tue_env_pi]}" ]]
+        then
+            __tue_env_prot["${__tue_env_i}"]=1
+            __tue_env_pi=$(( __tue_env_pi + 1 ))
+        fi
+    done
+
     local -A __tue_env_dead=()
     local __tue_env_rest="$2" __tue_env_pair __tue_env_idx __tue_env_e
-    local __tue_env_best __tue_env_bestd __tue_env_i __tue_env_d
+    local __tue_env_best __tue_env_bestd __tue_env_d
     while [[ -n "${__tue_env_rest}" ]]
     do
         # Same trap the test helper guards: without this an unterminated tail spins forever.
@@ -739,6 +797,7 @@ function __tue_env_track_strip
         for (( __tue_env_i = 0; __tue_env_i < ${#__tue_env_c[@]}; __tue_env_i++ ))
         do
             [[ -n "${__tue_env_dead[${__tue_env_i}]:-}" ]] && continue
+            [[ -n "${__tue_env_prot[${__tue_env_i}]:-}" ]] && continue
             [[ "${__tue_env_c[__tue_env_i]}" != "${__tue_env_e}" ]] && continue
             __tue_env_d=$(( __tue_env_i - __tue_env_idx ))
             if (( __tue_env_d < 0 ))
@@ -843,17 +902,28 @@ function __tue_env_track_revert_vars
 
 function __tue_env_track_current
 {
-    # $1: FUNC, ALIAS or COMPLETE, $2: name. Result in __TUE_ENV_CURRENT, empty when absent.
-    # `declare -f` and `complete -p` both return 1 for a name that does not exist, and a bare
-    # command-substitution assignment propagates that, so without the `||` a caller running under
-    # `set -e` would abort here instead of treating the object as absent.
+    # $1: FUNC, ALIAS or COMPLETE, $2: name. Result in __TUE_ENV_CURRENT, empty when absent, with
+    # __TUE_ENV_CURRENT_SET saying whether the object is there at all: `alias foo=` exists and holds
+    # the empty string, so the value alone cannot answer that and a caller that read it as absence
+    # destroyed the user's alias. `declare -f` and `complete -p` both return 1 for a name that does
+    # not exist, and a bare command-substitution assignment propagates that, so without the `||` a
+    # caller running under `set -e` would abort here instead of treating the object as absent.
+    __TUE_ENV_CURRENT_SET="true"
     case "$1" in
         FUNC )
-            __TUE_ENV_CURRENT="$(declare -f "$2" 2> /dev/null)" || __TUE_ENV_CURRENT="" ;;
+            __TUE_ENV_CURRENT="$(declare -f "$2" 2> /dev/null)" ||
+                { __TUE_ENV_CURRENT=""; __TUE_ENV_CURRENT_SET="false"; } ;;
         ALIAS )
-            __TUE_ENV_CURRENT="${BASH_ALIASES[$2]:-}" ;;
+            if [[ -v BASH_ALIASES["$2"] ]]
+            then
+                __TUE_ENV_CURRENT="${BASH_ALIASES[$2]}"
+            else
+                __TUE_ENV_CURRENT=""
+                __TUE_ENV_CURRENT_SET="false"
+            fi ;;
         COMPLETE )
-            __TUE_ENV_CURRENT="$(complete -p "$2" 2> /dev/null)" || __TUE_ENV_CURRENT="" ;;
+            __TUE_ENV_CURRENT="$(complete -p "$2" 2> /dev/null)" ||
+                { __TUE_ENV_CURRENT=""; __TUE_ENV_CURRENT_SET="false"; } ;;
     esac
     return 0
 }
@@ -917,7 +987,7 @@ function __tue_env_track_revert_simple
     local -n __tue_env_rlk="__TUE_ENV_LEDGER_$1"
     local -n __tue_env_rlp="__TUE_ENV_LEDGER_$1_PRE"
     local -n __tue_env_rlq="__TUE_ENV_LEDGER_$1_POST"
-    local __tue_env_n __tue_env_pre __tue_env_label
+    local __tue_env_n __tue_env_pre __tue_env_label __tue_env_want
     local -a __tue_env_names
     mapfile -t __tue_env_names < <(printf '%s\n' "${!__tue_env_rlk[@]}" | LC_ALL=C sort)
 
@@ -932,17 +1002,26 @@ function __tue_env_track_revert_simple
     do
         [[ -z "${__tue_env_n}" ]] && continue
         __tue_env_track_current "$1" "${__tue_env_n}"
-        if [[ "${__TUE_ENV_CURRENT}" != "${__tue_env_rlq[${__tue_env_n}]}" ]]
+        # `removed` is the one kind that left nothing behind, so it is the one kind that expects the
+        # object to be absent now. Comparing the two state strings alone cannot express that: an
+        # empty string is both what an absent object reads as and a legal alias value.
+        __tue_env_want="true"
+        [[ "${__tue_env_rlk[${__tue_env_n}]}" == "removed" ]] && __tue_env_want="false"
+        if [[ "${__TUE_ENV_CURRENT_SET}" != "${__tue_env_want}" ]] ||
+           [[ "${__TUE_ENV_CURRENT}" != "${__tue_env_rlq[${__tue_env_n}]}" ]]
         then
             __tue_env_track_kept "version of ${__tue_env_label} ${__tue_env_n}"
             continue
         fi
 
         __tue_env_pre="${__tue_env_rlp[${__tue_env_n}]}"
+        # The kind again, not the emptiness of the recorded state: `added` is the only kind with
+        # nothing to put back, and an alias whose pre-load value was the empty string has to be
+        # re-registered rather than left unset.
         if [[ "$1" == "ALIAS" ]]
         then
             unalias "${__tue_env_n}" 2> /dev/null || true
-            if [[ -n "${__tue_env_pre}" ]]
+            if [[ "${__tue_env_rlk[${__tue_env_n}]}" != "added" ]]
             then
                 # The pre-load alias text is meant to expand right now, into the literal text that
                 # `alias` re-registers; it is not a deferred expression, which is what SC2139 flags.
@@ -951,7 +1030,7 @@ function __tue_env_track_revert_simple
             fi
         else
             complete -r "${__tue_env_n}" 2> /dev/null || true
-            if [[ -n "${__tue_env_pre}" ]]
+            if [[ "${__tue_env_rlk[${__tue_env_n}]}" != "added" ]]
             then
                 eval "${__tue_env_pre}"
             fi
@@ -1171,6 +1250,7 @@ function __tue_env_track_report_objects
     # __tue_env_pkeep, not __tue_env_keep: __tue_env_track_strip already uses that name for an
     # associative array, and shellcheck carries the type across function scopes (SC2178).
     local __tue_env_n __tue_env_add="" __tue_env_gone="" __tue_env_chg="" __tue_env_pkeep=""
+    local __tue_env_pwant
     local -a __tue_env_names
     mapfile -t __tue_env_names < <(printf '%s\n' "${!__tue_env_pk[@]}" | LC_ALL=C sort)
 
@@ -1178,7 +1258,13 @@ function __tue_env_track_report_objects
     do
         [[ -z "${__tue_env_n}" ]] && continue
         __tue_env_track_current "$2" "${__tue_env_n}"
-        if [[ "$1" == "revert" ]] && [[ "${__TUE_ENV_CURRENT}" != "${__tue_env_pq[${__tue_env_n}]}" ]]
+        # Presence as well as text, exactly as __tue_env_track_revert_simple decides it, so the dry
+        # run cannot promise something the revert would not do.
+        __tue_env_pwant="true"
+        [[ "${__tue_env_pk[${__tue_env_n}]}" == "removed" ]] && __tue_env_pwant="false"
+        if [[ "$1" == "revert" ]] &&
+           { [[ "${__TUE_ENV_CURRENT_SET}" != "${__tue_env_pwant}" ]] ||
+             [[ "${__TUE_ENV_CURRENT}" != "${__tue_env_pq[${__tue_env_n}]}" ]]; }
         then
             __tue_env_pkeep+="${__tue_env_pkeep:+, }$3 ${__tue_env_n}"
             continue

@@ -92,6 +92,45 @@ setup() {
     [[ "${BASH_ALIASES[tue_test_keep]}" == "echo original" ]]
 }
 
+@test "revert: an alias the user had with an empty value survives the unload" {
+    # The data-loss half of the empty-alias conflation: the ledger called it `added`, so the unload
+    # removed it instead of putting the user's own alias back.
+    alias tue_test_empty=''
+    _tue-env-track-begin
+    alias tue_test_empty='echo fromenv'
+    _tue-env-track-commit
+    _tue-env-track-revert
+    [[ -n "${BASH_ALIASES[tue_test_empty]+set}" ]]
+    [[ "${BASH_ALIASES[tue_test_empty]}" == "" ]]
+}
+
+@test "revert: an alias the environment added with an empty value is removed" {
+    # The leak half: nothing was recorded at all, so the environment's alias survived the unload.
+    _tue-env-track-begin
+    alias tue_test_empty=''
+    _tue-env-track-commit
+    [[ "${__TUE_ENV_LEDGER_ALIAS[tue_test_empty]}" == "added" ]]
+    _tue-env-track-revert
+    [[ -z "${BASH_ALIASES[tue_test_empty]+set}" ]]
+}
+
+@test "revert: an alias the environment removed and the user re-created empty is kept" {
+    # The conflict check has the same blind spot: an alias that is present with an empty value reads
+    # exactly like an absent one, so the revert saw no change since the load and overwrote the
+    # user's alias with the pre-load text.
+    alias tue_test_a='echo original'
+    _tue-env-track-begin
+    unalias tue_test_a
+    _tue-env-track-commit
+    [[ "${__TUE_ENV_LEDGER_ALIAS[tue_test_a]}" == "removed" ]]
+    alias tue_test_a=''
+    run _tue-env-track-revert
+    [[ "${output}" == *"kept your version of alias tue_test_a"* ]]
+    _tue-env-track-revert
+    [[ -n "${BASH_ALIASES[tue_test_a]+set}" ]]
+    [[ "${BASH_ALIASES[tue_test_a]}" == "" ]]
+}
+
 @test "revert: an added completion is removed and a replaced one restored" {
     tue_test_complete() {
         COMPREPLY=()

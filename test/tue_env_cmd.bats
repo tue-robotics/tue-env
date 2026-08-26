@@ -61,6 +61,56 @@ setup() {
     [[ "${output}" == *"No environment is currently active"* ]]
 }
 
+@test "deactivate: refuses only when neither the marker nor the ledger says anything is loaded" {
+    # The other half of the gate below: with no TUE_ENV and an empty ledger there really is nothing
+    # to unload, and the refusal has to stay.
+    run tue-env deactivate
+    [[ "${status}" -eq 1 ]]
+    [[ "${output}" == *"No environment is currently active"* ]]
+}
+
+@test "deactivate: a ledger is still unloaded after the user unset TUE_ENV" {
+    # The TUE_ENV marker predates the ledger and used to be the only gate, so unsetting one variable
+    # by hand disabled the whole feature - while the load's other forty-odd variables, its functions
+    # and its aliases were all still in the shell, and the ledger still knew how to undo them.
+    # Unsetting a variable by hand is exactly what change tracking exists to tolerate.
+    export TUE_ENV=fake
+    _tue-env-track-begin
+    export TUE_TEST_RMW=rmw_cyclonedds_cpp
+    tue_test_fn() {
+        echo fromenv
+    }
+    _tue-env-track-commit
+    unset TUE_ENV
+    tue-env deactivate
+    [[ -z "${TUE_TEST_RMW+set}" ]]
+    [[ -z "$(declare -F tue_test_fn)" ]]
+    __tue_env_track_empty
+}
+
+@test "changes: an unset TUE_ENV does not hide what the load did" {
+    export TUE_ENV=fake
+    _tue-env-track-begin
+    export TUE_TEST_RMW=rmw_cyclonedds_cpp
+    _tue-env-track-commit
+    unset TUE_ENV
+    run tue-env changes
+    [[ "${status}" -eq 0 ]]
+    [[ "${output}" == *"added   TUE_TEST_RMW=rmw_cyclonedds_cpp"* ]]
+}
+
+@test "deactivate --dry-run: an unset TUE_ENV does not hide what the unload would do" {
+    # `changes` and `deactivate --dry-run` gate on the same thing, so they answer alike.
+    export TUE_ENV=fake
+    _tue-env-track-begin
+    export TUE_TEST_RMW=rmw_cyclonedds_cpp
+    _tue-env-track-commit
+    unset TUE_ENV
+    run tue-env deactivate --dry-run
+    [[ "${status}" -eq 0 ]]
+    [[ "${output}" == *"would unset  TUE_TEST_RMW"* ]]
+}
+
 @test "changes: --help is accepted" {
     run tue-env changes --help
     [[ "${status}" -eq 1 ]]

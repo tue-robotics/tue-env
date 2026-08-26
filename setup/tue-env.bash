@@ -378,7 +378,16 @@ Environment directory '${__tue_env_tue_env_dir}' didn't exist (anymore)"""
             return 1
         fi
 
-        if [[ -z "${TUE_ENV}" ]]
+        # ${TUE_ENV} predates the ledger and cannot be the only authority any more: unsetting a
+        # variable by hand is precisely what change tracking promises to tolerate, and a shell whose
+        # TUE_ENV the user removed still holds everything else the load did, together with a ledger
+        # that says how to undo it. Only when the marker AND the ledger are gone is there nothing to
+        # unload. The marker is tested first so that it short-circuits: a child `bash` inherits
+        # TUE_ENV and the exported `tue-env` but none of the unexported helpers, and has to keep
+        # reaching the failure it has always reached rather than being told nothing is active. The
+        # redirection covers the shell that predates change tracking, where the tracker's entry point
+        # does not exist at all.
+        if [[ -z "${TUE_ENV}" ]] && ! _tue-env-track-active 2> /dev/null
         then
             echo "[tue-env](deactivate) No environment is currently active"
             return 1
@@ -399,7 +408,13 @@ Environment directory '${__tue_env_tue_env_dir}' didn't exist (anymore)"""
             return 0
         fi
 
-        echo "[tue-env](deactivate) Deactivating the current environment '${TUE_ENV}'"
+        if [[ -n "${TUE_ENV}" ]]
+        then
+            echo "[tue-env](deactivate) Deactivating the current environment '${TUE_ENV}'"
+        else
+            # Reached only when the ledger, not the marker, is what says an environment is loaded.
+            echo "[tue-env](deactivate) Deactivating the tracked environment"
+        fi
         _tue-env-deactivate-current-env || { echo "[tue-env](deactivate) Failed to deactivate the current environment, don't use this terminal anymore, open a new terminal"; return 1; }
 
         return 0
@@ -437,7 +452,8 @@ Environment directory '${__tue_env_tue_env_dir}' didn't exist (anymore)"""
             return 1
         fi
 
-        if [[ -z "${TUE_ENV}" ]]
+        # The same pair as `deactivate` gates on, so the two answer alike; see the comment there.
+        if [[ -z "${TUE_ENV}" ]] && ! _tue-env-track-active 2> /dev/null
         then
             echo "[tue-env](changes) No environment is currently active"
             return 1

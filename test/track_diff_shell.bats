@@ -72,6 +72,26 @@ setup() {
     [[ "${__TUE_ENV_LEDGER_ALIAS[tue_test_gone]}" == "removed" ]]
 }
 
+@test "diff: an alias whose value is empty is not mistaken for an absent one" {
+    # `alias foo=` is an ordinary alias holding the empty string. While presence was tested with
+    # `${arr[key]:-}`, an empty alias the user already had was classified `added` - and so destroyed
+    # by the unload - while an empty alias the environment created, and an empty one it removed, were
+    # not recorded at all and outlived it.
+    alias tue_test_empty=''
+    alias tue_test_gone=''
+    tue_track_snapshot PRE
+    alias tue_test_empty='echo fromenv'
+    unalias tue_test_gone
+    alias tue_test_new=''
+    tue_track_snapshot POST
+    __tue_env_track_diff_simple ALIAS
+    [[ "${__TUE_ENV_LEDGER_ALIAS[tue_test_empty]}" == "replaced" ]]
+    [[ "${__TUE_ENV_LEDGER_ALIAS_PRE[tue_test_empty]}" == "" ]]
+    [[ "${__TUE_ENV_LEDGER_ALIAS[tue_test_gone]}" == "removed" ]]
+    [[ "${__TUE_ENV_LEDGER_ALIAS[tue_test_new]}" == "added" ]]
+    [[ "${__TUE_ENV_LEDGER_ALIAS_POST[tue_test_new]}" == "" ]]
+}
+
 @test "diff: an added and a removed completion" {
     tue_test_complete() {
         COMPREPLY=()

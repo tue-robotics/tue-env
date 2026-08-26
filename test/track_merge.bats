@@ -126,6 +126,35 @@ setup() {
     [[ -z "${__TUE_ENV_LEDGER_ALIAS[tue_test_a]:-}" ]]
 }
 
+@test "merge: an alias added with an empty value and then removed drops out of the ledger" {
+    _tue-env-track-begin
+    alias tue_test_a=''
+    _tue-env-track-commit
+    [[ "${__TUE_ENV_LEDGER_ALIAS[tue_test_a]}" == "added" ]]
+    _tue-env-track-begin
+    unalias tue_test_a
+    _tue-env-track-commit
+    [[ -z "${__TUE_ENV_LEDGER_ALIAS[tue_test_a]:-}" ]]
+}
+
+@test "merge: an alias the user had empty keeps that empty value as its pre-load state" {
+    # The merge decided presence from the emptiness of the recorded state, so a pre-load value that
+    # was legitimately empty read as "there was nothing here" and the second load promoted the entry
+    # to `added` - handing the unload a licence to delete the user's alias.
+    alias tue_test_a=''
+    _tue-env-track-begin
+    alias tue_test_a='echo load1'
+    _tue-env-track-commit
+    _tue-env-track-begin
+    alias tue_test_a='echo load2'
+    _tue-env-track-commit
+    [[ "${__TUE_ENV_LEDGER_ALIAS[tue_test_a]}" == "replaced" ]]
+    [[ "${__TUE_ENV_LEDGER_ALIAS_PRE[tue_test_a]}" == "" ]]
+    _tue-env-track-revert
+    [[ -n "${BASH_ALIASES[tue_test_a]+set}" ]]
+    [[ "${BASH_ALIASES[tue_test_a]}" == "" ]]
+}
+
 @test "merge: a name already in the ledger keeps its original absent pre-load state" {
     _tue-env-track-begin
     export TUE_TEST_S=env1
