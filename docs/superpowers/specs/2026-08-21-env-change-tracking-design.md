@@ -161,6 +161,12 @@ that does not begin with it is the rest of the body in the piece before it, and 
 rejoins. A bare one-letter kind would not be enough of a marker — a body holding `\x1e V \x1f` would read as a
 variable record and write a pre-load state for a variable the load never touched.
 
+The marker reduces that forgery surface rather than eliminating it: it is a heuristic, not a guarantee. A body that
+carries the literal sequence `\x1e TUEENVREC \x1f` still forges a record and truncates itself at its own `\x1e`,
+where before the marker any `\x1e V \x1f` did. Closing the residual for good needs a marker a body cannot carry — a
+per-snapshot nonce, say — not just a longer constant. A characterisation test pins the residual as a known
+limitation, so that closing it fails that test rather than changing the behaviour silently.
+
 Variables are captured with `declare -p "${name}"`, not with the `${!ref@A}` parameter transformation. `@A` under
 indirection silently mangles arrays — it indirects to the first element and then renders that:
 

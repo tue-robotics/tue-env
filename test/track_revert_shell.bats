@@ -239,6 +239,51 @@ setup() {
     [[ "${TUE_TEST_PRECIOUS}" == "the user's own value" ]]
 }
 
+@test "revert: KNOWN LIMITATION - a body carrying the marker itself still forges a record" {
+    # CHARACTERISATION TEST. Everything it asserts is a BUG being recorded, not a contract being
+    # kept. It exists so that this residual cannot change without somebody noticing; do not read a
+    # single assertion in it as desirable behaviour.
+    #
+    # The marker is a heuristic, not a guarantee. It works because a function body written before
+    # the tracker ran cannot be carrying the marker - but a body that DOES carry the literal
+    # sequence RS + TUEENVREC + FS forges a record exactly as a bare RS + V + FS used to before the
+    # marker existed, and the test above no longer catches it. Escaping the body would close the
+    # hole for good and cannot be afforded: `declare -f` writes straight into the snapshot's own
+    # command substitution, and pulling its output into a variable in order to escape it costs a
+    # fork per function - measured at 62 forks for 20 names and 422 for 200, against a flat 12.
+    #
+    # The literal below is deliberate: the forgery is only possible because the marker is a
+    # compile-time constant that a body can carry verbatim. So if anyone ever closes the hole - a
+    # per-snapshot nonce in the marker is the obvious candidate - this test FAILS, loudly and on
+    # purpose. That is the whole point of it. Do not paper over the failure: delete this test and
+    # let the one above it, which asserts the CORRECT behaviour, cover the case instead.
+    [[ "${__TUE_ENV_MARK}" == "TUEENVREC" ]]  # the eval below has to carry the REAL marker
+    export TUE_TEST_PRECIOUS="the user's own value"
+    # The body of the forgery, in two pieces only because one line of it would run past 120 columns:
+    # a record separator, the marker, and then a variable record naming a variable of the user's.
+    local __tue_env_forged="\$'\x1eTUEENVREC\x1fV\x1fTUE_TEST_PRECIOUS"
+    __tue_env_forged+="\x1fdeclare -x TUE_TEST_PRECIOUS=\"INJECTED\"'"
+    eval "tue_test_inj() { echo ${__tue_env_forged}; }"
+
+    # Directly: the rejoin hands the forged tail to the record parse, so the body is truncated at
+    # its own RS and a variable the snapshot already recorded correctly is overwritten by the body.
+    tue_track_snapshot PRE
+    [[ "${__TUE_ENV_PRE_FUNC[tue_test_inj]}" != "$(declare -f tue_test_inj)" ]]
+    [[ "${__TUE_ENV_PRE_VAR[TUE_TEST_PRECIOUS]}" == *"INJECTED"* ]]
+
+    # End to end: the forgery lands in the pre-load AND the post-load snapshot, so the two agree
+    # about the variable and the load's real change to it is never recorded...
+    _tue-env-track-begin
+    export TUE_TEST_PRECIOUS="from the environment"
+    _tue-env-track-commit
+    [[ -z "${__TUE_ENV_LEDGER_VAR[TUE_TEST_PRECIOUS]:-}" ]]
+
+    # ...and the unload therefore leaves the environment's value in the user's shell. What SHOULD
+    # happen here is what the test above it gets: "the user's own value" back.
+    __tue_env_track_revert_vars
+    [[ "${TUE_TEST_PRECIOUS}" == "from the environment" ]]
+}
+
 @test "revert: an export -f the environment added is cleared from a restored function" {
     # Guards the half of the above that the vanished `unset -f` used to cover for free: the pre-load
     # function was not exported, the environment exported it, and the restore has to take that flag
