@@ -54,6 +54,14 @@ function tue_env_fixture
     printf '%s\n' "${TUE_TEST_ENV_DIR}" > "${TUE_TEST_DIR}/user/envs/$1"
     printf '%s\n' "$1" > "${TUE_TEST_DIR}/user/config/default_env"
     printf 'export TUE_TEST_USER_SETUP=1\n' > "${TUE_TEST_ENV_DIR}/.env/setup/user_setup.bash"
+
+    # The copies, not the originals, are what these tests source, so they need the same exemption
+    # from bats' DEBUG trap that tue_track_setup gives the repo's own setup directory - see the
+    # comment there for what it costs without it.
+    if declare -F bats_add_debug_exclude_path > /dev/null
+    then
+        bats_add_debug_exclude_path "${TUE_TEST_DIR}/setup"
+    fi
     return 0
 }
 

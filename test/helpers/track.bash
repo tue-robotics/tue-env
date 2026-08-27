@@ -20,6 +20,21 @@ function tue_track_setup
     # bats rewrites BATS_DEBUG_* from its DEBUG trap on every command, and `run` rewrites
     # output/status/lines; without hiding them every snapshot pair would differ.
     __TUE_ENV_TRACK_EXTRA_EXCLUDE=('BATS_*' 'output' 'status' 'lines' 'stderr' 'stderr_lines')
+
+    # Keep bats' DEBUG trap out of the tracker's own functions. The trap runs bats_debug_trap on
+    # EVERY command executed under `set -T`, and each call captures a whole stack trace; a snapshot
+    # parses one record per name in the shell, so a single begin/commit pair fires it thousands of
+    # times and costs five seconds here against 0.15 in a plain bash. Excluding the directory the
+    # tracker is sourced from makes bats skip that work for commands whose BASH_SOURCE lives there,
+    # which is the whole of the tracker. Failures inside the .bats files are still reported with
+    # their line, because those files are not excluded.
+    #
+    # No trailing slash: bats compares the exclude path against the DIRECTORY of the running
+    # command's source file, so `.../setup/` never matches `.../setup` and silently buys nothing.
+    if declare -F bats_add_debug_exclude_path > /dev/null
+    then
+        bats_add_debug_exclude_path "${TUE_TRACK_REPO_ROOT}/setup"
+    fi
     return 0
 }
 
