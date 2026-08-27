@@ -57,17 +57,41 @@ jobs:
           shellcheck --version
           shellcheck -- **/*.bash **/*.sh
 
+  test_bats_files:
+    name: Bats file list
+    runs-on: ubuntu-latest
+    outputs:
+      files: ${{ steps.list.outputs.files }}
+    steps:
+      - uses: actions/checkout@v7
+      - name: List the test files
+        id: list
+        # The matrix below is built from this rather than written out, so that a new test file is
+        # picked up by adding it and nothing else. A hardcoded list would leave one silently unrun.
+        # test/*.bats, not `--recursive test`: the recursive walk descends into test/.bats, the
+        # bats-core checkout, and gathers its own abort fixtures instead of this repo's tests.
+        run: |
+          files="$(printf '%s\n' test/*.bats | jq -R -s -c 'split("\n")[:-1]')"
+          echo "files=${files}" >> "${GITHUB_OUTPUT}"
+          echo "${files}"
+
   test_bats:
     name: Bats
     runs-on: ubuntu-latest
+    needs: test_bats_files
+    # One runner per file. The files share nothing - every test works in its own BATS_TEST_TMPDIR -
+    # so this only changes which machine a file runs on, not what it does, and the whole job takes
+    # as long as the slowest single file instead of the sum of all nine.
+    strategy:
+      fail-fast: false
+      matrix:
+        file: ${{ fromJson(needs.test_bats_files.outputs.files) }}
     steps:
       - uses: actions/checkout@v7
       - name: Install bats
         run: ./test/install-bats.bash
       - name: Run bats
-        # test/*.bats, not `--recursive test`: the recursive walk descends into test/.bats, the
-        # bats-core checkout, and gathers its own abort fixtures instead of this repo's tests.
-        run: ./test/.bats/bin/bats --print-output-on-failure test/*.bats
+        run: ./test/.bats/bin/bats --print-output-on-failure "${{ matrix.file }}"
 
   docker_generation_tue_env:
     name: Docker Generation tue-env
