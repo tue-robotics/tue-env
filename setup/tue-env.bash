@@ -528,14 +528,26 @@ Environment directory '${__tue_env_tue_env_dir}' didn't exist (anymore)"""
 
         [[ "${__tue_env_persistent}" == "true" ]] && { tue-env set-default "${__tue_env_tue_env}" || return 1; }
 
-        if [[ -n "${TUE_ENV}" ]]
+        # The marker-or-ledger pair `deactivate` gates on, inverted: there it says when to refuse,
+        # here it says when to unload first; see the comment there for why the marker cannot be the
+        # only authority. Asking the marker alone here is worse than wrongly refusing an unload: a shell whose TUE_ENV the user removed still holds everything the first load did,
+        # so the new environment would be loaded straight on top of the old one's variables,
+        # aliases, functions and PATH entries, with the ledger that says how to undo them never
+        # applied.
+        if [[ -n "${TUE_ENV}" ]] || _tue-env-track-active 2> /dev/null
         then
             if [[ "${TUE_ENV}" == "${__tue_env_tue_env}" ]]
             then
                 echo "[tue-env](switch) Already in the '${__tue_env_tue_env}' environment"
                 return 0
             fi
-            echo "[tue-env](switch) Deactivating the current environment '${TUE_ENV}'"
+            if [[ -n "${TUE_ENV}" ]]
+            then
+                echo "[tue-env](switch) Deactivating the current environment '${TUE_ENV}'"
+            else
+                # Reached only when the ledger, not the marker, is what says an environment is loaded.
+                echo "[tue-env](switch) Deactivating the tracked environment"
+            fi
             _tue-env-deactivate-current-env || { echo "[tue-env](switch) Failed to deactivate the current environment, don't use this terminal anymore, open a new terminal"; return 1; }
         fi
 

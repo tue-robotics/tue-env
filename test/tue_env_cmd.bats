@@ -262,3 +262,23 @@ dry_run=/target/dry'
     _tue-env
     [[ "${COMPREPLY[*]}" == *"--dry-run"* ]]
 }
+
+@test "switch: a ledger is still unloaded after the user unset TUE_ENV" {
+    # `switch` gated the unload on the TUE_ENV marker alone, the same mistake `deactivate` used to
+    # make: with the marker gone it loaded the new environment straight on top of the old one's
+    # variables, aliases, functions and PATH entries instead of reverting them first.
+    tue_env_fixture envone
+    tue_env_fixture_target
+    tue_env_fixture_second envtwo 'export TUE_TEST_TWO_VAR=1'
+
+    source "${TUE_TEST_DIR}/setup.bash"
+    unset TUE_ENV
+
+    tue-env switch envtwo
+    [[ "${TUE_ENV}" == "envtwo" ]]
+    [[ "${TUE_TEST_TWO_VAR}" == "1" ]]
+    [[ -z "${TUE_TEST_TARGET_VAR+set}" ]]
+    [[ -z "${BASH_ALIASES[tue_test_target_alias]:-}" ]]
+    [[ -z "$(declare -F tue_test_target_fn)" ]]
+    [[ ":${PATH}:" != *":/opt/tue-test/bin:"* ]]
+}
