@@ -314,6 +314,12 @@ would unset  function qtcreator, function tsync
 - `eval`ing a captured `declare -- name=...` line from inside `_tue-env-track-revert` creates a **function-local**
   variable and silently does nothing. Captured lines must be rewritten to `declare -g` before evaluation.
 - `export -f` must be re-applied for restored functions that carried it; `declare -f` output does not encode it.
+- An `extended` variable is put back entry-wise, and that assignment carries none of the pre-load attributes, so a
+  load that both extends a variable and changes an attribute of it (`export FOO=/new:${FOO}` on a variable the user
+  had set but never exported) would leave the attribute behind. The attribute letters are reconciled against the
+  pre-load line instead, one letter at a time. Re-declaring the whole pre-load line is not an option: it would
+  restore the pre-load value too and discard the entries the user added after the load. `r` is left alone — bash
+  cannot remove it, and a readonly variable cannot have been extended by the load in the first place.
 - Completions are removed with `complete -r <name>` and restored by evaluating the captured `complete -p` line.
 
 ## Boundaries
@@ -344,6 +350,7 @@ Cases that earn their place:
 - scalar restore, and the conflict path keeping the user's value and printing the note
 - added-then-unset, and removed-then-restored
 - array values and the `export` attribute surviving a round trip
+- an attribute the load changed on an extended variable reconciled without losing the entries the user added
 - `export -f` re-applied to a restored function
 - completions added and removed
 - re-source accumulation: the ledger keeps the original pre-load state and folds in the new post-load state

@@ -847,6 +847,54 @@ function __tue_env_track_restore_line
     return 0
 }
 
+function __tue_env_track_attrs_reconcile
+{
+    # $1: name, $2: its pre-load `declare -p` line, $3: its current `declare -p` line. Puts the
+    # attribute letters back the way the pre-load line had them, leaving the value alone. The
+    # entry-wise branch of the revert writes the value with `printf -v`, which touches nothing else,
+    # so without this a load that both extends a variable and changes an attribute of it - `export
+    # FOO=/new:${FOO}` on a variable the user had set but never exported is the ordinary shape -
+    # leaves that attribute behind after the unload. The whole pre-load line cannot simply be
+    # re-declared instead: that would restore the pre-load VALUE too and throw away the entries the
+    # user added after the load, which is the one thing the entry-wise branch exists to keep.
+    #
+    # `r` is left alone in both directions. Bash cannot remove it at all, and a readonly variable
+    # cannot have been extended by the load in the first place - the assignment would have failed -
+    # so a `r` seen here is one the user applied afterwards, and the note about keeping user changes
+    # is the honest outcome rather than an error from a `declare` that cannot work.
+    #
+    # `declare -g` throughout: a bare `declare` inside a function makes the name LOCAL, which would
+    # shadow the variable being reverted and silently undo nothing at all.
+    local __tue_env_want __tue_env_have __tue_env_f __tue_env_i
+    __tue_env_track_attrs "$2"
+    __tue_env_want="${__TUE_ENV_ATTRS}"
+    __tue_env_track_attrs "$3"
+    __tue_env_have="${__TUE_ENV_ATTRS}"
+
+    if [[ "${__tue_env_want}" == "${__tue_env_have}" ]]
+    then
+        return 0
+    fi
+
+    # Removals first, additions second, and both before the caller assigns: an `i` the load added
+    # would otherwise make `printf -v` evaluate a `:`-separated list as arithmetic.
+    for (( __tue_env_i = 0; __tue_env_i < ${#__tue_env_have}; __tue_env_i++ ))
+    do
+        __tue_env_f="${__tue_env_have:__tue_env_i:1}"
+        [[ "${__tue_env_f}" == "r" ]] && continue
+        [[ "${__tue_env_want}" == *"${__tue_env_f}"* ]] && continue
+        declare -g +"${__tue_env_f}" "$1"
+    done
+    for (( __tue_env_i = 0; __tue_env_i < ${#__tue_env_want}; __tue_env_i++ ))
+    do
+        __tue_env_f="${__tue_env_want:__tue_env_i:1}"
+        [[ "${__tue_env_f}" == "r" ]] && continue
+        [[ "${__tue_env_have}" == *"${__tue_env_f}"* ]] && continue
+        declare -g -"${__tue_env_f}" "$1"
+    done
+    return 0
+}
+
 function __tue_env_track_split
 {
     # $1: a `:`-separated value. Result in __TUE_ENV_SPLIT, empty fields preserved. `IFS=':' read -a`
@@ -1028,6 +1076,14 @@ function __tue_env_track_revert_vars
             then
                 __tue_env_track_unset "${__tue_env_n}" "${__tue_env_cur}"
             else
+                # Only with a pre-load line to reconcile against: a variable the load created and a
+                # later load extended has no pre-load attributes to put back, and what it carries
+                # now is all there has ever been.
+                if [[ -n "${__tue_env_pre}" ]]
+                then
+                    __tue_env_track_attrs_reconcile "${__tue_env_n}" "${__tue_env_pre}" \
+                                                    "${__tue_env_cur}"
+                fi
                 printf -v "${__tue_env_n}" '%s' "${__TUE_ENV_VALUE}"
             fi
             continue

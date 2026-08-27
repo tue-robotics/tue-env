@@ -335,3 +335,48 @@ setup() {
     __tue_env_track_revert_vars
     [[ "${TUE_TEST_TARGET}" == "precious user data" ]]
 }
+
+@test "revert: an attribute the environment added to an extended variable goes with the entries" {
+    # The entry-wise branch writes the value back with `printf -v`, which touches nothing but the
+    # value: whatever attributes the load left were still on the variable after the unload. A load
+    # that both extends a variable and exports it is the ordinary shape of that - `export FOO=/new:${FOO}`
+    # on a variable the user had set but never exported - and left the variable exported for good.
+    TUE_TEST_LIST="/usr/bin"
+    _tue-env-track-begin
+    export TUE_TEST_LIST="/new:${TUE_TEST_LIST}"
+    _tue-env-track-commit
+    [[ "${__TUE_ENV_LEDGER_VAR[TUE_TEST_LIST]}" == "extended" ]]
+    __tue_env_track_revert_vars
+    [[ "${TUE_TEST_LIST}" == "/usr/bin" ]]
+    [[ "$(declare -p TUE_TEST_LIST)" != *"declare -x"* ]]
+}
+
+@test "revert: an attribute the environment removed from an extended variable comes back" {
+    # The mirror image, and the reason the attributes are reconciled in both directions rather than
+    # just unexported: the pre-load line is the authority on every letter, not only on `x`.
+    export TUE_TEST_LIST="/usr/bin"
+    _tue-env-track-begin
+    # `export -n`, not `declare +x`: a bare `declare` inside a function - which is what a bats test
+    # body is - would make the name local and shadow the variable under test.
+    export -n TUE_TEST_LIST
+    TUE_TEST_LIST="/new:${TUE_TEST_LIST}"
+    _tue-env-track-commit
+    [[ "${__TUE_ENV_LEDGER_VAR[TUE_TEST_LIST]}" == "extended" ]]
+    __tue_env_track_revert_vars
+    [[ "${TUE_TEST_LIST}" == "/usr/bin" ]]
+    [[ "$(declare -p TUE_TEST_LIST)" == *"declare -x"* ]]
+}
+
+@test "revert: entries the user added to an extended variable survive the attribute reconciliation" {
+    # Putting the attributes back must not put the VALUE back: the entry-wise branch exists so that
+    # what the user appended after the load stays, and a reconciliation that re-declared the whole
+    # pre-load line would silently discard it.
+    TUE_TEST_LIST="/usr/bin"
+    _tue-env-track-begin
+    export TUE_TEST_LIST="/new:${TUE_TEST_LIST}"
+    _tue-env-track-commit
+    TUE_TEST_LIST="${TUE_TEST_LIST}:/mine"
+    __tue_env_track_revert_vars
+    [[ "${TUE_TEST_LIST}" == "/usr/bin:/mine" ]]
+    [[ "$(declare -p TUE_TEST_LIST)" != *"declare -x"* ]]
+}
