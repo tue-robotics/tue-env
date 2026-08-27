@@ -334,6 +334,16 @@ alone are roughly 60 KB, which every subsequent `fork`+`exec` would have to copy
 **Readline bindings.** Not tracked, so `bind` calls made by a target survive an unload. Documented, not engineered
 around.
 
+**A function's export status alone.** The diff sees the post-load `export -f` flag as well as the pre-load one, but
+the ledger keeps only the pre-load one, so the conflict check that decides whether a function is still the
+environment's compares bodies — and `declare -f` renders the same body whether or not the function is exported. A
+user who changes nothing but the export status of a function the load added therefore leaves no trace the unload can
+see, and the function is removed under them, against the rule that later user changes survive. Closing it needs a
+fifth ledger array carrying the post-load flag through the merge, the revert, the report and the reset, and that is
+not paid for a case this narrow: a body the user rewrote IS caught, which is the case that loses work. A
+characterisation test pins the residual as a known limitation, so that closing it fails that test rather than
+changing the behaviour silently.
+
 Also out of scope: persistence of the ledger to disk, `shopt`/`set` flag tracking, a target-level `unsetup` hook, and
 any change to how target `setup` scripts are written.
 

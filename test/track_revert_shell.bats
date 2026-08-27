@@ -286,3 +286,27 @@ setup() {
     [[ "$(tue_test_fn)" == "original" ]]
     [[ -z "$(declare -Fx | grep ' tue_test_fn$')" ]]
 }
+
+@test "revert: KNOWN LIMITATION - a user's export -f after the load does not save the function" {
+    # CHARACTERISATION TEST. What it asserts is a BUG being recorded, not a contract being kept; do
+    # not read the assertion in it as desirable behaviour.
+    #
+    # The diff computes the post-load export flag as well as the pre-load one, but the ledger only
+    # stores the pre-load flag, so the conflict check that decides whether a change is still the
+    # environment's compares bodies alone - and `declare -f` renders the same body whether or not the
+    # function is exported. A user who changes nothing but the export status of a function the
+    # environment added therefore leaves no trace the unload can see, and the function is removed
+    # under them, against the rule that later user changes survive.
+    #
+    # Closing it needs a fifth ledger array carrying the post-load flag, threaded through the merge,
+    # the revert, the report and the reset. That is deliberately not paid for a case this narrow: a
+    # body the user rewrote IS caught, which is the case that loses work.
+    _tue-env-track-begin
+    tue_test_fn() {
+        echo fromenv
+    }
+    _tue-env-track-commit
+    export -f tue_test_fn
+    _tue-env-track-revert
+    [[ -z "$(declare -F tue_test_fn)" ]]
+}
