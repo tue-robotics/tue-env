@@ -131,7 +131,12 @@ Two consequences follow from the merge rules and are intended:
 
 - a variable the environment adds on one load and unsets on the next collapses to a no-op and drops out of the ledger
 - a variable the user set by hand after the first load, which the second load then overwrites, gets the **user's**
-  value as its pre-load state, so unloading hands that value back rather than unsetting the variable
+  value as its pre-load state, so unloading hands that value back rather than unsetting the variable — but only for
+  a name the ledger did not already hold. Once the environment owns the name, the first merge rule wins and the
+  original pre-load state is kept: a variable the environment added, the user then changed and a later load
+  overwrote is **unset** by the unload, not given the user's intervening value back. The ledger is the accumulated
+  diff of what the environment did, not an undo log of every state a name passed through, and that intervening
+  value was destroyed by the second load rather than by the unload. Both halves are pinned by tests.
 
 ## Capture
 

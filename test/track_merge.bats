@@ -179,6 +179,13 @@ setup() {
 }
 
 @test "merge: a name already in the ledger keeps its original absent pre-load state" {
+    # The counterpart to the hand-back test above, and the line between them is the whole rule: the
+    # user's intervening value becomes the pre-load state only for a name the ledger had never seen.
+    # Once the environment owns the name, the merge keeps the ORIGINAL pre-load state - absent here -
+    # so the unload removes the variable the environment introduced instead of resurrecting a value
+    # that the second load, not the unload, had already destroyed. The revert is asserted and not
+    # just the ledger: the two cases read alike, and this one is easy to erase by "fixing" the merge
+    # to preserve the intervening state.
     _tue-env-track-begin
     export TUE_TEST_S=env1
     _tue-env-track-commit
@@ -189,6 +196,8 @@ setup() {
     [[ "${__TUE_ENV_LEDGER_VAR[TUE_TEST_S]}" == "added" ]]
     [[ "${__TUE_ENV_LEDGER_VAR_PRE[TUE_TEST_S]}" == "" ]]
     [[ "${__TUE_ENV_LEDGER_VAR_POST[TUE_TEST_S]}" == 'declare -x TUE_TEST_S="env2"' ]]
+    _tue-env-track-revert
+    [[ -z "${TUE_TEST_S+set}" ]]
 }
 
 @test "merge: a variable the environment replaced and then unset becomes removed" {
