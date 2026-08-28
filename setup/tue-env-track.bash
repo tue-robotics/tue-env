@@ -1,0 +1,1525 @@
+#! /usr/bin/env bash
+
+# ----------------------------------------------------------------------------------------------------
+#                                  ENVIRONMENT CHANGE TRACKING
+# ----------------------------------------------------------------------------------------------------
+# Records what loading a tue-env environment does to this shell, so that unloading it undoes exactly
+# that and nothing else.
+# Design: docs/superpowers/specs/2026-08-21-env-change-tracking-design.md
+#
+# Naming rule: every global here is named __TUE_ENV_*, every local __tue_env_*. A snapshot taken from
+# inside a function sees the locals of every enclosing function, because bash scopes dynamically, so
+# both prefixes are excluded from tracking. A local without the prefix ends up in the ledger.
+#
+# Never use `(( x++ ))` and never end a function with a bare `cond && action`: both can return 1, and
+# a caller running under `set -e` would abort.
+# ----------------------------------------------------------------------------------------------------
+
+# Record, field and pair separators, and the byte that escapes them inside a payload. Newlines cannot
+# be used, `declare -p` emits literal newlines inside values; NUL cannot be used, command substitution
+# discards it. A payload that contains a separator byte of its own would otherwise end its record or
+# its field early - silently truncating an alias, or destroying it outright when the byte comes first.
+__TUE_ENV_RS=$'\x1e'
+__TUE_ENV_FS=$'\x1f'
+__TUE_ENV_PS=$'\x1d'
+__TUE_ENV_ESC=$'\x1b'
+
+# Every record starts with this token and a FS. A function body is the one payload that cannot be
+# escaped at capture - see __tue_env_track_dump - so the parse has to be able to tell a record from
+# the tail of a body that a raw RS byte cut in half, and it does that by looking for this. A bare
+# one-letter kind would not do: a body holding `RS V FS` would then read as a variable record and
+# write a pre-load state for a variable the load never touched.
+#
+# A constant token is not enough on its own: a body carrying the literal sequence RS + the token +
+# FS forges a record and truncates itself at its own RS. So the token carries a nonce that
+# __tue_env_track_nonce draws immediately before each dump - a body written before that draw cannot
+# be carrying the number. The constant below is the base of the token and the fail-safe value: a
+# dump nobody drew a nonce for frames exactly as it always did.
+#
+# __TUE_ENV_MARK holds the token the NEXT dump will frame with, and nothing else may read it. In
+# particular __tue_env_track_parse does not: it takes the token from the stream it is handed. That
+# is load-bearing. setup.bash re-sources this file from inside the tracked span, which resets the
+# assignment below, so a parse that read the live global would stop matching the pre-load stream it
+# was handed, classify the entire shell as `added`, and have deactivate unset variables the user
+# owned before the load.
+__TUE_ENV_MARK_BASE='TUEENVREC'
+__TUE_ENV_MARK="${__TUE_ENV_MARK_BASE}"
+
+# Extra glob patterns of names never to track. Empty in production; the test harness uses it to hide
+# its own bookkeeping.
+if ! declare -p __TUE_ENV_TRACK_EXTRA_EXCLUDE > /dev/null 2>&1
+then
+    declare -ga __TUE_ENV_TRACK_EXTRA_EXCLUDE=()
+fi
+
+# The ledger. Guarded, because setup.bash is re-sourced on every `tue-env switch` and on every
+# `source ~/.bashrc`, and a second load has to merge into the ledger the first one built.
+if ! declare -p __TUE_ENV_LEDGER_VAR > /dev/null 2>&1
+then
+    declare -gA __TUE_ENV_LEDGER_VAR=() __TUE_ENV_LEDGER_VAR_PRE=()
+    declare -gA __TUE_ENV_LEDGER_VAR_POST=() __TUE_ENV_LEDGER_VAR_ADD=()
+    declare -gA __TUE_ENV_LEDGER_FUNC=() __TUE_ENV_LEDGER_FUNC_PRE=()
+    declare -gA __TUE_ENV_LEDGER_FUNC_POST=() __TUE_ENV_LEDGER_FUNC_XPRE=()
+    declare -gA __TUE_ENV_LEDGER_ALIAS=() __TUE_ENV_LEDGER_ALIAS_PRE=()
+    declare -gA __TUE_ENV_LEDGER_ALIAS_POST=()
+    declare -gA __TUE_ENV_LEDGER_COMPLETE=() __TUE_ENV_LEDGER_COMPLETE_PRE=()
+    declare -gA __TUE_ENV_LEDGER_COMPLETE_POST=()
+    declare -gi __TUE_ENV_TRACK_DEPTH=0
+fi
+
+# Transient snapshot targets, cleared at the end of every commit.
+declare -gA __TUE_ENV_PRE_VAR=() __TUE_ENV_PRE_FUNC=() __TUE_ENV_PRE_FUNCX=()
+declare -gA __TUE_ENV_PRE_ALIAS=() __TUE_ENV_PRE_COMPLETE=()
+declare -gA __TUE_ENV_POST_VAR=() __TUE_ENV_POST_FUNC=() __TUE_ENV_POST_FUNCX=()
+declare -gA __TUE_ENV_POST_ALIAS=() __TUE_ENV_POST_COMPLETE=()
+
+# ----------------------------------------------------------------------------------------------------
+#                                          CAPTURE
+# ----------------------------------------------------------------------------------------------------
+
+function __tue_env_track_escape
+{
+    # $1: raw text. Result in __TUE_ENV_ESCAPED, with every framing byte replaced by a two-byte
+    # sequence, so that the text can no longer end a record or a field. ESC is substituted first:
+    # after that step every ESC in the string is one this function put there, so the three
+    # substitutions that follow cannot collide with a payload's own ESC bytes.
+    #
+    # Parameter expansion only, and never a command substitution: the whole capture is built to cost
+    # a constant number of forks per load rather than one per name, and escaping must not be what
+    # breaks that.
+    local __tue_env_esc="$1"
+    __tue_env_esc="${__tue_env_esc//"${__TUE_ENV_ESC}"/"${__TUE_ENV_ESC}0"}"
+    __tue_env_esc="${__tue_env_esc//"${__TUE_ENV_RS}"/"${__TUE_ENV_ESC}1"}"
+    __tue_env_esc="${__tue_env_esc//"${__TUE_ENV_FS}"/"${__TUE_ENV_ESC}2"}"
+    __tue_env_esc="${__tue_env_esc//"${__TUE_ENV_PS}"/"${__TUE_ENV_ESC}3"}"
+    __TUE_ENV_ESCAPED="${__tue_env_esc}"
+    return 0
+}
+
+function __tue_env_track_unescape
+{
+    # $1: escaped text. Result in __TUE_ENV_UNESCAPED. Exactly the mirror image: ESC is put back
+    # last, so that a `${ESC}0` this function has just produced can never be re-read as an escape
+    # pair by a later substitution.
+    local __tue_env_esc="$1"
+    __tue_env_esc="${__tue_env_esc//"${__TUE_ENV_ESC}3"/"${__TUE_ENV_PS}"}"
+    __tue_env_esc="${__tue_env_esc//"${__TUE_ENV_ESC}2"/"${__TUE_ENV_FS}"}"
+    __tue_env_esc="${__tue_env_esc//"${__TUE_ENV_ESC}1"/"${__TUE_ENV_RS}"}"
+    __tue_env_esc="${__tue_env_esc//"${__TUE_ENV_ESC}0"/"${__TUE_ENV_ESC}"}"
+    __TUE_ENV_UNESCAPED="${__tue_env_esc}"
+    return 0
+}
+
+function __tue_env_track_excluded
+{
+    # $1: name. Returns 0 when the name must not be tracked.
+    local __tue_env_p
+    case "$1" in
+        BASH* | COLUMNS | COMP_* | DIRSTACK | EPOCH* | FUNCNAME | GROUPS | HISTCMD | LINENO | LINES | \
+        OLDPWD | PIPESTATUS | PWD | RANDOM | SECONDS | SHELLOPTS | SHLVL | SRANDOM | _ | \
+        __TUE_ENV_* | __tue_env_* )
+            return 0 ;;
+    esac
+    for __tue_env_p in "${__TUE_ENV_TRACK_EXTRA_EXCLUDE[@]}"
+    do
+        # shellcheck disable=SC2053
+        if [[ "$1" == ${__tue_env_p} ]]
+        then
+            return 0
+        fi
+    done
+    return 1
+}
+
+function __tue_env_track_nonce
+{
+    # Draws the record token the next dump frames its records with. Call it immediately before the
+    # dump, with nothing in between: the whole point is that no code which has already run - and so
+    # no function body already defined - can have seen the number.
+    #
+    # `$RANDOM` is a parameter expansion, so this costs no fork, which is what lets the token be
+    # per-snapshot at all. Two draws are decimal digits only, so the token can never pick up a
+    # framing byte. A shell where `RANDOM` has been unset expands both to nothing and the token
+    # falls back to the bare base - the behaviour this had before the nonce, never something the
+    # parse cannot read.
+    __TUE_ENV_MARK="${__TUE_ENV_MARK_BASE}${RANDOM}${RANDOM}"
+    return 0
+}
+
+function __tue_env_track_dump
+{
+    # Writes a snapshot of this shell to stdout, framed as described at the top of the plan. Meant to
+    # be called inside a command substitution; the few substitutions below are per category, never per
+    # name, so the cost of a snapshot does not grow with the size of the environment.
+    #
+    # The local IFS pins field-splitting to its default regardless of what the caller set it to, which
+    # is what keeps the `declare -Fx` read loop below correct; the two `compgen` name lists are read
+    # with `mapfile` instead of a split, so they are immune to IFS and to globbing either way.
+    local IFS=$' \t\n'
+    local __tue_env_n __tue_env_names __tue_env_l __tue_env_d1 __tue_env_d2 __tue_env_en
+    local -a __tue_env_list=()
+    local -A __tue_env_xf=()
+
+    # Which functions carry `export -f`; `declare -f` output does not encode it.
+    __tue_env_names="$(declare -Fx)"
+    while read -r __tue_env_d1 __tue_env_d2 __tue_env_n
+    do
+        if [[ -n "${__tue_env_n}" ]]
+        then
+            __tue_env_xf["${__tue_env_n}"]="x"
+        fi
+    done <<< "${__tue_env_names}"
+
+    mapfile -t __tue_env_list < <(compgen -v)
+    for __tue_env_n in "${__tue_env_list[@]}"
+    do
+        __tue_env_track_excluded "${__tue_env_n}" && continue
+        printf '%sV%s%s%s' "${__TUE_ENV_MARK}${__TUE_ENV_FS}" "${__TUE_ENV_FS}" \
+               "${__tue_env_n}" "${__TUE_ENV_FS}"
+        declare -p "${__tue_env_n}" 2> /dev/null
+        printf '%s' "${__TUE_ENV_RS}"
+    done
+
+    mapfile -t __tue_env_list < <(compgen -A function)
+    for __tue_env_n in "${__tue_env_list[@]}"
+    do
+        __tue_env_track_excluded "${__tue_env_n}" && continue
+        # Only the name is escaped. `declare -f` writes its output straight into the snapshot's own
+        # command substitution; capturing it into a variable first, which is what escaping it would
+        # need, costs a fork per function and is exactly what this dump is built to avoid. The parse
+        # puts a body that a raw RS split back together instead.
+        __tue_env_track_escape "${__tue_env_n}"
+        printf '%sF%s%s%s%s%s' "${__TUE_ENV_MARK}${__TUE_ENV_FS}" "${__TUE_ENV_FS}" \
+               "${__TUE_ENV_ESCAPED}" "${__TUE_ENV_FS}" "${__tue_env_xf[${__tue_env_n}]:-}" \
+               "${__TUE_ENV_FS}"
+        declare -f "${__tue_env_n}"
+        printf '%s' "${__TUE_ENV_RS}"
+    done
+
+    # BASH_ALIASES gives both names and values without a fork.
+    for __tue_env_n in "${!BASH_ALIASES[@]}"
+    do
+        __tue_env_track_excluded "${__tue_env_n}" && continue
+        __tue_env_track_escape "${__tue_env_n}"
+        __tue_env_en="${__TUE_ENV_ESCAPED}"
+        __tue_env_track_escape "${BASH_ALIASES[${__tue_env_n}]}"
+        printf '%sA%s%s%s%s%s' "${__TUE_ENV_MARK}${__TUE_ENV_FS}" "${__TUE_ENV_FS}" \
+               "${__tue_env_en}" "${__TUE_ENV_FS}" "${__TUE_ENV_ESCAPED}" "${__TUE_ENV_RS}"
+    done
+
+    # `complete -p` prints one registration per line; the command it applies to is the last field.
+    # IFS= on the read itself keeps a registration's leading/trailing whitespace intact.
+    __tue_env_names="$(complete -p 2> /dev/null)"
+    while IFS= read -r __tue_env_l
+    do
+        [[ -z "${__tue_env_l}" ]] && continue
+        __tue_env_n="${__tue_env_l##* }"
+        __tue_env_track_excluded "${__tue_env_n}" && continue
+        __tue_env_track_escape "${__tue_env_n}"
+        __tue_env_en="${__TUE_ENV_ESCAPED}"
+        __tue_env_track_escape "${__tue_env_l}"
+        printf '%sC%s%s%s%s%s' "${__TUE_ENV_MARK}${__TUE_ENV_FS}" "${__TUE_ENV_FS}" \
+               "${__tue_env_en}" "${__TUE_ENV_FS}" "${__TUE_ENV_ESCAPED}" "${__TUE_ENV_RS}"
+    done <<< "${__tue_env_names}"
+
+    return 0
+}
+
+function __tue_env_track_parse
+{
+    # $1: snapshot stream, $2: PRE or POST. Fills the __TUE_ENV_$2_* arrays, replacing their content.
+    local -n __tue_env_rv="__TUE_ENV_$2_VAR"
+    local -n __tue_env_rf="__TUE_ENV_$2_FUNC"
+    local -n __tue_env_rx="__TUE_ENV_$2_FUNCX"
+    local -n __tue_env_ra="__TUE_ENV_$2_ALIAS"
+    local -n __tue_env_rc="__TUE_ENV_$2_COMPLETE"
+    __tue_env_rv=()
+    __tue_env_rf=()
+    __tue_env_rx=()
+    __tue_env_ra=()
+    __tue_env_rc=()
+
+    # One mapfile pass rather than shrinking the stream with ${x%%RS*} / ${x#*RS} per record: those
+    # rescan the whole remaining string every iteration, which is quadratic in the snapshot size. On a
+    # 77 KB snapshot the parse measured 1032 ms that way against roughly 34 ms here, and
+    # _tue-env-track-commit parses two snapshots on every environment load.
+    local -a __tue_env_recs __tue_env_joined=()
+    mapfile -d "${__TUE_ENV_RS}" -t __tue_env_recs < <(printf '%s' "$1")
+
+    # A function body is the one payload the capture cannot escape - see __tue_env_track_dump - so a
+    # raw RS byte inside somebody's own function still cuts its record in two here. Every record
+    # begins with this stream's record token and a FS, and every other payload IS escaped at capture,
+    # so a piece that does not begin that way is the rest of the body in the piece before it: put it
+    # back and rejoin. Without this the tail of such a body is parsed as a record of its own, which
+    # at best loses the function and at worst writes a pre-load state for a variable the load never
+    # touched.
+    #
+    # `mapfile -d` treats the separator as a terminator, so a well-formed stream produces no trailing
+    # empty piece, and an empty piece here really is two adjacent RS bytes inside a body.
+    #
+    # The token is read out of the stream and never out of __TUE_ENV_MARK, which by now holds the
+    # token of a LATER dump or the bare base that re-sourcing this file put back. Deriving it is what
+    # makes a per-snapshot nonce safe; see the comment on __TUE_ENV_MARK. The cost is that the NONCE
+    # half of the token is no longer validated - whatever the stream's first field holds is taken as
+    # its token - and __tue_env_track_dump being the only producer of a stream is what makes that a
+    # fair trade. The BASE half is still checked, because unlike the nonce it cannot desynchronise:
+    # re-sourcing this file assigns it the value it already had. So a stream whose first field is not
+    # a token at all - an empty stream, or a fragment with no FS in it - parses to nothing, and the
+    # arrays are left as this function cleared them: empty, never half-filled with pieces of
+    # somebody's function body.
+    #
+    # It is read out of the first RECORD rather than out of the whole stream. `${x%%FS*}` costs time
+    # proportional to the length of x, not to the offset of the FS it finds, so taking it from the
+    # stream would scan the whole snapshot - measured at 4.7 ms on a 154 KB stream against 0.23 ms on
+    # its first record, twice per environment load. Same value either way: the stream begins with its
+    # first record, and a record begins with the token.
+    local __tue_env_rec __tue_env_hdr="${__tue_env_recs[0]:-}"
+    __tue_env_hdr="${__tue_env_hdr%%"${__TUE_ENV_FS}"*}${__TUE_ENV_FS}"
+    if [[ "${__tue_env_hdr}" != "${__TUE_ENV_MARK_BASE}"* ]]
+    then
+        return 0
+    fi
+    for __tue_env_rec in ${__tue_env_recs[@]+"${__tue_env_recs[@]}"}
+    do
+        if [[ "${__tue_env_rec}" == "${__tue_env_hdr}"* ]]
+        then
+            __tue_env_joined+=("${__tue_env_rec#"${__tue_env_hdr}"}")
+        elif (( ${#__tue_env_joined[@]} > 0 ))
+        then
+            __tue_env_joined[-1]+="${__TUE_ENV_RS}${__tue_env_rec}"
+        fi
+    done
+
+    local __tue_env_k __tue_env_n
+    for __tue_env_rec in ${__tue_env_joined[@]+"${__tue_env_joined[@]}"}
+    do
+        [[ -z "${__tue_env_rec}" ]] && continue
+        __tue_env_k="${__tue_env_rec%%"${__TUE_ENV_FS}"*}"
+        __tue_env_rec="${__tue_env_rec#*"${__TUE_ENV_FS}"}"
+        __tue_env_n="${__tue_env_rec%%"${__TUE_ENV_FS}"*}"
+        __tue_env_rec="${__tue_env_rec#*"${__TUE_ENV_FS}"}"
+        # Unescaping here, as the ledger is built, is what keeps the blast radius of the wire format
+        # to this one function: revert, report, strip and merge all go on seeing exactly the text
+        # they saw before. A variable's payload is NOT unescaped - `declare -p` renders every control
+        # byte as printable `$'\036'` text itself, for a scalar, for an array's elements and for an
+        # associative array's keys, so a variable payload never carries a framing byte, never went
+        # through the escape on the way out, and has nothing here for the unescape to undo.
+        case "${__tue_env_k}" in
+            V )
+                __tue_env_rv["${__tue_env_n}"]="${__tue_env_rec%$'\n'}" ;;
+            F )
+                __tue_env_track_unescape "${__tue_env_n}"
+                __tue_env_n="${__TUE_ENV_UNESCAPED}"
+                __tue_env_rx["${__tue_env_n}"]="${__tue_env_rec%%"${__TUE_ENV_FS}"*}"
+                __tue_env_rec="${__tue_env_rec#*"${__TUE_ENV_FS}"}"
+                __tue_env_rf["${__tue_env_n}"]="${__tue_env_rec%$'\n'}" ;;
+            A )
+                __tue_env_track_unescape "${__tue_env_n}"
+                __tue_env_n="${__TUE_ENV_UNESCAPED}"
+                __tue_env_track_unescape "${__tue_env_rec}"
+                __tue_env_ra["${__tue_env_n}"]="${__TUE_ENV_UNESCAPED}" ;;
+            C )
+                __tue_env_track_unescape "${__tue_env_n}"
+                __tue_env_n="${__TUE_ENV_UNESCAPED}"
+                __tue_env_track_unescape "${__tue_env_rec%$'\n'}"
+                __tue_env_rc["${__tue_env_n}"]="${__TUE_ENV_UNESCAPED}" ;;
+        esac
+    done
+
+    return 0
+}
+
+# ----------------------------------------------------------------------------------------------------
+#                                        CLASSIFICATION
+# ----------------------------------------------------------------------------------------------------
+
+function __tue_env_track_attrs
+{
+    # $1: a `declare -p` line. Result in __TUE_ENV_ATTRS: the attribute letters, "" for none.
+    local __tue_env_a="${1#declare }"
+    __tue_env_a="${__tue_env_a%% *}"
+    __tue_env_a="${__tue_env_a#-}"
+    if [[ "${__tue_env_a}" == "-" ]]
+    then
+        __tue_env_a=""
+    fi
+    __TUE_ENV_ATTRS="${__tue_env_a}"
+    return 0
+}
+
+function __tue_env_track_listable
+{
+    # $1: pre-load declare line, $2: post-load declare line, either may be empty. Returns 0 when
+    # neither side is an array or a nameref, so the value may be treated as a `:`-separated list.
+    # Arrays are never `extended`, and __tue_env_track_value must never be evaluated on an array
+    # line: `declare -p` renders one as bash array syntax, so eval would turn __TUE_ENV_VALUE into
+    # an array, and an associative key can carry an assignment that bash performs in arithmetic
+    # context. Namerefs are excluded for the mirror-image reason on the way out: a nameref's value
+    # is the name it points at, so the entry-wise branch would hand it to `printf -v`, which writes
+    # THROUGH the reference and overwrites a target variable the load never touched.
+    local __tue_env_a
+    __tue_env_track_attrs "$1"
+    __tue_env_a="${__TUE_ENV_ATTRS}"
+    __tue_env_track_attrs "$2"
+    __tue_env_a+="${__TUE_ENV_ATTRS}"
+    if [[ "${__tue_env_a}" == *a* ]] || [[ "${__tue_env_a}" == *A* ]] ||
+       [[ "${__tue_env_a}" == *n* ]]
+    then
+        return 1
+    fi
+    return 0
+}
+
+function __tue_env_track_value
+{
+    # $1: a `declare -p` line of a scalar. Result in __TUE_ENV_VALUE. `declare -p` output is written
+    # to be re-evaluated by bash, so eval is the round trip; it is never applied to array lines.
+    __TUE_ENV_VALUE=""
+    if [[ "$1" != *=* ]]
+    then
+        return 0
+    fi
+    eval "__TUE_ENV_VALUE=${1#*=}"
+    return 0
+}
+
+function __tue_env_track_entries
+{
+    # $1: pre-load value, $2: post-load value. Returns 0 when $1's `:`-separated entries are a
+    # subsequence, in order, of $2's, and puts the entries of $2 that the match did not consume into
+    # __TUE_ENV_ADDED as "index PS entry" pairs joined by RS. This is exactly the shape produced by
+    # `export PATH=/usr/lib/ccache:${PATH}` and by /opt/ros/<distro>/setup.bash.
+    __TUE_ENV_ADDED=""
+    if [[ "$1" == *$'\n'* ]] || [[ "$2" == *$'\n'* ]]
+    then
+        return 1
+    fi
+
+    # __tue_env_track_split, not `IFS=':' read -a`: the latter silently drops a trailing empty
+    # field, so an entry the environment appended as an empty field would be classified as no
+    # addition at all and survive the revert. An empty PATH field means the current directory, so
+    # that is the difference between unloading an environment and leaving `.` on PATH for good.
+    local -a __tue_env_p __tue_env_q
+    __tue_env_track_split "$1"
+    __tue_env_p=("${__TUE_ENV_SPLIT[@]}")
+    __tue_env_track_split "$2"
+    __tue_env_q=("${__TUE_ENV_SPLIT[@]}")
+
+    local __tue_env_i __tue_env_j=0 __tue_env_o=""
+    for (( __tue_env_i = 0; __tue_env_i < ${#__tue_env_q[@]}; __tue_env_i++ ))
+    do
+        if (( __tue_env_j < ${#__tue_env_p[@]} )) &&
+           [[ "${__tue_env_q[__tue_env_i]}" == "${__tue_env_p[__tue_env_j]}" ]]
+        then
+            __tue_env_j=$(( __tue_env_j + 1 ))
+        else
+            # The entry is escaped for the same reason an alias value is: it is a `:`-separated field
+            # of somebody's variable, so it can hold any byte at all, including the RS that ends this
+            # pair and would otherwise truncate or destroy the record.
+            __tue_env_track_escape "${__tue_env_q[__tue_env_i]}"
+            __tue_env_o+="${__tue_env_i}${__TUE_ENV_PS}${__TUE_ENV_ESCAPED}${__TUE_ENV_RS}"
+        fi
+    done
+
+    if (( __tue_env_j != ${#__tue_env_p[@]} ))
+    then
+        return 1
+    fi
+    __TUE_ENV_ADDED="${__tue_env_o}"
+    return 0
+}
+
+function __tue_env_track_diff_vars
+{
+    # Classifies every variable that differs between the PRE and POST snapshots and hands the result
+    # to __tue_env_track_ledger_var.
+    local __tue_env_n __tue_env_pre __tue_env_post __tue_env_kind __tue_env_add
+    local __tue_env_pv __tue_env_qv
+    local -A __tue_env_seen=()
+
+    for __tue_env_n in "${!__TUE_ENV_PRE_VAR[@]}" "${!__TUE_ENV_POST_VAR[@]}"
+    do
+        if [[ -n "${__tue_env_seen[${__tue_env_n}]:-}" ]]
+        then
+            continue
+        fi
+        __tue_env_seen["${__tue_env_n}"]=1
+
+        __tue_env_pre="${__TUE_ENV_PRE_VAR[${__tue_env_n}]:-}"
+        __tue_env_post="${__TUE_ENV_POST_VAR[${__tue_env_n}]:-}"
+        [[ "${__tue_env_pre}" == "${__tue_env_post}" ]] && continue
+
+        # A readonly variable can be neither restored nor unset, so it is left alone entirely.
+        __tue_env_track_attrs "${__tue_env_post:-${__tue_env_pre}}"
+        [[ "${__TUE_ENV_ATTRS}" == *r* ]] && continue
+
+        __tue_env_add=""
+        if [[ -z "${__tue_env_pre}" ]]
+        then
+            __tue_env_kind="added"
+            # Remember the entries as well: if a later load extends this variable, the merged entry
+            # has to be able to fall back to entry-wise removal instead of unsetting it.
+            if __tue_env_track_listable "" "${__tue_env_post}"
+            then
+                __tue_env_track_value "${__tue_env_post}"
+                if __tue_env_track_entries "" "${__TUE_ENV_VALUE}"
+                then
+                    __tue_env_add="${__TUE_ENV_ADDED}"
+                fi
+            fi
+        elif [[ -z "${__tue_env_post}" ]]
+        then
+            __tue_env_kind="removed"
+        else
+            __tue_env_kind="replaced"
+            if __tue_env_track_listable "${__tue_env_pre}" "${__tue_env_post}"
+            then
+                __tue_env_track_value "${__tue_env_pre}"
+                __tue_env_pv="${__TUE_ENV_VALUE}"
+                __tue_env_track_value "${__tue_env_post}"
+                __tue_env_qv="${__TUE_ENV_VALUE}"
+                if __tue_env_track_entries "${__tue_env_pv}" "${__tue_env_qv}"
+                then
+                    __tue_env_kind="extended"
+                    __tue_env_add="${__TUE_ENV_ADDED}"
+                fi
+            fi
+        fi
+
+        __tue_env_track_ledger_var "${__tue_env_n}" "${__tue_env_kind}" "${__tue_env_pre}" \
+                                   "${__tue_env_post}" "${__tue_env_add}"
+    done
+
+    return 0
+}
+
+function __tue_env_track_ledger_var
+{
+    # $1: name, $2: kind, $3: pre-load declare line, $4: post-load declare line, $5: added entries.
+    # Merging keeps the original pre-load state and takes the new post-load state. A change the user
+    # made by hand between two loads is in both the new pre-load and the new post-load snapshot, so it
+    # cancels out of the diff and is never attributed to the environment; that is why the ledger
+    # accumulates diffs instead of re-baselining.
+    local __tue_env_kind="$2" __tue_env_pre="$3" __tue_env_add="$5"
+
+    if [[ -n "${__TUE_ENV_LEDGER_VAR[$1]:-}" ]]
+    then
+        local __tue_env_ok="${__TUE_ENV_LEDGER_VAR[$1]}"
+        local __tue_env_oadd="${__TUE_ENV_LEDGER_VAR_ADD[$1]}"
+        __tue_env_pre="${__TUE_ENV_LEDGER_VAR_PRE[$1]}"
+
+        if [[ -z "${__tue_env_pre}" ]] && [[ -z "$4" ]]
+        then
+            unset "__TUE_ENV_LEDGER_VAR[$1]" "__TUE_ENV_LEDGER_VAR_PRE[$1]" \
+                  "__TUE_ENV_LEDGER_VAR_POST[$1]" "__TUE_ENV_LEDGER_VAR_ADD[$1]"
+            return 0
+        fi
+
+        if [[ -z "$4" ]]
+        then
+            __tue_env_kind="removed"
+            __tue_env_add=""
+        elif [[ "${__tue_env_ok}" == "extended" ]] && [[ "${__tue_env_kind}" == "extended" ]]
+        then
+            __tue_env_add="${__tue_env_oadd}${__tue_env_add}"
+        elif [[ -z "${__tue_env_pre}" ]]
+        then
+            if [[ "${__tue_env_ok}" == "extended" ]] || [[ "${__tue_env_kind}" == "extended" ]]
+            then
+                __tue_env_kind="extended"
+                __tue_env_add="${__tue_env_oadd}${__tue_env_add}"
+            else
+                __tue_env_kind="added"
+            fi
+        else
+            __tue_env_kind="replaced"
+            __tue_env_add=""
+        fi
+    fi
+
+    __TUE_ENV_LEDGER_VAR["$1"]="${__tue_env_kind}"
+    __TUE_ENV_LEDGER_VAR_PRE["$1"]="${__tue_env_pre}"
+    __TUE_ENV_LEDGER_VAR_POST["$1"]="$4"
+    __TUE_ENV_LEDGER_VAR_ADD["$1"]="${__tue_env_add}"
+    return 0
+}
+
+function __tue_env_track_diff_funcs
+{
+    # Functions use the added / removed / replaced triple; the list rule does not apply to them.
+    local __tue_env_n __tue_env_pre __tue_env_post __tue_env_kind __tue_env_xp __tue_env_xq
+    local -A __tue_env_seen=()
+
+    for __tue_env_n in "${!__TUE_ENV_PRE_FUNC[@]}" "${!__TUE_ENV_POST_FUNC[@]}"
+    do
+        if [[ -n "${__tue_env_seen[${__tue_env_n}]:-}" ]]
+        then
+            continue
+        fi
+        __tue_env_seen["${__tue_env_n}"]=1
+
+        __tue_env_pre="${__TUE_ENV_PRE_FUNC[${__tue_env_n}]:-}"
+        __tue_env_post="${__TUE_ENV_POST_FUNC[${__tue_env_n}]:-}"
+        __tue_env_xp="${__TUE_ENV_PRE_FUNCX[${__tue_env_n}]:-}"
+        __tue_env_xq="${__TUE_ENV_POST_FUNCX[${__tue_env_n}]:-}"
+        if [[ "${__tue_env_pre}" == "${__tue_env_post}" ]] && [[ "${__tue_env_xp}" == "${__tue_env_xq}" ]]
+        then
+            continue
+        fi
+
+        if [[ -z "${__tue_env_pre}" ]]
+        then
+            __tue_env_kind="added"
+        elif [[ -z "${__tue_env_post}" ]]
+        then
+            __tue_env_kind="removed"
+        else
+            __tue_env_kind="replaced"
+        fi
+
+        __tue_env_track_ledger_func "${__tue_env_n}" "${__tue_env_kind}" "${__tue_env_pre}" \
+                                    "${__tue_env_post}" "${__tue_env_xp}"
+    done
+
+    return 0
+}
+
+function __tue_env_track_diff_simple
+{
+    # $1: ALIAS or COMPLETE. Same triple, one state string per name.
+    local -n __tue_env_sp="__TUE_ENV_PRE_$1"
+    local -n __tue_env_sq="__TUE_ENV_POST_$1"
+    local __tue_env_n __tue_env_pre __tue_env_post __tue_env_kind __tue_env_hp __tue_env_hq
+    local -A __tue_env_seen=()
+
+    for __tue_env_n in "${!__tue_env_sp[@]}" "${!__tue_env_sq[@]}"
+    do
+        if [[ -n "${__tue_env_seen[${__tue_env_n}]:-}" ]]
+        then
+            continue
+        fi
+        __tue_env_seen["${__tue_env_n}"]=1
+
+        # Presence, not emptiness. `alias foo=` is an ordinary alias whose value happens to be the
+        # empty string, and `${arr[key]:-}` cannot tell that from no alias of that name at all. Both
+        # directions were broken by the conflation: an empty alias the user already had was recorded
+        # as `added` and destroyed by the unload, and an empty alias the environment created was not
+        # recorded at all and outlived it.
+        __tue_env_hp="false"
+        __tue_env_hq="false"
+        [[ -v __tue_env_sp["${__tue_env_n}"] ]] && __tue_env_hp="true"
+        [[ -v __tue_env_sq["${__tue_env_n}"] ]] && __tue_env_hq="true"
+        __tue_env_pre="${__tue_env_sp[${__tue_env_n}]:-}"
+        __tue_env_post="${__tue_env_sq[${__tue_env_n}]:-}"
+        if [[ "${__tue_env_hp}" == "${__tue_env_hq}" ]] &&
+           [[ "${__tue_env_pre}" == "${__tue_env_post}" ]]
+        then
+            continue
+        fi
+
+        if [[ "${__tue_env_hp}" == "false" ]]
+        then
+            __tue_env_kind="added"
+        elif [[ "${__tue_env_hq}" == "false" ]]
+        then
+            __tue_env_kind="removed"
+        else
+            __tue_env_kind="replaced"
+        fi
+
+        __tue_env_track_ledger_simple "$1" "${__tue_env_n}" "${__tue_env_kind}" "${__tue_env_pre}" \
+                                     "${__tue_env_post}"
+    done
+
+    return 0
+}
+
+function __tue_env_track_ledger_func
+{
+    # $1: name, $2: kind, $3: pre-load body, $4: post-load body, $5: pre-load export flag.
+    local __tue_env_kind="$2" __tue_env_pre="$3" __tue_env_xp="$5"
+
+    if [[ -n "${__TUE_ENV_LEDGER_FUNC[$1]:-}" ]]
+    then
+        __tue_env_pre="${__TUE_ENV_LEDGER_FUNC_PRE[$1]}"
+        __tue_env_xp="${__TUE_ENV_LEDGER_FUNC_XPRE[$1]}"
+
+        if [[ -z "${__tue_env_pre}" ]] && [[ -z "$4" ]]
+        then
+            unset "__TUE_ENV_LEDGER_FUNC[$1]" "__TUE_ENV_LEDGER_FUNC_PRE[$1]" \
+                  "__TUE_ENV_LEDGER_FUNC_POST[$1]" "__TUE_ENV_LEDGER_FUNC_XPRE[$1]"
+            return 0
+        fi
+
+        if [[ -z "$4" ]]
+        then
+            __tue_env_kind="removed"
+        elif [[ -z "${__tue_env_pre}" ]]
+        then
+            __tue_env_kind="added"
+        else
+            __tue_env_kind="replaced"
+        fi
+    fi
+
+    __TUE_ENV_LEDGER_FUNC["$1"]="${__tue_env_kind}"
+    __TUE_ENV_LEDGER_FUNC_PRE["$1"]="${__tue_env_pre}"
+    __TUE_ENV_LEDGER_FUNC_POST["$1"]="$4"
+    __TUE_ENV_LEDGER_FUNC_XPRE["$1"]="${__tue_env_xp}"
+    return 0
+}
+
+function __tue_env_track_ledger_simple
+{
+    # $1: ALIAS or COMPLETE, $2: name, $3: kind, $4: pre-load state, $5: post-load state.
+    local -n __tue_env_lk="__TUE_ENV_LEDGER_$1"
+    local -n __tue_env_lp="__TUE_ENV_LEDGER_$1_PRE"
+    local -n __tue_env_lq="__TUE_ENV_LEDGER_$1_POST"
+    local __tue_env_kind="$3" __tue_env_pre="$4" __tue_env_hp __tue_env_hq
+
+    # The kind already carries both sides' presence - `added` means there was nothing before the
+    # load, `removed` means there is nothing after it - so the merge reads that instead of guessing
+    # presence from an empty state string, which an alias with an empty value makes a lie.
+    __tue_env_hq="true"
+    [[ "$3" == "removed" ]] && __tue_env_hq="false"
+
+    if [[ -v __tue_env_lk["$2"] ]]
+    then
+        __tue_env_pre="${__tue_env_lp[$2]}"
+        __tue_env_hp="true"
+        [[ "${__tue_env_lk[$2]}" == "added" ]] && __tue_env_hp="false"
+
+        if [[ "${__tue_env_hp}" == "false" ]] && [[ "${__tue_env_hq}" == "false" ]]
+        then
+            unset "__tue_env_lk[$2]" "__tue_env_lp[$2]" "__tue_env_lq[$2]"
+            return 0
+        fi
+
+        if [[ "${__tue_env_hq}" == "false" ]]
+        then
+            __tue_env_kind="removed"
+        elif [[ "${__tue_env_hp}" == "false" ]]
+        then
+            __tue_env_kind="added"
+        else
+            __tue_env_kind="replaced"
+        fi
+    fi
+
+    __tue_env_lk["$2"]="${__tue_env_kind}"
+    __tue_env_lp["$2"]="${__tue_env_pre}"
+    __tue_env_lq["$2"]="$5"
+    return 0
+}
+
+# ----------------------------------------------------------------------------------------------------
+#                                       ENTRY POINTS
+# ----------------------------------------------------------------------------------------------------
+
+function __tue_env_track_empty
+{
+    # Returns 0 when the ledger holds nothing.
+    if (( ${#__TUE_ENV_LEDGER_VAR[@]} + ${#__TUE_ENV_LEDGER_FUNC[@]} +
+          ${#__TUE_ENV_LEDGER_ALIAS[@]} + ${#__TUE_ENV_LEDGER_COMPLETE[@]} == 0 ))
+    then
+        return 0
+    fi
+    return 1
+}
+
+function _tue-env-track-active
+{
+    # Returns 0 when the ledger holds a load that this shell can still unload. `tue-env deactivate`
+    # and `tue-env changes` ask this as well as looking at the TUE_ENV marker: a user who unset
+    # TUE_ENV by hand is exactly the case the ledger exists to survive, and the marker on its own
+    # would refuse them the unload that would put the shell back.
+    if __tue_env_track_empty
+    then
+        return 1
+    fi
+    return 0
+}
+
+function _tue-env-track-begin
+{
+    # Takes the transient pre-load snapshot, guarded by a depth counter so that a target setup script
+    # that sources setup.bash recursively contributes to the outer load instead of starting its own.
+    __TUE_ENV_TRACK_DEPTH=$(( __TUE_ENV_TRACK_DEPTH + 1 ))
+    if (( __TUE_ENV_TRACK_DEPTH != 1 ))
+    then
+        return 0
+    fi
+    __tue_env_track_nonce
+    __TUE_ENV_SNAP_PRE="$(__tue_env_track_dump)"
+    return 0
+}
+
+function _tue-env-track-commit
+{
+    # Takes the post-load snapshot, diffs it against the pre-load one and merges the diff into the
+    # ledger, but only when the depth counter comes back to zero.
+    if (( __TUE_ENV_TRACK_DEPTH == 0 ))
+    then
+        return 0
+    fi
+    __TUE_ENV_TRACK_DEPTH=$(( __TUE_ENV_TRACK_DEPTH - 1 ))
+    if (( __TUE_ENV_TRACK_DEPTH != 0 ))
+    then
+        return 0
+    fi
+
+    local __tue_env_snap
+    __tue_env_track_nonce
+    __tue_env_snap="$(__tue_env_track_dump)"
+    __tue_env_track_parse "${__TUE_ENV_SNAP_PRE}" PRE
+    __tue_env_track_parse "${__tue_env_snap}" POST
+    __TUE_ENV_SNAP_PRE=""
+
+    __tue_env_track_diff_vars
+    __tue_env_track_diff_funcs
+    __tue_env_track_diff_simple ALIAS
+    __tue_env_track_diff_simple COMPLETE
+
+    # The snapshots are transient; they exist only for the duration of a load.
+    __TUE_ENV_PRE_VAR=()
+    __TUE_ENV_PRE_FUNC=()
+    __TUE_ENV_PRE_FUNCX=()
+    __TUE_ENV_PRE_ALIAS=()
+    __TUE_ENV_PRE_COMPLETE=()
+    __TUE_ENV_POST_VAR=()
+    __TUE_ENV_POST_FUNC=()
+    __TUE_ENV_POST_FUNCX=()
+    __TUE_ENV_POST_ALIAS=()
+    __TUE_ENV_POST_COMPLETE=()
+    return 0
+}
+
+# ----------------------------------------------------------------------------------------------------
+#                                          REVERTING
+# ----------------------------------------------------------------------------------------------------
+
+function __tue_env_track_kept
+{
+    # $1: what was kept, e.g. "value for PATH" or "version of function tue-make".
+    echo "[tue-env](deactivate) kept your $1"
+    return 0
+}
+
+function __tue_env_track_unset
+{
+    # $1: name, $2: the name's CURRENT `declare -p` line, "" when it does not exist. Plain `unset`
+    # on a nameref follows the reference and destroys the variable it points AT - something the load
+    # never touched and the ledger knows nothing about - so a nameref is removed with `unset -n`,
+    # which drops the reference itself. `unset -n` cannot simply be used for everything: on a name
+    # that is not a nameref bash silently does nothing at all, leaving the variable in place.
+    __tue_env_track_attrs "$2"
+    if [[ "${__TUE_ENV_ATTRS}" == *n* ]]
+    then
+        unset -n "$1"
+    else
+        unset -v "$1"
+    fi
+    return 0
+}
+
+function __tue_env_track_restore_line
+{
+    # $1: a captured `declare -p` line, $2: the name's current `declare -p` line. Evaluating $1 as it
+    # stands from inside a function would create a function-local variable and silently do nothing,
+    # so the attributes are rewritten to carry -g.
+    local __tue_env_rest="${1#declare }"
+    local __tue_env_attrs="${__tue_env_rest%% *}"
+    __tue_env_rest="${__tue_env_rest#* }"
+    local __tue_env_flags="${__tue_env_attrs#-}"
+    if [[ "${__tue_env_flags}" == "-" ]]
+    then
+        __tue_env_flags=""
+    fi
+    # Unset first: re-declaring over a variable whose current type differs keeps the old data (a
+    # scalar restored over an array leaves the array's other elements in place) and can leave a stale
+    # attribute, or fail outright between indexed and associative. The unset is driven by the
+    # CURRENT attributes rather than the recorded ones: when the environment turned the name into a
+    # nameref, both a plain unset and the assignment below would otherwise reach through it and
+    # rewrite the target variable instead.
+    local __tue_env_name="${__tue_env_rest%%=*}"
+    __tue_env_track_unset "${__tue_env_name}" "$2"
+    eval "declare -g${__tue_env_flags} ${__tue_env_rest}"
+    return 0
+}
+
+function __tue_env_track_attrs_reconcile
+{
+    # $1: name, $2: its pre-load `declare -p` line, $3: its current `declare -p` line. Puts the
+    # attribute letters back the way the pre-load line had them, leaving the value alone. The
+    # entry-wise branch of the revert writes the value with `printf -v`, which touches nothing else,
+    # so without this a load that both extends a variable and changes an attribute of it - `export
+    # FOO=/new:${FOO}` on a variable the user had set but never exported is the ordinary shape -
+    # leaves that attribute behind after the unload. The whole pre-load line cannot simply be
+    # re-declared instead: that would restore the pre-load VALUE too and throw away the entries the
+    # user added after the load, which is the one thing the entry-wise branch exists to keep.
+    #
+    # `r` is left alone in both directions. Bash cannot remove it at all, and a readonly variable
+    # cannot have been extended by the load in the first place - the assignment would have failed -
+    # so a `r` seen here is one the user applied afterwards, and the note about keeping user changes
+    # is the honest outcome rather than an error from a `declare` that cannot work.
+    #
+    # `declare -g` throughout: a bare `declare` inside a function makes the name LOCAL, which would
+    # shadow the variable being reverted and silently undo nothing at all.
+    local __tue_env_want __tue_env_have __tue_env_f __tue_env_i
+    __tue_env_track_attrs "$2"
+    __tue_env_want="${__TUE_ENV_ATTRS}"
+    __tue_env_track_attrs "$3"
+    __tue_env_have="${__TUE_ENV_ATTRS}"
+
+    if [[ "${__tue_env_want}" == "${__tue_env_have}" ]]
+    then
+        return 0
+    fi
+
+    # Removals first, additions second, and both before the caller assigns: an `i` the load added
+    # would otherwise make `printf -v` evaluate a `:`-separated list as arithmetic.
+    for (( __tue_env_i = 0; __tue_env_i < ${#__tue_env_have}; __tue_env_i++ ))
+    do
+        __tue_env_f="${__tue_env_have:__tue_env_i:1}"
+        [[ "${__tue_env_f}" == "r" ]] && continue
+        [[ "${__tue_env_want}" == *"${__tue_env_f}"* ]] && continue
+        declare -g +"${__tue_env_f}" "$1"
+    done
+    for (( __tue_env_i = 0; __tue_env_i < ${#__tue_env_want}; __tue_env_i++ ))
+    do
+        __tue_env_f="${__tue_env_want:__tue_env_i:1}"
+        [[ "${__tue_env_f}" == "r" ]] && continue
+        [[ "${__tue_env_have}" == *"${__tue_env_f}"* ]] && continue
+        declare -g -"${__tue_env_f}" "$1"
+    done
+    return 0
+}
+
+function __tue_env_track_split
+{
+    # $1: a `:`-separated value. Result in __TUE_ENV_SPLIT, empty fields preserved. `IFS=':' read -a`
+    # is unusable here twice over: it silently drops a trailing empty field, and it stops at the first
+    # newline, which would make the `:.` sentinel below invisible and delete a real field instead. An
+    # empty field in PATH means the current directory, so either mistake changes what the shell runs.
+    # A wholly empty value yields no entries, which is what __tue_env_track_entries already assumes.
+    __TUE_ENV_SPLIT=()
+    if [[ -z "$1" ]]
+    then
+        return 0
+    fi
+    local -a __tue_env_s=()
+    mapfile -d ':' -t __tue_env_s < <(printf '%s:.' "$1")
+    unset "__tue_env_s[$(( ${#__tue_env_s[@]} - 1 ))]"
+    __TUE_ENV_SPLIT=("${__tue_env_s[@]}")
+    return 0
+}
+
+function __tue_env_track_strip
+{
+    # $1: current value, $2: recorded added entries, $3: the pre-load value ("" when the variable did
+    # not exist before the load). Result in __TUE_ENV_VALUE.
+    #
+    # Each recorded entry removes one occurrence: the one closest to the recorded index among the
+    # occurrences that are not part of the pre-load value, ties going to the HIGHER position, because
+    # a user prepending to the value shifts the environment's entries rightwards. An occurrence is
+    # never removed if that would leave fewer copies of the entry than the value held before the load
+    # — the copies the user already had must survive, and when the environment duplicated one of them
+    # the two cannot be told apart by value alone. An entry that is no longer present is skipped.
+    local -a __tue_env_c __tue_env_p
+    __tue_env_track_split "$1"
+    __tue_env_c=("${__TUE_ENV_SPLIT[@]}")
+    __tue_env_track_split "$3"
+    __tue_env_p=("${__TUE_ENV_SPLIT[@]}")
+
+    # An empty entry (an empty PATH field) cannot be used as an associative-array subscript on its
+    # own: `a[""]=1` is a bash syntax error ("bad array subscript"), even though the empty string is
+    # a perfectly valid array VALUE. Every key below is therefore prefixed with a fixed, non-empty
+    # character; concatenating a constant prefix can never make two different entries collide, so the
+    # mapping stays one-to-one.
+    local -A __tue_env_keep=() __tue_env_live=()
+    local __tue_env_x
+    for __tue_env_x in ${__tue_env_p[@]+"${__tue_env_p[@]}"}
+    do
+        __tue_env_keep["k${__tue_env_x}"]=$(( ${__tue_env_keep["k${__tue_env_x}"]:-0} + 1 ))
+    done
+    for __tue_env_x in ${__tue_env_c[@]+"${__tue_env_c[@]}"}
+    do
+        __tue_env_live["k${__tue_env_x}"]=$(( ${__tue_env_live["k${__tue_env_x}"]:-0} + 1 ))
+    done
+
+    # Which positions in the current value line up, in order, with the value the variable held
+    # before the load: those are the user's own entries, and the environment's copy of a duplicated
+    # entry is never one of them. Without this the nearest-index rule alone picks whichever
+    # occurrence happens to sit closest to the recorded index, and once the user has prepended
+    # entries of their own every position has shifted rightwards until that is the user's copy
+    # rather than the environment's - no entry is lost, but the wrong one goes, `:`-separated
+    # precedence changes and the environment's entry outlives the unload.
+    #
+    # A left-to-right greedy alignment is enough: the count guard above has already established that
+    # this entry occurs more often now than it did before the load, and an alignment protects at
+    # most as many occurrences of it as the pre-load value held, so an unprotected occurrence always
+    # remains for as long as the guard keeps letting entries through.
+    local -A __tue_env_prot=()
+    local __tue_env_pi=0 __tue_env_i
+    for (( __tue_env_i = 0; __tue_env_i < ${#__tue_env_c[@]}; __tue_env_i++ ))
+    do
+        if (( __tue_env_pi < ${#__tue_env_p[@]} )) &&
+           [[ "${__tue_env_c[__tue_env_i]}" == "${__tue_env_p[__tue_env_pi]}" ]]
+        then
+            __tue_env_prot["${__tue_env_i}"]=1
+            __tue_env_pi=$(( __tue_env_pi + 1 ))
+        fi
+    done
+
+    local -A __tue_env_dead=()
+    local __tue_env_rest="$2" __tue_env_pair __tue_env_idx __tue_env_e
+    local __tue_env_best __tue_env_bestd __tue_env_d
+    while [[ -n "${__tue_env_rest}" ]]
+    do
+        # Same trap the test helper guards: without this an unterminated tail spins forever.
+        [[ "${__tue_env_rest}" == *"${__TUE_ENV_RS}"* ]] || break
+        __tue_env_pair="${__tue_env_rest%%"${__TUE_ENV_RS}"*}"
+        __tue_env_rest="${__tue_env_rest#*"${__TUE_ENV_RS}"}"
+        [[ -z "${__tue_env_pair}" ]] && continue
+        __tue_env_idx="${__tue_env_pair%%"${__TUE_ENV_PS}"*}"
+        __tue_env_track_unescape "${__tue_env_pair#*"${__TUE_ENV_PS}"}"
+        __tue_env_e="${__TUE_ENV_UNESCAPED}"
+
+        if (( ${__tue_env_live["k${__tue_env_e}"]:-0} <= ${__tue_env_keep["k${__tue_env_e}"]:-0} ))
+        then
+            continue
+        fi
+
+        __tue_env_best=""
+        __tue_env_bestd=-1
+        for (( __tue_env_i = 0; __tue_env_i < ${#__tue_env_c[@]}; __tue_env_i++ ))
+        do
+            [[ -n "${__tue_env_dead[${__tue_env_i}]:-}" ]] && continue
+            [[ -n "${__tue_env_prot[${__tue_env_i}]:-}" ]] && continue
+            [[ "${__tue_env_c[__tue_env_i]}" != "${__tue_env_e}" ]] && continue
+            __tue_env_d=$(( __tue_env_i - __tue_env_idx ))
+            if (( __tue_env_d < 0 ))
+            then
+                __tue_env_d=$(( 0 - __tue_env_d ))
+            fi
+            # `<=`, not `<`: on a tie the higher position wins.
+            if (( __tue_env_bestd < 0 )) || (( __tue_env_d <= __tue_env_bestd ))
+            then
+                __tue_env_bestd="${__tue_env_d}"
+                __tue_env_best="${__tue_env_i}"
+            fi
+        done
+        if [[ -n "${__tue_env_best}" ]]
+        then
+            __tue_env_dead["${__tue_env_best}"]=1
+            __tue_env_live["k${__tue_env_e}"]=$(( ${__tue_env_live["k${__tue_env_e}"]} - 1 ))
+        fi
+    done
+
+    local __tue_env_o="" __tue_env_first="true"
+    for (( __tue_env_i = 0; __tue_env_i < ${#__tue_env_c[@]}; __tue_env_i++ ))
+    do
+        [[ -n "${__tue_env_dead[${__tue_env_i}]:-}" ]] && continue
+        if [[ "${__tue_env_first}" == "true" ]]
+        then
+            __tue_env_o="${__tue_env_c[__tue_env_i]}"
+            __tue_env_first="false"
+        else
+            __tue_env_o+=":${__tue_env_c[__tue_env_i]}"
+        fi
+    done
+    __TUE_ENV_VALUE="${__tue_env_o}"
+    return 0
+}
+
+function __tue_env_track_revert_vars
+{
+    # Applies every variable entry in the ledger. Names are sorted so that the notes printed for kept
+    # user changes come out in a stable order.
+    local __tue_env_n __tue_env_kind __tue_env_pre __tue_env_post __tue_env_cur __tue_env_pv
+    local -a __tue_env_names
+    mapfile -t __tue_env_names < <(printf '%s\n' "${!__TUE_ENV_LEDGER_VAR[@]}" | LC_ALL=C sort)
+
+    for __tue_env_n in "${__tue_env_names[@]}"
+    do
+        [[ -z "${__tue_env_n}" ]] && continue
+        __tue_env_kind="${__TUE_ENV_LEDGER_VAR[${__tue_env_n}]}"
+        __tue_env_pre="${__TUE_ENV_LEDGER_VAR_PRE[${__tue_env_n}]}"
+        __tue_env_post="${__TUE_ENV_LEDGER_VAR_POST[${__tue_env_n}]}"
+        __tue_env_cur="$(declare -p "${__tue_env_n}" 2> /dev/null)" || __tue_env_cur=""
+
+        if [[ "${__tue_env_kind}" == "extended" ]]
+        then
+            # Entry-wise removal needs no conflict check: whatever the user added stays by
+            # construction.
+            [[ -z "${__tue_env_cur}" ]] && continue
+
+            # The current state must still be listable, exactly like __tue_env_track_diff_vars
+            # requires before treating a value as `:`-separated: evaluating an associative array's
+            # `declare -p` line can execute a command substitution smuggled into a key.
+            if ! __tue_env_track_listable "" "${__tue_env_cur}"
+            then
+                __tue_env_track_kept "value for ${__tue_env_n}"
+                continue
+            fi
+
+            __tue_env_pv=""
+            if [[ -n "${__tue_env_pre}" ]]
+            then
+                __tue_env_track_value "${__tue_env_pre}"
+                __tue_env_pv="${__TUE_ENV_VALUE}"
+            fi
+            __tue_env_track_value "${__tue_env_cur}"
+            __tue_env_track_strip "${__TUE_ENV_VALUE}" \
+                                  "${__TUE_ENV_LEDGER_VAR_ADD[${__tue_env_n}]}" "${__tue_env_pv}"
+            if [[ -z "${__TUE_ENV_VALUE}" ]] && [[ -z "${__tue_env_pre}" ]]
+            then
+                __tue_env_track_unset "${__tue_env_n}" "${__tue_env_cur}"
+            else
+                # Only with a pre-load line to reconcile against: a variable the load created and a
+                # later load extended has no pre-load attributes to put back, and what it carries
+                # now is all there has ever been.
+                if [[ -n "${__tue_env_pre}" ]]
+                then
+                    __tue_env_track_attrs_reconcile "${__tue_env_n}" "${__tue_env_pre}" \
+                                                    "${__tue_env_cur}"
+                fi
+                printf -v "${__tue_env_n}" '%s' "${__TUE_ENV_VALUE}"
+            fi
+            continue
+        fi
+
+        if [[ "${__tue_env_cur}" != "${__tue_env_post}" ]]
+        then
+            __tue_env_track_kept "value for ${__tue_env_n}"
+            continue
+        fi
+
+        if [[ -z "${__tue_env_pre}" ]]
+        then
+            __tue_env_track_unset "${__tue_env_n}" "${__tue_env_cur}"
+        else
+            __tue_env_track_restore_line "${__tue_env_pre}" "${__tue_env_cur}"
+        fi
+    done
+
+    return 0
+}
+
+function __tue_env_track_current
+{
+    # $1: FUNC, ALIAS or COMPLETE, $2: name. Result in __TUE_ENV_CURRENT, empty when absent, with
+    # __TUE_ENV_CURRENT_SET saying whether the object is there at all: `alias foo=` exists and holds
+    # the empty string, so the value alone cannot answer that and a caller that read it as absence
+    # destroyed the user's alias. `declare -f` and `complete -p` both return 1 for a name that does
+    # not exist, and a bare command-substitution assignment propagates that, so without the `||` a
+    # caller running under `set -e` would abort here instead of treating the object as absent.
+    __TUE_ENV_CURRENT_SET="true"
+    case "$1" in
+        FUNC )
+            __TUE_ENV_CURRENT="$(declare -f "$2" 2> /dev/null)" ||
+                { __TUE_ENV_CURRENT=""; __TUE_ENV_CURRENT_SET="false"; } ;;
+        ALIAS )
+            if [[ -v BASH_ALIASES["$2"] ]]
+            then
+                __TUE_ENV_CURRENT="${BASH_ALIASES[$2]}"
+            else
+                __TUE_ENV_CURRENT=""
+                __TUE_ENV_CURRENT_SET="false"
+            fi ;;
+        COMPLETE )
+            __TUE_ENV_CURRENT="$(complete -p "$2" 2> /dev/null)" ||
+                { __TUE_ENV_CURRENT=""; __TUE_ENV_CURRENT_SET="false"; } ;;
+    esac
+    return 0
+}
+
+function __tue_env_track_revert_funcs
+{
+    local __tue_env_n __tue_env_pre
+    local -a __tue_env_names
+    mapfile -t __tue_env_names < <(printf '%s\n' "${!__TUE_ENV_LEDGER_FUNC[@]}" | LC_ALL=C sort)
+
+    for __tue_env_n in "${__tue_env_names[@]}"
+    do
+        [[ -z "${__tue_env_n}" ]] && continue
+        __tue_env_track_current FUNC "${__tue_env_n}"
+        if [[ "${__TUE_ENV_CURRENT}" != "${__TUE_ENV_LEDGER_FUNC_POST[${__tue_env_n}]}" ]]
+        then
+            __tue_env_track_kept "version of function ${__tue_env_n}"
+            continue
+        fi
+
+        __tue_env_pre="${__TUE_ENV_LEDGER_FUNC_PRE[${__tue_env_n}]}"
+        if [[ -z "${__tue_env_pre}" ]]
+        then
+            # The environment created this function, so removing it is the whole job.
+            unset -f "${__tue_env_n}"
+            continue
+        fi
+
+        # No `unset -f` first. `eval` of a captured body replaces the function atomically, whereas
+        # unsetting and then failing to re-parse the body leaves the user with nothing at all - and
+        # bodies are captured raw, so an RS byte inside the user's own function truncates the record
+        # and makes exactly that happen. The unset was only ever needed to clear a stale `export -f`
+        # flag, and `export -nf` does that without destroying the body. Testing the eval rather than
+        # running it bare also keeps a caller under `set -e` alive when the body will not parse.
+        if eval "${__tue_env_pre}"
+        then
+            # `declare -f` output does not encode `export -f`, so the pre-load flag has to be
+            # re-applied by hand - and explicitly cleared when the environment exported a function
+            # the user had not exported, which the vanished `unset -f` used to take care of. The name
+            # to export is held in a variable, not literal, which is exactly what SC2163 flags.
+            if [[ "${__TUE_ENV_LEDGER_FUNC_XPRE[${__tue_env_n}]}" == "x" ]]
+            then
+                # shellcheck disable=SC2163
+                export -f "${__tue_env_n}"
+            else
+                # shellcheck disable=SC2163
+                export -nf "${__tue_env_n}"
+            fi
+        fi
+    done
+
+    return 0
+}
+
+function __tue_env_track_revert_simple
+{
+    # $1: ALIAS or COMPLETE. The nameref locals are named distinctly from __tue_env_track_ledger_simple's
+    # (which also namerefs the same three globals): shellcheck's SC2178 does not scope nameref type
+    # inference per function, so reusing those names here reads, to it, as the same variable switching
+    # from array to scalar and it warns; giving these their own names side-steps that false positive.
+    local -n __tue_env_rlk="__TUE_ENV_LEDGER_$1"
+    local -n __tue_env_rlp="__TUE_ENV_LEDGER_$1_PRE"
+    local -n __tue_env_rlq="__TUE_ENV_LEDGER_$1_POST"
+    local __tue_env_n __tue_env_pre __tue_env_label __tue_env_want
+    local -a __tue_env_names
+    mapfile -t __tue_env_names < <(printf '%s\n' "${!__tue_env_rlk[@]}" | LC_ALL=C sort)
+
+    if [[ "$1" == "ALIAS" ]]
+    then
+        __tue_env_label="alias"
+    else
+        __tue_env_label="completion for"
+    fi
+
+    for __tue_env_n in "${__tue_env_names[@]}"
+    do
+        [[ -z "${__tue_env_n}" ]] && continue
+        __tue_env_track_current "$1" "${__tue_env_n}"
+        # `removed` is the one kind that left nothing behind, so it is the one kind that expects the
+        # object to be absent now. Comparing the two state strings alone cannot express that: an
+        # empty string is both what an absent object reads as and a legal alias value.
+        __tue_env_want="true"
+        [[ "${__tue_env_rlk[${__tue_env_n}]}" == "removed" ]] && __tue_env_want="false"
+        if [[ "${__TUE_ENV_CURRENT_SET}" != "${__tue_env_want}" ]] ||
+           [[ "${__TUE_ENV_CURRENT}" != "${__tue_env_rlq[${__tue_env_n}]}" ]]
+        then
+            __tue_env_track_kept "version of ${__tue_env_label} ${__tue_env_n}"
+            continue
+        fi
+
+        __tue_env_pre="${__tue_env_rlp[${__tue_env_n}]}"
+        # The kind again, not the emptiness of the recorded state: `added` is the only kind with
+        # nothing to put back, and an alias whose pre-load value was the empty string has to be
+        # re-registered rather than left unset.
+        if [[ "$1" == "ALIAS" ]]
+        then
+            unalias "${__tue_env_n}" 2> /dev/null || true
+            if [[ "${__tue_env_rlk[${__tue_env_n}]}" != "added" ]]
+            then
+                # The pre-load alias text is meant to expand right now, into the literal text that
+                # `alias` re-registers; it is not a deferred expression, which is what SC2139 flags.
+                # shellcheck disable=SC2139
+                alias "${__tue_env_n}=${__tue_env_pre}"
+            fi
+        else
+            complete -r "${__tue_env_n}" 2> /dev/null || true
+            if [[ "${__tue_env_rlk[${__tue_env_n}]}" != "added" ]]
+            then
+                eval "${__tue_env_pre}"
+            fi
+        fi
+    done
+
+    return 0
+}
+
+function __tue_env_track_clear
+{
+    __TUE_ENV_LEDGER_VAR=()
+    __TUE_ENV_LEDGER_VAR_PRE=()
+    __TUE_ENV_LEDGER_VAR_POST=()
+    __TUE_ENV_LEDGER_VAR_ADD=()
+    __TUE_ENV_LEDGER_FUNC=()
+    __TUE_ENV_LEDGER_FUNC_PRE=()
+    __TUE_ENV_LEDGER_FUNC_POST=()
+    __TUE_ENV_LEDGER_FUNC_XPRE=()
+    __TUE_ENV_LEDGER_ALIAS=()
+    __TUE_ENV_LEDGER_ALIAS_PRE=()
+    __TUE_ENV_LEDGER_ALIAS_POST=()
+    __TUE_ENV_LEDGER_COMPLETE=()
+    __TUE_ENV_LEDGER_COMPLETE_PRE=()
+    __TUE_ENV_LEDGER_COMPLETE_POST=()
+    return 0
+}
+
+function _tue-env-track-revert
+{
+    # Applies the ledger to this shell and clears it. Returns 1 without touching anything when the
+    # ledger is empty, which is the signal for the caller to fall back to the old heuristic.
+    if __tue_env_track_empty
+    then
+        return 1
+    fi
+
+    __tue_env_track_revert_vars
+    __tue_env_track_revert_funcs
+    __tue_env_track_revert_simple ALIAS
+    __tue_env_track_revert_simple COMPLETE
+    __tue_env_track_clear
+
+    # The one non-variable thing the virtual environment's `deactivate` does; the ledger has already
+    # taken care of everything else that `deactivate` would have restored, including unsetting the
+    # `deactivate` function itself.
+    hash -r
+    return 0
+}
+
+# ----------------------------------------------------------------------------------------------------
+#                                          REPORTING
+# ----------------------------------------------------------------------------------------------------
+
+function __tue_env_track_display
+{
+    # $1: a `declare -p` line. Result in __TUE_ENV_VALUE, ready to print. Array values are not
+    # rendered: their `declare -p` body is bash source, not something a user wants to read.
+    __tue_env_track_attrs "$1"
+    if [[ "${__TUE_ENV_ATTRS}" == *a* ]] || [[ "${__TUE_ENV_ATTRS}" == *A* ]]
+    then
+        __TUE_ENV_VALUE="(array)"
+        return 0
+    fi
+    __tue_env_track_value "$1"
+    return 0
+}
+
+function __tue_env_track_entry_list
+{
+    # $1: recorded added entries. Result in __TUE_ENV_LIST: "entry, entry".
+    local __tue_env_rest="$1" __tue_env_pair __tue_env_o=""
+    while [[ -n "${__tue_env_rest}" ]]
+    do
+        # Same trap the sibling loops guard against (__tue_env_track_strip, tue_track_added):
+        # without this an unterminated tail spins forever.
+        [[ "${__tue_env_rest}" == *"${__TUE_ENV_RS}"* ]] || break
+        __tue_env_pair="${__tue_env_rest%%"${__TUE_ENV_RS}"*}"
+        __tue_env_rest="${__tue_env_rest#*"${__TUE_ENV_RS}"}"
+        [[ -z "${__tue_env_pair}" ]] && continue
+        __tue_env_track_unescape "${__tue_env_pair#*"${__TUE_ENV_PS}"}"
+        __tue_env_o+="${__tue_env_o:+, }${__TUE_ENV_UNESCAPED}"
+    done
+    __TUE_ENV_LIST="${__tue_env_o}"
+    return 0
+}
+
+function __tue_env_track_removed
+{
+    # $1: a `:`-separated value, $2: the same value after __tue_env_track_strip. Result in
+    # __TUE_ENV_LIST: the entries of $1 that do not survive in $2, "entry, entry", in the order
+    # they appear in $1. $2 is always exactly $1 with some positions dropped, so a left-to-right
+    # greedy alignment always finds a valid pairing; which of several equal-valued entries it
+    # credits as dropped does not matter here, only the combined text of the dropped ones does.
+    local -a __tue_env_c __tue_env_r
+    __tue_env_track_split "$1"
+    __tue_env_c=("${__TUE_ENV_SPLIT[@]}")
+    __tue_env_track_split "$2"
+    __tue_env_r=("${__TUE_ENV_SPLIT[@]}")
+
+    local __tue_env_ci=0 __tue_env_ri=0 __tue_env_o=""
+    while (( __tue_env_ci < ${#__tue_env_c[@]} ))
+    do
+        if (( __tue_env_ri < ${#__tue_env_r[@]} )) &&
+           [[ "${__tue_env_c[__tue_env_ci]}" == "${__tue_env_r[__tue_env_ri]}" ]]
+        then
+            __tue_env_ri=$(( __tue_env_ri + 1 ))
+        else
+            __tue_env_o+="${__tue_env_o:+, }${__tue_env_c[__tue_env_ci]}"
+        fi
+        __tue_env_ci=$(( __tue_env_ci + 1 ))
+    done
+    __TUE_ENV_LIST="${__tue_env_o}"
+    return 0
+}
+
+function __tue_env_track_report_vars
+{
+    # $1: changes or revert.
+    local __tue_env_n __tue_env_k __tue_env_pre __tue_env_post __tue_env_cur __tue_env_pv
+    local __tue_env_cv
+    local -a __tue_env_names
+    mapfile -t __tue_env_names < <(printf '%s\n' "${!__TUE_ENV_LEDGER_VAR[@]}" | LC_ALL=C sort)
+
+    for __tue_env_n in "${__tue_env_names[@]}"
+    do
+        [[ -z "${__tue_env_n}" ]] && continue
+        __tue_env_k="${__TUE_ENV_LEDGER_VAR[${__tue_env_n}]}"
+        __tue_env_pre="${__TUE_ENV_LEDGER_VAR_PRE[${__tue_env_n}]}"
+        __tue_env_post="${__TUE_ENV_LEDGER_VAR_POST[${__tue_env_n}]}"
+        __tue_env_cur="$(declare -p "${__tue_env_n}" 2> /dev/null)" || __tue_env_cur=""
+
+        if [[ "${__tue_env_k}" == "extended" ]]
+        then
+            if [[ "$1" == "changes" ]]
+            then
+                __tue_env_track_entry_list "${__TUE_ENV_LEDGER_VAR_ADD[${__tue_env_n}]}"
+                echo "added   ${__tue_env_n} entries: ${__TUE_ENV_LIST}"
+                continue
+            fi
+
+            # Mirror __tue_env_track_revert_vars's extended branch (764-778): a variable the
+            # user has since unset gets nothing done to it, and one that is no longer listable
+            # is kept whole rather than guessed at.
+            if [[ -z "${__tue_env_cur}" ]]
+            then
+                continue
+            fi
+            if ! __tue_env_track_listable "" "${__tue_env_cur}"
+            then
+                __tue_env_track_display "${__tue_env_cur}"
+                echo "would keep   ${__tue_env_n}=${__TUE_ENV_VALUE} (changed since load)"
+                continue
+            fi
+
+            # Ask the real stripper what it would leave behind, then read off which of the
+            # current entries would not survive: this is the exact computation
+            # __tue_env_track_revert_vars performs before assigning, so the report cannot
+            # invent its own answer and drift from what a revert actually does.
+            __tue_env_pv=""
+            if [[ -n "${__tue_env_pre}" ]]
+            then
+                __tue_env_track_value "${__tue_env_pre}"
+                __tue_env_pv="${__TUE_ENV_VALUE}"
+            fi
+            __tue_env_track_value "${__tue_env_cur}"
+            __tue_env_cv="${__TUE_ENV_VALUE}"
+            __tue_env_track_strip "${__tue_env_cv}" "${__TUE_ENV_LEDGER_VAR_ADD[${__tue_env_n}]}" \
+                                  "${__tue_env_pv}"
+            __tue_env_track_removed "${__tue_env_cv}" "${__TUE_ENV_VALUE}"
+            if [[ -n "${__TUE_ENV_LIST}" ]]
+            then
+                echo "would remove ${__tue_env_n} entries: ${__TUE_ENV_LIST}"
+            fi
+            continue
+        fi
+
+        if [[ "$1" == "revert" ]] && [[ "${__tue_env_cur}" != "${__tue_env_post}" ]]
+        then
+            __tue_env_track_display "${__tue_env_cur}"
+            echo "would keep   ${__tue_env_n}=${__TUE_ENV_VALUE} (changed since load)"
+            continue
+        fi
+
+        case "${__tue_env_k}" in
+            added )
+                __tue_env_track_display "${__tue_env_post}"
+                if [[ "$1" == "changes" ]]
+                then
+                    echo "added   ${__tue_env_n}=${__TUE_ENV_VALUE}"
+                else
+                    echo "would unset  ${__tue_env_n}"
+                fi ;;
+            removed | replaced )
+                __tue_env_track_display "${__tue_env_pre}"
+                if [[ "$1" != "changes" ]]
+                then
+                    echo "would restore ${__tue_env_n} to '${__TUE_ENV_VALUE}'"
+                elif [[ "${__tue_env_k}" == "removed" ]]
+                then
+                    echo "removed ${__tue_env_n} (was '${__TUE_ENV_VALUE}')"
+                else
+                    echo "changed ${__tue_env_n} (was '${__TUE_ENV_VALUE}')"
+                fi ;;
+        esac
+    done
+
+    return 0
+}
+
+function __tue_env_track_report_objects
+{
+    # $1: changes or revert, $2: FUNC, ALIAS or COMPLETE, $3: label to print before each name.
+    # Distinct nameref names from __tue_env_track_ledger_simple's: reusing them makes shellcheck
+    # carry an SC2178 across function scopes and fail the file.
+    local -n __tue_env_pk="__TUE_ENV_LEDGER_$2"
+    local -n __tue_env_pq="__TUE_ENV_LEDGER_$2_POST"
+    # __tue_env_pkeep, not __tue_env_keep: __tue_env_track_strip already uses that name for an
+    # associative array, and shellcheck carries the type across function scopes (SC2178).
+    local __tue_env_n __tue_env_add="" __tue_env_gone="" __tue_env_chg="" __tue_env_pkeep=""
+    local __tue_env_pwant
+    local -a __tue_env_names
+    mapfile -t __tue_env_names < <(printf '%s\n' "${!__tue_env_pk[@]}" | LC_ALL=C sort)
+
+    for __tue_env_n in "${__tue_env_names[@]}"
+    do
+        [[ -z "${__tue_env_n}" ]] && continue
+        __tue_env_track_current "$2" "${__tue_env_n}"
+        # Presence as well as text, exactly as __tue_env_track_revert_simple decides it, so the dry
+        # run cannot promise something the revert would not do.
+        __tue_env_pwant="true"
+        [[ "${__tue_env_pk[${__tue_env_n}]}" == "removed" ]] && __tue_env_pwant="false"
+        if [[ "$1" == "revert" ]] &&
+           { [[ "${__TUE_ENV_CURRENT_SET}" != "${__tue_env_pwant}" ]] ||
+             [[ "${__TUE_ENV_CURRENT}" != "${__tue_env_pq[${__tue_env_n}]}" ]]; }
+        then
+            __tue_env_pkeep+="${__tue_env_pkeep:+, }$3 ${__tue_env_n}"
+            continue
+        fi
+        case "${__tue_env_pk[${__tue_env_n}]}" in
+            added )
+                __tue_env_add+="${__tue_env_add:+, }$3 ${__tue_env_n}" ;;
+            removed )
+                __tue_env_gone+="${__tue_env_gone:+, }$3 ${__tue_env_n}" ;;
+            replaced )
+                __tue_env_chg+="${__tue_env_chg:+, }$3 ${__tue_env_n}" ;;
+        esac
+    done
+
+    if [[ "$1" == "changes" ]]
+    then
+        [[ -n "${__tue_env_add}" ]] && echo "added   ${__tue_env_add}"
+        [[ -n "${__tue_env_chg}" ]] && echo "changed ${__tue_env_chg}"
+        [[ -n "${__tue_env_gone}" ]] && echo "removed ${__tue_env_gone}"
+    else
+        [[ -n "${__tue_env_add}" ]] && echo "would unset  ${__tue_env_add}"
+        [[ -n "${__tue_env_chg}" ]] && echo "would restore ${__tue_env_chg}"
+        [[ -n "${__tue_env_gone}" ]] && echo "would restore ${__tue_env_gone}"
+        [[ -n "${__tue_env_pkeep}" ]] && echo "would keep   ${__tue_env_pkeep} (changed since load)"
+    fi
+
+    return 0
+}
+
+function _tue-env-track-report
+{
+    # $1: changes or revert. Renders the ledger, or the revert it would perform, without mutating
+    # anything. Returns 2 when $1 is neither, 1 when the ledger is empty.
+    case "${1-}" in
+        changes | revert ) ;;
+        * )
+            echo "_tue-env-track-report: mode must be 'changes' or 'revert'" >&2
+            return 2 ;;
+    esac
+
+    if __tue_env_track_empty
+    then
+        return 1
+    fi
+
+    __tue_env_track_report_vars "$1"
+    __tue_env_track_report_objects "$1" ALIAS "alias"
+    __tue_env_track_report_objects "$1" FUNC "function"
+    __tue_env_track_report_objects "$1" COMPLETE "completion for"
+    return 0
+}

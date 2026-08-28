@@ -161,6 +161,28 @@ tue-get install ros-pico
 
 Or use `tue-env set-default` if you want this to be the default.
 
+### Unloading an environment
+
+`tue-env deactivate` unloads the current environment from the running shell. Loading an environment is
+recorded as it happens, so unloading removes what the load added and leaves anything you changed
+afterwards alone: a `PATH` entry you added by hand stays with no message printed, and a variable you set
+after loading keeps your value, printing one line to say it was kept.
+
+Two commands show what is going on:
+
+```bash
+tue-env changes              # what loading the current environment did to this shell
+tue-env deactivate --dry-run # what unloading would do right now
+```
+
+Readline bindings a target makes with `bind` are not tracked and survive an unload. A shell started
+before this feature existed has no record to work from: `changes` and `deactivate --dry-run` both
+fail with an explanatory message, and `deactivate` itself falls back to deactivating an active
+virtualenv and unsetting `TUE_ENV*`, `ROS_*` and a few known variables, as it did before. A
+non-interactive child shell also has no record, so `changes` and `deactivate --dry-run` fail the
+same way there too, but plain `deactivate` has never worked in such a shell: it errors out and tells
+you to stop using the terminal, a pre-existing limitation this feature does not change.
+
 ## Guidelines on creating a new target
 
 The targets directory is located at `.env/targets` relative to the root of the environment directory.

@@ -5,11 +5,12 @@
 export LC_ALL="C.UTF-8"
 
 # ------------------------------------------
-# pip bash completion
+# pip bash completion start
 if hash pip3 2> /dev/null
 then
     _pip_completion()
     {
+        local IFS=$' \t\n'
         # shellcheck disable=SC2207
         COMPREPLY=( $( COMP_WORDS="${COMP_WORDS[*]}" \
                        COMP_CWORD=$COMP_CWORD \
@@ -21,3 +22,4 @@ then
     # 0.27 s of every interactive shell - 40% of the whole environment load.
     complete -o default -F _pip_completion pip
 fi
+# pip bash completion end
