@@ -293,3 +293,48 @@ line"
     tue_track_snapshot PRE
     [[ -z "${__TUE_ENV_PRE_VAR[TUE_TEST_TRANSIENT]:-}" ]]
 }
+
+@test "capture: a parse does not cost a system call per byte of the snapshot" {
+    # The parse used to read its stream through a process substitution. That is a pipe, and bash
+    # reads a pipe one byte per `read` system call so that it never consumes a byte past the
+    # delimiter it was asked for - a guarantee that costs nothing on the few-hundred-byte streams
+    # this was written against, and 1.2 million system calls on a shell whose completion functions
+    # run to hundreds of kilobytes. An interactive start spent four seconds in here.
+    #
+    # The property to hold is that reading the stream is not the expensive part of the parse. The
+    # reference figure is the escape over the same payload: four passes over every byte, so a parse
+    # that merely walks its stream has no business costing several times as much.
+    local __tue_env_parse __tue_env_base
+    tue_track_parse_cost
+    __tue_env_parse="${TUE_TRACK_PARSE_US}"
+    __tue_env_base="${TUE_TRACK_BASE_US}"
+
+    # Both figures have to be real measurements before the ratio between them means anything.
+    [[ "${__tue_env_parse}" -gt 0 ]]
+    [[ "${__tue_env_base}" -gt 0 ]]
+
+    # Measured on the machine this was written on: a parse that reads its stream byte by byte costs
+    # about seven times the reference, one that does not costs about half of it. Three is clear of
+    # both, and it is the direction of the bound that matters - it can only be tripped by a parse
+    # that has gone back to paying per byte of stream.
+    [[ "${__tue_env_parse}" -lt $(( __tue_env_base * 3 )) ]]
+}
+
+@test "capture: the last record of a stream survives however the parse reads it" {
+    # Every record the dump writes is terminated by a record separator, so the stream ends with one.
+    # A reader that appends anything of its own after that terminator - a here-string appends a
+    # newline - produces a final piece that is not a record, and the rejoin, which exists to put a
+    # function body a raw separator cut in half back together, would glue that piece onto the last
+    # real record instead. The damage is silent and lands on whichever name happens to sort last.
+    local __tue_env_stream __tue_env_payload='complete -o nospace -F _tue_test_f tue-test-last'
+    __tue_env_track_nonce
+    __tue_env_stream="${__TUE_ENV_MARK}${__TUE_ENV_FS}V${__TUE_ENV_FS}TUE_TEST_FIRST${__TUE_ENV_FS}declare -x TUE_TEST_FIRST=\"1\"
+${__TUE_ENV_RS}"
+    __tue_env_stream+="${__TUE_ENV_MARK}${__TUE_ENV_FS}C${__TUE_ENV_FS}tue-test-last${__TUE_ENV_FS}${__tue_env_payload}${__TUE_ENV_RS}"
+
+    __tue_env_track_parse "${__tue_env_stream}" PRE
+
+    [[ "${__TUE_ENV_PRE_VAR[TUE_TEST_FIRST]}" == 'declare -x TUE_TEST_FIRST="1"' ]]
+    [[ "${__TUE_ENV_PRE_COMPLETE[tue-test-last]}" == "${__tue_env_payload}" ]]
+    [[ "${#__TUE_ENV_PRE_COMPLETE[@]}" -eq 1 ]]
+}
