@@ -115,3 +115,72 @@ function tue_track_added
     printf '%s' "${__tue_env_o}"
     return 0
 }
+
+function tue_track_parse_cost
+{
+    # Measures one parse of a large snapshot against a reference pass over the same payload. Results
+    # in TUE_TRACK_PARSE_US and TUE_TRACK_BASE_US, both in microseconds.
+    #
+    # An absolute bound would be a bound on whatever machine ran the suite. The reference is the
+    # escape, which is four parameter expansions over the whole payload: it is O(bytes) with a small
+    # constant, it is the tracker's own code, and it rises and falls with the same clock the parse
+    # does. So the two figures can be compared on any machine, and a parse that reads its stream a
+    # byte at a time stands out as a multiple of the reference rather than as a number of seconds.
+    #
+    # Measured in a child `bash --norc --noprofile` for the reason tue_track_min_forks gives: bats'
+    # DEBUG trap runs on every command and would dominate both figures. LC_ALL pins the decimal point
+    # in EPOCHREALTIME, which is stripped to get integer microseconds without forking a calculator.
+    # The smallest of several samples is the measurement, because anything else on the machine can
+    # only ever make a sample slower.
+    local __tue_env_out
+    __tue_env_out="$(LC_ALL=C bash --norc --noprofile -c '
+        # shellcheck source=/dev/null
+        source "$1/setup/tue-env-track.bash"
+
+        __tue_env_chunk="$(printf "x%.0s" {1..1000})"
+        __tue_env_body=""
+        for (( __tue_env_i = 0; __tue_env_i < 1000; __tue_env_i++ ))
+        do
+            __tue_env_body+="${__tue_env_chunk}"
+        done
+
+        __tue_env_track_nonce
+        __tue_env_stream=""
+        for __tue_env_n in alpha beta gamma
+        do
+            __tue_env_stream+="${__TUE_ENV_MARK}${__TUE_ENV_FS}V${__TUE_ENV_FS}${__tue_env_n}${__TUE_ENV_FS}declare -x ${__tue_env_n}=\"v\"
+${__TUE_ENV_RS}"
+        done
+        __tue_env_stream+="${__TUE_ENV_MARK}${__TUE_ENV_FS}F${__TUE_ENV_FS}big${__TUE_ENV_FS}${__TUE_ENV_FS}big () { : ${__tue_env_body}; }
+${__TUE_ENV_RS}"
+
+        __tue_env_pmin=-1
+        __tue_env_bmin=-1
+        for (( __tue_env_k = 0; __tue_env_k < 3; __tue_env_k++ ))
+        do
+            __tue_env_a="${EPOCHREALTIME/./}"
+            __tue_env_track_parse "${__tue_env_stream}" PRE
+            __tue_env_b="${EPOCHREALTIME/./}"
+            __tue_env_d=$(( __tue_env_b - __tue_env_a ))
+            if (( __tue_env_pmin < 0 )) || (( __tue_env_d < __tue_env_pmin ))
+            then
+                __tue_env_pmin="${__tue_env_d}"
+            fi
+
+            __tue_env_a="${EPOCHREALTIME/./}"
+            __tue_env_track_escape "${__tue_env_body}"
+            __tue_env_b="${EPOCHREALTIME/./}"
+            __tue_env_d=$(( __tue_env_b - __tue_env_a ))
+            if (( __tue_env_bmin < 0 )) || (( __tue_env_d < __tue_env_bmin ))
+            then
+                __tue_env_bmin="${__tue_env_d}"
+            fi
+        done
+        printf "%s %s" "${__tue_env_pmin}" "${__tue_env_bmin}"
+    ' bash "${TUE_TRACK_REPO_ROOT}")"
+    # shellcheck disable=SC2034
+    TUE_TRACK_PARSE_US="${__tue_env_out%% *}"
+    # shellcheck disable=SC2034
+    TUE_TRACK_BASE_US="${__tue_env_out##* }"
+    return 0
+}

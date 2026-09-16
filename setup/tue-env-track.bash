@@ -244,7 +244,29 @@ function __tue_env_track_parse
     # 77 KB snapshot the parse measured 1032 ms that way against roughly 34 ms here, and
     # _tue-env-track-commit parses two snapshots on every environment load.
     local -a __tue_env_recs __tue_env_joined=()
-    mapfile -d "${__TUE_ENV_RS}" -t __tue_env_recs < <(printf '%s' "$1")
+    mapfile -d "${__TUE_ENV_RS}" -t __tue_env_recs <<< "$1"
+
+    # A here-string and not `< <(printf '%s' "$1")`. A process substitution is a pipe, and bash reads
+    # a pipe one byte per `read` system call, so that it never consumes a byte past the delimiter it
+    # was asked for. That is invisible on a small stream and ruinous on a large one: a shell whose
+    # completion functions run to hundreds of kilobytes produced a 1.2 MB snapshot, which cost 1.2
+    # million system calls and 1.0 s per parse, twice per environment load. A here-string is a
+    # seekable temporary file, which bash reads in blocks, and the same parse costs 0.05 s.
+    #
+    # The price is the newline a here-string appends. The stream ends with a record separator, so
+    # that newline becomes a final piece of its own which is not a record, and the rejoin below -
+    # which exists to put a body a raw separator cut in half back together - would glue it onto the
+    # last real record. Take it off the final piece, and drop the piece when that is all it held.
+    # Written as a strip rather than a test for exactly $'\n' so that a malformed stream that does
+    # not end in a separator keeps the tail it used to keep, minus the newline nobody sent.
+    if (( ${#__tue_env_recs[@]} > 0 ))
+    then
+        __tue_env_recs[-1]="${__tue_env_recs[-1]%$'\n'}"
+        if [[ -z "${__tue_env_recs[-1]}" ]]
+        then
+            unset '__tue_env_recs[-1]'
+        fi
+    fi
 
     # A function body is the one payload the capture cannot escape - see __tue_env_track_dump - so a
     # raw RS byte inside somebody's own function still cuts its record in two here. Every record
