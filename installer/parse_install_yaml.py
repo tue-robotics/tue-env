@@ -4,7 +4,7 @@ import sys
 import traceback
 from os import environ
 from pathlib import Path
-from typing import List, Mapping, Optional, TypedDict, Union
+from typing import Dict, List, Mapping, Optional, TypedDict, Union
 
 import yaml
 from lsb_release import get_distro_information
@@ -156,6 +156,7 @@ def install_yaml_parser(path: Path, now: bool = False) -> InstallYaml:
                 f"At least one {release_type} distro and 'default' should be specified or none in install.yaml"
             )
         else:
+            value = None
             for version in [release_version, "default"]:
                 if version in item:
                     value = item[version][key]
@@ -164,7 +165,7 @@ def install_yaml_parser(path: Path, now: bool = False) -> InstallYaml:
         return value
 
     # Combine now calls
-    now_cache = {
+    now_cache: Dict[str, List[str]] = {
         "system-now": [],
         "pip-now": [],
         "pip3-now": [],
@@ -186,13 +187,16 @@ def install_yaml_parser(path: Path, now: bool = False) -> InstallYaml:
                 ros_release = environ["TUE_ENV_ROS_DISTRO"]
 
                 try:
-                    source: Optional[Mapping[str, str]] = get_distro_item(install_item, "source", ros_release, "ROS")
+                    source = get_distro_item(install_item, "source", ros_release, "ROS")
                 except ValueError as e:
                     raise ValueError(f"[{install_type}]: {e.args[0]}")
 
                 # Both release and default are allowed to be None
                 if source is None:
                     continue
+
+                if not isinstance(source, Mapping):
+                    raise ValueError(f"[{install_type}]: 'source' should be a YAML mapping")
 
                 if install_type == "ros":
                     source_type = source["type"]
@@ -244,13 +248,16 @@ def install_yaml_parser(path: Path, now: bool = False) -> InstallYaml:
                     install_type += "-now"
 
                 try:
-                    pkg_name: str = get_distro_item(install_item, "name", ubuntu_release, "Ubuntu")
+                    pkg_name = get_distro_item(install_item, "name", ubuntu_release, "Ubuntu")
                 except ValueError as e:
                     raise ValueError(f"[{install_type}]: {e.args[0]}")
 
                 # Both release and default are allowed to be None
                 if pkg_name is None:
                     continue
+
+                if not isinstance(pkg_name, str):
+                    raise ValueError(f"[{install_type}]: 'name' should be a string, not {type(pkg_name).__name__}")
 
                 if "system" in install_type:
                     system_packages.append(pkg_name)
@@ -281,8 +288,7 @@ def install_yaml_parser(path: Path, now: bool = False) -> InstallYaml:
 
     for install_type, pkg_list in now_cache.items():
         if pkg_list:
-            pkg_list = " ".join(pkg_list)
-            command = f"tue-install-{install_type} {pkg_list}"
+            command = f"tue-install-{install_type} {' '.join(pkg_list)}"
             commands_append(command)
 
     return {"system_packages": system_packages, "commands": " ".join(commands)}

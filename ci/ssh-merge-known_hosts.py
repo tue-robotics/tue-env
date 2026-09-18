@@ -26,11 +26,19 @@
 # Copied from https://blog.ganneff.de/2019/04/ssh-known-hosts-merge-by-key.html
 
 import argparse
+import sys
 from collections import defaultdict
-from typing import Dict, List, Optional, Set, Tuple, Union
+from io import StringIO
+from typing import Dict, List, Optional, Set, Tuple, TypedDict
 
 
-def key_dict_factory() -> Dict[str, Union[Set[str], Optional[str]]]:
+class HostKey(TypedDict):
+    comments: Set[str]
+    leading_comment_lines: Set[str]
+    marker: Optional[str]
+
+
+def key_dict_factory() -> HostKey:
     return {"comments": set(), "leading_comment_lines": set(), "marker": None}
 
 
@@ -61,16 +69,9 @@ parser.add_argument(
 )
 args = parser.parse_args()
 
-if args.output:
-    from io import StringIO
+output = StringIO()
 
-    output = StringIO()
-else:
-    from sys import stdout
-
-    output = stdout
-
-hostkeys: Dict[Tuple[str, str, str], Dict[str, Union[Set[str], str]]] = defaultdict(key_dict_factory)
+hostkeys: Dict[Tuple[str, str, str], HostKey] = defaultdict(key_dict_factory)
 for kfile in args.files:
     with open(kfile) as kf:
         leading_comment_lines = set()
@@ -111,9 +112,10 @@ for (host, key_type, key), v in hostkeys.items():
     if v["leading_comment_lines"]:
         for line in v["leading_comment_lines"]:
             output.write(line)
-    line_items = []
-    if v["marker"] is not None:
-        line_items.append(v["marker"])
+    line_items: List[str] = []
+    marker = v["marker"]
+    if marker is not None:
+        line_items.append(marker)
     line_items.append(host)
     line_items.append(key_type)
     line_items.append(key)
@@ -125,3 +127,5 @@ for (host, key_type, key), v in hostkeys.items():
 if args.output:
     with open(args.output, "w") as f:
         f.write(output.getvalue())
+else:
+    sys.stdout.write(output.getvalue())

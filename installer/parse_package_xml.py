@@ -1,7 +1,7 @@
 #! /usr/bin/env python3
 
 from pathlib import Path
-from typing import Mapping
+from typing import Any, Dict, Mapping, Optional, Set
 import os
 import sys
 import traceback
@@ -30,11 +30,12 @@ def package_xml_parser(path: Path) -> Mapping:
     tree = ET.parse(path)
     doc = tree.getroot()
 
-    dep_set = set()
+    dep_set: Set[str] = set()
 
     dep_types = []
     fields = ["name", "version", "description", "maintainer", "export"]
-    parsed = {}
+    # Values are sets of strings, except 'emails', which maps a maintainer to their address
+    parsed: Dict[str, Any] = {}
 
     if os.getenv("TUE_ENV_INSTALL_SKIP_ROS_DEPS", "false") == "false":
         dep_types.extend(
@@ -61,7 +62,7 @@ def package_xml_parser(path: Path) -> Mapping:
     for dep_type in dep_types:
         deps = doc.findall(dep_type)
         parsed[dep_type] |= {
-            dep.text for dep in deps if evaluate_condition(dep.attrib.get("condition", None), os.environ)
+            dep.text for dep in deps if dep.text and evaluate_condition(dep.attrib.get("condition", None), os.environ)
         }
         dep_set |= parsed[dep_type]
 
@@ -69,13 +70,14 @@ def package_xml_parser(path: Path) -> Mapping:
         values = doc.findall(field)
         if field == "export":
             for exports in values:
-                parsed["build_type"] = {bt.text for bt in exports if bt.tag == "build_type"}
+                parsed["build_type"] = {bt.text for bt in exports if bt.tag == "build_type" and bt.text}
         else:
-            parsed[field] |= {value.text for value in values}
+            parsed[field] |= {value.text for value in values if value.text}
             if field == "maintainer":
-                emails = {}
+                emails: Dict[str, Optional[str]] = {}
                 for value in values:
-                    emails[value.text] = value.attrib.get("email")
+                    if value.text:
+                        emails[value.text] = value.attrib.get("email")
                 parsed["emails"] = emails
 
     return {"parser": parsed, "deps": dep_set}

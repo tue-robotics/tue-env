@@ -4,7 +4,7 @@ from __future__ import annotations
 
 from os import PathLike
 from pathlib import Path
-from typing import List
+from typing import List, Set
 
 import os
 import sys
@@ -12,7 +12,7 @@ import traceback
 
 
 class SetupGenerator:
-    def __init__(self, tue_env_dir: PathLike | None = None):
+    def __init__(self, tue_env_dir: str | PathLike | None = None):
         if tue_env_dir is None:
             tue_env_dir = os.environ["TUE_ENV_DIR"]
         tue_env_dir = Path(tue_env_dir)
@@ -25,7 +25,7 @@ class SetupGenerator:
             raise ValueError("'tue_env_targets_dir' can't be empty as it would resolve to '/'")
         self._tue_env_targets_dir = tue_env_targets_dir
 
-        self._visited_targets = set()
+        self._visited_targets: Set[str] = set()
 
     def generate_setup_file(self) -> None:
         installed_targets_dir = self._tue_env_dir / ".env" / "installed"

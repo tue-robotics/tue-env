@@ -12,8 +12,10 @@ import hashlib
 import time
 from pathlib import Path
 
+START_TIME: float = 0.0
 
-def get_release(url: str, filename: Path, output: Path) -> int:
+
+def get_release(url: str, filename: str, output: Path) -> int:
     """Function to get a release
 
     :param url: URL of the release tag
@@ -112,7 +114,7 @@ def check_integrity(fpath: Path, md5=None) -> bool:
     return check_md5(fpath, md5)
 
 
-def create_release(url, tag, filename, data_dir):
+def create_release(url: str, tag: str, filename: str, data_dir: Path) -> int:
     """Function to upload a new release"""
     raise NotImplementedError("This functionality is not available yet.")
 
@@ -150,6 +152,10 @@ def main() -> int:
         print("Either --get or --create needs to be set")
         return 1
 
+    if not args.output:
+        print("--output is a required argument")
+        return 1
+
     url = f"https://api.github.com/repos/{args.url}/releases"
 
     # Get release
@@ -162,7 +168,7 @@ def main() -> int:
             print("With --get option either specify --latest or a specific tag using --tag")
             return 1
 
-        return get_release(url, Path(args.filename), Path(args.output))
+        return get_release(url, args.filename, Path(args.output))
 
     # Create release
     if args.tag:
@@ -171,7 +177,7 @@ def main() -> int:
         print("With --create option, --tag is a required argument")
         return 1
 
-    return create_release(url, args.tag, Path(args.filename), Path(args.output))
+    return create_release(url, args.tag, args.filename, Path(args.output))
 
 
 if __name__ == "__main__":
