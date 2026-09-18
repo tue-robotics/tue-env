@@ -65,6 +65,15 @@ repos:
       - id: black
         args: [--check, --diff, --color]
 
+  - repo: https://github.com/pre-commit/mirrors-mypy
+    rev: v2.3.1
+    hooks:
+      - id: mypy
+        # Most dependencies (yaml, catkin_pkg, pip internals) aren't
+        # installed in the hook env and have no stubs; --scripts-are-modules
+        # is needed for the scripts whose name isn't a valid module name.
+        args: [--ignore-missing-imports, --scripts-are-modules]
+
   - repo: https://github.com/adrienverge/yamllint.git
     rev: v1.29.0
     hooks:

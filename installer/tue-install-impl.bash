@@ -897,7 +897,7 @@ function tue-install-get-releases
     fi
 
     local repo_short_url filename output_dir tag
-    repo=$1
+    repo_short_url=$1
     filename=$2
     output_dir=$3
 

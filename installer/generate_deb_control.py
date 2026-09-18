@@ -26,7 +26,7 @@ def main() -> int:
         return 1
 
     # print(generate_control_file(sys.argv[2])["control"])
-    create_dirs(sys.argv[1], sys.argv[2], sys.argv[3])
+    create_dirs(Path(sys.argv[1]), Path(sys.argv[2]), sys.argv[3])
     return 0
 
 

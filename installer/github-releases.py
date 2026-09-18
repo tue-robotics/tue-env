@@ -4,12 +4,15 @@ from __future__ import annotations
 
 import sys
 import urllib.request
+import urllib.parse
 import json
 import re
 import argparse
 import hashlib
 import time
 from pathlib import Path
+
+START_TIME: float = 0.0
 
 
 def get_release(url: str, filename: Path, output: Path) -> int:
@@ -20,7 +23,7 @@ def get_release(url: str, filename: Path, output: Path) -> int:
     :param output: Path of the output location
     """
     parsed_json = json.loads(urllib.request.urlopen(url).read())
-    asset_re = re.compile(rf"{filename}")
+    asset_re = re.compile(str(filename))
 
     assets = [asset for asset in parsed_json["assets"] if asset_re.match(asset["name"])]
 
@@ -35,18 +38,18 @@ def get_release(url: str, filename: Path, output: Path) -> int:
     return 0
 
 
-def download_url(url, root: Path, filename: Path | None = None, md5=None) -> None:
+def download_url(url: str, root: Path, filename: Path | None = None, md5=None) -> None:
     """Download a file from an url and place it in root.
 
     Args:
         url (str): URL to download file from
         root (Path): Directory to place downloaded file in
-        filename (path, optional): Name to save the file under. If None, use the basename of the URL
+        filename (Path, optional): Name to save the file under. If None, use the basename of the URL
         md5 (str, optional): MD5 checksum of the download. If None, do not check
     """
     root = root.expanduser()
     if not filename:
-        filename = url.name
+        filename = Path(Path(urllib.parse.urlparse(url).path).name)
     fpath = root / filename
 
     root.mkdir(parents=True, exist_ok=True)
@@ -111,7 +114,7 @@ def check_integrity(fpath: Path, md5=None) -> bool:
     return check_md5(fpath, md5)
 
 
-def create_release(url, tag, filename, data_dir):
+def create_release(url: str, tag: str, filename: Path, data_dir: Path) -> int:
     """Function to upload a new release"""
     raise NotImplementedError("This functionality is not available yet.")
 
@@ -147,6 +150,10 @@ def main() -> int:
 
     if not (args.get or args.create):
         print("Either --get or --create needs to be set")
+        return 1
+
+    if not args.output:
+        print("--output is a required argument")
         return 1
 
     url = f"https://api.github.com/repos/{args.url}/releases"
