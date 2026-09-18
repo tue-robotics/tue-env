@@ -15,7 +15,7 @@ from pathlib import Path
 START_TIME: float = 0.0
 
 
-def get_release(url: str, filename: str, output: Path) -> int:
+def get_release(url: str, filename: Path, output: Path) -> int:
     """Function to get a release
 
     :param url: URL of the release tag
@@ -23,7 +23,7 @@ def get_release(url: str, filename: str, output: Path) -> int:
     :param output: Path of the output location
     """
     parsed_json = json.loads(urllib.request.urlopen(url).read())
-    asset_re = re.compile(rf"{filename}")
+    asset_re = re.compile(str(filename))
 
     assets = [asset for asset in parsed_json["assets"] if asset_re.match(asset["name"])]
 
@@ -38,18 +38,18 @@ def get_release(url: str, filename: str, output: Path) -> int:
     return 0
 
 
-def download_url(url: str, root: Path, filename: str | None = None, md5=None) -> None:
+def download_url(url: str, root: Path, filename: Path | None = None, md5=None) -> None:
     """Download a file from an url and place it in root.
 
     Args:
         url (str): URL to download file from
         root (Path): Directory to place downloaded file in
-        filename (str, optional): Name to save the file under. If None, use the basename of the URL
+        filename (Path, optional): Name to save the file under. If None, use the basename of the URL
         md5 (str, optional): MD5 checksum of the download. If None, do not check
     """
     root = root.expanduser()
     if not filename:
-        filename = Path(urllib.parse.urlparse(url).path).name
+        filename = Path(Path(urllib.parse.urlparse(url).path).name)
     fpath = root / filename
 
     root.mkdir(parents=True, exist_ok=True)
@@ -114,7 +114,7 @@ def check_integrity(fpath: Path, md5=None) -> bool:
     return check_md5(fpath, md5)
 
 
-def create_release(url: str, tag: str, filename: str, data_dir: Path) -> int:
+def create_release(url: str, tag: str, filename: Path, data_dir: Path) -> int:
     """Function to upload a new release"""
     raise NotImplementedError("This functionality is not available yet.")
 
@@ -168,7 +168,7 @@ def main() -> int:
             print("With --get option either specify --latest or a specific tag using --tag")
             return 1
 
-        return get_release(url, args.filename, Path(args.output))
+        return get_release(url, Path(args.filename), Path(args.output))
 
     # Create release
     if args.tag:
@@ -177,7 +177,7 @@ def main() -> int:
         print("With --create option, --tag is a required argument")
         return 1
 
-    return create_release(url, args.tag, args.filename, Path(args.output))
+    return create_release(url, args.tag, Path(args.filename), Path(args.output))
 
 
 if __name__ == "__main__":
