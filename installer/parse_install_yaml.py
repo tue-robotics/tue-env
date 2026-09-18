@@ -4,12 +4,17 @@ import sys
 import traceback
 from os import environ
 from pathlib import Path
-from typing import List, Mapping, Optional, Union
+from typing import List, Mapping, Optional, TypedDict, Union
 
 import yaml
 from lsb_release import get_distro_information
 
 ubuntu_release = get_distro_information()["CODENAME"]
+
+
+class InstallYaml(TypedDict):
+    system_packages: List[str]
+    commands: str
 
 
 def type_git(install_item: Mapping, allowed_keys: Optional[List[str]] = None) -> str:
@@ -120,7 +125,7 @@ def catkin_git(source: Mapping) -> str:
     return command
 
 
-def install_yaml_parser(path: Path, now: bool = False) -> Mapping[str, str]:
+def install_yaml_parser(path: Path, now: bool = False) -> InstallYaml:
     with path.open() as f:
         try:
             install_items = yaml.load(f, yaml.CSafeLoader)

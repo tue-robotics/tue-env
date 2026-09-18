@@ -15,11 +15,9 @@ import os
 import sys
 from urllib.request import urlopen
 
-TEAM_FOUNDATION_URI = os.getenv("SYSTEM_TEAMFOUNDATIONCOLLECTIONURI")
-TEAM_PROJECT = os.getenv("SYSTEM_TEAMPROJECT")
-BUILD_ID = os.getenv("BUILD_BUILDID")
-
-TEAM_FOUNDATION_URI = TEAM_FOUNDATION_URI.rstrip("/")
+TEAM_FOUNDATION_URI = os.environ["SYSTEM_TEAMFOUNDATIONCOLLECTIONURI"].rstrip("/")
+TEAM_PROJECT = os.environ["SYSTEM_TEAMPROJECT"]
+BUILD_ID = os.environ["BUILD_BUILDID"]
 
 json_url = "{}/{}/_apis/build/builds/{}/changes?&$top=500&includeSourceChange=true&api-version=5.0".format(
     TEAM_FOUNDATION_URI, TEAM_PROJECT, BUILD_ID

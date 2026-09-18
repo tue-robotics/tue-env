@@ -4,6 +4,7 @@ from __future__ import annotations
 
 import sys
 import urllib.request
+import urllib.parse
 import json
 import re
 import argparse
@@ -35,18 +36,18 @@ def get_release(url: str, filename: Path, output: Path) -> int:
     return 0
 
 
-def download_url(url, root: Path, filename: Path | None = None, md5=None) -> None:
+def download_url(url: str, root: Path, filename: str | None = None, md5=None) -> None:
     """Download a file from an url and place it in root.
 
     Args:
         url (str): URL to download file from
         root (Path): Directory to place downloaded file in
-        filename (path, optional): Name to save the file under. If None, use the basename of the URL
+        filename (str, optional): Name to save the file under. If None, use the basename of the URL
         md5 (str, optional): MD5 checksum of the download. If None, do not check
     """
     root = root.expanduser()
     if not filename:
-        filename = url.name
+        filename = Path(urllib.parse.urlparse(url).path).name
     fpath = root / filename
 
     root.mkdir(parents=True, exist_ok=True)
