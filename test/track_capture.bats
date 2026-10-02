@@ -63,6 +63,25 @@ line"
     [[ "${__TUE_ENV_PRE_COMPLETE[tue-test-cmd]}" == "complete -o nospace -F tue_test_complete tue-test-cmd" ]]
 }
 
+@test "capture: a completion registered for the empty command name does not break the parse" {
+    # bash-completion registers `complete -F _minimal ''`, and bash 5.0 prints that back without the
+    # quotes, as `complete -F _minimal ` - so the name the dump cuts off its last field is empty, and
+    # an empty string is not a valid associative array key. The stream is built by hand because a
+    # newer bash prints `''` instead and would not produce this record.
+    local __tue_env_stream __tue_env_payload='complete -o nospace -F _tue_test_f tue-test-cmd'
+    __tue_env_track_nonce
+    __tue_env_stream="${__TUE_ENV_MARK}${__TUE_ENV_FS}C${__TUE_ENV_FS}${__TUE_ENV_FS}complete -F _minimal ${__TUE_ENV_RS}"
+    __tue_env_stream+="${__TUE_ENV_MARK}${__TUE_ENV_FS}C${__TUE_ENV_FS}tue-test-cmd${__TUE_ENV_FS}${__tue_env_payload}${__TUE_ENV_RS}"
+
+    run __tue_env_track_parse "${__tue_env_stream}" PRE
+    [[ "${status}" -eq 0 ]]
+    [[ -z "${output}" ]]
+
+    __tue_env_track_parse "${__tue_env_stream}" PRE
+    [[ "${__TUE_ENV_PRE_COMPLETE[tue-test-cmd]}" == "${__tue_env_payload}" ]]
+    [[ "${#__TUE_ENV_PRE_COMPLETE[@]}" -eq 1 ]]
+}
+
 @test "capture: the escape round-trips every framing byte byte-exactly" {
     # The wire format frames records with RS, fields with FS and index/entry pairs with PS, and a
     # payload that holds one of those bytes used to end its record or its field early: an alias value
