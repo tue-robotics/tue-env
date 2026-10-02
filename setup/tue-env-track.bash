@@ -320,6 +320,10 @@ function __tue_env_track_parse
         __tue_env_rec="${__tue_env_rec#*"${__TUE_ENV_FS}"}"
         __tue_env_n="${__tue_env_rec%%"${__TUE_ENV_FS}"*}"
         __tue_env_rec="${__tue_env_rec#*"${__TUE_ENV_FS}"}"
+        # A name can be empty: bash-completion registers `complete -F _minimal ''`, which bash 5.0
+        # prints back without the quotes, so the dump cuts an empty last field off it. An empty
+        # string is not a valid associative array key, so such a record cannot be tracked at all.
+        [[ -z "${__tue_env_n}" ]] && continue
         # Unescaping here, as the ledger is built, is what keeps the blast radius of the wire format
         # to this one function: revert, report, strip and merge all go on seeing exactly the text
         # they saw before. A variable's payload is NOT unescaped - `declare -p` renders every control
