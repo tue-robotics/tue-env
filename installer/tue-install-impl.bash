@@ -1233,12 +1233,28 @@ function tue-install-apt-key-source-now
     then
         tue-install-debug "Keyring '${key_file}' doesn't exist yet."
         key_needs_to_be_added=true
-    elif ! gpg --import-options show-only --import < "${key_file}" | grep -q "${key_fingerprint}" &> /dev/null
-    then
-        tue-install-debug "Keyring '${key_file}' doesn't match the fingerprint '${key_fingerprint}'."
-        key_needs_to_be_added=true
     else
-        tue-install-debug "Not updating the existing GPG of the ${repo_name} repository with fingerprint '${key_fingerprint}'"
+        # Capture stderr separately, so it doesn't end up unexplained on the terminal and doesn't interfere with the fingerprint check
+        local gpg_keys gpg_stderr gpg_stderr_file gpg_return_code
+        gpg_stderr_file=$(mktemp)
+        gpg_keys=$(gpg --import-options show-only --import < "${key_file}" 2> "${gpg_stderr_file}")
+        gpg_return_code=$?
+        gpg_stderr=$(< "${gpg_stderr_file}")
+        rm -f "${gpg_stderr_file}"
+
+        tue-install-debug "Keys in keyring '${key_file}' (gpg exit code ${gpg_return_code}):\n${gpg_keys}"
+        if [[ -n "${gpg_stderr}" ]]
+        then
+            tue-install-warning "gpg reported the following while inspecting keyring '${key_file}' of the ${repo_name} repository (expecting fingerprint '${key_fingerprint}'):\n${gpg_stderr}"
+        fi
+
+        if ! grep -q "${key_fingerprint}" <<< "${gpg_keys}"
+        then
+            tue-install-debug "Keyring '${key_file}' doesn't match the fingerprint '${key_fingerprint}'."
+            key_needs_to_be_added=true
+        else
+            tue-install-debug "Not updating the existing GPG of the ${repo_name} repository with fingerprint '${key_fingerprint}'"
+        fi
     fi
 
     if [[ "${key_needs_to_be_added}" == "true" ]]
