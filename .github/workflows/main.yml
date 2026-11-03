@@ -158,6 +158,15 @@ jobs:
             docker-user-id: 1001
             default-branch-only: true
             maximize-build-space: true
+          - ros-distro: jazzy
+            ros-version: 2
+            platform: "amd64"
+            base-image: "nvidia/cuda:12.8.2-devel-ubuntu24.04"
+            flavor: cu12.8.2-devel
+            create-venv: true
+            docker-user-id: 1001
+            default-branch-only: true
+            maximize-build-space: true
     outputs:
       key: ${{ steps.artifacts.outputs.key }}
       tag: ${{ steps.script.outputs.tag }}
