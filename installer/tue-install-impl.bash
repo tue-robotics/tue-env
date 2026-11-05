@@ -421,6 +421,27 @@ function _try_branch_git
     # Any other checkout failure is real -> report and bail before touching submodules
     [ "${_checkout_error_code}" -gt 0 ] && return "${_checkout_error_code}"
 
+    # The earlier 'git pull' only fast-forwarded the branch that was checked out at that time. When we
+    # switched to an already existing local branch, it can be behind its upstream, so fast-forward it.
+    # Skipped for a detached HEAD (tag/commit) or a branch without upstream.
+    if git -C "${repo}" symbolic-ref -q HEAD > /dev/null && git -C "${repo}" rev-parse -q --verify "@{upstream}" > /dev/null 2>&1
+    then
+        local _ff_res _ff_error_code
+        tue-install-debug "git -C ${repo} merge --ff-only @{upstream}"
+        _ff_res=$(git -C "${repo}" merge --ff-only "@{upstream}" 2>&1)
+        _ff_error_code=$?
+        tue-install-debug "_ff_res(${_ff_error_code}): ${_ff_res}"
+
+        if [ "${_ff_error_code}" -eq 0 ]
+        then
+            # The tracking info printed by checkout ("Your branch is behind ...") is outdated now
+            _try_branch_res=$(grep -v -e "^Your branch is behind " -e "^  (use \"git pull\" to update your local branch)" <<< "${_try_branch_res}")
+            [[ ${_ff_res} == "Already up to date." ]] && _ff_res=
+        fi
+        # A failed fast-forward (e.g. diverged branch) is reported, but not fatal; the checkout itself succeeded
+        [ -n "${_ff_res}" ] && _try_branch_res="${_try_branch_res:+${_try_branch_res}\n}${_ff_res}"
+    fi
+
     local _submodule_sync_res _submodule_sync_error_code
     tue-install-debug "git -C ${repo} submodule sync --recursive -- ${sparse_args[*]}"
     _submodule_sync_res=$(git -C "${repo}" submodule sync --recursive -- "${sparse_args[@]}" 2>&1)
