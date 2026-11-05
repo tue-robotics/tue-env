@@ -432,14 +432,14 @@ function _try_branch_git
         _ff_error_code=$?
         tue-install-debug "_ff_res(${_ff_error_code}): ${_ff_res}"
 
-        if [ "${_ff_error_code}" -eq 0 ]
+        if [[ "${_ff_error_code}" -eq 0 ]]
         then
             # The tracking info printed by checkout ("Your branch is behind ...") is outdated now
             _try_branch_res=$(grep -v -e "^Your branch is behind " -e "^  (use \"git pull\" to update your local branch)" <<< "${_try_branch_res}")
             [[ ${_ff_res} == "Already up to date." ]] && _ff_res=
         fi
         # A failed fast-forward (e.g. diverged branch) is reported, but not fatal; the checkout itself succeeded
-        [ -n "${_ff_res}" ] && _try_branch_res="${_try_branch_res:+${_try_branch_res}\n}${_ff_res}"
+        [[ -n "${_ff_res}" ]] && _try_branch_res="${_try_branch_res:+${_try_branch_res}\n}${_ff_res}"
     fi
 
     local _submodule_sync_res _submodule_sync_error_code
