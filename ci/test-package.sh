@@ -66,13 +66,16 @@ then
     docker exec -t tue-env bash -c 'source ~/.bashrc; cd "${TUE_ENV_WS_DIR}"/src/"${PACKAGE}" && /usr/bin/python3 "$(command -v catkin)" test --this --no-status --no-deps '"${CATKIN_ADDITIONAL_ARGS[*]}"' -DCATKIN_ENABLE_TESTING=ON'
 else
     COLCON_ADDITIONAL_ARGS=()
+    COLCON_BUILD_EVENT_HANDLERS=("desktop_notification-" "status-" "terminal_title-")
     if [[ ${DEBUG} == "true" ]]
     then
         COLCON_ADDITIONAL_ARGS+=("--log-level" "debug")
+        # Print the full output of each package, e.g. CMake status messages, once it has finished
+        COLCON_BUILD_EVENT_HANDLERS+=("console_cohesion+")
     fi
     # Build test targets
     echo -e "\e[35;1mBuild test targets of this package (colcon ${ADDITIONAL_ARGS_COLCON[*]:+${ADDITIONAL_ARGS_COLCON[*]} }build --packages-select ${PACKAGE} --mixin rel-with-deb-info build-testing-on)\e[0m"
-    docker exec -t tue-env bash -c 'source ~/.bashrc; cd "${TUE_ENV_WS_DIR}" && colcon '"${COLCON_ADDITIONAL_ARGS[*]}"' build --packages-select "${PACKAGE}" --mixin rel-with-deb-info build-testing-on --event-handlers desktop_notification- status- terminal_title-'
+    docker exec -t tue-env bash -c 'source ~/.bashrc; cd "${TUE_ENV_WS_DIR}" && colcon '"${COLCON_ADDITIONAL_ARGS[*]}"' build --packages-select "${PACKAGE}" --mixin rel-with-deb-info build-testing-on --event-handlers '"${COLCON_BUILD_EVENT_HANDLERS[*]}"''
 
     # Run unit tests
     echo -e "\e[35;1mRun tests on this package (colcon ${ADDITIONAL_ARGS_COLCON[*]:+${ADDITIONAL_ARGS_COLCON[*]} }test --packages-select ${PACKAGE} --executor sequential)\e[0m"
