@@ -194,9 +194,11 @@ jobs:
         with:
           build-mount-path: /var/lib/docker/
           # The apt cache is restored and saved in the workspace on the root filesystem. Restoring needs about twice its
-          # size, the archive and its content. A reserve of 2048 left 512MB free, which was not enough for ~300MB.
-          root-reserve-mb: 5120
-          temp-reserve-mb: 512
+          # size, the archive and its content. The runners have no separate /mnt disk, so the temp volume is also taken
+          # from the root filesystem and temp-reserve-mb is what stays free there. Both are 4096, so ~4GB stays free on
+          # the root filesystem, also when /mnt is a separate disk again.
+          root-reserve-mb: 4096
+          temp-reserve-mb: 4096
       - name: Restart docker
         if: steps.skip_check.outputs.skip == 'false' && matrix.maximize-build-space == true
         run: sudo service docker restart
