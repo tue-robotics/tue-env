@@ -99,6 +99,8 @@ jobs:
     needs: [linting_actionlint, linting_hadolint, linting_python_black, linting_shellcheck, test_bats]
     permissions:
       packages: write
+    env:
+      SAVE_APT_CACHE: ${{ github.event_name == 'push' && github.ref_name == github.event.repository.default_branch }}
     strategy:
       fail-fast: false
       matrix:
@@ -219,22 +221,34 @@ jobs:
       # docker layer: `apt-get update` and `apt-get install` still run every build, so a newly pushed fix that changes
       # the set of packages is always honoured. The key is unique per run, so the cache is refreshed after every build;
       # the restore-keys pick up the most recent cache of the same matrix entry.
+      # Only pushes to the default branch save the cache, all other runs restore that one. Every matrix entry stores
+      # ~350MB, saving it on every run of every branch fills the cache storage of the repository within a few commits.
       - name: Cache apt packages
-        if: steps.skip_check.outputs.skip == 'false'
+        if: steps.skip_check.outputs.skip == 'false' && env.SAVE_APT_CACHE == 'true'
         uses: actions/cache@v6
         with:
           path: apt-cache
           key: apt-${{ matrix.base-image }}-${{ matrix.ros-distro }}-${{ github.run_id }}-${{ github.run_attempt }}
           restore-keys: |
             apt-${{ matrix.base-image }}-${{ matrix.ros-distro }}-
+      - name: Restore apt packages
+        if: steps.skip_check.outputs.skip == 'false' && env.SAVE_APT_CACHE != 'true'
+        uses: actions/cache/restore@v6
+        with:
+          path: apt-cache
+          key: apt-${{ matrix.base-image }}-${{ matrix.ros-distro }}-${{ github.run_id }}-${{ github.run_attempt }}
+          restore-keys: |
+            apt-${{ matrix.base-image }}-${{ matrix.ros-distro }}-
       # Injects the restored cache into the buildkit cache mounts and, in its post step (which runs before the post step
-      # of the cache action above), extracts them again so the updated cache gets saved.
+      # of the cache action above), extracts them again so the updated cache gets saved. The extraction is skipped when
+      # the cache is not saved.
       # The targets and sharing must match the `--mount=type=cache` options in the Dockerfile.
       - name: Inject apt cache into docker build
         if: steps.skip_check.outputs.skip == 'false'
         uses: reproducible-containers/buildkit-cache-dance@v3.4.0
         with:
           builder: ${{ steps.setup_buildx.outputs.name }}
+          skip-extraction: ${{ env.SAVE_APT_CACHE != 'true' }}
           cache-map: |
             {"apt-cache/var-cache-apt": {"target": "/var/cache/apt", "sharing": "locked"},
             "apt-cache/var-lib-apt-lists": {"target": "/var/lib/apt/lists", "sharing": "locked"}}
