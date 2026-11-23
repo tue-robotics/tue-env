@@ -53,6 +53,10 @@ do
         --gh-token=* )
             GH_TOKEN="${i#*=}" ;;
 
+        --apt-mirror=* )
+        # Host of an Ubuntu archive mirror used in the container, e.g. azure.archive.ubuntu.com on GitHub Actions
+            APT_MIRROR="${i#*=}" ;;
+
         --debug )
             DEBUG=true ;;
 
@@ -72,6 +76,7 @@ echo -e "\e[35;1mBRANCH         = ${BRANCH}\e[0m"
 echo -e "\e[35;1mCOMMIT         = ${COMMIT}\e[0m"
 echo -e "\e[35;1mPULL_REQUEST   = ${PULL_REQUEST}\e[0m"
 echo -e "\e[35;1mDEFAULT_BRANCH = ${DEFAULT_BRANCH}\e[0m"
+echo -e "\e[35;1mAPT_MIRROR     = ${APT_MIRROR}\e[0m"
 
 # Set default value for IMAGE_NAME
 [ -z "$IMAGE_NAME" ] && IMAGE_NAME='ghcr.io/tue-robotics/tue-env-ros-noetic'
@@ -263,6 +268,14 @@ then
 
     echo -e "\e[35;1mActive SSH keys:\e[0m"
     docker exec -t tue-env bash -c "ssh-add -l 2>/dev/null" | awk '{print $2}'
+fi
+
+# Use the apt mirror for archive.ubuntu.com and security.ubuntu.com in the container. The container only lives for
+# this pipeline, so the sources don't need to be restored.
+if [[ -n "${APT_MIRROR}" ]]
+then
+    echo -e "\e[35;1mUsing the apt mirror ${APT_MIRROR} for archive.ubuntu.com and security.ubuntu.com\e[0m"
+    docker exec -t tue-env bash -c "sudo find /etc/apt/sources.list /etc/apt/sources.list.d -maxdepth 1 -type f \( -name sources.list -o -name ubuntu.sources \) -exec sed -i -E 's#http://(archive|security)\.ubuntu\.com/#http://${APT_MIRROR}/#g' {} +"
 fi
 
 # Use docker environment variables in all exec commands instead of script variables

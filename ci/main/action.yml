@@ -1,6 +1,10 @@
 name: 'TUe CI'
 description: 'Install, build and test package in tue-env environment'
 inputs:
+  apt-mirror:
+    default: 'azure.archive.ubuntu.com'
+    description: 'Host of an Ubuntu archive mirror used in the container, empty to use the sources of the image'
+    required: false
   default-branch:
     description: 'Default branch of the repository'
     required: false
@@ -109,6 +113,7 @@ runs:
           --commit="${GITHUB_SHA}" \
           --pullrequest="${PULLREQUEST}" \
           --gh-token="${{ github.token }}" \
+          --apt-mirror="${{ inputs.apt-mirror }}" \
           "${ADDITIONAL_ARGS[@]}"
         return_code=$?
         echo "::endgroup::"
