@@ -42,9 +42,16 @@ SHELL ["/bin/bash", "-o", "pipefail", "-c"]
 
 # Install commands used in our scripts and standard present on a clean ubuntu
 # installation and setup a user with sudo priviledges
+# The apt cache mounts only work when downloaded packages are kept: docker-clean deletes them after every install.
+# Only /var/lib/apt/lists is cached, the rest of /var/lib/apt (e.g. extended_states) belongs in the image.
+# The cache only saves downloads, `apt-get update` still runs every build, so the installed versions are always current.
 # hadolint ignore=DL3008
 RUN --mount=type=cache,target=/var/cache/apt,sharing=locked \
-    --mount=type=cache,target=/var/lib/apt,sharing=locked \
+    --mount=type=cache,target=/var/lib/apt/lists,sharing=locked \
+    rm -f /etc/apt/apt.conf.d/docker-clean && \
+    echo 'Binary::apt::APT::Keep-Downloaded-Packages "true";' > /etc/apt/apt.conf.d/keep-cache && \
+    # Retry failed downloads, apt before 2.3 (Ubuntu 20.04) doesn't retry by default, newer versions retry 3 times
+    echo 'Acquire::Retries "3";' > /etc/apt/apt.conf.d/80-retries && \
     apt-get update -qq && \
     echo "resolvconf resolvconf/linkify-resolvconf boolean false" | debconf-set-selections && \
     apt-get install -qq --assume-yes --no-install-recommends apt-transport-https apt-utils bash-completion ca-certificates curl dbus debconf-utils dialog git keyboard-configuration lsb-release iproute2 iputils-ping mesa-utils net-tools openssh-client psmisc resolvconf sudo tzdata wget > /dev/null && \
@@ -77,7 +84,7 @@ RUN --mount=type=secret,id=oauth2_token,env=OAUTH2_TOKEN \
 # Setup tue-env and install target ros
 # hadolint ignore=DL3004,SC1091
 RUN --mount=type=cache,target=/var/cache/apt,sharing=locked \
-    --mount=type=cache,target=/var/lib/apt,sharing=locked \
+    --mount=type=cache,target=/var/lib/apt/lists,sharing=locked \
     --mount=type=secret,id=oauth2_token,env=OAUTH2_TOKEN \
     --mount=type=secret,id=github_token,env=GITHUB_TOKEN \
     --mount=type=ssh,uid=$USER_ID --mount=type=bind,source=installer/bootstrap.bash,target=bootstrap.bash \
@@ -117,8 +124,11 @@ RUN --mount=type=cache,target=/var/cache/apt,sharing=locked \
     # Show the branches of tue-env
     echo -e "\e[35mgit -C ~/.tue branch\e[0m" && \
     git -C ~/.tue branch && \
-    # Remove docker-clean. APT will be able to autocomplete packages now
-    sudo rm /etc/apt/apt.conf.d/docker-clean
+    # Drop packages from the apt cache that can no longer be downloaded, so a persisted cache does not keep growing
+    sudo apt-get autoclean -qq && \
+    # Restore the default of 'apt' to not keep downloaded packages in the final image.
+    # docker-clean was already removed in the first stage. APT will be able to autocomplete packages now
+    sudo rm /etc/apt/apt.conf.d/keep-cache
 
 # Restore known_hosts to one provided by the user
 RUN mv -f ~/.ssh/known_hosts.bak ~/.ssh/known_hosts
@@ -131,7 +141,7 @@ RUN --mount=type=secret,id=oauth2_token,env=OAUTH2_TOKEN \
 #                           STAGE 2
 # ----------------------------------------------------------------
 # hadolint ignore=DL3006
-FROM ${BASE_IMAGE} as final
+FROM ${BASE_IMAGE} AS final
 
 ARG DOCKER_USER=docker
 ARG DOCKER_USER_ID=1000

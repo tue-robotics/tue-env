@@ -44,6 +44,18 @@ runs:
           ${{ inputs.image }}-pip-${{ github.event.repository.name }}-
           ${{ inputs.image }}-pip-
 
+    - name: Cache apt
+      id: cache-apt-restore
+      uses: actions/cache/restore@v5
+      with:
+        path: |
+          ~/.cache/apt/archives/*.deb
+        key: ${{ inputs.image }}-apt-${{ github.event.repository.name }}-${{ inputs.package }}-${{ github.sha }}
+        restore-keys: |
+          ${{ inputs.image }}-apt-${{ github.event.repository.name }}-${{ inputs.package }}-
+          ${{ inputs.image }}-apt-${{ github.event.repository.name }}-
+          ${{ inputs.image }}-apt-
+
     - name: Install
       id: install
       # yamllint disable rule:indentation
@@ -160,14 +172,31 @@ runs:
       # yamllint enable rule:indentation
       shell: bash
 
+    # The pip and apt caches are only saved by pushes to the default branch, all other runs restore that one. Their
+    # content rarely changes within a branch or pull request, and a cache of a branch or pull request can't be used by
+    # other branches, so saving it on every run only fills the cache storage of the repository. ccache is still saved
+    # on every run, so the next run of the same branch or pull request can reuse the compilation of its own code.
     - name: Always save pip cache
       id: cache-pip-save
-      if: always() && steps.cache-pip-restore.outputs.cache-hit != 'true'
+      if: >-
+        always() && steps.cache-pip-restore.outputs.cache-hit != 'true' &&
+        github.event_name == 'push' && github.ref_name == github.event.repository.default_branch
       uses: actions/cache/save@v5
       with:
         path: |
           ~/.cache/pip
         key: ${{ steps.cache-pip-restore.outputs.cache-primary-key }}
+
+    - name: Always save apt cache
+      id: cache-apt-save
+      if: >-
+        always() && steps.cache-apt-restore.outputs.cache-hit != 'true' &&
+        github.event_name == 'push' && github.ref_name == github.event.repository.default_branch
+      uses: actions/cache/save@v5
+      with:
+        path: |
+          ~/.cache/apt/archives/*.deb
+        key: ${{ steps.cache-apt-restore.outputs.cache-primary-key }}
 
     - name: Always save ccache
       id: cache-ccache-save

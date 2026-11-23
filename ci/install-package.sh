@@ -221,9 +221,13 @@ mkdir -p "$HOME"/.ccache
 # Make sure the ~/.cache/pip folder exists
 mkdir -p "$HOME"/.cache/pip
 
+# Make sure the folder for the downloaded apt packages exists. Only the downloaded packages are shared with the
+# container, `apt-get update` and `apt-get install` still run in the container, so the installed versions are current.
+mkdir -p "${HOME}"/.cache/apt/archives
+
 # Run the docker image along with setting new environment variables
 # shellcheck disable=SC2086
-docker run --detach --interactive --tty -e CI="true" -e PACKAGE="${PACKAGE}" -e BRANCH="${BRANCH}" -e COMMIT="${COMMIT}" -e PULL_REQUEST="${PULL_REQUEST}" -e REF_NAME="${REF_NAME}" --name tue-env --mount type=bind,source=${HOME}/.ccache,target=${DOCKER_HOME}/.ccache --mount type=bind,source=${HOME}/.cache/pip,target=${DOCKER_HOME}/.cache/pip "${DOCKER_ARGS[@]}" "${IMAGE_NAME}:${BRANCH_TAG}"
+docker run --detach --interactive --tty -e CI="true" -e PACKAGE="${PACKAGE}" -e BRANCH="${BRANCH}" -e COMMIT="${COMMIT}" -e PULL_REQUEST="${PULL_REQUEST}" -e REF_NAME="${REF_NAME}" --name tue-env --mount type=bind,source=${HOME}/.ccache,target=${DOCKER_HOME}/.ccache --mount type=bind,source=${HOME}/.cache/pip,target=${DOCKER_HOME}/.cache/pip --mount type=bind,source=${HOME}/.cache/apt/archives,target=/var/cache/apt/archives "${DOCKER_ARGS[@]}" "${IMAGE_NAME}:${BRANCH_TAG}"
 
 # Own the ~/.ccache folder for permissions
 docker exec -t tue-env bash -c 'sudo chown "${USER}":"${USER}" -R ~/.ccache'
@@ -310,3 +314,10 @@ fi
 
 # Allow everyone to read ~/.cache/pip folder for caching inside CI pipelines
 docker exec -t tue-env bash -c 'sudo chmod -R a+r ~/.cache/pip'
+
+# Drop the apt packages that can no longer be downloaded, so a persisted cache does not keep growing. Only when the apt
+# lists are present, otherwise autoclean considers every package undownloadable and empties the cache.
+docker exec -t tue-env bash -c '! compgen -G "/var/lib/apt/lists/*_Packages*" > /dev/null || sudo apt-get autoclean -qq'
+
+# Give the downloaded apt packages to the host user for caching inside CI pipelines
+docker exec -t tue-env bash -c "sudo find /var/cache/apt/archives -maxdepth 1 -name '*.deb' -exec chown $(id -u):$(id -g) {} +"
