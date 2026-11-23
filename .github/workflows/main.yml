@@ -207,9 +207,6 @@ jobs:
           registry: ${{ env.REGISTRY }}
           username: ${{ github.actor }}
           password: ${{ secrets.GITHUB_TOKEN }}
-      - name: Expose GitHub Runtime
-        if: steps.skip_check.outputs.skip == 'false'
-        uses: crazy-max/ghaction-github-runtime@v4
       # - name: Set up QEMU
       #   if: steps.skip_check.outputs.skip == 'false' && matrix.setup_qemu == true
       #   uses: docker/setup-qemu-action@v3
