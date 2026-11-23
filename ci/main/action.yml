@@ -172,9 +172,15 @@ runs:
       # yamllint enable rule:indentation
       shell: bash
 
+    # The pip and apt caches are only saved by pushes to the default branch, all other runs restore that one. Their
+    # content rarely changes within a branch or pull request, and a cache of a branch or pull request can't be used by
+    # other branches, so saving it on every run only fills the cache storage of the repository. ccache is still saved
+    # on every run, so the next run of the same branch or pull request can reuse the compilation of its own code.
     - name: Always save pip cache
       id: cache-pip-save
-      if: always() && steps.cache-pip-restore.outputs.cache-hit != 'true'
+      if: >-
+        always() && steps.cache-pip-restore.outputs.cache-hit != 'true' &&
+        github.event_name == 'push' && github.ref_name == github.event.repository.default_branch
       uses: actions/cache/save@v5
       with:
         path: |
@@ -183,7 +189,9 @@ runs:
 
     - name: Always save apt cache
       id: cache-apt-save
-      if: always() && steps.cache-apt-restore.outputs.cache-hit != 'true'
+      if: >-
+        always() && steps.cache-apt-restore.outputs.cache-hit != 'true' &&
+        github.event_name == 'push' && github.ref_name == github.event.repository.default_branch
       uses: actions/cache/save@v5
       with:
         path: |
