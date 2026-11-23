@@ -193,7 +193,9 @@ jobs:
         uses: easimon/maximize-build-space@master
         with:
           build-mount-path: /var/lib/docker/
-          root-reserve-mb: 2048
+          # The apt cache is restored and saved in the workspace on the root filesystem. Restoring needs about twice its
+          # size, the archive and its content. A reserve of 2048 left 512MB free, which was not enough for ~300MB.
+          root-reserve-mb: 5120
           temp-reserve-mb: 512
       - name: Restart docker
         if: steps.skip_check.outputs.skip == 'false' && matrix.maximize-build-space == true
