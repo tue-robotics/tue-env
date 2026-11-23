@@ -223,7 +223,7 @@ mkdir -p "$HOME"/.cache/pip
 
 # Make sure the folder for the downloaded apt packages exists. Only the downloaded packages are shared with the
 # container, `apt-get update` and `apt-get install` still run in the container, so the installed versions are current.
-mkdir -p "$HOME"/.cache/apt/archives
+mkdir -p "${HOME}"/.cache/apt/archives
 
 # Run the docker image along with setting new environment variables
 # shellcheck disable=SC2086
