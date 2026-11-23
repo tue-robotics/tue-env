@@ -1114,8 +1114,24 @@ function tue-install-ppa-now
             then
                 args="${args:+${args} }-S"
             fi
+            # add-apt-repository adds the source entry before it retrieves the key. When it fails, e.g. on a timeout
+            # while retrieving the key, the unsigned entry stays behind. Every next 'apt-get update' fails on it and the
+            # check above considers the ppa added, so it is never retried. Therefore restore the sources on a failure.
+            local sources_backup
+            sources_backup="$(mktemp -d -t tue-install-ppa-XXXXXX)"
+            sudo cp -a /etc/apt/sources.list.d "${sources_backup}"/
+            [[ ! -f /etc/apt/sources.list ]] || sudo cp -a /etc/apt/sources.list "${sources_backup}"/
             # shellcheck disable=SC2086
-            tue-install-pipe sudo add-apt-repository ${args} "$ppa" || tue-install-error "An error occurred while adding ppa: $ppa"
+            if ! tue-install-pipe sudo add-apt-repository ${args} "${ppa}"
+            then
+                tue-install-warning "Restoring the apt sources to before adding ppa: ${ppa}"
+                sudo rm -rf /etc/apt/sources.list.d
+                sudo cp -a "${sources_backup}"/sources.list.d /etc/apt/
+                [[ ! -f "${sources_backup}"/sources.list ]] || sudo cp -a "${sources_backup}"/sources.list /etc/apt/
+                sudo rm -rf "${sources_backup}"
+                tue-install-error "An error occurred while adding ppa: ${ppa}"
+            fi
+            sudo rm -rf "${sources_backup}"
             PPA_ADDED=true
         else
             tue-install-debug "$ppa is already added previously"
