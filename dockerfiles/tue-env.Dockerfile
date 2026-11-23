@@ -29,6 +29,9 @@ ARG VENV_INCLUDE_SYSTEM_SITE=true
 
 ARG DOCKER_USER=docker
 ARG DOCKER_USER_ID=1000
+# Host of an Ubuntu archive mirror used during the build, e.g. azure.archive.ubuntu.com on GitHub Actions.
+# Default is empty and uses the sources of the base image.
+ARG APT_MIRROR
 
 ENV DEBIAN_FRONTEND=noninteractive \
     LANG=C.UTF-8 \
@@ -39,6 +42,17 @@ ENV DEBIAN_FRONTEND=noninteractive \
 
 # Set default shell to be bash
 SHELL ["/bin/bash", "-o", "pipefail", "-c"]
+
+# Use the apt mirror for archive.ubuntu.com and security.ubuntu.com during the build. The original sources are backed
+# up and restored at the end of this stage, so the image uses the sources of the base image.
+RUN [[ -z "${APT_MIRROR}" ]] || \
+    for sources in /etc/apt/sources.list /etc/apt/sources.list.d/ubuntu.sources; \
+    do \
+        [[ -f "${sources}" ]] || continue; \
+        install -D -m 644 "${sources}" /var/backups/apt-mirror/original"${sources}" && \
+        sed -i -E "s#http://(archive|security)\.ubuntu\.com/#http://${APT_MIRROR}/#g" "${sources}" && \
+        install -D -m 644 "${sources}" /var/backups/apt-mirror/mirrored"${sources}" || exit 1; \
+    done
 
 # Install commands used in our scripts and standard present on a clean ubuntu
 # installation and setup a user with sudo priviledges
@@ -129,6 +143,24 @@ RUN --mount=type=cache,target=/var/cache/apt,sharing=locked \
     # Restore the default of 'apt' to not keep downloaded packages in the final image.
     # docker-clean was already removed in the first stage. APT will be able to autocomplete packages now
     sudo rm /etc/apt/apt.conf.d/keep-cache
+
+# Restore the original apt sources when the apt mirror was used. Fail when the sources were changed in another way
+# during the build, as restoring them would undo that change.
+# hadolint ignore=DL3004
+RUN [[ -z "${APT_MIRROR}" ]] || { \
+        for sources in /etc/apt/sources.list /etc/apt/sources.list.d/ubuntu.sources; \
+        do \
+            [[ -f /var/backups/apt-mirror/original"${sources}" ]] || continue; \
+            if ! cmp -s /var/backups/apt-mirror/mirrored"${sources}" "${sources}"; \
+            then \
+                echo -e "\e[31mError! ${sources} was changed during the build, restoring the original sources would undo that:\e[0m"; \
+                diff /var/backups/apt-mirror/mirrored"${sources}" "${sources}"; \
+                exit 1; \
+            fi; \
+            sudo cp /var/backups/apt-mirror/original"${sources}" "${sources}" || exit 1; \
+        done && \
+        sudo rm -rf /var/backups/apt-mirror; \
+    }
 
 # Restore known_hosts to one provided by the user
 RUN mv -f ~/.ssh/known_hosts.bak ~/.ssh/known_hosts
