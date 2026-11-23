@@ -66,6 +66,10 @@ do
         # Docker buildx argument for specifying build architecture: Commonly used architectures are amd64 and arm64
             CI_DOCKER_PLATFORMS="${i#*=}" ;;
 
+        --builder=* )
+        # Name of an existing buildx builder to use instead of creating a new one, e.g. to share its cache mounts
+            CI_DOCKER_BUILDER="${i#*=}" ;;
+
         --push_image=* )
         # Docker buildx argument to specify if the built image should be pushed to a registry
             CI_DOCKER_PUSH_IMAGE="${i#*=}" ;;
@@ -117,6 +121,7 @@ echo -e "\e[35;1mCI_COMMIT             = ${CI_COMMIT}\e[0m"
 [[ -z "$CI_REF_NAME" ]] && CI_REF_NAME="pull"
 echo -e "\e[35;1mCI_REF_NAME           = ${CI_REF_NAME}\e[0m"
 echo -e "\e[35;1mCI_DOCKER_PLATFORMS   = ${CI_DOCKER_PLATFORMS}\e[0m"
+echo -e "\e[35;1mCI_DOCKER_BUILDER     = ${CI_DOCKER_BUILDER}\e[0m"
 echo -e "\e[35;1mCI_ROS_VERSION        = ${CI_ROS_VERSION}\e[0m"
 echo -e "\e[35;1mCI_ROS_DISTRO         = ${CI_ROS_DISTRO}\e[0m"
 echo -e "\e[35;1mCI_TARGETS_REPO       = ${CI_TARGETS_REPO}\e[0m"
@@ -278,7 +283,14 @@ fi
 if [[ -n "$CI_DOCKER_PLATFORMS" ]]
 then
     CI_DOCKER_BUILDX_ARGS+=("--platform=linux/${CI_DOCKER_PLATFORMS}")
+fi
 
+if [[ -n "${CI_DOCKER_BUILDER}" ]]
+then
+    echo -e "\e[35;1mUsing the existing buildx builder: ${CI_DOCKER_BUILDER}\e[0m"
+    CI_DOCKER_BUILDX_ARGS+=("--builder=${CI_DOCKER_BUILDER}")
+elif [[ -n "$CI_DOCKER_PLATFORMS" ]]
+then
     echo -e "\e[35;1mCreating a new docker context for multi-arch builds\e[0m"
     docker context create multiarch-environment
     echo -e "\e[35;1mCreating a new buildx builder for multi-arch builds\e[0m"

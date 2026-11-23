@@ -44,6 +44,18 @@ runs:
           ${{ inputs.image }}-pip-${{ github.event.repository.name }}-
           ${{ inputs.image }}-pip-
 
+    - name: Cache apt
+      id: cache-apt-restore
+      uses: actions/cache/restore@v5
+      with:
+        path: |
+          ~/.cache/apt/archives/*.deb
+        key: ${{ inputs.image }}-apt-${{ github.event.repository.name }}-${{ inputs.package }}-${{ github.sha }}
+        restore-keys: |
+          ${{ inputs.image }}-apt-${{ github.event.repository.name }}-${{ inputs.package }}-
+          ${{ inputs.image }}-apt-${{ github.event.repository.name }}-
+          ${{ inputs.image }}-apt-
+
     - name: Install
       id: install
       # yamllint disable rule:indentation
@@ -168,6 +180,15 @@ runs:
         path: |
           ~/.cache/pip
         key: ${{ steps.cache-pip-restore.outputs.cache-primary-key }}
+
+    - name: Always save apt cache
+      id: cache-apt-save
+      if: always() && steps.cache-apt-restore.outputs.cache-hit != 'true'
+      uses: actions/cache/save@v5
+      with:
+        path: |
+          ~/.cache/apt/archives/*.deb
+        key: ${{ steps.cache-apt-restore.outputs.cache-primary-key }}
 
     - name: Always save ccache
       id: cache-ccache-save
