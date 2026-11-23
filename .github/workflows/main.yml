@@ -333,6 +333,7 @@ jobs:
               --gh-token="${{ github.token }}" \
               --platforms="${{ matrix.platform }}" \
               --builder="${{ steps.setup_buildx.outputs.name }}" \
+              --apt-mirror="azure.archive.ubuntu.com" \
               --create-virtualenv="${CREATE_VENV}" \
               --virtualenv-include-system-site-packages="${VENV_INCLUDE_SYSTEM_SITE}" \
               --docker_user="${DOCKER_USER}" \

@@ -66,6 +66,10 @@ do
         # Docker buildx argument for specifying build architecture: Commonly used architectures are amd64 and arm64
             CI_DOCKER_PLATFORMS="${i#*=}" ;;
 
+        --apt-mirror=* )
+        # Host of an Ubuntu archive mirror used during the build, e.g. azure.archive.ubuntu.com on GitHub Actions
+            CI_APT_MIRROR="${i#*=}" ;;
+
         --builder=* )
         # Name of an existing buildx builder to use instead of creating a new one, e.g. to share its cache mounts
             CI_DOCKER_BUILDER="${i#*=}" ;;
@@ -122,6 +126,7 @@ echo -e "\e[35;1mCI_COMMIT             = ${CI_COMMIT}\e[0m"
 echo -e "\e[35;1mCI_REF_NAME           = ${CI_REF_NAME}\e[0m"
 echo -e "\e[35;1mCI_DOCKER_PLATFORMS   = ${CI_DOCKER_PLATFORMS}\e[0m"
 echo -e "\e[35;1mCI_DOCKER_BUILDER     = ${CI_DOCKER_BUILDER}\e[0m"
+echo -e "\e[35;1mCI_APT_MIRROR         = ${CI_APT_MIRROR}\e[0m"
 echo -e "\e[35;1mCI_ROS_VERSION        = ${CI_ROS_VERSION}\e[0m"
 echo -e "\e[35;1mCI_ROS_DISTRO         = ${CI_ROS_DISTRO}\e[0m"
 echo -e "\e[35;1mCI_TARGETS_REPO       = ${CI_TARGETS_REPO}\e[0m"
@@ -212,6 +217,7 @@ CI_DOCKER_BUILD_ARGS+=(
     "--build-arg=VENV_INCLUDE_SYSTEM_SITE=${CI_VENV_INCLUDE_SYSTEM_SITE}" \
     "--build-arg=DOCKER_USER=${CI_DOCKER_USER}" \
     "--build-arg=DOCKER_USER_ID=${CI_DOCKER_USER_ID}" \
+    "--build-arg=APT_MIRROR=${CI_APT_MIRROR}" \
     "--provenance=false")
 
 # Check the constructed Docker image name against the input
